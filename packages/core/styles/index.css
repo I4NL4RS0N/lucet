@@ -9,7 +9,8 @@
  *   surfaces     the ground and what floats above it, per theme and expression.
  *   semantic     the shadcn interop surface. Components read these.
  *   tones        five tones, and the state map. Lucet's own layer.
- *   accents      ten accents, two numbers each.
+ *   accent-scale twelve generated steps, from a shared chroma curve.
+ *   accents      ten accents. Two numbers each, or a curve variant.
  *   expression   System and Expressive, the density axis.
  *
  * Import once, at the root of the host application:
@@ -28,5 +29,6 @@
 @import './surfaces.css';
 @import './semantic.css';
 @import './tones.css';
+@import './accent-scale.css';
 @import './accents.css';
 @import './expression.css';

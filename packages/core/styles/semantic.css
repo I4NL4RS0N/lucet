@@ -30,8 +30,8 @@
   --lucet-default-card-foreground: var(--lucet-neutral-950);
   --lucet-default-popover: var(--lucet-surface-overlay);
   --lucet-default-popover-foreground: var(--lucet-neutral-950);
-  --lucet-default-primary: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
-  --lucet-default-primary-foreground: var(--lucet-neutral-0);
+  --lucet-default-primary: var(--lucet-accent-9);
+  --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
   --lucet-default-secondary: var(--lucet-neutral-100);
   --lucet-default-secondary-foreground: var(--lucet-neutral-900);
   --lucet-default-muted: var(--lucet-neutral-100);
@@ -40,7 +40,7 @@
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
-  --lucet-default-ring: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
+  --lucet-default-ring: var(--lucet-accent-8);
 
   /* The public semantic surface. Components consume only these. */
   --lucet-background: var(--background, var(--lucet-default-background));
@@ -80,8 +80,8 @@
     --lucet-default-card-foreground: var(--lucet-neutral-50);
     --lucet-default-popover: var(--lucet-surface-overlay);
     --lucet-default-popover-foreground: var(--lucet-neutral-50);
-    --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
-    --lucet-default-primary-foreground: var(--lucet-neutral-950);
+    --lucet-default-primary: var(--lucet-accent-9);
+    --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
     --lucet-default-secondary: var(--lucet-neutral-800);
     --lucet-default-secondary-foreground: var(--lucet-neutral-100);
     --lucet-default-muted: var(--lucet-neutral-800);
@@ -90,7 +90,7 @@
     --lucet-default-subtle-foreground: var(--lucet-neutral-200);
     --lucet-default-border: var(--lucet-line);
     --lucet-default-input: var(--lucet-line);
-    --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+    --lucet-default-ring: var(--lucet-accent-8);
   }
 }
 
@@ -101,8 +101,8 @@
   --lucet-default-card-foreground: var(--lucet-neutral-50);
   --lucet-default-popover: var(--lucet-surface-overlay);
   --lucet-default-popover-foreground: var(--lucet-neutral-50);
-  --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
-  --lucet-default-primary-foreground: var(--lucet-neutral-950);
+  --lucet-default-primary: var(--lucet-accent-9);
+  --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
   --lucet-default-secondary: var(--lucet-neutral-800);
   --lucet-default-secondary-foreground: var(--lucet-neutral-100);
   --lucet-default-muted: var(--lucet-neutral-800);
@@ -111,5 +111,5 @@
   --lucet-default-subtle-foreground: var(--lucet-neutral-200);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
-  --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+  --lucet-default-ring: var(--lucet-accent-8);
 }

@@ -1,65 +1,107 @@
 /**
- * Accent options.
+ * Accent options. Two numbers each.
  *
- * Ten accents, and every one of them is two numbers. Because the ramps are
- * oklch, an accent is a hue and a chroma, and every derived colour stays at the
- * same perceptual lightness across all ten. No hand-tuned palettes, no accent
- * that goes muddy in dark mode.
+ *   --lucet-accent-h   hue angle
+ *   --lucet-accent-c   peak chroma, reached at step 9
  *
- * This is also the proof that the components are token-driven rather than
- * skinned: if adding an accent takes two numbers, the system is real.
+ * Peak chroma is per hue because the gamut is not a cylinder: yellows and
+ * greens simply cannot hold the chroma a violet can at the same lightness.
+ * Using one number for all ten is the tell of a palette nobody checked.
  *
- * Set with `data-accent` on any ancestor, usually <html>.
- * ⚠️ VALUES ARE PLACEHOLDERS.
+ * --lucet-accent-on-solid is what goes ON step 9. Most accents are dark enough
+ * at step 9 to take white; the warm and green ones are not, and pretending
+ * otherwise is how libraries ship unreadable buttons.
+ *
+ * Set with `data-accent`, usually on <html>.
  */
 
 :root,
 [data-accent='slate'] {
   --lucet-accent-h: 250;
-  --lucet-accent-c: 0.02;
+  --lucet-accent-c: 0.03;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='blue'] {
-  --lucet-accent-h: 250;
-  --lucet-accent-c: 0.15;
+  --lucet-accent-h: 255;
+  --lucet-accent-c: 0.2;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='indigo'] {
-  --lucet-accent-h: 275;
-  --lucet-accent-c: 0.16;
+  --lucet-accent-h: 272;
+  --lucet-accent-c: 0.21;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='violet'] {
   --lucet-accent-h: 300;
-  --lucet-accent-c: 0.16;
+  --lucet-accent-c: 0.21;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='magenta'] {
   --lucet-accent-h: 330;
-  --lucet-accent-c: 0.16;
+  --lucet-accent-c: 0.2;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='rose'] {
-  --lucet-accent-h: 15;
-  --lucet-accent-c: 0.16;
-}
-
-[data-accent='amber'] {
-  --lucet-accent-h: 75;
-  --lucet-accent-c: 0.15;
+  --lucet-accent-h: 20;
+  --lucet-accent-c: 0.2;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='green'] {
-  --lucet-accent-h: 145;
-  --lucet-accent-c: 0.14;
+  --lucet-accent-h: 150;
+  --lucet-accent-c: 0.17;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='teal'] {
-  --lucet-accent-h: 180;
-  --lucet-accent-c: 0.12;
+  --lucet-accent-h: 185;
+  --lucet-accent-c: 0.14;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
 [data-accent='cyan'] {
   --lucet-accent-h: 220;
-  --lucet-accent-c: 0.13;
+  --lucet-accent-c: 0.15;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
+}
+
+/* ---------------------------------------------------------------
+ * The light-solid variant.
+ *
+ * Yellow is light. Forcing its solid step down to the shared L 0.62 does not
+ * make a darker yellow, it makes mud, which is exactly what the Scales view
+ * showed. Radix draws the same distinction: a few hues get a pale solid and
+ * take dark text on it.
+ *
+ * So this is a second CURVE, not per-accent hand-tuning. Any hue that lives in
+ * the light part of the gamut opts into it, and the accent itself is still just
+ * a hue and a peak chroma.
+ * --------------------------------------------------------------- */
+[data-accent='amber'] {
+  --lucet-accent-h: 80;
+  --lucet-accent-c: 0.19;
+  --lucet-accent-on-solid: oklch(0.24 0 0);
+
+  /* Light end carries far more chroma, or pale yellow reads as beige. */
+  --lucet-ac-1: 0.1;
+  --lucet-ac-2: 0.22;
+  --lucet-ac-3: 0.4;
+  --lucet-ac-4: 0.55;
+  --lucet-ac-5: 0.68;
+  --lucet-ac-6: 0.8;
+  --lucet-ac-7: 0.9;
+  --lucet-ac-8: 0.97;
+
+  /* The solid stays pale. Text steps go dark and drop chroma. */
+  --lucet-al-9: 0.85;
+  --lucet-al-10: 0.81;
+  --lucet-al-11: 0.56;
+  --lucet-al-12: 0.3;
+  --lucet-ac-11: 0.95;
+  --lucet-ac-12: 0.55;
 }

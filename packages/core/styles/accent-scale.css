@@ -1,0 +1,142 @@
+/**
+ * The accent scale, generated from a shared curve.
+ *
+ * Twelve steps with assigned jobs, borrowed as a CONCEPT from Radix, not as
+ * values. The steps stay a private implementation detail: components read
+ * --lucet-primary and --lucet-ring, never --lucet-accent-9. That rule is what
+ * keeps the library from forcing anyone onto a twelve-step mental model to use
+ * it, and it means this whole file can be replaced without a breaking change.
+ *
+ *   1-2    app and subtle backgrounds
+ *   3-5    component surfaces: normal, hover, active
+ *   6-8    borders: subtle, normal, strong
+ *   9-10   solid fills. 9 is the brand colour
+ *   11     accessible text on a light surface
+ *   12     high-contrast text
+ *
+ * WHY A CURVE
+ *
+ * Flat chroma across a ramp is the mistake. It goes chalky at the light end and
+ * neon at the dark end. Real palettes peak chroma in the midtones and fall away
+ * at both ends. Tailwind's own blue does exactly this: 0.014 at L97%, 0.214 at
+ * L62%, 0.091 at L28%. The multipliers below are that shape, expressed once and
+ * shared by every accent.
+ *
+ * An accent therefore stays two numbers: a hue, and the peak chroma it reaches
+ * at step 9. Adding one is still one line.
+ *
+ * KNOWN LIMITATION, ON PURPOSE
+ *
+ * Hand-tuned palettes also shift HUE along the ramp. Tailwind's amber travels
+ * from 95° to 46° so it warms toward orange as it darkens. A single-hue
+ * generator cannot do that, and warm hues are where the gap shows. The trade is
+ * deliberate: ten accents at one line each, and nobody else's palette to track.
+ * See the Scales comparison in the docs.
+ */
+
+:root {
+  /* Lightness per step, light mode. */
+  --lucet-al-1: 0.993;
+  --lucet-al-2: 0.980;
+  --lucet-al-3: 0.957;
+  --lucet-al-4: 0.932;
+  --lucet-al-5: 0.902;
+  --lucet-al-6: 0.865;
+  --lucet-al-7: 0.815;
+  --lucet-al-8: 0.740;
+  --lucet-al-9: 0.620;
+  --lucet-al-10: 0.575;
+  --lucet-al-11: 0.505;
+  --lucet-al-12: 0.310;
+
+  /* Chroma as a fraction of the accent's peak. Rises to 1.0 at the solid. */
+  --lucet-ac-1: 0.05;
+  --lucet-ac-2: 0.09;
+  --lucet-ac-3: 0.20;
+  --lucet-ac-4: 0.32;
+  --lucet-ac-5: 0.44;
+  --lucet-ac-6: 0.55;
+  --lucet-ac-7: 0.68;
+  --lucet-ac-8: 0.84;
+  --lucet-ac-9: 1;
+  --lucet-ac-10: 0.99;
+  --lucet-ac-11: 0.92;
+  --lucet-ac-12: 0.48;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lucet-al-1: 0.178;
+    --lucet-al-2: 0.208;
+    --lucet-al-3: 0.255;
+    --lucet-al-4: 0.290;
+    --lucet-al-5: 0.330;
+    --lucet-al-6: 0.380;
+    --lucet-al-7: 0.445;
+    --lucet-al-8: 0.545;
+    --lucet-al-9: 0.620;
+    --lucet-al-10: 0.670;
+    --lucet-al-11: 0.775;
+    --lucet-al-12: 0.905;
+
+    --lucet-ac-1: 0.10;
+    --lucet-ac-2: 0.14;
+    --lucet-ac-3: 0.28;
+    --lucet-ac-4: 0.40;
+    --lucet-ac-5: 0.50;
+    --lucet-ac-6: 0.58;
+    --lucet-ac-7: 0.68;
+    --lucet-ac-8: 0.82;
+    --lucet-ac-9: 1;
+    --lucet-ac-10: 0.95;
+    --lucet-ac-11: 0.72;
+    --lucet-ac-12: 0.36;
+  }
+}
+
+:root[data-theme='dark'] {
+  --lucet-al-1: 0.178;
+  --lucet-al-2: 0.208;
+  --lucet-al-3: 0.255;
+  --lucet-al-4: 0.290;
+  --lucet-al-5: 0.330;
+  --lucet-al-6: 0.380;
+  --lucet-al-7: 0.445;
+  --lucet-al-8: 0.545;
+  --lucet-al-9: 0.620;
+  --lucet-al-10: 0.670;
+  --lucet-al-11: 0.775;
+  --lucet-al-12: 0.905;
+
+  --lucet-ac-1: 0.10;
+  --lucet-ac-2: 0.14;
+  --lucet-ac-3: 0.28;
+  --lucet-ac-4: 0.40;
+  --lucet-ac-5: 0.50;
+  --lucet-ac-6: 0.58;
+  --lucet-ac-7: 0.68;
+  --lucet-ac-8: 0.82;
+  --lucet-ac-9: 1;
+  --lucet-ac-10: 0.95;
+  --lucet-ac-11: 0.72;
+  --lucet-ac-12: 0.36;
+}
+
+/*
+ * The steps themselves. Declared once; they re-resolve automatically whenever
+ * the hue, the peak chroma, or the curve changes.
+ */
+:root {
+  --lucet-accent-1: oklch(var(--lucet-al-1) calc(var(--lucet-accent-c) * var(--lucet-ac-1)) var(--lucet-accent-h));
+  --lucet-accent-2: oklch(var(--lucet-al-2) calc(var(--lucet-accent-c) * var(--lucet-ac-2)) var(--lucet-accent-h));
+  --lucet-accent-3: oklch(var(--lucet-al-3) calc(var(--lucet-accent-c) * var(--lucet-ac-3)) var(--lucet-accent-h));
+  --lucet-accent-4: oklch(var(--lucet-al-4) calc(var(--lucet-accent-c) * var(--lucet-ac-4)) var(--lucet-accent-h));
+  --lucet-accent-5: oklch(var(--lucet-al-5) calc(var(--lucet-accent-c) * var(--lucet-ac-5)) var(--lucet-accent-h));
+  --lucet-accent-6: oklch(var(--lucet-al-6) calc(var(--lucet-accent-c) * var(--lucet-ac-6)) var(--lucet-accent-h));
+  --lucet-accent-7: oklch(var(--lucet-al-7) calc(var(--lucet-accent-c) * var(--lucet-ac-7)) var(--lucet-accent-h));
+  --lucet-accent-8: oklch(var(--lucet-al-8) calc(var(--lucet-accent-c) * var(--lucet-ac-8)) var(--lucet-accent-h));
+  --lucet-accent-9: oklch(var(--lucet-al-9) calc(var(--lucet-accent-c) * var(--lucet-ac-9)) var(--lucet-accent-h));
+  --lucet-accent-10: oklch(var(--lucet-al-10) calc(var(--lucet-accent-c) * var(--lucet-ac-10)) var(--lucet-accent-h));
+  --lucet-accent-11: oklch(var(--lucet-al-11) calc(var(--lucet-accent-c) * var(--lucet-ac-11)) var(--lucet-accent-h));
+  --lucet-accent-12: oklch(var(--lucet-al-12) calc(var(--lucet-accent-c) * var(--lucet-ac-12)) var(--lucet-accent-h));
+}
