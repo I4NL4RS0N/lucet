@@ -81,8 +81,7 @@
    * Tracking is negative and scales with size, the way theirs does. At these
    * sizes default tracking reads loose and slightly amateur.
    */
-  --lucet-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --lucet-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+  /* Font stacks live in typefaces.css. */
 
   --lucet-text-xs: calc(0.6875rem * var(--lucet-scale));
   --lucet-text-sm: calc(0.8125rem * var(--lucet-scale));

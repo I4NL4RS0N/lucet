@@ -6,6 +6,7 @@
  * Four layers, in dependency order:
  *
  *   primitives   raw scales. Components never read these.
+ *   typefaces    font stacks only. This library never loads a font.
  *   surfaces     the ground and what floats above it, per theme and expression.
  *   semantic     the shadcn interop surface. Components read these.
  *   tones        five tones, and the state map. Lucet's own layer.
@@ -29,6 +30,7 @@
  */
 
 @import './primitives.css';
+@import './typefaces.css';
 @import './surfaces.css';
 @import './semantic.css';
 @import './tones.css';

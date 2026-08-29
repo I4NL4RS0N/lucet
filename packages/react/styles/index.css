@@ -134,6 +134,11 @@
   max-width: 68ch;
 }
 
+/* The response is set as prose, not as chrome. See typefaces.css. */
+.lucet-message[data-role='assistant'] .lucet-message__text {
+  font-family: var(--lucet-font-prose);
+}
+
 .lucet-message__text {
   margin: 0 0 var(--lucet-space-3);
   line-height: var(--lucet-leading-prose);
@@ -398,6 +403,7 @@
 }
 
 .lucet-composer__field {
+  font-family: var(--lucet-font-prose);
   display: block;
   width: 100%;
   box-sizing: border-box;

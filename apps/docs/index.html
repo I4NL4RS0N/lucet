@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Inter is the default, so it loads eagerly to avoid a flash on first
+         paint. Tagged so the lazy loader recognises it and does not duplicate
+         it. Every other typeface is injected on demand. -->
     <link
+      data-typeface="inter"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />

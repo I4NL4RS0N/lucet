@@ -23,11 +23,41 @@ export const RADII = ['none', 'small', 'medium', 'large', 'full'] as const
 /** One multiplier over spacing and type. Narrow on purpose. */
 export const SCALES = ['90', '95', '100', '105', '110'] as const
 
+/** Typefaces. The library names stacks; the docs site loads the faces. */
+export const TYPEFACES = ['inter', 'plex', 'instrument', 'reading', 'system'] as const
+
+/*
+ * Loaded on demand rather than all five up front, so choosing the default
+ * costs one family instead of five. `system` loads nothing at all, which is
+ * also the proof that the components need no webfont.
+ */
+const FONT_HREF: Record<(typeof TYPEFACES)[number], string | null> = {
+  inter: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
+  plex:
+    'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap',
+  instrument:
+    'https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
+  reading:
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap',
+  system: null,
+}
+
+function ensureTypeface(name: (typeof TYPEFACES)[number]): void {
+  const href = FONT_HREF[name]
+  if (!href || document.querySelector(`link[data-typeface="${name}"]`)) return
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.href = href
+  link.dataset.typeface = name
+  document.head.appendChild(link)
+}
+
 export type Theme = 'system' | 'light' | 'dark'
 export type Accent = (typeof ACCENTS)[number]
 export type Neutral = (typeof NEUTRALS)[number]
 export type Radius = (typeof RADII)[number]
 export type Scale = (typeof SCALES)[number]
+export type Typeface = (typeof TYPEFACES)[number]
 export type Expression = 'system' | 'expressive'
 
 export interface ThemeState {
@@ -37,6 +67,7 @@ export interface ThemeState {
   expression: Expression
   radius: Radius
   scale: Scale
+  typeface: Typeface
 }
 
 export function useApplyTheme({
@@ -46,8 +77,10 @@ export function useApplyTheme({
   expression,
   radius,
   scale,
+  typeface,
 }: ThemeState): void {
   useEffect(() => {
+    ensureTypeface(typeface)
     const root = document.documentElement
     if (theme === 'system') root.removeAttribute('data-theme')
     else root.setAttribute('data-theme', theme)
@@ -56,7 +89,8 @@ export function useApplyTheme({
     root.setAttribute('data-expression', expression)
     root.setAttribute('data-radius', radius)
     root.setAttribute('data-scale', scale)
-  }, [theme, accent, neutral, expression, radius, scale])
+    root.setAttribute('data-typeface', typeface)
+  }, [theme, accent, neutral, expression, radius, scale, typeface])
 }
 
 export interface ThemeControlsProps extends ThemeState {
@@ -95,6 +129,7 @@ export function ThemeControls({
   expression,
   radius,
   scale,
+  typeface,
   onChange,
 }: ThemeControlsProps) {
   return (
@@ -122,6 +157,12 @@ export function ThemeControls({
         value={expression}
         options={['system', 'expressive'] as const}
         onSelect={(v) => onChange({ expression: v })}
+      />{' '}
+      <Select
+        name="Typeface"
+        value={typeface}
+        options={TYPEFACES}
+        onSelect={(v) => onChange({ typeface: v })}
       />{' '}
       <Select
         name="Radius"

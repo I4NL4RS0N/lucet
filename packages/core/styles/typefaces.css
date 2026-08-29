@@ -1,0 +1,76 @@
+/**
+ * Typeface options.
+ *
+ * STACKS ONLY. This file never loads a font.
+ *
+ * A component library that @imports a webfont makes a hosting, privacy, and
+ * performance decision on behalf of its host, who may be self-hosting, may be
+ * on an intranet, and may have a licence we know nothing about. We name the
+ * faces; loading them is the host's call. The docs site loads its own.
+ *
+ * Three slots, not two:
+ *
+ *   --lucet-font-sans    chrome. Labels, buttons, meters, everything dense.
+ *   --lucet-font-mono    code, tool names, ids.
+ *   --lucet-font-prose   the response body.
+ *
+ * The third exists because of the thesis. If the assistant's output really is
+ * the artefact rather than chat, it is allowed to be set like a document. It
+ * inherits the sans by default, so this costs nothing until a typeface opts in.
+ *
+ * Set with `data-typeface`, usually on <html>.
+ */
+
+:root {
+  --lucet-font-system: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --lucet-font-mono-system: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+
+  /*
+   * Inter is the default, and it is the least opinionated excellent choice
+   * rather than a signature. It was drawn for interface text at exactly this
+   * size, and the components are a guest in someone else's product: a
+   * distinctive default would be a claim on their brand, the same argument
+   * that makes the default accent greyscale.
+   */
+  --lucet-font-sans: Inter, var(--lucet-font-system);
+  --lucet-font-mono: var(--lucet-font-mono-system);
+  --lucet-font-prose: var(--lucet-font-sans);
+}
+
+/* Proves the library needs no webfont at all. Worth being able to demonstrate. */
+[data-typeface='system'] {
+  --lucet-font-sans: var(--lucet-font-system);
+  --lucet-font-mono: var(--lucet-font-mono-system);
+  --lucet-font-prose: var(--lucet-font-sans);
+}
+
+[data-typeface='inter'] {
+  --lucet-font-sans: Inter, var(--lucet-font-system);
+  --lucet-font-mono: var(--lucet-font-mono-system);
+  --lucet-font-prose: var(--lucet-font-sans);
+}
+
+/* Engineered rather than neutral, and it brings a matching mono. Reads at home
+   against financial and technical content. */
+[data-typeface='plex'] {
+  --lucet-font-sans: 'IBM Plex Sans', var(--lucet-font-system);
+  --lucet-font-mono: 'IBM Plex Mono', var(--lucet-font-mono-system);
+  --lucet-font-prose: var(--lucet-font-sans);
+}
+
+[data-typeface='instrument'] {
+  --lucet-font-sans: 'Instrument Sans', var(--lucet-font-system);
+  --lucet-font-mono: 'JetBrains Mono', var(--lucet-font-mono-system);
+  --lucet-font-prose: var(--lucet-font-sans);
+}
+
+/*
+ * The thesis, made typographic. Chrome stays a UI sans; the response is set in
+ * a reading face, because a document is what it is. The one option where the
+ * prose slot earns its existence.
+ */
+[data-typeface='reading'] {
+  --lucet-font-sans: Inter, var(--lucet-font-system);
+  --lucet-font-mono: var(--lucet-font-mono-system);
+  --lucet-font-prose: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+}
