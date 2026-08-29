@@ -24,11 +24,11 @@
 
 :root {
   /* Our own defaults, used only when the host has not defined shadcn's names. */
-  --lucet-default-background: var(--lucet-neutral-0);
+  --lucet-default-background: var(--lucet-surface-ground);
   --lucet-default-foreground: var(--lucet-neutral-950);
-  --lucet-default-card: var(--lucet-neutral-0);
+  --lucet-default-card: var(--lucet-surface-raised);
   --lucet-default-card-foreground: var(--lucet-neutral-950);
-  --lucet-default-popover: var(--lucet-neutral-0);
+  --lucet-default-popover: var(--lucet-surface-overlay);
   --lucet-default-popover-foreground: var(--lucet-neutral-950);
   --lucet-default-primary: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
   --lucet-default-primary-foreground: var(--lucet-neutral-0);
@@ -38,8 +38,8 @@
   --lucet-default-muted-foreground: var(--lucet-neutral-500);
   --lucet-default-subtle: var(--lucet-neutral-50);
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
-  --lucet-default-border: var(--lucet-neutral-200);
-  --lucet-default-input: var(--lucet-neutral-200);
+  --lucet-default-border: var(--lucet-line);
+  --lucet-default-input: var(--lucet-line);
   --lucet-default-ring: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
 
   /* The public semantic surface. Components consume only these. */
@@ -74,11 +74,11 @@
 /* Dark. Only the defaults move; the interop indirection is unchanged. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --lucet-default-background: var(--lucet-neutral-950);
+    --lucet-default-background: var(--lucet-surface-ground);
     --lucet-default-foreground: var(--lucet-neutral-50);
-    --lucet-default-card: var(--lucet-neutral-900);
+    --lucet-default-card: var(--lucet-surface-raised);
     --lucet-default-card-foreground: var(--lucet-neutral-50);
-    --lucet-default-popover: var(--lucet-neutral-900);
+    --lucet-default-popover: var(--lucet-surface-overlay);
     --lucet-default-popover-foreground: var(--lucet-neutral-50);
     --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
     --lucet-default-primary-foreground: var(--lucet-neutral-950);
@@ -88,18 +88,18 @@
     --lucet-default-muted-foreground: var(--lucet-neutral-400);
     --lucet-default-subtle: var(--lucet-neutral-900);
     --lucet-default-subtle-foreground: var(--lucet-neutral-200);
-    --lucet-default-border: var(--lucet-neutral-800);
-    --lucet-default-input: var(--lucet-neutral-800);
+    --lucet-default-border: var(--lucet-line);
+    --lucet-default-input: var(--lucet-line);
     --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
   }
 }
 
 :root[data-theme='dark'] {
-  --lucet-default-background: var(--lucet-neutral-950);
+  --lucet-default-background: var(--lucet-surface-ground);
   --lucet-default-foreground: var(--lucet-neutral-50);
-  --lucet-default-card: var(--lucet-neutral-900);
+  --lucet-default-card: var(--lucet-surface-raised);
   --lucet-default-card-foreground: var(--lucet-neutral-50);
-  --lucet-default-popover: var(--lucet-neutral-900);
+  --lucet-default-popover: var(--lucet-surface-overlay);
   --lucet-default-popover-foreground: var(--lucet-neutral-50);
   --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
   --lucet-default-primary-foreground: var(--lucet-neutral-950);
@@ -109,7 +109,7 @@
   --lucet-default-muted-foreground: var(--lucet-neutral-400);
   --lucet-default-subtle: var(--lucet-neutral-900);
   --lucet-default-subtle-foreground: var(--lucet-neutral-200);
-  --lucet-default-border: var(--lucet-neutral-800);
-  --lucet-default-input: var(--lucet-neutral-800);
+  --lucet-default-border: var(--lucet-line);
+  --lucet-default-input: var(--lucet-line);
   --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
 }

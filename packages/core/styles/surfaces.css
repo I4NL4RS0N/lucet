@@ -1,0 +1,92 @@
+/**
+ * Surfaces: the ground, and what floats above it.
+ *
+ * This layer exists because the two expressions disagree about depth, and that
+ * disagreement is the axis. Splitting it out keeps the argument in one file
+ * instead of scattered across theme overrides.
+ *
+ *   System      the ground is the paper. Surfaces sit flat on it and are
+ *               separated by a hairline. High contrast, no drama, reads well at
+ *               density and survives being embedded in someone else's app.
+ *
+ *   Expressive  the ground is recessed and surfaces float above it. Light comes
+ *               from above, so a raised surface is lighter in dark mode and
+ *               brighter than the page in light mode. Depth is shadow; the
+ *               border nearly disappears.
+ *
+ * All four combinations are written out. It is verbose, but a reader can see
+ * every surface decision without resolving a cascade in their head.
+ */
+
+/* ---------- Light + System (default) ---------- */
+:root {
+  --lucet-surface-ground: var(--lucet-neutral-0);
+  --lucet-surface-raised: var(--lucet-neutral-0);
+  --lucet-surface-overlay: var(--lucet-neutral-0);
+  --lucet-surface-sunken: var(--lucet-neutral-50);
+  --lucet-line: var(--lucet-neutral-200);
+  --lucet-shadow-color: 0 0 0;
+  --lucet-shadow-alpha: 0.06;
+}
+
+/* ---------- Light + Expressive ---------- */
+:root[data-expression='expressive'] {
+  /* The page recedes so cards can come forward. Nothing is pure white except
+     the things that are meant to be picked up. */
+  --lucet-surface-ground: var(--lucet-neutral-150);
+  --lucet-surface-raised: var(--lucet-neutral-0);
+  --lucet-surface-overlay: var(--lucet-neutral-0);
+  --lucet-surface-sunken: var(--lucet-neutral-200);
+  /* Depth is carried by shadow, so the line is nearly gone. */
+  --lucet-line: oklch(0.87 0 0 / 0.5);
+  --lucet-shadow-color: 0 0 0;
+  --lucet-shadow-alpha: 0.09;
+}
+
+/* ---------- Dark + System ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lucet-surface-ground: var(--lucet-neutral-950);
+    --lucet-surface-raised: var(--lucet-neutral-900);
+    --lucet-surface-overlay: var(--lucet-neutral-900);
+    --lucet-surface-sunken: var(--lucet-neutral-1000);
+    --lucet-line: var(--lucet-neutral-800);
+    --lucet-shadow-color: 0 0 0;
+    --lucet-shadow-alpha: 0.5;
+  }
+}
+
+:root[data-theme='dark'] {
+  --lucet-surface-ground: var(--lucet-neutral-950);
+  --lucet-surface-raised: var(--lucet-neutral-900);
+  --lucet-surface-overlay: var(--lucet-neutral-900);
+  --lucet-surface-sunken: var(--lucet-neutral-1000);
+  --lucet-line: var(--lucet-neutral-800);
+  --lucet-shadow-color: 0 0 0;
+  --lucet-shadow-alpha: 0.5;
+}
+
+/* ---------- Dark + Expressive ---------- */
+@media (prefers-color-scheme: dark) {
+  :root[data-expression='expressive']:not([data-theme='light']) {
+    /* Lifted off black. A raised surface is LIGHTER than the ground, because
+       that is how light works, and near-black grounds leave nowhere to go. */
+    --lucet-surface-ground: var(--lucet-neutral-850);
+    --lucet-surface-raised: var(--lucet-neutral-800);
+    --lucet-surface-overlay: var(--lucet-neutral-800);
+    --lucet-surface-sunken: var(--lucet-neutral-900);
+    --lucet-line: oklch(0.45 0 0 / 0.45);
+    --lucet-shadow-color: 0 0 0;
+    --lucet-shadow-alpha: 0.45;
+  }
+}
+
+:root[data-theme='dark'][data-expression='expressive'] {
+  --lucet-surface-ground: var(--lucet-neutral-850);
+  --lucet-surface-raised: var(--lucet-neutral-800);
+  --lucet-surface-overlay: var(--lucet-neutral-800);
+  --lucet-surface-sunken: var(--lucet-neutral-900);
+  --lucet-line: oklch(0.45 0 0 / 0.45);
+  --lucet-shadow-color: 0 0 0;
+  --lucet-shadow-alpha: 0.45;
+}

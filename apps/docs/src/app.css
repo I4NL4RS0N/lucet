@@ -1,27 +1,22 @@
 /*
- * Docs shell layout.
+ * Docs shell.
  *
- * Structural only. No visual design decisions live here: no type scale, no
- * spacing rhythm, no component styling. What it DOES do is consume the surface
- * and border tokens, because a shell that ignores them renders dark text on a
- * dark ground the moment someone switches theme, and "unstyled" should never
- * mean "unreadable".
+ * Token-driven throughout, so switching theme, accent, or expression restyles
+ * the site itself. That is not a convenience: a design system whose own
+ * documentation opts out of it is not a design system.
  *
- * The components themselves still consume nothing. That is the deliberate part.
+ * Still no visual invention here. Every value is a token. If something needs a
+ * number that is not in the token set, the token set is wrong, not this file.
+ *
+ * The COMPONENTS remain unstyled. That is the deliberate part, and the reason
+ * the conversation column still looks bare.
  */
 
 :root {
-  /* Keeps form controls and scrollbars in step with the chosen theme. */
   color-scheme: light dark;
 }
-
-:root[data-theme='light'] {
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-}
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
 
 body {
   margin: 0;
@@ -31,7 +26,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  transition:
+    background var(--lucet-duration-normal) var(--lucet-ease-out),
+    color var(--lucet-duration-normal) var(--lucet-ease-out);
 }
+
+/* ---------- header ---------- */
 
 header {
   flex: none;
@@ -42,6 +42,7 @@ header {
 header h1 {
   margin: 0;
   font-size: var(--lucet-text-xl);
+  letter-spacing: var(--lucet-tracking-tight);
 }
 
 header p {
@@ -51,10 +52,11 @@ header p {
 }
 
 fieldset {
+  display: inline-block;
   border: 1px solid var(--lucet-border);
-  border-radius: var(--lucet-radius-md);
+  border-radius: var(--lucet-radius-lg);
   padding: var(--lucet-space-2) var(--lucet-space-3);
-  margin: 0 0 var(--lucet-space-2);
+  margin: 0 var(--lucet-space-2) var(--lucet-space-2) 0;
   font-size: var(--lucet-text-sm);
 }
 
@@ -63,6 +65,8 @@ legend {
   font-size: var(--lucet-text-xs);
   padding: 0 var(--lucet-space-1);
 }
+
+/* ---------- panes ---------- */
 
 main {
   display: grid;
@@ -77,49 +81,125 @@ main > * {
   border-left: 1px solid var(--lucet-border);
 }
 
-main > :first-child {
-  border-left: 0;
+main > :first-child { border-left: 0; }
+
+/*
+ * Three panes need room. Below this the conversation gets crushed to one word
+ * per line, which misrepresents the components as much as bad tokens would.
+ * The rail and inspector stack instead.
+ */
+@media (max-width: 1100px) {
+  main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: min-content;
+  }
+
+  main > * {
+    border-left: 0;
+    border-top: 1px solid var(--lucet-border);
+  }
+
+  :root[data-expression='expressive'] main > * { border-top: 0; }
 }
 
-/* Drawer mode: the conversation sits over a page that keeps moving. */
-main[data-mode='drawer'] > :nth-child(2) {
-  position: relative;
+h2 {
+  font-size: var(--lucet-text-lg);
+  letter-spacing: var(--lucet-tracking-tight);
+  margin-top: 0;
 }
+
+h3 {
+  font-size: var(--lucet-text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--lucet-tracking-wide);
+  color: var(--lucet-muted-foreground);
+}
+
+p { line-height: var(--lucet-leading-prose); }
+
+/*
+ * Expressive: the panes stop being columns of a page and become surfaces
+ * floating on a recessed ground. Same markup, same tokens, different depth
+ * model. This is the axis, visible.
+ */
+:root[data-expression='expressive'] header {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+:root[data-expression='expressive'] main {
+  gap: var(--lucet-space-3);
+  padding: var(--lucet-space-3);
+  padding-top: var(--lucet-space-2);
+}
+
+:root[data-expression='expressive'] main > * {
+  border-left: 0;
+  background: var(--lucet-card);
+  border-radius: var(--lucet-radius-xl);
+  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+}
+
+:root[data-expression='expressive'] fieldset {
+  border-color: transparent;
+  background: var(--lucet-card);
+  border-radius: var(--lucet-radius-container);
+  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+}
+
+/* ---------- drawer ---------- */
+
+main[data-mode='drawer'] > :nth-child(2) { position: relative; }
 
 main[data-mode='drawer'] section[aria-label='Conversation'] {
   position: sticky;
   bottom: 0;
   border: 1px solid var(--lucet-border);
   border-radius: var(--lucet-radius-lg);
-  background: var(--lucet-card);
+  background: var(--lucet-popover);
+  box-shadow: var(--lucet-elevation-3), var(--lucet-highlight);
   max-height: 60%;
   overflow-y: auto;
-  padding: var(--lucet-space-2);
+  padding: var(--lucet-space-3);
 }
 
-/* Tokens view is a single column, not the three-pane harness. */
+/* ---------- tokens view ---------- */
+
 main[data-mode='tokens'] {
   display: block;
   overflow-y: auto;
   border-left: 0;
 }
 
-code,
-pre {
-  font-family: var(--lucet-font-mono);
-}
+/* ---------- controls ---------- */
+
+code, pre { font-family: var(--lucet-font-mono); }
 
 pre {
   overflow-x: auto;
   font-size: var(--lucet-text-xs);
 }
 
-textarea,
-input,
-select,
+textarea, input, select, button { font: inherit; color: inherit; }
+
 button {
-  font: inherit;
-  color: inherit;
+  background: var(--lucet-secondary);
+  color: var(--lucet-secondary-foreground);
+  border: 1px solid var(--lucet-border);
+  border-radius: var(--lucet-radius-md);
+  padding: var(--lucet-space-1) var(--lucet-space-2);
+  cursor: pointer;
+  transition: background var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+button:hover:not(:disabled) { background: var(--lucet-subtle); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+select {
+  background: var(--lucet-background);
+  border: 1px solid var(--lucet-input);
+  border-radius: var(--lucet-radius-md);
+  padding: var(--lucet-space-1);
 }
 
 textarea {
@@ -132,10 +212,7 @@ textarea {
   padding: var(--lucet-space-2);
 }
 
-hr {
-  border: 0;
-  border-top: 1px solid var(--lucet-border);
-}
+hr { border: 0; border-top: 1px solid var(--lucet-border); }
 
 :focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);

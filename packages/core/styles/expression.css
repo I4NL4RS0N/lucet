@@ -5,61 +5,85 @@
  * enterprise theme done well is highly polished, it just has different intent.
  * The variable is how much the interface performs.
  *
- * System is the default, because an assistant embedded in someone's real work
- * should be quiet unless it has a reason not to be.
+ * System is the default, because the components are a guest in someone else's
+ * product and should be quiet unless they have a reason not to be.
  *
- * Both read from the same primitives. Nothing here introduces a new colour, a
- * new scale, or a component-specific override. If a theme ever needs one, the
- * token layer is wrong, not the theme.
- *
- * Set with `data-expression` on any ancestor, usually <html>.
+ * Colour is NOT set here. Surfaces are in surfaces.css, hues in accents.css.
+ * This file owns geometry, depth, and rhythm only.
  */
 
-/* System: dense, quiet, enterprise-grade. */
+/* ---------------------------------------------------------------
+ * System: dense, quiet, enterprise-grade.
+ * Depth comes from a hairline. Nothing floats.
+ * --------------------------------------------------------------- */
 :root,
-[data-expression='system'] {
+:root[data-expression='system'] {
   --lucet-space-unit: 0.25rem;
   --lucet-radius-root: var(--radius, 0.375rem);
+  --lucet-radius-container: var(--lucet-radius-lg);
 
   --lucet-leading-prose: 1.55;
-  --lucet-tracking-heading: var(--lucet-tracking-tight);
 
-  /* Elevation is a hairline, not a shadow. Depth comes from the border. */
   --lucet-elevation-1: 0 0 0 1px var(--lucet-border);
-  --lucet-elevation-2: 0 1px 2px oklch(0 0 0 / 0.06), 0 0 0 1px var(--lucet-border);
-  --lucet-elevation-3: 0 4px 12px oklch(0 0 0 / 0.08), 0 0 0 1px var(--lucet-border);
+  --lucet-elevation-2:
+    0 1px 2px oklch(var(--lucet-shadow-color) / var(--lucet-shadow-alpha)),
+    0 0 0 1px var(--lucet-border);
+  --lucet-elevation-3:
+    0 4px 12px oklch(var(--lucet-shadow-color) / var(--lucet-shadow-alpha)),
+    0 0 0 1px var(--lucet-border);
 
   --lucet-duration-fast: 100ms;
   --lucet-duration-normal: 160ms;
   --lucet-duration-slow: 240ms;
 
-  --lucet-surface-glow: none;
+  --lucet-highlight: none;
 }
 
-/*
- * Expressive: more air, softer geometry, light that behaves like light.
+/* ---------------------------------------------------------------
+ * Expressive: surfaces float, light comes from above.
  *
- * Restrained on purpose. The web3 look ages in about eighteen months and would
- * date the whole project, so this leans on space, radius, and slower motion
- * rather than gradients and glass.
- */
-[data-expression='expressive'] {
+ * Three things carry it, and none of them is a gradient:
+ *   1. containers are near-pill, controls inside are soft rectangles
+ *   2. shadow is layered, not one blur. Real light falls off in stages
+ *   3. a one-pixel top highlight, so a raised edge catches the light
+ *
+ * Deliberately restrained. The glass-and-glow look ages in about eighteen
+ * months and would date the whole project.
+ * --------------------------------------------------------------- */
+:root[data-expression='expressive'] {
   --lucet-space-unit: 0.3125rem;
   --lucet-radius-root: var(--radius, 0.875rem);
+  /* Containers go near-pill. Controls inside stay rectangular, or the whole
+     thing turns into a bag of lozenges. */
+  --lucet-radius-container: var(--lucet-radius-full);
 
   --lucet-leading-prose: 1.7;
-  --lucet-tracking-heading: var(--lucet-tracking-tight);
 
-  --lucet-elevation-1: 0 1px 2px oklch(0 0 0 / 0.05);
-  --lucet-elevation-2: 0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
-  --lucet-elevation-3: 0 8px 30px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06);
+  --lucet-elevation-1:
+    0 1px 2px oklch(var(--lucet-shadow-color) / calc(var(--lucet-shadow-alpha) * 0.7));
+  --lucet-elevation-2:
+    0 1px 1px oklch(var(--lucet-shadow-color) / calc(var(--lucet-shadow-alpha) * 0.5)),
+    0 4px 8px oklch(var(--lucet-shadow-color) / calc(var(--lucet-shadow-alpha) * 0.7)),
+    0 12px 24px oklch(var(--lucet-shadow-color) / var(--lucet-shadow-alpha));
+  --lucet-elevation-3:
+    0 2px 4px oklch(var(--lucet-shadow-color) / calc(var(--lucet-shadow-alpha) * 0.6)),
+    0 8px 20px oklch(var(--lucet-shadow-color) / var(--lucet-shadow-alpha)),
+    0 24px 48px oklch(var(--lucet-shadow-color) / calc(var(--lucet-shadow-alpha) * 1.2));
 
   --lucet-duration-fast: 140ms;
   --lucet-duration-normal: 240ms;
   --lucet-duration-slow: 400ms;
 
-  /* A single, quiet accent glow. One effect, used sparingly, ages better than
-     five stacked ones. */
-  --lucet-surface-glow: 0 0 0 1px
-    oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h) / 0.16);
+  /* The lit top edge. One pixel, and it does more than any gradient would. */
+  --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-expression='expressive']:not([data-theme='light']) {
+    --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+  }
+}
+
+:root[data-theme='dark'][data-expression='expressive'] {
+  --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
 }
