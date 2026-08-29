@@ -1,0 +1,9 @@
+/*
+ * Lucet tokens.
+ *
+ * Vanilla CSS custom properties only. No Tailwind, no preprocessor.
+ * Token names map cleanly onto shadcn's CSS variable names so Tailwind/shadcn
+ * consumers can adopt the library without fighting it.
+ *
+ * Not authored yet. See docs/design-brief.md -> "Theming" and "Architecture".
+ */

@@ -1,0 +1,47 @@
+/**
+ * A scenario is a script.
+ *
+ * The docs site runs against this instead of a live model, which is the only way
+ * to force a refusal, a partial tool failure, or a provider outage on demand and
+ * get the same result every time. States also have to chain, so a scenario is a
+ * flat list of steps rather than a single canned response.
+ */
+
+import type { ServiceStatus, ToolStatus } from '../types.js'
+
+export type Step =
+  /** Dead air. Latency is a designed state, not an accident. */
+  | { type: 'wait'; ms: number }
+  /** Stream visible text, chunk by chunk. */
+  | { type: 'say'; text: string; chunkMs?: number }
+  /** Stream reasoning into a disclosure, not the response body. */
+  | { type: 'think'; text: string; chunkMs?: number }
+  | {
+      type: 'tool'
+      name: string
+      ms: number
+      outcome: Extract<ToolStatus, 'succeeded' | 'failed' | 'partial'>
+      detail: string
+    }
+  | { type: 'refuse'; reason: string }
+  | { type: 'fail'; reason: string }
+  | { type: 'interrupt'; reason: string }
+  | { type: 'usage'; tokens: number; costUsd: number }
+  | { type: 'service'; status: ServiceStatus; message: string | null }
+  | { type: 'complete' }
+
+export interface Scenario {
+  readonly id: string
+  readonly label: string
+  /** Groups the trigger rail. Keeps the happy path away from the failures. */
+  readonly group: string
+  /** Shown in the rail and in the docs. Say what this proves. */
+  readonly description: string
+  /** The prompt to put in the thread, if this scenario starts a turn. */
+  readonly prompt: string | null
+  readonly steps: readonly Step[]
+}
+
+export function defineScenario(scenario: Scenario): Scenario {
+  return scenario
+}

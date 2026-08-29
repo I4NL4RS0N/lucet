@@ -1,0 +1,102 @@
+/**
+ * Every state change is an event.
+ *
+ * Two reasons this is event-sourced rather than a pile of setters. First, the
+ * docs site inspector shows each transition as it happens, and an event log is
+ * that, for free. Second, "every prompt is a commit" is much easier to honour
+ * when the history is already the source of truth.
+ */
+
+import type {
+  MessagePart,
+  MessageStatus,
+  ServiceStatus,
+  ToolStatus,
+  UsageState,
+} from './types.js'
+
+export type LucetEvent =
+  | { type: 'thread/reset' }
+  | { type: 'composer/changed'; text: string }
+  | { type: 'composer/queued'; text: string }
+  | { type: 'composer/locked'; by: string }
+  | { type: 'composer/unlocked' }
+  | {
+      type: 'turn/submitted'
+      turnId: string
+      versionId: string
+      messageId: string
+      text: string
+      authorId: string
+    }
+  | { type: 'response/started'; turnId: string; messageId: string }
+  | { type: 'part/added'; messageId: string; part: MessagePart }
+  | { type: 'part/delta'; messageId: string; partId: string; delta: string }
+  | {
+      type: 'tool/settled'
+      messageId: string
+      partId: string
+      status: ToolStatus
+      detail: string
+    }
+  | {
+      type: 'response/settled'
+      messageId: string
+      status: MessageStatus
+      reason: string | null
+    }
+  | { type: 'service/changed'; status: ServiceStatus; message: string | null }
+  | { type: 'service/dismissed' }
+  | { type: 'usage/changed'; patch: Partial<UsageState> }
+  | { type: 'restore/entered'; turnId: string }
+  | { type: 'restore/exited' }
+
+export interface LoggedEvent {
+  readonly seq: number
+  readonly at: number
+  readonly event: LucetEvent
+}
+
+/**
+ * A one-line, non-technical description of an event.
+ *
+ * The inspector shows this above the raw payload, on the same progressive
+ * disclosure principle the Audit Trail uses: legible at the top, exact
+ * underneath.
+ */
+export function describeEvent(event: LucetEvent): string {
+  switch (event.type) {
+    case 'thread/reset':
+      return 'Thread reset'
+    case 'composer/changed':
+      return 'Composer text changed'
+    case 'composer/queued':
+      return 'Next prompt queued while locked'
+    case 'composer/locked':
+      return `Composer locked by ${event.by}`
+    case 'composer/unlocked':
+      return 'Composer unlocked'
+    case 'turn/submitted':
+      return `Turn submitted by ${event.authorId}`
+    case 'response/started':
+      return 'Response started'
+    case 'part/added':
+      return `Added ${event.part.kind} part`
+    case 'part/delta':
+      return 'Streamed a chunk'
+    case 'tool/settled':
+      return `Tool ${event.status}`
+    case 'response/settled':
+      return `Response ${event.status}`
+    case 'service/changed':
+      return `Service ${event.status}`
+    case 'service/dismissed':
+      return 'Service notice dismissed'
+    case 'usage/changed':
+      return 'Usage updated'
+    case 'restore/entered':
+      return 'Viewing a restored state'
+    case 'restore/exited':
+      return 'Returned to latest'
+  }
+}

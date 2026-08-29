@@ -1,0 +1,30 @@
+{
+  "name": "lucet-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "AI interface patterns for what comes next.",
+  "license": "MIT",
+  "author": "Ian Larson",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run build --workspace lucet && npm run build --workspace lucet-react && npm run dev --workspace @lucet/docs",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "clean": "rm -rf packages/*/dist apps/*/dist **/*.tsbuildinfo",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "npm run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
