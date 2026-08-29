@@ -10,35 +10,41 @@ import { useEffect } from 'react'
  */
 
 export const ACCENTS = [
-  'slate', 'blue', 'indigo', 'violet', 'magenta',
+  'gray', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',
 ] as const
 
+/** The grey itself. Pure by default; the rest exist to harmonise with an accent. */
+export const NEUTRALS = ['pure', 'cool', 'warm', 'accent'] as const
+
 export type Theme = 'system' | 'light' | 'dark'
 export type Accent = (typeof ACCENTS)[number]
+export type Neutral = (typeof NEUTRALS)[number]
 export type Expression = 'system' | 'expressive'
 
 export interface ThemeState {
   theme: Theme
   accent: Accent
+  neutral: Neutral
   expression: Expression
 }
 
-export function useApplyTheme({ theme, accent, expression }: ThemeState): void {
+export function useApplyTheme({ theme, accent, neutral, expression }: ThemeState): void {
   useEffect(() => {
     const root = document.documentElement
     if (theme === 'system') root.removeAttribute('data-theme')
     else root.setAttribute('data-theme', theme)
     root.setAttribute('data-accent', accent)
+    root.setAttribute('data-neutral', neutral)
     root.setAttribute('data-expression', expression)
-  }, [theme, accent, expression])
+  }, [theme, accent, neutral, expression])
 }
 
 export interface ThemeControlsProps extends ThemeState {
   onChange: (next: Partial<ThemeState>) => void
 }
 
-export function ThemeControls({ theme, accent, expression, onChange }: ThemeControlsProps) {
+export function ThemeControls({ theme, accent, neutral, expression, onChange }: ThemeControlsProps) {
   return (
     <>
       <label>
@@ -55,6 +61,19 @@ export function ThemeControls({ theme, accent, expression, onChange }: ThemeCont
           {ACCENTS.map((a) => (
             <option key={a} value={a}>
               {a}
+            </option>
+          ))}
+        </select>
+      </label>{' '}
+      <label>
+        Grey{' '}
+        <select
+          value={neutral}
+          onChange={(e) => onChange({ neutral: e.target.value as Neutral })}
+        >
+          {NEUTRALS.map((n) => (
+            <option key={n} value={n}>
+              {n}
             </option>
           ))}
         </select>

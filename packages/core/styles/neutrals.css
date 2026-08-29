@@ -1,0 +1,35 @@
+/**
+ * Neutral options.
+ *
+ * A pure neutral is right on its own and slightly wrong beside a saturated
+ * accent: the greys read as dirty because the eye compares them to the colour
+ * next to them. Radix solves this by shipping six greys and telling you which
+ * to pair with which accent. Same idea, one number.
+ *
+ * The default is genuinely 0 chroma, because the default accent is greyscale
+ * too and there is nothing to harmonise with.
+ *
+ * Set with `data-neutral`, usually on <html>.
+ */
+
+:root,
+[data-neutral='pure'] {
+  --lucet-neutral-c: 0;
+}
+
+/* Barely there. Enough to stop large light surfaces reading as flat card. */
+[data-neutral='cool'] {
+  --lucet-neutral-h: 250;
+  --lucet-neutral-c: 0.006;
+}
+
+[data-neutral='warm'] {
+  --lucet-neutral-h: 70;
+  --lucet-neutral-c: 0.006;
+}
+
+/* Follows whatever accent is active, the way Radix pairs a grey to a hue. */
+[data-neutral='accent'] {
+  --lucet-neutral-h: var(--lucet-accent-h);
+  --lucet-neutral-c: 0.008;
+}

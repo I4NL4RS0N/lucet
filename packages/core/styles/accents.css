@@ -15,7 +15,26 @@
  * Set with `data-accent`, usually on <html>.
  */
 
+/*
+ * THE DEFAULT IS GREYSCALE, ON PURPOSE.
+ *
+ * These components are a guest in somebody else's product. Shipping with a
+ * brand colour is making a claim on their behalf, so the default makes none:
+ * step 9 is a neutral solid and the focus ring earns its salience through
+ * lightness contrast rather than hue.
+ *
+ * That also states what the accents are actually for. They are not decoration
+ * on our default look, they are the hook a host app uses to push its own brand
+ * through the library.
+ */
 :root,
+[data-accent='gray'] {
+  --lucet-accent-h: 250;
+  --lucet-accent-c: 0;
+  --lucet-accent-on-solid: oklch(0.99 0 0);
+}
+
+/* Nearly grey, with just enough cast to read as deliberate. */
 [data-accent='slate'] {
   --lucet-accent-h: 250;
   --lucet-accent-c: 0.03;

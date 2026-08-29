@@ -14,21 +14,32 @@
  */
 
 :root {
-  /* Neutral ramp. Light-to-dark, and the only greyscale in the system. */
+  /*
+   * Neutral ramp. Light-to-dark, and the only greyscale in the system.
+   *
+   * Tintable. A pure neutral is correct on its own but looks dead beside a
+   * saturated accent, which is why Radix ships six greys rather than one. The
+   * default here is genuinely 0 chroma; see neutrals.css for the alternatives.
+   *
+   * The two ends stay pure: a tint at absolute white or black is meaningless.
+   */
+  --lucet-neutral-h: 250;
+  --lucet-neutral-c: 0;
+
   --lucet-neutral-0: oklch(1 0 0);
-  --lucet-neutral-50: oklch(0.985 0 0);
-  --lucet-neutral-100: oklch(0.97 0 0);
-  --lucet-neutral-150: oklch(0.945 0 0);
-  --lucet-neutral-200: oklch(0.922 0 0);
-  --lucet-neutral-300: oklch(0.87 0 0);
-  --lucet-neutral-400: oklch(0.708 0 0);
-  --lucet-neutral-500: oklch(0.556 0 0);
-  --lucet-neutral-600: oklch(0.44 0 0);
-  --lucet-neutral-700: oklch(0.371 0 0);
-  --lucet-neutral-800: oklch(0.269 0 0);
-  --lucet-neutral-850: oklch(0.235 0 0);
-  --lucet-neutral-900: oklch(0.205 0 0);
-  --lucet-neutral-950: oklch(0.145 0 0);
+  --lucet-neutral-50: oklch(0.985 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-100: oklch(0.97 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-150: oklch(0.945 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-200: oklch(0.922 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-300: oklch(0.87 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-400: oklch(0.708 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-500: oklch(0.556 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-600: oklch(0.44 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-700: oklch(0.371 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-800: oklch(0.269 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-850: oklch(0.235 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-900: oklch(0.205 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-neutral-950: oklch(0.145 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-1000: oklch(0 0 0);
 
   /*

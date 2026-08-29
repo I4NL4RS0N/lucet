@@ -10,7 +10,8 @@
  *   semantic     the shadcn interop surface. Components read these.
  *   tones        five tones, and the state map. Lucet's own layer.
  *   accent-scale twelve generated steps, from a shared chroma curve.
- *   accents      ten accents. Two numbers each, or a curve variant.
+ *   neutrals     the grey itself. Pure by default, tintable.
+ *   accents      eleven accents. Greyscale is the default.
  *   expression   System and Expressive, the density axis.
  *
  * Import once, at the root of the host application:
@@ -30,5 +31,6 @@
 @import './semantic.css';
 @import './tones.css';
 @import './accent-scale.css';
+@import './neutrals.css';
 @import './accents.css';
 @import './expression.css';

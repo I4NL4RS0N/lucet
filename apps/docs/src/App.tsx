@@ -37,7 +37,8 @@ export function App() {
   const [mode, setMode] = useState<Mode>('full')
   const [themeState, setThemeState] = useState<ThemeState>({
     theme: 'system',
-    accent: 'slate',
+    accent: 'gray',
+    neutral: 'pure',
     expression: 'system',
   })
   const booted = useRef(false)
