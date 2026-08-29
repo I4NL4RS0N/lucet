@@ -9,20 +9,27 @@
  * Nothing in here is a design decision. Layout and scroll containment only.
  */
 
+/* Flex column rather than a hardcoded header height, which overlapped as soon
+   as the header grew a second row of controls. */
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 header {
   padding: 1rem;
   border-bottom: 1px solid;
+  flex: none;
 }
 
 main {
   display: grid;
   grid-template-columns: 20rem minmax(0, 1fr) 22rem;
-  height: calc(100vh - 8rem);
+  flex: 1;
+  min-height: 0;
 }
 
 main > * {
