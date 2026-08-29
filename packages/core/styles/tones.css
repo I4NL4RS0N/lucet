@@ -12,8 +12,10 @@
  */
 
 :root {
+  /* Genuinely zero. The default look is greyscale, so a trace of blue in the
+     "neutral" tone made refusals read as faintly informational. */
   --lucet-tone-neutral-h: 250;
-  --lucet-tone-neutral-c: 0.01;
+  --lucet-tone-neutral-c: 0;
   --lucet-tone-info-h: 240;
   --lucet-tone-info-c: 0.09;
   --lucet-tone-caution-h: 75;
@@ -25,23 +27,35 @@
   --lucet-tone-unknown-h: 300;
   --lucet-tone-unknown-c: 0.05;
 
-  --lucet-tone-neutral-surface: oklch(0.97 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
-  --lucet-tone-neutral-foreground: oklch(0.35 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+/*
+   * SURFACE CHROMA IS NOT THE TONE CHROMA.
+   *
+   * A filled surface covers far more area than the text on it, and the eye
+   * weights yellow harder than red at equal chroma. Reusing one chroma for both
+   * made the amber caution block shout louder than the red danger block, which
+   * inverts the severity the tones exist to express.
+   *
+   * So each tone scales its surface separately, and caution is cut hardest.
+   * Danger earns its weight from a darker border rather than a louder fill,
+   * which reads as serious instead of merely bright.
+   */
+  --lucet-tone-neutral-surface: oklch(0.968 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-foreground: oklch(0.38 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
   --lucet-tone-neutral-border: oklch(0.9 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-  --lucet-tone-info-surface: oklch(0.96 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-surface: oklch(0.962 calc(var(--lucet-tone-info-c) * 0.75) var(--lucet-tone-info-h));
   --lucet-tone-info-foreground: oklch(0.42 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
-  --lucet-tone-info-border: oklch(0.88 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-border: oklch(0.88 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
-  --lucet-tone-caution-surface: oklch(0.96 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
-  --lucet-tone-caution-foreground: oklch(0.42 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
-  --lucet-tone-caution-border: oklch(0.87 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-surface: oklch(0.965 calc(var(--lucet-tone-caution-c) * 0.45) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-foreground: oklch(0.4 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-border: oklch(0.87 calc(var(--lucet-tone-caution-c) * 0.75) var(--lucet-tone-caution-h));
 
-  --lucet-tone-danger-surface: oklch(0.96 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-surface: oklch(0.955 calc(var(--lucet-tone-danger-c) * 0.85) var(--lucet-tone-danger-h));
   --lucet-tone-danger-foreground: oklch(0.45 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
-  --lucet-tone-danger-border: oklch(0.87 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-border: oklch(0.8 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
 
-  --lucet-tone-unknown-surface: oklch(0.96 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-surface: oklch(0.962 calc(var(--lucet-tone-unknown-c) * 0.85) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-foreground: oklch(0.44 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-border: oklch(0.89 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
 
@@ -111,22 +125,22 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --lucet-tone-neutral-surface: oklch(0.26 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
-    --lucet-tone-neutral-foreground: oklch(0.85 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+    --lucet-tone-neutral-foreground: oklch(0.86 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
     --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-    --lucet-tone-info-surface: oklch(0.27 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+    --lucet-tone-info-surface: oklch(0.27 calc(var(--lucet-tone-info-c) * 0.8) var(--lucet-tone-info-h));
     --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
-    --lucet-tone-info-border: oklch(0.36 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+    --lucet-tone-info-border: oklch(0.36 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
-    --lucet-tone-caution-surface: oklch(0.27 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+    --lucet-tone-caution-surface: oklch(0.265 calc(var(--lucet-tone-caution-c) * 0.5) var(--lucet-tone-caution-h));
     --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
-    --lucet-tone-caution-border: oklch(0.36 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+    --lucet-tone-caution-border: oklch(0.35 calc(var(--lucet-tone-caution-c) * 0.7) var(--lucet-tone-caution-h));
 
-    --lucet-tone-danger-surface: oklch(0.27 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
-    --lucet-tone-danger-foreground: oklch(0.85 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
-    --lucet-tone-danger-border: oklch(0.37 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+    --lucet-tone-danger-surface: oklch(0.28 calc(var(--lucet-tone-danger-c) * 0.95) var(--lucet-tone-danger-h));
+    --lucet-tone-danger-foreground: oklch(0.86 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+    --lucet-tone-danger-border: oklch(0.44 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
 
-    --lucet-tone-unknown-surface: oklch(0.27 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+    --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));
     --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
     --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
   }
@@ -134,22 +148,22 @@
 
 :root[data-theme='dark'] {
   --lucet-tone-neutral-surface: oklch(0.26 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
-  --lucet-tone-neutral-foreground: oklch(0.85 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-foreground: oklch(0.86 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
   --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-  --lucet-tone-info-surface: oklch(0.27 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-surface: oklch(0.27 calc(var(--lucet-tone-info-c) * 0.8) var(--lucet-tone-info-h));
   --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
-  --lucet-tone-info-border: oklch(0.36 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-border: oklch(0.36 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
-  --lucet-tone-caution-surface: oklch(0.27 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-surface: oklch(0.265 calc(var(--lucet-tone-caution-c) * 0.5) var(--lucet-tone-caution-h));
   --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
-  --lucet-tone-caution-border: oklch(0.36 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-border: oklch(0.35 calc(var(--lucet-tone-caution-c) * 0.7) var(--lucet-tone-caution-h));
 
-  --lucet-tone-danger-surface: oklch(0.27 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
-  --lucet-tone-danger-foreground: oklch(0.85 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
-  --lucet-tone-danger-border: oklch(0.37 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-surface: oklch(0.28 calc(var(--lucet-tone-danger-c) * 0.95) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-foreground: oklch(0.86 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-border: oklch(0.44 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
 
-  --lucet-tone-unknown-surface: oklch(0.27 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
 }
