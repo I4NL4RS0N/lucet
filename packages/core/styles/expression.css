@@ -18,9 +18,9 @@
  * --------------------------------------------------------------- */
 :root,
 :root[data-expression='system'] {
-  --lucet-space-unit: 0.25rem;
-  --lucet-radius-root: var(--radius, 0.375rem);
-  --lucet-radius-container: var(--lucet-radius-lg);
+  --lucet-space-base: 0.25rem;
+  --lucet-radius-base: 0.375rem;
+  --lucet-radius-container-base: var(--lucet-radius-lg);
 
   --lucet-leading-prose: 1.55;
 
@@ -51,11 +51,11 @@
  * months and would date the whole project.
  * --------------------------------------------------------------- */
 :root[data-expression='expressive'] {
-  --lucet-space-unit: 0.3125rem;
-  --lucet-radius-root: var(--radius, 0.875rem);
+  --lucet-space-base: 0.3125rem;
+  --lucet-radius-base: 0.875rem;
   /* Containers go near-pill. Controls inside stay rectangular, or the whole
      thing turns into a bag of lozenges. */
-  --lucet-radius-container: var(--lucet-radius-full);
+  --lucet-radius-container-base: var(--lucet-radius-full);
 
   --lucet-leading-prose: 1.7;
 

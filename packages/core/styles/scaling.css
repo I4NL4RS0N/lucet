@@ -1,0 +1,18 @@
+/**
+ * Scaling.
+ *
+ * One multiplier over spacing and type together, because scaling only type
+ * makes text float in unchanged whitespace, and scaling only spacing makes a
+ * dense interface with big gaps. They move as a pair or not at all.
+ *
+ * The range is deliberately narrow. Beyond roughly ±10% the proportions stop
+ * being the same design, and the honest answer is a different type scale.
+ *
+ * Set with `data-scale`, usually on <html>.
+ */
+
+[data-scale='90'] { --lucet-scale: 0.9; }
+[data-scale='95'] { --lucet-scale: 0.95; }
+[data-scale='100'] { --lucet-scale: 1; }
+[data-scale='105'] { --lucet-scale: 1.05; }
+[data-scale='110'] { --lucet-scale: 1.1; }

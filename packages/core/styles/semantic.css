@@ -67,8 +67,7 @@
   --lucet-input: var(--input, var(--lucet-default-input));
   --lucet-ring: var(--ring, var(--lucet-default-ring));
 
-  /* Radius follows the host's --radius when it sets one. */
-  --lucet-radius-root: var(--radius, 0.5rem);
+  /* Radius interop lives in primitives.css, in the three-tier chain. */
 }
 
 /* Dark. Only the defaults move; the interop indirection is unchanged. */

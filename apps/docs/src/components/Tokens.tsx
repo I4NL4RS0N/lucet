@@ -74,8 +74,8 @@ export interface TokensProps extends ThemeState {
   onChange: (next: Partial<ThemeState>) => void
 }
 
-export function Tokens({ theme, accent, neutral, expression, onChange }: TokensProps) {
-  const signal = `${theme}:${accent}:${neutral}:${expression}`
+export function Tokens({ theme, accent, neutral, expression, radius, scale, onChange }: TokensProps) {
+  const signal = `${theme}:${accent}:${neutral}:${expression}:${radius}:${scale}`
   const v = useResolved(ALL_NAMES, signal)
 
   return (

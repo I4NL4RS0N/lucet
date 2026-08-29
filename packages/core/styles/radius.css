@@ -1,0 +1,34 @@
+/**
+ * Radius, as a global choice.
+ *
+ * Same idea as Radix Themes: the reader should be able to slide the whole
+ * system's geometry without touching a component. Sets an override, so it wins
+ * over both the expression default and a shadcn host's --radius, and reverts
+ * cleanly when unset.
+ *
+ * Set with `data-radius`, usually on <html>.
+ */
+
+[data-radius='none'] {
+  --lucet-radius-override: 0px;
+  /* Square means square. A pill container here would be incoherent. */
+  --lucet-radius-container-override: 0px;
+}
+
+[data-radius='small'] {
+  --lucet-radius-override: 0.25rem;
+  --lucet-radius-container-override: var(--lucet-radius-xl);
+}
+
+[data-radius='medium'] {
+  --lucet-radius-override: 0.5rem;
+}
+
+[data-radius='large'] {
+  --lucet-radius-override: 0.875rem;
+}
+
+[data-radius='full'] {
+  --lucet-radius-override: 1.25rem;
+  --lucet-radius-container-override: var(--lucet-radius-full);
+}

@@ -46,7 +46,17 @@
    * Spacing derives from one unit so density is a single knob rather than
    * forty edits. The expression layer changes the unit, not the scale.
    */
-  --lucet-space-unit: 0.25rem;
+  /*
+   * Scaling. One multiplier over spacing and type, the way Radix Themes does
+   * it, so density is a knob rather than forty edits.
+   *
+   * It multiplies the BASE, which the expression axis owns. That keeps the two
+   * independent: expression decides the rhythm, scaling decides how big the
+   * whole thing is.
+   */
+  --lucet-scale: 1;
+  --lucet-space-base: 0.25rem;
+  --lucet-space-unit: calc(var(--lucet-space-base) * var(--lucet-scale));
   --lucet-space-0: 0;
   --lucet-space-1: calc(var(--lucet-space-unit) * 1);
   --lucet-space-2: calc(var(--lucet-space-unit) * 2);
@@ -61,12 +71,12 @@
   --lucet-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --lucet-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
-  --lucet-text-xs: 0.75rem;
-  --lucet-text-sm: 0.875rem;
-  --lucet-text-base: 1rem;
-  --lucet-text-lg: 1.125rem;
-  --lucet-text-xl: 1.375rem;
-  --lucet-text-2xl: 1.75rem;
+  --lucet-text-xs: calc(0.75rem * var(--lucet-scale));
+  --lucet-text-sm: calc(0.875rem * var(--lucet-scale));
+  --lucet-text-base: calc(1rem * var(--lucet-scale));
+  --lucet-text-lg: calc(1.125rem * var(--lucet-scale));
+  --lucet-text-xl: calc(1.375rem * var(--lucet-scale));
+  --lucet-text-2xl: calc(1.75rem * var(--lucet-scale));
 
   --lucet-leading-tight: 1.25;
   --lucet-leading-normal: 1.5;
@@ -77,13 +87,26 @@
   --lucet-tracking-normal: 0;
   --lucet-tracking-wide: 0.02em;
 
-  /* Radius derives from one root, so shadcn's --radius can drive all of it. */
-  --lucet-radius-root: 0.5rem;
-  --lucet-radius-sm: calc(var(--lucet-radius-root) - 4px);
-  --lucet-radius-md: calc(var(--lucet-radius-root) - 2px);
+  /*
+   * Radius resolves in three tiers, highest priority first:
+   *
+   *   --lucet-radius-override   an explicit choice (data-radius)
+   *   --radius                  the shadcn host's value, if there is one
+   *   --lucet-radius-base       the expression default
+   *
+   * Indirection rather than specificity, so no layer has to out-select
+   * another and the order of the files stops mattering.
+   */
+  --lucet-radius-base: 0.5rem;
+  --lucet-radius-root: var(--lucet-radius-override, var(--radius, var(--lucet-radius-base)));
+
+  /* max() because a root of 0 would otherwise make the small steps negative. */
+  --lucet-radius-sm: max(0px, calc(var(--lucet-radius-root) - 4px));
+  --lucet-radius-md: max(0px, calc(var(--lucet-radius-root) - 2px));
   --lucet-radius-lg: var(--lucet-radius-root);
   --lucet-radius-xl: calc(var(--lucet-radius-root) + 4px);
   --lucet-radius-full: 9999px;
+  --lucet-radius-container: var(--lucet-radius-container-override, var(--lucet-radius-container-base, var(--lucet-radius-xl)));
 
   /* Motion. Overridden wholesale under reduced motion, see the bottom. */
   --lucet-duration-instant: 0ms;

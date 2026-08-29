@@ -17,9 +17,17 @@ export const ACCENTS = [
 /** The grey itself. Pure by default; the rest exist to harmonise with an accent. */
 export const NEUTRALS = ['pure', 'cool', 'warm', 'accent'] as const
 
+/** Global geometry. Overrides the expression default and a host's --radius. */
+export const RADII = ['none', 'small', 'medium', 'large', 'full'] as const
+
+/** One multiplier over spacing and type. Narrow on purpose. */
+export const SCALES = ['90', '95', '100', '105', '110'] as const
+
 export type Theme = 'system' | 'light' | 'dark'
 export type Accent = (typeof ACCENTS)[number]
 export type Neutral = (typeof NEUTRALS)[number]
+export type Radius = (typeof RADII)[number]
+export type Scale = (typeof SCALES)[number]
 export type Expression = 'system' | 'expressive'
 
 export interface ThemeState {
@@ -27,9 +35,18 @@ export interface ThemeState {
   accent: Accent
   neutral: Neutral
   expression: Expression
+  radius: Radius
+  scale: Scale
 }
 
-export function useApplyTheme({ theme, accent, neutral, expression }: ThemeState): void {
+export function useApplyTheme({
+  theme,
+  accent,
+  neutral,
+  expression,
+  radius,
+  scale,
+}: ThemeState): void {
   useEffect(() => {
     const root = document.documentElement
     if (theme === 'system') root.removeAttribute('data-theme')
@@ -37,57 +54,87 @@ export function useApplyTheme({ theme, accent, neutral, expression }: ThemeState
     root.setAttribute('data-accent', accent)
     root.setAttribute('data-neutral', neutral)
     root.setAttribute('data-expression', expression)
-  }, [theme, accent, neutral, expression])
+    root.setAttribute('data-radius', radius)
+    root.setAttribute('data-scale', scale)
+  }, [theme, accent, neutral, expression, radius, scale])
 }
 
 export interface ThemeControlsProps extends ThemeState {
   onChange: (next: Partial<ThemeState>) => void
 }
 
-export function ThemeControls({ theme, accent, neutral, expression, onChange }: ThemeControlsProps) {
+function Select<T extends string>({
+  name,
+  value,
+  options,
+  onSelect,
+}: {
+  name: string
+  value: T
+  options: readonly T[]
+  onSelect: (value: T) => void
+}) {
+  return (
+    <label>
+      {name}{' '}
+      <select value={value} onChange={(e) => onSelect(e.target.value as T)}>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+export function ThemeControls({
+  theme,
+  accent,
+  neutral,
+  expression,
+  radius,
+  scale,
+  onChange,
+}: ThemeControlsProps) {
   return (
     <>
-      <label>
-        Theme{' '}
-        <select value={theme} onChange={(e) => onChange({ theme: e.target.value as Theme })}>
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </label>{' '}
-      <label>
-        Accent{' '}
-        <select value={accent} onChange={(e) => onChange({ accent: e.target.value as Accent })}>
-          {ACCENTS.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>
-      </label>{' '}
-      <label>
-        Grey{' '}
-        <select
-          value={neutral}
-          onChange={(e) => onChange({ neutral: e.target.value as Neutral })}
-        >
-          {NEUTRALS.map((n) => (
-            <option key={n} value={n}>
-              {n}
-            </option>
-          ))}
-        </select>
-      </label>{' '}
-      <label>
-        Expression{' '}
-        <select
-          value={expression}
-          onChange={(e) => onChange({ expression: e.target.value as Expression })}
-        >
-          <option value="system">System</option>
-          <option value="expressive">Expressive</option>
-        </select>
-      </label>
+      <Select
+        name="Theme"
+        value={theme}
+        options={['system', 'light', 'dark'] as const}
+        onSelect={(v) => onChange({ theme: v })}
+      />{' '}
+      <Select
+        name="Accent"
+        value={accent}
+        options={ACCENTS}
+        onSelect={(v) => onChange({ accent: v })}
+      />{' '}
+      <Select
+        name="Grey"
+        value={neutral}
+        options={NEUTRALS}
+        onSelect={(v) => onChange({ neutral: v })}
+      />{' '}
+      <Select
+        name="Expression"
+        value={expression}
+        options={['system', 'expressive'] as const}
+        onSelect={(v) => onChange({ expression: v })}
+      />{' '}
+      <Select
+        name="Radius"
+        value={radius}
+        options={RADII}
+        onSelect={(v) => onChange({ radius: v })}
+      />{' '}
+      <Select
+        name="Scale"
+        value={scale}
+        options={SCALES}
+        onSelect={(v) => onChange({ scale: v })}
+      />
     </>
   )
 }

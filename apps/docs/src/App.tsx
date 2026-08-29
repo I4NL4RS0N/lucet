@@ -42,6 +42,8 @@ export function App() {
     accent: 'gray',
     neutral: 'pure',
     expression: 'system',
+    radius: 'medium',
+    scale: '100',
   })
   const booted = useRef(false)
 
