@@ -90,7 +90,8 @@ export function App() {
       {mode === 'tokens' ? (
         <main data-mode="tokens">
           <Tokens
-            signal={`${themeState.theme}:${themeState.accent}:${themeState.expression}`}
+            {...themeState}
+            onChange={(next) => setThemeState((prev) => ({ ...prev, ...next }))}
           />
         </main>
       ) : (
