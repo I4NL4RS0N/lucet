@@ -302,8 +302,7 @@
 .lucet-notice {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--lucet-space-2);
   margin: 0 0 var(--lucet-space-3);
   padding: var(--lucet-space-3);
@@ -466,4 +465,43 @@
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
   border-radius: var(--lucet-radius-full);
   padding-inline: var(--lucet-space-3);
+}
+
+/* ============================================================
+ * State icons
+ *
+ * Shape carries the meaning independently of colour, so the icon inherits the
+ * state's foreground and needs no rules of its own beyond alignment.
+ * ============================================================ */
+
+.lucet-icon {
+  flex: none;
+  /* Optical alignment to the cap height of the label beside it, not the box. */
+  margin-top: 0.1em;
+}
+
+/* The icon sits outside the text column so wrapped lines stay aligned to each
+   other rather than to the glyph. */
+.lucet-notice__body {
+  flex: 1 1 20ch;
+}
+
+.lucet-tool__head { align-items: center; }
+
+.lucet-tool[data-status='running'] .lucet-icon {
+  animation: lucet-spin 1.1s linear infinite;
+}
+
+@keyframes lucet-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-tool[data-status='running'] .lucet-icon { animation: none; }
+}
+
+.lucet-notice[data-state='operational'] {
+  background: var(--lucet-state-operational-surface);
+  border-color: var(--lucet-state-operational-border);
+  color: var(--lucet-state-operational-foreground);
 }

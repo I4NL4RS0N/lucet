@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { StateIcon } from './StateIcon'
+import type { IconName } from './StateIcon'
 
 /**
  * The notice that carries an unhappy state.
@@ -13,6 +15,7 @@ import type { ReactNode } from 'react'
  */
 
 export type NoticeState =
+  | 'operational'
   | 'refused'
   | 'interrupted'
   | 'partial'
@@ -23,6 +26,30 @@ export type NoticeState =
   | 'stale'
   | 'uncertain'
   | 'queued'
+
+/**
+ * Status-page vocabulary, borrowed on purpose: green operational, yellow
+ * degraded, red down, blue scheduled. People already read it correctly, so
+ * adopting it is free comprehension.
+ *
+ * Green stops here and does not enter the thread. On a status page "everything
+ * is fine" is what you came to check; in a conversation the answer is already
+ * the success signal, and a green chip on every response trains people to stop
+ * reading chips.
+ */
+const ICON: Record<NoticeState, IconName> = {
+  operational: 'operational',
+  refused: 'refused',
+  interrupted: 'interrupted',
+  partial: 'partial',
+  degraded: 'degraded',
+  down: 'down',
+  failed: 'failed',
+  'rate-limited': 'rate-limited',
+  stale: 'stale',
+  uncertain: 'uncertain',
+  queued: 'scheduled',
+}
 
 export interface StateNoticeProps {
   state: NoticeState
@@ -37,6 +64,7 @@ export interface StateNoticeProps {
 export function StateNotice({ state, label, children, action, onDismiss }: StateNoticeProps) {
   return (
     <div className="lucet-notice" data-state={state} role="status">
+      <StateIcon name={ICON[state]} />
       <p className="lucet-notice__body">
         <strong className="lucet-notice__label">{label}</strong>
         {children ? <span className="lucet-notice__text">{children}</span> : null}

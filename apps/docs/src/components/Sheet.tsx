@@ -28,6 +28,7 @@ function msg(
 const text = (t: string): MessagePart => ({ kind: 'text', id: `t${seq++}`, text: t })
 
 const NOTICES: readonly { state: NoticeState; label: string; body: string }[] = [
+  { state: 'operational', label: 'All services operational.', body: 'The only green in the system, and it never appears inside the thread.' },
   { state: 'refused', label: 'Declined.', body: 'I cannot make a buy or sell recommendation. I can lay the three side by side on spread, duration, and rating history.' },
   { state: 'interrupted', label: 'Stopped.', body: 'You stopped this before it finished. What arrived is still here.' },
   { state: 'partial', label: 'Incomplete.', body: 'Two of three sources returned. This is not the full picture.' },

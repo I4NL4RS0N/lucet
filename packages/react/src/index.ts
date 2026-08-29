@@ -22,6 +22,8 @@ export { Reasoning } from './components/Reasoning.js'
 export type { ReasoningProps } from './components/Reasoning.js'
 export { StateNotice } from './components/StateNotice.js'
 export type { StateNoticeProps, NoticeState } from './components/StateNotice.js'
+export { StateIcon } from './components/StateIcon.js'
+export type { StateIconProps, IconName } from './components/StateIcon.js'
 export { ToolCall } from './components/ToolCall.js'
 export type { ToolCallProps } from './components/ToolCall.js'
 

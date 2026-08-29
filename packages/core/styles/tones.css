@@ -26,6 +26,15 @@
      as one. Low chroma, off-hue: present, unalarming. */
   --lucet-tone-unknown-h: 300;
   --lucet-tone-unknown-c: 0.05;
+  /*
+   * Success. Deliberately the last tone added and the most narrowly scoped.
+   * Service Status uses it because "everything is fine" is the thing you came
+   * to check. Nothing in the thread uses it: the answer is already the success
+   * signal, and a green chip on every response teaches people to stop reading
+   * chips at all.
+   */
+  --lucet-tone-success-h: 155;
+  --lucet-tone-success-c: 0.12;
 
 /*
    * SURFACE CHROMA IS NOT THE TONE CHROMA.
@@ -43,7 +52,7 @@
   --lucet-tone-neutral-foreground: oklch(0.38 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
   --lucet-tone-neutral-border: oklch(0.9 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-  --lucet-tone-info-surface: oklch(0.962 calc(var(--lucet-tone-info-c) * 0.75) var(--lucet-tone-info-h));
+  --lucet-tone-info-surface: oklch(0.965 calc(var(--lucet-tone-info-c) * 0.45) var(--lucet-tone-info-h));
   --lucet-tone-info-foreground: oklch(0.42 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
   --lucet-tone-info-border: oklch(0.88 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
@@ -58,6 +67,14 @@
   --lucet-tone-unknown-surface: oklch(0.962 calc(var(--lucet-tone-unknown-c) * 0.85) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-foreground: oklch(0.44 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-border: oklch(0.89 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+
+  --lucet-tone-success-surface: oklch(0.962 calc(var(--lucet-tone-success-c) * 0.5) var(--lucet-tone-success-h));
+  --lucet-tone-success-foreground: oklch(0.44 var(--lucet-tone-success-c) var(--lucet-tone-success-h));
+  --lucet-tone-success-border: oklch(0.87 calc(var(--lucet-tone-success-c) * 0.75) var(--lucet-tone-success-h));
+
+  --lucet-state-operational-surface: var(--lucet-tone-success-surface);
+  --lucet-state-operational-foreground: var(--lucet-tone-success-foreground);
+  --lucet-state-operational-border: var(--lucet-tone-success-border);
 
   /*
    * THE STATE MAP. Each line is a design decision, not a colour choice.
@@ -128,7 +145,7 @@
     --lucet-tone-neutral-foreground: oklch(0.86 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
     --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-    --lucet-tone-info-surface: oklch(0.27 calc(var(--lucet-tone-info-c) * 0.8) var(--lucet-tone-info-h));
+    --lucet-tone-info-surface: oklch(0.265 calc(var(--lucet-tone-info-c) * 0.55) var(--lucet-tone-info-h));
     --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
     --lucet-tone-info-border: oklch(0.36 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
@@ -143,6 +160,10 @@
     --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));
     --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
     --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+
+    --lucet-tone-success-surface: oklch(0.265 calc(var(--lucet-tone-success-c) * 0.5) var(--lucet-tone-success-h));
+    --lucet-tone-success-foreground: oklch(0.86 var(--lucet-tone-success-c) var(--lucet-tone-success-h));
+    --lucet-tone-success-border: oklch(0.35 calc(var(--lucet-tone-success-c) * 0.7) var(--lucet-tone-success-h));
   }
 }
 
@@ -151,7 +172,7 @@
   --lucet-tone-neutral-foreground: oklch(0.86 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
   --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
 
-  --lucet-tone-info-surface: oklch(0.27 calc(var(--lucet-tone-info-c) * 0.8) var(--lucet-tone-info-h));
+  --lucet-tone-info-surface: oklch(0.265 calc(var(--lucet-tone-info-c) * 0.55) var(--lucet-tone-info-h));
   --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
   --lucet-tone-info-border: oklch(0.36 calc(var(--lucet-tone-info-c) * 0.9) var(--lucet-tone-info-h));
 
@@ -166,4 +187,8 @@
   --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
   --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+
+  --lucet-tone-success-surface: oklch(0.265 calc(var(--lucet-tone-success-c) * 0.5) var(--lucet-tone-success-h));
+  --lucet-tone-success-foreground: oklch(0.86 var(--lucet-tone-success-c) var(--lucet-tone-success-h));
+  --lucet-tone-success-border: oklch(0.35 calc(var(--lucet-tone-success-c) * 0.7) var(--lucet-tone-success-h));
 }
