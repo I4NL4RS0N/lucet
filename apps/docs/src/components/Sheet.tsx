@@ -58,7 +58,7 @@ function Spec({ title, note, children }: { title: string; note: string; children
 }
 
 export function Sheet() {
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useState('Compare the two portfolios on duration risk')
 
   return (
     <section aria-label="Component sheet" className="sheet">

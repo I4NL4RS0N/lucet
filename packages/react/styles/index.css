@@ -129,6 +129,7 @@
   margin: 0 0 var(--lucet-space-3);
   line-height: var(--lucet-leading-prose);
   font-size: var(--lucet-text-base);
+  letter-spacing: var(--lucet-tracking-normal);
 }
 
 .lucet-message__text:last-child {
@@ -404,6 +405,11 @@
 
 .lucet-composer__field:focus { outline: none; }
 
+/* A field is recessed, not raised. The detail that sells the surface. */
+:root[data-expression='system'] .lucet-composer {
+  box-shadow: var(--lucet-shadow-inset-field);
+}
+
 .lucet-composer__field::placeholder { color: var(--lucet-muted-foreground); }
 
 .lucet-composer__bar {
@@ -429,4 +435,35 @@
 
 :root[data-expression='expressive'] .lucet-composer:focus-within {
   box-shadow: var(--lucet-elevation-3), var(--lucet-highlight);
+}
+
+/* ============================================================
+ * Expressive: the primary action earns the one gradient.
+ *
+ * Exactly one element gets it, and the glow is tied to the accent so a
+ * greyscale default stays greyscale. Restraint is the whole point: the
+ * reference sells its polish with depth and geometry, and the gradient is the
+ * part that would date it fastest if it were everywhere.
+ * ============================================================ */
+
+:root[data-expression='expressive'] .lucet-button[data-variant='primary'] {
+  background-image: var(--lucet-primary-gradient);
+  box-shadow: var(--lucet-primary-glow), var(--lucet-highlight);
+  border-radius: var(--lucet-radius-container);
+  padding-inline: var(--lucet-space-4);
+}
+
+:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+:root[data-expression='expressive'] .lucet-button[data-variant='primary']:disabled {
+  box-shadow: none;
+}
+
+/* Chips go pill in Expressive, the way the reference does. */
+:root[data-expression='expressive'] .lucet-button[data-variant='ghost'],
+:root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
+  border-radius: var(--lucet-radius-full);
+  padding-inline: var(--lucet-space-3);
 }

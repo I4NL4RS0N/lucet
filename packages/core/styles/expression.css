@@ -19,10 +19,11 @@
 :root,
 :root[data-expression='system'] {
   --lucet-space-base: 0.25rem;
-  --lucet-radius-base: 0.375rem;
+  /* 8px, the dominant radius in the reference. 6px falls out as the md step. */
+  --lucet-radius-base: 0.5rem;
   --lucet-radius-container-base: var(--lucet-radius-lg);
 
-  --lucet-leading-prose: 1.55;
+  --lucet-leading-prose: 1.6;
 
   --lucet-elevation-1: 0 0 0 1px var(--lucet-border);
   --lucet-elevation-2:
@@ -37,6 +38,8 @@
   --lucet-duration-slow: 240ms;
 
   --lucet-highlight: none;
+  --lucet-primary-gradient: none;
+  --lucet-primary-glow: none;
 }
 
 /* ---------------------------------------------------------------
@@ -51,8 +54,8 @@
  * months and would date the whole project.
  * --------------------------------------------------------------- */
 :root[data-expression='expressive'] {
-  --lucet-space-base: 0.3125rem;
-  --lucet-radius-base: 0.875rem;
+  --lucet-space-base: 0.34375rem;
+  --lucet-radius-base: 1.125rem;
   /* Containers go near-pill. Controls inside stay rectangular, or the whole
      thing turns into a bag of lozenges. */
   --lucet-radius-container-base: var(--lucet-radius-full);
@@ -76,6 +79,24 @@
 
   /* The lit top edge. One pixel, and it does more than any gradient would. */
   --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.5);
+
+  /*
+   * The one gradient, and the one glow.
+   *
+   * Reference direction wanted a vivid gradient CTA. Held to a single element
+   * and a narrow hue sweep: a gradient that travels far reads as 2021 and dates
+   * the whole piece, while a short one just reads as light falling on a
+   * surface. It sweeps within the accent rather than to a second colour, so it
+   * still works when the accent is greyscale, which is the default.
+   */
+  --lucet-primary-gradient: linear-gradient(
+    160deg,
+    oklch(from var(--lucet-primary) calc(l + 0.06) c calc(h - 12)),
+    var(--lucet-primary) 55%,
+    oklch(from var(--lucet-primary) calc(l - 0.05) c calc(h + 14))
+  );
+  --lucet-primary-glow: 0 6px 20px -6px
+    oklch(var(--lucet-al-9) calc(var(--lucet-accent-c) * 0.9) var(--lucet-accent-h) / 0.55);
 }
 
 @media (prefers-color-scheme: dark) {

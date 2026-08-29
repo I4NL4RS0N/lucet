@@ -15,7 +15,7 @@ export const ACCENTS = [
 ] as const
 
 /** The grey itself. Pure by default; the rest exist to harmonise with an accent. */
-export const NEUTRALS = ['pure', 'cool', 'warm', 'accent'] as const
+export const NEUTRALS = ['subtle', 'pure', 'cool', 'warm', 'accent'] as const
 
 /** Global geometry. Overrides the expression default and a host's --radius. */
 export const RADII = ['none', 'small', 'medium', 'large', 'full'] as const

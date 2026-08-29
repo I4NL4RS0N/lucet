@@ -40,7 +40,7 @@ export function App() {
   const [themeState, setThemeState] = useState<ThemeState>({
     theme: 'system',
     accent: 'gray',
-    neutral: 'pure',
+    neutral: 'subtle',
     expression: 'system',
     radius: 'medium',
     scale: '100',

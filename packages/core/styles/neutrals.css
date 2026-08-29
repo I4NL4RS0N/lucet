@@ -12,15 +12,33 @@
  * Set with `data-neutral`, usually on <html>.
  */
 
-:root,
+:root {
+  /*
+   * The default is a whisper of cool, not a pure neutral.
+   *
+   * Measured off Beautiful UI, whose greys carry about 0.004 chroma around hue
+   * 264. It still reads as greyscale; what it stops is the deadness that pure
+   * neutral gets across large light surfaces. `pure` is one click away for
+   * anyone who wants the absolute.
+   */
+  --lucet-neutral-h: 264;
+  --lucet-neutral-c: 0.004;
+}
+
+/* The :root default, named so it can be selected back explicitly. */
+[data-neutral='subtle'] {
+  --lucet-neutral-h: 264;
+  --lucet-neutral-c: 0.004;
+}
+
 [data-neutral='pure'] {
   --lucet-neutral-c: 0;
 }
 
 /* Barely there. Enough to stop large light surfaces reading as flat card. */
 [data-neutral='cool'] {
-  --lucet-neutral-h: 250;
-  --lucet-neutral-c: 0.006;
+  --lucet-neutral-h: 264;
+  --lucet-neutral-c: 0.008;
 }
 
 [data-neutral='warm'] {

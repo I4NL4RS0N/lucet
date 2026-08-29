@@ -71,22 +71,25 @@
   :root[data-expression='expressive']:not([data-theme='light']) {
     /* Lifted off black. A raised surface is LIGHTER than the ground, because
        that is how light works, and near-black grounds leave nowhere to go. */
-    --lucet-surface-ground: var(--lucet-neutral-850);
-    --lucet-surface-raised: var(--lucet-neutral-800);
-    --lucet-surface-overlay: var(--lucet-neutral-800);
-    --lucet-surface-sunken: var(--lucet-neutral-900);
-    --lucet-line: oklch(0.45 0 0 / 0.45);
+    /* Near-black ground, surfaces lifted clear of it. Deeper than System, not
+       lighter: the drama comes from the gap between ground and surface, not
+       from raising the floor. */
+    --lucet-surface-ground: oklch(0.12 0.004 264);
+    --lucet-surface-raised: var(--lucet-neutral-900);
+    --lucet-surface-overlay: var(--lucet-neutral-850);
+    --lucet-surface-sunken: oklch(0.09 0.004 264);
+    --lucet-line: oklch(0.42 0.006 264 / 0.4);
     --lucet-shadow-color: 0 0 0;
-    --lucet-shadow-alpha: 0.45;
+    --lucet-shadow-alpha: 0.6;
   }
 }
 
 :root[data-theme='dark'][data-expression='expressive'] {
-  --lucet-surface-ground: var(--lucet-neutral-850);
-  --lucet-surface-raised: var(--lucet-neutral-800);
-  --lucet-surface-overlay: var(--lucet-neutral-800);
-  --lucet-surface-sunken: var(--lucet-neutral-900);
-  --lucet-line: oklch(0.45 0 0 / 0.45);
+  --lucet-surface-ground: oklch(0.12 0.004 264);
+  --lucet-surface-raised: var(--lucet-neutral-900);
+  --lucet-surface-overlay: var(--lucet-neutral-850);
+  --lucet-surface-sunken: oklch(0.09 0.004 264);
+  --lucet-line: oklch(0.42 0.006 264 / 0.4);
   --lucet-shadow-color: 0 0 0;
-  --lucet-shadow-alpha: 0.45;
+  --lucet-shadow-alpha: 0.6;
 }

@@ -67,24 +67,37 @@
   --lucet-space-12: calc(var(--lucet-space-unit) * 12);
   --lucet-space-16: calc(var(--lucet-space-unit) * 16);
 
-  /* Type. A conversation is mostly prose, so the body step carries the weight. */
-  --lucet-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /*
+   * Type.
+   *
+   * Calibrated against Beautiful UI, which runs far denser than instinct
+   * suggests: 13px dominates its interface and its h1 is 21px. Dense reads as
+   * professional in this category; large reads as marketing.
+   *
+   * One departure, deliberately. Their sizes are UI chrome. Ours has to carry a
+   * streamed paragraph someone actually reads, so `base` is a notch larger than
+   * `sm` and the conversation uses it. Chrome stays at 13px, prose gets 15px.
+   *
+   * Tracking is negative and scales with size, the way theirs does. At these
+   * sizes default tracking reads loose and slightly amateur.
+   */
+  --lucet-font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --lucet-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
 
-  --lucet-text-xs: calc(0.75rem * var(--lucet-scale));
-  --lucet-text-sm: calc(0.875rem * var(--lucet-scale));
-  --lucet-text-base: calc(1rem * var(--lucet-scale));
-  --lucet-text-lg: calc(1.125rem * var(--lucet-scale));
-  --lucet-text-xl: calc(1.375rem * var(--lucet-scale));
-  --lucet-text-2xl: calc(1.75rem * var(--lucet-scale));
+  --lucet-text-xs: calc(0.6875rem * var(--lucet-scale));
+  --lucet-text-sm: calc(0.8125rem * var(--lucet-scale));
+  --lucet-text-base: calc(0.9375rem * var(--lucet-scale));
+  --lucet-text-lg: calc(1.0625rem * var(--lucet-scale));
+  --lucet-text-xl: calc(1.3125rem * var(--lucet-scale));
+  --lucet-text-2xl: calc(1.625rem * var(--lucet-scale));
 
-  --lucet-leading-tight: 1.25;
+  --lucet-leading-tight: 1.375;
   --lucet-leading-normal: 1.5;
   /* Streaming text is read while it moves. It needs more room than static copy. */
-  --lucet-leading-prose: 1.65;
+  --lucet-leading-prose: 1.6;
 
-  --lucet-tracking-tight: -0.01em;
-  --lucet-tracking-normal: 0;
+  --lucet-tracking-tight: -0.02em;
+  --lucet-tracking-normal: -0.01em;
   --lucet-tracking-wide: 0.02em;
 
   /*
@@ -115,6 +128,10 @@
   --lucet-duration-slow: 320ms;
   --lucet-ease-out: cubic-bezier(0.2, 0, 0, 1);
   --lucet-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* A field looks recessed, not raised. Lifted straight from how the
+     reference treats inputs, and it is the detail that sells the surface. */
+  --lucet-shadow-inset-field: inset 0 1px 2px oklch(0 0 0 / 0.08);
 
   --lucet-border-width: 1px;
   --lucet-focus-width: 2px;

@@ -21,6 +21,9 @@
 body {
   margin: 0;
   font-family: var(--lucet-font-sans);
+  font-size: var(--lucet-text-sm);
+  letter-spacing: var(--lucet-tracking-normal);
+  -webkit-font-smoothing: antialiased;
   background: var(--lucet-background);
   color: var(--lucet-foreground);
   display: flex;
@@ -104,6 +107,7 @@ main > :first-child { border-left: 0; }
 
 h2 {
   font-size: var(--lucet-text-lg);
+  line-height: var(--lucet-leading-tight);
   letter-spacing: var(--lucet-tracking-tight);
   margin-top: 0;
 }
