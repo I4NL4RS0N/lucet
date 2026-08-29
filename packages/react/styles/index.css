@@ -42,6 +42,12 @@
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-md);
   border: 1px solid transparent;
+  /*
+   * Without this the gradient is SIZED to the padding box and PAINTED to the
+   * border box, so the 1px transparent border shows a mismatched band: the
+   * pale halo that made Expressive buttons look badly outlined.
+   */
+  background-origin: border-box;
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -66,14 +72,24 @@
   color: var(--lucet-muted-foreground);
 }
 
-.lucet-button:hover:not(:disabled) {
-  filter: brightness(0.97);
+.lucet-button[data-variant='primary']:hover:not(:disabled) {
+  background-color: var(--lucet-primary-hover);
+}
+
+.lucet-button[data-variant='secondary']:hover:not(:disabled) {
+  background-color: var(--lucet-hover-strong);
 }
 
 .lucet-button[data-variant='ghost']:hover:not(:disabled) {
-  background: var(--lucet-subtle);
+  background-color: var(--lucet-hover);
   color: var(--lucet-foreground);
-  filter: none;
+}
+
+/* System has no press treatment of its own, so the active state is a step
+   further along the same scale rather than a lighting change. */
+.lucet-button[data-variant='secondary']:active:not(:disabled),
+.lucet-button[data-variant='ghost']:active:not(:disabled) {
+  background-color: var(--lucet-hover-strong);
 }
 
 .lucet-button:disabled {
@@ -480,7 +496,9 @@
     0 0 0 1px oklch(from var(--lucet-primary) calc(l - 0.06) c h),
     var(--lucet-control-cast),
     var(--lucet-primary-glow);
-  border-color: transparent;
+  /* The ring is a shadow here, so the border is dead weight and the source of
+     the halo. */
+  border-width: 0;
   border-radius: var(--lucet-radius-container);
   padding-inline: var(--lucet-space-4);
 }
@@ -497,12 +515,19 @@
     var(--lucet-control-lip),
     0 0 0 1px var(--lucet-border),
     var(--lucet-control-cast);
-  border-color: transparent;
+  border-width: 0;
 }
 
-:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled),
+:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
+  background-image: linear-gradient(
+    180deg,
+    oklch(from var(--lucet-primary-hover) calc(l + 0.025) c h),
+    oklch(from var(--lucet-primary-hover) calc(l - 0.03) c h)
+  );
+}
+
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
-  filter: brightness(1.04);
+  background-color: var(--lucet-hover-strong);
 }
 
 /*

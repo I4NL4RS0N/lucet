@@ -196,8 +196,10 @@ button {
   transition: background var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 
-button:hover:not(:disabled) { background: var(--lucet-subtle); }
+button:hover:not(:disabled) { background: var(--lucet-hover-strong); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+select:hover { background-color: var(--lucet-hover); }
 
 select {
   background: var(--lucet-background);

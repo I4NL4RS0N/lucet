@@ -41,6 +41,9 @@
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
   --lucet-default-ring: var(--lucet-accent-8);
+  --lucet-default-hover: var(--lucet-neutral-100);
+  --lucet-default-hover-strong: var(--lucet-neutral-200);
+  --lucet-default-primary-hover: var(--lucet-accent-10);
 
   /* The public semantic surface. Components consume only these. */
   --lucet-background: var(--background, var(--lucet-default-background));
@@ -67,6 +70,16 @@
   --lucet-input: var(--input, var(--lucet-default-input));
   --lucet-ring: var(--ring, var(--lucet-default-ring));
 
+  /*
+   * Interaction surfaces. A hover has to be a colour change, not a filter.
+   * brightness() is invisible on a near-white surface and does nothing at all
+   * on a transparent one, which is how buttons shipped with hover states that
+   * technically existed and perceptibly did not.
+   */
+  --lucet-hover: var(--lucet-default-hover);
+  --lucet-hover-strong: var(--lucet-default-hover-strong);
+  --lucet-primary-hover: var(--lucet-default-primary-hover);
+
   /* Radius interop lives in primitives.css, in the three-tier chain. */
 }
 
@@ -90,6 +103,9 @@
     --lucet-default-border: var(--lucet-line);
     --lucet-default-input: var(--lucet-line);
     --lucet-default-ring: var(--lucet-accent-8);
+    --lucet-default-hover: var(--lucet-neutral-800);
+    --lucet-default-hover-strong: var(--lucet-neutral-700);
+    --lucet-default-primary-hover: var(--lucet-accent-10);
   }
 }
 
@@ -111,4 +127,7 @@
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
   --lucet-default-ring: var(--lucet-accent-8);
+  --lucet-default-hover: var(--lucet-neutral-800);
+  --lucet-default-hover-strong: var(--lucet-neutral-700);
+  --lucet-default-primary-hover: var(--lucet-accent-10);
 }
