@@ -6,9 +6,18 @@ import { Inspector } from './components/Inspector'
 import { Conversation } from './components/Conversation'
 import { Composer } from './components/Composer'
 import { MockPage } from './components/MockPage'
+import { Tokens } from './components/Tokens'
+import { ThemeControls, useApplyTheme } from './components/ThemeControls'
+import type { ThemeState } from './components/ThemeControls'
 import { readStateParam } from './lib/deep-link'
 
-type Mode = 'full' | 'drawer'
+type Mode = 'full' | 'drawer' | 'tokens'
+
+const MODES: readonly { value: Mode; label: string }[] = [
+  { value: 'full', label: 'Full page' },
+  { value: 'drawer', label: 'Drawer' },
+  { value: 'tokens', label: 'Tokens' },
+]
 
 /**
  * The Konfabulator.
@@ -17,13 +26,21 @@ type Mode = 'full' | 'drawer'
  * driven by a scripted deterministic runtime. Explicitly not Storybook: states
  * are injected into a running thread, never viewed in isolation.
  *
- * Unstyled on purpose. Structure first, visual language as its own piece of
- * work, so the tokens get designed against something that already behaves.
+ * The components are still unstyled. Tokens exist and are inspectable, but
+ * nothing consumes them yet, which is on purpose: the values get argued with
+ * before twelve components inherit them.
  */
 export function App() {
   const lucet = useMemo(() => createLucet(), [])
   const [mode, setMode] = useState<Mode>('full')
+  const [themeState, setThemeState] = useState<ThemeState>({
+    theme: 'system',
+    accent: 'slate',
+    expression: 'system',
+  })
   const booted = useRef(false)
+
+  useApplyTheme(themeState)
 
   // Deep link. Land someone straight in a state, in context.
   useEffect(() => {
@@ -45,9 +62,10 @@ export function App() {
       <header>
         <h1>Lucet</h1>
         <p>The Konfabulator. Scripted runtime, real states, one running thread.</p>
+
         <fieldset>
           <legend>View</legend>
-          {(['full', 'drawer'] as const).map((value) => (
+          {MODES.map(({ value, label }) => (
             <label key={value}>
               <input
                 type="radio"
@@ -55,22 +73,36 @@ export function App() {
                 checked={mode === value}
                 onChange={() => setMode(value)}
               />
-              {value === 'full' ? 'Full page' : 'Drawer'}
+              {label}
             </label>
           ))}
         </fieldset>
+
+        <fieldset>
+          <legend>Appearance</legend>
+          <ThemeControls
+            {...themeState}
+            onChange={(next) => setThemeState((prev) => ({ ...prev, ...next }))}
+          />
+        </fieldset>
       </header>
 
-      <main data-mode={mode}>
-        <TriggerRail />
-
-        {/* The two modes surface different problems: density and scroll in full
-            page, and everything about scope in the drawer, where the page keeps
-            moving underneath the conversation. */}
-        {mode === 'full' ? thread : <MockPage>{thread}</MockPage>}
-
-        <Inspector />
-      </main>
+      {mode === 'tokens' ? (
+        <main data-mode="tokens">
+          <Tokens
+            signal={`${themeState.theme}:${themeState.accent}:${themeState.expression}`}
+          />
+        </main>
+      ) : (
+        <main data-mode={mode}>
+          <TriggerRail />
+          {/* The two modes surface different problems: density and scroll in
+              full page, and everything about scope in the drawer, where the page
+              keeps moving underneath the conversation. */}
+          {mode === 'full' ? thread : <MockPage>{thread}</MockPage>}
+          <Inspector />
+        </main>
+      )}
     </LucetProvider>
   )
 }

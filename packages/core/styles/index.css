@@ -1,9 +1,30 @@
-/*
+/**
  * Lucet tokens.
  *
- * Vanilla CSS custom properties only. No Tailwind, no preprocessor.
- * Token names map cleanly onto shadcn's CSS variable names so Tailwind/shadcn
- * consumers can adopt the library without fighting it.
+ * Vanilla CSS custom properties. No Tailwind, no preprocessor, no build step.
  *
- * Not authored yet. See docs/design-brief.md -> "Theming" and "Architecture".
+ * Four layers, in dependency order:
+ *
+ *   primitives   raw scales. Components never read these.
+ *   semantic     the shadcn interop surface. Components read these.
+ *   tones        five tones, and the state map. Lucet's own layer.
+ *   accents      ten accents, two numbers each.
+ *   expression   System and Expressive, the density axis.
+ *
+ * Import once, at the root of the host application:
+ *
+ *   import 'lucet/styles.css'
+ *
+ * A project already running shadcn needs no configuration: every semantic token
+ * falls back to shadcn's variable when the host defines one. See semantic.css
+ * for the interop rule and the `--accent` naming trap.
+ *
+ * ⚠️ The architecture is settled. The VALUES are placeholders, chosen to be
+ * neutral enough to react to. See docs/todo.md.
  */
+
+@import './primitives.css';
+@import './semantic.css';
+@import './tones.css';
+@import './accents.css';
+@import './expression.css';

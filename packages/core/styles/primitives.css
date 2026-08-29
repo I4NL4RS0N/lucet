@@ -1,0 +1,98 @@
+/**
+ * Layer 1: primitives.
+ *
+ * Raw scales. Components never consume these directly, they consume the
+ * semantic layer. Changing a primitive should be a considered act; changing a
+ * semantic token should be routine.
+ *
+ * Colour is oklch throughout. Perceptual lightness means a ramp step is the same
+ * visual distance at every hue, which is what makes ten accents possible without
+ * hand-tuning ten palettes.
+ *
+ * ⚠️ VALUES ARE PLACEHOLDERS. The structure is settled; the numbers are not.
+ * These are deliberately neutral so they can be reacted to, not adopted.
+ */
+
+:root {
+  /* Neutral ramp. Light-to-dark, and the only greyscale in the system. */
+  --lucet-neutral-0: oklch(1 0 0);
+  --lucet-neutral-50: oklch(0.985 0 0);
+  --lucet-neutral-100: oklch(0.97 0 0);
+  --lucet-neutral-200: oklch(0.922 0 0);
+  --lucet-neutral-300: oklch(0.87 0 0);
+  --lucet-neutral-400: oklch(0.708 0 0);
+  --lucet-neutral-500: oklch(0.556 0 0);
+  --lucet-neutral-600: oklch(0.44 0 0);
+  --lucet-neutral-700: oklch(0.371 0 0);
+  --lucet-neutral-800: oklch(0.269 0 0);
+  --lucet-neutral-900: oklch(0.205 0 0);
+  --lucet-neutral-950: oklch(0.145 0 0);
+  --lucet-neutral-1000: oklch(0 0 0);
+
+  /*
+   * Spacing derives from one unit so density is a single knob rather than
+   * forty edits. The expression layer changes the unit, not the scale.
+   */
+  --lucet-space-unit: 0.25rem;
+  --lucet-space-0: 0;
+  --lucet-space-1: calc(var(--lucet-space-unit) * 1);
+  --lucet-space-2: calc(var(--lucet-space-unit) * 2);
+  --lucet-space-3: calc(var(--lucet-space-unit) * 3);
+  --lucet-space-4: calc(var(--lucet-space-unit) * 4);
+  --lucet-space-6: calc(var(--lucet-space-unit) * 6);
+  --lucet-space-8: calc(var(--lucet-space-unit) * 8);
+  --lucet-space-12: calc(var(--lucet-space-unit) * 12);
+  --lucet-space-16: calc(var(--lucet-space-unit) * 16);
+
+  /* Type. A conversation is mostly prose, so the body step carries the weight. */
+  --lucet-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --lucet-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  --lucet-text-xs: 0.75rem;
+  --lucet-text-sm: 0.875rem;
+  --lucet-text-base: 1rem;
+  --lucet-text-lg: 1.125rem;
+  --lucet-text-xl: 1.375rem;
+  --lucet-text-2xl: 1.75rem;
+
+  --lucet-leading-tight: 1.25;
+  --lucet-leading-normal: 1.5;
+  /* Streaming text is read while it moves. It needs more room than static copy. */
+  --lucet-leading-prose: 1.65;
+
+  --lucet-tracking-tight: -0.01em;
+  --lucet-tracking-normal: 0;
+  --lucet-tracking-wide: 0.02em;
+
+  /* Radius derives from one root, so shadcn's --radius can drive all of it. */
+  --lucet-radius-root: 0.5rem;
+  --lucet-radius-sm: calc(var(--lucet-radius-root) - 4px);
+  --lucet-radius-md: calc(var(--lucet-radius-root) - 2px);
+  --lucet-radius-lg: var(--lucet-radius-root);
+  --lucet-radius-xl: calc(var(--lucet-radius-root) + 4px);
+  --lucet-radius-full: 9999px;
+
+  /* Motion. Overridden wholesale under reduced motion, see the bottom. */
+  --lucet-duration-instant: 0ms;
+  --lucet-duration-fast: 120ms;
+  --lucet-duration-normal: 200ms;
+  --lucet-duration-slow: 320ms;
+  --lucet-ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --lucet-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --lucet-border-width: 1px;
+  --lucet-focus-width: 2px;
+  --lucet-focus-offset: 2px;
+}
+
+/*
+ * Motion is a preference, not a flourish. Durations collapse to zero rather
+ * than being individually guarded at every call site.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lucet-duration-fast: 0ms;
+    --lucet-duration-normal: 0ms;
+    --lucet-duration-slow: 0ms;
+  }
+}

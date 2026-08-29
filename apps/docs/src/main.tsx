@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
+import 'lucet/styles.css'
 import './app.css'
 
 const el = document.getElementById('root')

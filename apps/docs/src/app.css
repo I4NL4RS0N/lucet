@@ -60,3 +60,22 @@ textarea {
   width: 100%;
   box-sizing: border-box;
 }
+
+/* Tokens view is a single column, not the three-pane harness. */
+main[data-mode='tokens'] {
+  display: block;
+  overflow-y: auto;
+}
+
+main[data-mode='tokens'] table {
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+main[data-mode='tokens'] td,
+main[data-mode='tokens'] th {
+  text-align: left;
+  padding: 0.125rem 0.75rem 0.125rem 0;
+  vertical-align: middle;
+  font-weight: normal;
+}

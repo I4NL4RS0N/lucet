@@ -1,0 +1,65 @@
+/**
+ * The second axis: expression.
+ *
+ * Not "utilitarian versus polished". Polish is not the variable. A dense
+ * enterprise theme done well is highly polished, it just has different intent.
+ * The variable is how much the interface performs.
+ *
+ * System is the default, because an assistant embedded in someone's real work
+ * should be quiet unless it has a reason not to be.
+ *
+ * Both read from the same primitives. Nothing here introduces a new colour, a
+ * new scale, or a component-specific override. If a theme ever needs one, the
+ * token layer is wrong, not the theme.
+ *
+ * Set with `data-expression` on any ancestor, usually <html>.
+ */
+
+/* System: dense, quiet, enterprise-grade. */
+:root,
+[data-expression='system'] {
+  --lucet-space-unit: 0.25rem;
+  --lucet-radius-root: var(--radius, 0.375rem);
+
+  --lucet-leading-prose: 1.55;
+  --lucet-tracking-heading: var(--lucet-tracking-tight);
+
+  /* Elevation is a hairline, not a shadow. Depth comes from the border. */
+  --lucet-elevation-1: 0 0 0 1px var(--lucet-border);
+  --lucet-elevation-2: 0 1px 2px oklch(0 0 0 / 0.06), 0 0 0 1px var(--lucet-border);
+  --lucet-elevation-3: 0 4px 12px oklch(0 0 0 / 0.08), 0 0 0 1px var(--lucet-border);
+
+  --lucet-duration-fast: 100ms;
+  --lucet-duration-normal: 160ms;
+  --lucet-duration-slow: 240ms;
+
+  --lucet-surface-glow: none;
+}
+
+/*
+ * Expressive: more air, softer geometry, light that behaves like light.
+ *
+ * Restrained on purpose. The web3 look ages in about eighteen months and would
+ * date the whole project, so this leans on space, radius, and slower motion
+ * rather than gradients and glass.
+ */
+[data-expression='expressive'] {
+  --lucet-space-unit: 0.3125rem;
+  --lucet-radius-root: var(--radius, 0.875rem);
+
+  --lucet-leading-prose: 1.7;
+  --lucet-tracking-heading: var(--lucet-tracking-tight);
+
+  --lucet-elevation-1: 0 1px 2px oklch(0 0 0 / 0.05);
+  --lucet-elevation-2: 0 2px 8px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+  --lucet-elevation-3: 0 8px 30px oklch(0 0 0 / 0.12), 0 2px 6px oklch(0 0 0 / 0.06);
+
+  --lucet-duration-fast: 140ms;
+  --lucet-duration-normal: 240ms;
+  --lucet-duration-slow: 400ms;
+
+  /* A single, quiet accent glow. One effect, used sparingly, ages better than
+     five stacked ones. */
+  --lucet-surface-glow: 0 0 0 1px
+    oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h) / 0.16);
+}

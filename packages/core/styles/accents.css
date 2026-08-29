@@ -1,0 +1,65 @@
+/**
+ * Accent options.
+ *
+ * Ten accents, and every one of them is two numbers. Because the ramps are
+ * oklch, an accent is a hue and a chroma, and every derived colour stays at the
+ * same perceptual lightness across all ten. No hand-tuned palettes, no accent
+ * that goes muddy in dark mode.
+ *
+ * This is also the proof that the components are token-driven rather than
+ * skinned: if adding an accent takes two numbers, the system is real.
+ *
+ * Set with `data-accent` on any ancestor, usually <html>.
+ * ⚠️ VALUES ARE PLACEHOLDERS.
+ */
+
+:root,
+[data-accent='slate'] {
+  --lucet-accent-h: 250;
+  --lucet-accent-c: 0.02;
+}
+
+[data-accent='blue'] {
+  --lucet-accent-h: 250;
+  --lucet-accent-c: 0.15;
+}
+
+[data-accent='indigo'] {
+  --lucet-accent-h: 275;
+  --lucet-accent-c: 0.16;
+}
+
+[data-accent='violet'] {
+  --lucet-accent-h: 300;
+  --lucet-accent-c: 0.16;
+}
+
+[data-accent='magenta'] {
+  --lucet-accent-h: 330;
+  --lucet-accent-c: 0.16;
+}
+
+[data-accent='rose'] {
+  --lucet-accent-h: 15;
+  --lucet-accent-c: 0.16;
+}
+
+[data-accent='amber'] {
+  --lucet-accent-h: 75;
+  --lucet-accent-c: 0.15;
+}
+
+[data-accent='green'] {
+  --lucet-accent-h: 145;
+  --lucet-accent-c: 0.14;
+}
+
+[data-accent='teal'] {
+  --lucet-accent-h: 180;
+  --lucet-accent-c: 0.12;
+}
+
+[data-accent='cyan'] {
+  --lucet-accent-h: 220;
+  --lucet-accent-c: 0.13;
+}

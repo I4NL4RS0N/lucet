@@ -1,0 +1,155 @@
+/**
+ * Layer 3: tones, and the state map. This layer is Lucet's.
+ *
+ * shadcn gives you `--destructive` and stops. That is enough for a delete
+ * button and nothing else. A library whose whole argument is complete state
+ * coverage needs names for degraded, stale, partial, refused, and uncertain,
+ * and the absence of those names everywhere else is part of the argument.
+ *
+ * Five tones, then an explicit map from state to tone. The map is where the
+ * design opinions live, so they are written down rather than implied by a hex
+ * value someone picked once.
+ */
+
+:root {
+  --lucet-tone-neutral-h: 250;
+  --lucet-tone-neutral-c: 0.01;
+  --lucet-tone-info-h: 240;
+  --lucet-tone-info-c: 0.09;
+  --lucet-tone-caution-h: 75;
+  --lucet-tone-caution-c: 0.11;
+  --lucet-tone-danger-h: 25;
+  --lucet-tone-danger-c: 0.13;
+  /* Uncertainty is not a warning. It gets its own tone so it cannot be read
+     as one. Low chroma, off-hue: present, unalarming. */
+  --lucet-tone-unknown-h: 300;
+  --lucet-tone-unknown-c: 0.05;
+
+  --lucet-tone-neutral-surface: oklch(0.97 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-foreground: oklch(0.35 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-border: oklch(0.9 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+
+  --lucet-tone-info-surface: oklch(0.96 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-foreground: oklch(0.42 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-border: oklch(0.88 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+
+  --lucet-tone-caution-surface: oklch(0.96 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-foreground: oklch(0.42 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-border: oklch(0.87 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+
+  --lucet-tone-danger-surface: oklch(0.96 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-foreground: oklch(0.45 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-border: oklch(0.87 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+
+  --lucet-tone-unknown-surface: oklch(0.96 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-foreground: oklch(0.44 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-border: oklch(0.89 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+
+  /*
+   * THE STATE MAP. Each line is a design decision, not a colour choice.
+   */
+
+  /* A refusal is a boundary held on purpose, not a malfunction. Colouring it
+     red teaches people that the assistant broke, and they stop reading the
+     sentence that tells them what it can do instead. Neutral, with weight. */
+  --lucet-state-refused-surface: var(--lucet-tone-neutral-surface);
+  --lucet-state-refused-foreground: var(--lucet-tone-neutral-foreground);
+  --lucet-state-refused-border: var(--lucet-tone-neutral-border);
+
+  /* Interrupted is not failed. The user usually did it on purpose, and what
+     already arrived is still good. Alarm here would be a lie. */
+  --lucet-state-interrupted-surface: var(--lucet-tone-neutral-surface);
+  --lucet-state-interrupted-foreground: var(--lucet-tone-neutral-foreground);
+  --lucet-state-interrupted-border: var(--lucet-tone-neutral-border);
+
+  /* Partial earns caution, not danger. Something came back, and the answer is
+     real but incomplete. Danger would push people to discard usable work. */
+  --lucet-state-partial-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-partial-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-partial-border: var(--lucet-tone-caution-border);
+
+  /* Degraded means wait or switch. Down means protect the draft. Different
+     tones because they need different actions. */
+  --lucet-state-degraded-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-degraded-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-degraded-border: var(--lucet-tone-caution-border);
+
+  --lucet-state-down-surface: var(--lucet-tone-danger-surface);
+  --lucet-state-down-foreground: var(--lucet-tone-danger-foreground);
+  --lucet-state-down-border: var(--lucet-tone-danger-border);
+
+  --lucet-state-failed-surface: var(--lucet-tone-danger-surface);
+  --lucet-state-failed-foreground: var(--lucet-tone-danger-foreground);
+  --lucet-state-failed-border: var(--lucet-tone-danger-border);
+
+  /* A quota wall is temporary and expected. Caution, and the copy carries the
+     only fact that matters, which is when it lifts. */
+  --lucet-state-rate-limited-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-rate-limited-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-rate-limited-border: var(--lucet-tone-caution-border);
+
+  /* Freshness is information about the answer, not a warning about it. */
+  --lucet-state-stale-surface: var(--lucet-tone-info-surface);
+  --lucet-state-stale-foreground: var(--lucet-tone-info-foreground);
+  --lucet-state-stale-border: var(--lucet-tone-info-border);
+
+  /* Uncertainty must never look like an error, or people discount the answer
+     entirely instead of weighting it. */
+  --lucet-state-uncertain-surface: var(--lucet-tone-unknown-surface);
+  --lucet-state-uncertain-foreground: var(--lucet-tone-unknown-foreground);
+  --lucet-state-uncertain-border: var(--lucet-tone-unknown-border);
+
+  /* Waiting on someone else's turn. Informational, and never alarming: being
+     locked out is normal, and the design job is to keep it from feeling dead. */
+  --lucet-state-queued-surface: var(--lucet-tone-info-surface);
+  --lucet-state-queued-foreground: var(--lucet-tone-info-foreground);
+  --lucet-state-queued-border: var(--lucet-tone-info-border);
+}
+
+/* Dark. Surfaces go dark and low chroma; foregrounds lift. The map is
+   unchanged, because the mapping is a design decision, not a colour value. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lucet-tone-neutral-surface: oklch(0.26 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+    --lucet-tone-neutral-foreground: oklch(0.85 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+    --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+
+    --lucet-tone-info-surface: oklch(0.27 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+    --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+    --lucet-tone-info-border: oklch(0.36 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+
+    --lucet-tone-caution-surface: oklch(0.27 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+    --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+    --lucet-tone-caution-border: oklch(0.36 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+
+    --lucet-tone-danger-surface: oklch(0.27 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+    --lucet-tone-danger-foreground: oklch(0.85 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+    --lucet-tone-danger-border: oklch(0.37 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+
+    --lucet-tone-unknown-surface: oklch(0.27 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+    --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+    --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  }
+}
+
+:root[data-theme='dark'] {
+  --lucet-tone-neutral-surface: oklch(0.26 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-foreground: oklch(0.85 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+  --lucet-tone-neutral-border: oklch(0.34 var(--lucet-tone-neutral-c) var(--lucet-tone-neutral-h));
+
+  --lucet-tone-info-surface: oklch(0.27 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-foreground: oklch(0.85 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+  --lucet-tone-info-border: oklch(0.36 var(--lucet-tone-info-c) var(--lucet-tone-info-h));
+
+  --lucet-tone-caution-surface: oklch(0.27 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+  --lucet-tone-caution-border: oklch(0.36 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
+
+  --lucet-tone-danger-surface: oklch(0.27 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-foreground: oklch(0.85 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-border: oklch(0.37 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+
+  --lucet-tone-unknown-surface: oklch(0.27 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-foreground: oklch(0.85 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+  --lucet-tone-unknown-border: oklch(0.36 var(--lucet-tone-unknown-c) var(--lucet-tone-unknown-h));
+}

@@ -1,0 +1,115 @@
+/**
+ * Layer 2: semantic tokens, and the shadcn interop contract.
+ *
+ * THE INTEROP RULE
+ *
+ * Every semantic token reads as:
+ *
+ *   --lucet-x: var(--x, <our own default>)
+ *
+ * So a project already running shadcn gets Lucet inheriting its palette with no
+ * configuration, and a project running nothing at all still gets a complete,
+ * coherent theme. We never redefine a bare shadcn variable, because doing that
+ * would fight the host for ownership of names it defined first.
+ *
+ * ⚠️ A NAMING TRAP, DOCUMENTED
+ *
+ * shadcn's `--accent` is a low-emphasis hover surface. It is NOT a brand colour.
+ * Lucet's "accent options" are a brand choice and map to `--primary`. Conflating
+ * the two is the most common way a shadcn theme gets wrecked, so these names are
+ * deliberately kept apart: ours is `--lucet-subtle`.
+ *
+ * ⚠️ VALUES ARE PLACEHOLDERS. Structure settled, numbers not.
+ */
+
+:root {
+  /* Our own defaults, used only when the host has not defined shadcn's names. */
+  --lucet-default-background: var(--lucet-neutral-0);
+  --lucet-default-foreground: var(--lucet-neutral-950);
+  --lucet-default-card: var(--lucet-neutral-0);
+  --lucet-default-card-foreground: var(--lucet-neutral-950);
+  --lucet-default-popover: var(--lucet-neutral-0);
+  --lucet-default-popover-foreground: var(--lucet-neutral-950);
+  --lucet-default-primary: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
+  --lucet-default-primary-foreground: var(--lucet-neutral-0);
+  --lucet-default-secondary: var(--lucet-neutral-100);
+  --lucet-default-secondary-foreground: var(--lucet-neutral-900);
+  --lucet-default-muted: var(--lucet-neutral-100);
+  --lucet-default-muted-foreground: var(--lucet-neutral-500);
+  --lucet-default-subtle: var(--lucet-neutral-50);
+  --lucet-default-subtle-foreground: var(--lucet-neutral-700);
+  --lucet-default-border: var(--lucet-neutral-200);
+  --lucet-default-input: var(--lucet-neutral-200);
+  --lucet-default-ring: oklch(0.55 var(--lucet-accent-c) var(--lucet-accent-h));
+
+  /* The public semantic surface. Components consume only these. */
+  --lucet-background: var(--background, var(--lucet-default-background));
+  --lucet-foreground: var(--foreground, var(--lucet-default-foreground));
+  --lucet-card: var(--card, var(--lucet-default-card));
+  --lucet-card-foreground: var(--card-foreground, var(--lucet-default-card-foreground));
+  --lucet-popover: var(--popover, var(--lucet-default-popover));
+  --lucet-popover-foreground: var(--popover-foreground, var(--lucet-default-popover-foreground));
+
+  /* Brand. Maps to shadcn --primary, never to shadcn --accent. */
+  --lucet-primary: var(--primary, var(--lucet-default-primary));
+  --lucet-primary-foreground: var(--primary-foreground, var(--lucet-default-primary-foreground));
+
+  --lucet-secondary: var(--secondary, var(--lucet-default-secondary));
+  --lucet-secondary-foreground: var(--secondary-foreground, var(--lucet-default-secondary-foreground));
+  --lucet-muted: var(--muted, var(--lucet-default-muted));
+  --lucet-muted-foreground: var(--muted-foreground, var(--lucet-default-muted-foreground));
+
+  /* Low-emphasis surface. This is what shadcn calls --accent. */
+  --lucet-subtle: var(--accent, var(--lucet-default-subtle));
+  --lucet-subtle-foreground: var(--accent-foreground, var(--lucet-default-subtle-foreground));
+
+  --lucet-border: var(--border, var(--lucet-default-border));
+  --lucet-input: var(--input, var(--lucet-default-input));
+  --lucet-ring: var(--ring, var(--lucet-default-ring));
+
+  /* Radius follows the host's --radius when it sets one. */
+  --lucet-radius-root: var(--radius, 0.5rem);
+}
+
+/* Dark. Only the defaults move; the interop indirection is unchanged. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --lucet-default-background: var(--lucet-neutral-950);
+    --lucet-default-foreground: var(--lucet-neutral-50);
+    --lucet-default-card: var(--lucet-neutral-900);
+    --lucet-default-card-foreground: var(--lucet-neutral-50);
+    --lucet-default-popover: var(--lucet-neutral-900);
+    --lucet-default-popover-foreground: var(--lucet-neutral-50);
+    --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+    --lucet-default-primary-foreground: var(--lucet-neutral-950);
+    --lucet-default-secondary: var(--lucet-neutral-800);
+    --lucet-default-secondary-foreground: var(--lucet-neutral-100);
+    --lucet-default-muted: var(--lucet-neutral-800);
+    --lucet-default-muted-foreground: var(--lucet-neutral-400);
+    --lucet-default-subtle: var(--lucet-neutral-900);
+    --lucet-default-subtle-foreground: var(--lucet-neutral-200);
+    --lucet-default-border: var(--lucet-neutral-800);
+    --lucet-default-input: var(--lucet-neutral-800);
+    --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+  }
+}
+
+:root[data-theme='dark'] {
+  --lucet-default-background: var(--lucet-neutral-950);
+  --lucet-default-foreground: var(--lucet-neutral-50);
+  --lucet-default-card: var(--lucet-neutral-900);
+  --lucet-default-card-foreground: var(--lucet-neutral-50);
+  --lucet-default-popover: var(--lucet-neutral-900);
+  --lucet-default-popover-foreground: var(--lucet-neutral-50);
+  --lucet-default-primary: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+  --lucet-default-primary-foreground: var(--lucet-neutral-950);
+  --lucet-default-secondary: var(--lucet-neutral-800);
+  --lucet-default-secondary-foreground: var(--lucet-neutral-100);
+  --lucet-default-muted: var(--lucet-neutral-800);
+  --lucet-default-muted-foreground: var(--lucet-neutral-400);
+  --lucet-default-subtle: var(--lucet-neutral-900);
+  --lucet-default-subtle-foreground: var(--lucet-neutral-200);
+  --lucet-default-border: var(--lucet-neutral-800);
+  --lucet-default-input: var(--lucet-neutral-800);
+  --lucet-default-ring: oklch(0.7 var(--lucet-accent-c) var(--lucet-accent-h));
+}
