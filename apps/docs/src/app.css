@@ -218,3 +218,31 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
+
+/* ---------- component sheet ---------- */
+
+.sheet { max-width: 62rem; }
+
+.sheet__note {
+  max-width: 44rem;
+  color: var(--lucet-muted-foreground);
+  font-size: var(--lucet-text-sm);
+}
+
+.sheet__spec { margin-bottom: var(--lucet-space-12); }
+
+/* The stage is a plain surface on purpose. Specimens should be judged against
+   the ground they will actually sit on, not inside a decorated frame. */
+.sheet__stage {
+  padding: var(--lucet-space-4);
+  border-radius: var(--lucet-radius-xl);
+  background: var(--lucet-card);
+  border: 1px solid var(--lucet-border);
+}
+
+:root[data-expression='expressive'] .sheet__stage {
+  border-color: transparent;
+  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+}
+
+.sheet__stage > * + * { margin-top: var(--lucet-space-4); }

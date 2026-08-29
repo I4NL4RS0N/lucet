@@ -8,15 +8,17 @@ import { Composer } from './components/Composer'
 import { MockPage } from './components/MockPage'
 import { Tokens } from './components/Tokens'
 import { Scales } from './components/Scales'
+import { Sheet } from './components/Sheet'
 import { ThemeControls, useApplyTheme } from './components/ThemeControls'
 import type { ThemeState } from './components/ThemeControls'
 import { readStateParam } from './lib/deep-link'
 
-type Mode = 'full' | 'drawer' | 'tokens' | 'scales'
+type Mode = 'full' | 'drawer' | 'sheet' | 'tokens' | 'scales'
 
 const MODES: readonly { value: Mode; label: string }[] = [
   { value: 'full', label: 'Full page' },
   { value: 'drawer', label: 'Drawer' },
+  { value: 'sheet', label: 'Sheet' },
   { value: 'tokens', label: 'Tokens' },
   { value: 'scales', label: 'Scales' },
 ]
@@ -96,6 +98,10 @@ export function App() {
             {...themeState}
             onChange={(next) => setThemeState((prev) => ({ ...prev, ...next }))}
           />
+        </main>
+      ) : mode === 'sheet' ? (
+        <main data-mode="tokens">
+          <Sheet />
         </main>
       ) : mode === 'scales' ? (
         <main data-mode="tokens">

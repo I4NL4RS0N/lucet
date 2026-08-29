@@ -1,5 +1,432 @@
-/*
- * Component styles for the React bindings.
- * Vanilla CSS, consuming the tokens from lucet/styles.css.
- * Not authored yet.
+/**
+ * Lucet component styles.
+ *
+ * Vanilla CSS. Every value is a token from `lucet/styles.css`; there are no
+ * literals in here except structural zeroes. If something needs a number that
+ * is not a token, the token set is wrong, not this file.
+ *
+ * Import both:
+ *   import 'lucet/styles.css'
+ *   import 'lucet-react/styles.css'
  */
+
+.lucet-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+ * Button
+ * ============================================================ */
+
+.lucet-button {
+  font: inherit;
+  font-size: var(--lucet-text-sm);
+  line-height: 1;
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: var(--lucet-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--lucet-duration-fast) var(--lucet-ease-out),
+    border-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+.lucet-button[data-variant='primary'] {
+  background: var(--lucet-primary);
+  color: var(--lucet-primary-foreground);
+}
+
+.lucet-button[data-variant='secondary'] {
+  background: var(--lucet-secondary);
+  color: var(--lucet-secondary-foreground);
+  border-color: var(--lucet-border);
+}
+
+.lucet-button[data-variant='ghost'] {
+  background: transparent;
+  color: var(--lucet-muted-foreground);
+}
+
+.lucet-button:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+.lucet-button[data-variant='ghost']:hover:not(:disabled) {
+  background: var(--lucet-subtle);
+  color: var(--lucet-foreground);
+  filter: none;
+}
+
+.lucet-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lucet-button:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* ============================================================
+ * Message and thread
+ *
+ * The assistant gets no bubble. Its output is the artefact, so it reads as a
+ * document at full measure. The prompt keeps a surface because it is an
+ * utterance, and because you need to find it again when scrolling back.
+ * ============================================================ */
+
+.lucet-message {
+  display: block;
+  margin-block: var(--lucet-space-6);
+}
+
+.lucet-message__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--lucet-space-2);
+  margin-bottom: var(--lucet-space-2);
+}
+
+.lucet-message__author {
+  font-size: var(--lucet-text-xs);
+  letter-spacing: var(--lucet-tracking-wide);
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+
+/* Every prompt is a commit. The marker is quiet until you look for it. */
+.lucet-message__version {
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+  opacity: 0.65;
+}
+
+.lucet-message[data-role='user'] .lucet-message__body {
+  background: var(--lucet-subtle);
+  color: var(--lucet-subtle-foreground);
+  border-radius: var(--lucet-radius-lg);
+  padding: var(--lucet-space-3) var(--lucet-space-4);
+  /* Narrower than the response. A prompt is the smaller thing on the page. */
+  max-width: 46ch;
+}
+
+.lucet-message[data-role='assistant'] .lucet-message__body {
+  max-width: 68ch;
+}
+
+.lucet-message__text {
+  margin: 0 0 var(--lucet-space-3);
+  line-height: var(--lucet-leading-prose);
+  font-size: var(--lucet-text-base);
+}
+
+.lucet-message__text:last-child {
+  margin-bottom: 0;
+}
+
+.lucet-message__actions {
+  display: flex;
+  gap: var(--lucet-space-2);
+  margin-top: var(--lucet-space-2);
+  /* Restore and feedback stay out of the way until the turn is hovered or
+     focused. Present, not soliciting. */
+  opacity: 0;
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+.lucet-message:hover .lucet-message__actions,
+.lucet-message:focus-within .lucet-message__actions {
+  opacity: 1;
+}
+
+/* The live edge of the stream, on the text rather than floating below it. */
+.lucet-caret {
+  display: inline-block;
+  width: 0.5ch;
+  height: 1em;
+  margin-left: 0.15ch;
+  vertical-align: text-bottom;
+  background: var(--lucet-foreground);
+  opacity: 0.7;
+  animation: lucet-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes lucet-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-caret { animation: none; }
+}
+
+/* ============================================================
+ * Reasoning disclosure
+ * ============================================================ */
+
+.lucet-reasoning {
+  margin: 0 0 var(--lucet-space-3);
+  border-left: 2px solid var(--lucet-border);
+  padding-left: var(--lucet-space-3);
+}
+
+.lucet-reasoning__summary {
+  cursor: pointer;
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-muted-foreground);
+  list-style: none;
+}
+
+.lucet-reasoning__summary::-webkit-details-marker { display: none; }
+
+.lucet-reasoning__summary::before {
+  content: '';
+  display: inline-block;
+  width: 0.35em;
+  height: 0.35em;
+  margin-right: 0.6em;
+  vertical-align: middle;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+.lucet-reasoning[open] .lucet-reasoning__summary::before {
+  transform: rotate(45deg);
+}
+
+.lucet-reasoning__summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+.lucet-reasoning__body {
+  margin-top: var(--lucet-space-2);
+  font-size: var(--lucet-text-sm);
+  line-height: var(--lucet-leading-prose);
+  color: var(--lucet-muted-foreground);
+  max-width: 62ch;
+}
+
+/* ============================================================
+ * Tool call
+ *
+ * Compact while it works. It earns weight only when it settles somewhere the
+ * reader has to act on.
+ * ============================================================ */
+
+.lucet-tool {
+  margin: 0 0 var(--lucet-space-3);
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: var(--lucet-radius-md);
+  border: 1px solid var(--lucet-border);
+  background: var(--lucet-subtle);
+  font-size: var(--lucet-text-sm);
+}
+
+.lucet-tool__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--lucet-space-2);
+}
+
+.lucet-tool__status {
+  font-size: var(--lucet-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--lucet-tracking-wide);
+  color: var(--lucet-muted-foreground);
+}
+
+.lucet-tool__name {
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-sm);
+}
+
+.lucet-tool__detail {
+  margin: var(--lucet-space-1) 0 0;
+  color: var(--lucet-muted-foreground);
+  line-height: var(--lucet-leading-normal);
+}
+
+.lucet-tool[data-status='partial'] {
+  background: var(--lucet-state-partial-surface);
+  border-color: var(--lucet-state-partial-border);
+  color: var(--lucet-state-partial-foreground);
+}
+
+.lucet-tool[data-status='failed'] {
+  background: var(--lucet-state-failed-surface);
+  border-color: var(--lucet-state-failed-border);
+  color: var(--lucet-state-failed-foreground);
+}
+
+.lucet-tool[data-status='partial'] .lucet-tool__status,
+.lucet-tool[data-status='failed'] .lucet-tool__status,
+.lucet-tool[data-status='partial'] .lucet-tool__detail,
+.lucet-tool[data-status='failed'] .lucet-tool__detail {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.lucet-tool[data-status='running'] .lucet-tool__status {
+  animation: lucet-pulse 1.6s var(--lucet-ease-in-out) infinite;
+}
+
+@keyframes lucet-pulse {
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-tool[data-status='running'] .lucet-tool__status { animation: none; }
+}
+
+/* ============================================================
+ * State notice
+ *
+ * One component, ten states. Not an alert: a refusal is a normal event, and a
+ * banner treatment would teach people something broke every time.
+ * ============================================================ */
+
+.lucet-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--lucet-space-2);
+  margin: 0 0 var(--lucet-space-3);
+  padding: var(--lucet-space-3);
+  border-radius: var(--lucet-radius-md);
+  border: 1px solid var(--lucet-border);
+  background: var(--lucet-subtle);
+  font-size: var(--lucet-text-sm);
+  line-height: var(--lucet-leading-normal);
+}
+
+.lucet-notice__body {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.lucet-notice__label { margin-right: 0.4em; }
+
+.lucet-notice__actions {
+  display: flex;
+  gap: var(--lucet-space-2);
+  margin-left: auto;
+}
+
+.lucet-notice[data-state='refused'],
+.lucet-notice[data-state='interrupted'] {
+  background: var(--lucet-state-refused-surface);
+  border-color: var(--lucet-state-refused-border);
+  color: var(--lucet-state-refused-foreground);
+}
+
+.lucet-notice[data-state='partial'],
+.lucet-notice[data-state='degraded'],
+.lucet-notice[data-state='rate-limited'] {
+  background: var(--lucet-state-degraded-surface);
+  border-color: var(--lucet-state-degraded-border);
+  color: var(--lucet-state-degraded-foreground);
+}
+
+.lucet-notice[data-state='down'],
+.lucet-notice[data-state='failed'] {
+  background: var(--lucet-state-failed-surface);
+  border-color: var(--lucet-state-failed-border);
+  color: var(--lucet-state-failed-foreground);
+}
+
+.lucet-notice[data-state='stale'],
+.lucet-notice[data-state='queued'] {
+  background: var(--lucet-state-stale-surface);
+  border-color: var(--lucet-state-stale-border);
+  color: var(--lucet-state-stale-foreground);
+}
+
+.lucet-notice[data-state='uncertain'] {
+  background: var(--lucet-state-uncertain-surface);
+  border-color: var(--lucet-state-uncertain-border);
+  color: var(--lucet-state-uncertain-foreground);
+}
+
+/* ============================================================
+ * Composer
+ * ============================================================ */
+
+.lucet-composer {
+  border: 1px solid var(--lucet-input);
+  border-radius: var(--lucet-radius-xl);
+  background: var(--lucet-card);
+  padding: var(--lucet-space-2);
+  transition:
+    border-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    box-shadow var(--lucet-duration-normal) var(--lucet-ease-out);
+}
+
+.lucet-composer:focus-within {
+  border-color: var(--lucet-ring);
+}
+
+.lucet-composer__lock {
+  margin: 0 0 var(--lucet-space-2);
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: var(--lucet-radius-md);
+  background: var(--lucet-state-queued-surface);
+  color: var(--lucet-state-queued-foreground);
+  font-size: var(--lucet-text-sm);
+}
+
+.lucet-composer__field {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--lucet-text-base);
+  line-height: var(--lucet-leading-normal);
+  padding: var(--lucet-space-2);
+  resize: vertical;
+}
+
+.lucet-composer__field:focus { outline: none; }
+
+.lucet-composer__field::placeholder { color: var(--lucet-muted-foreground); }
+
+.lucet-composer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lucet-space-2);
+  padding-top: var(--lucet-space-1);
+}
+
+.lucet-composer__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  min-width: 0;
+}
+
+/* Expressive lifts the composer off the page, the way the reference does. */
+:root[data-expression='expressive'] .lucet-composer {
+  border-color: transparent;
+  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+}
+
+:root[data-expression='expressive'] .lucet-composer:focus-within {
+  box-shadow: var(--lucet-elevation-3), var(--lucet-highlight);
+}
