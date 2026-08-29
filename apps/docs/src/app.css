@@ -1,28 +1,67 @@
 /*
- * Structural only, on purpose.
+ * Docs shell layout.
  *
- * Step 0 is shell first, unstyled: the trigger rail, inspector, drawer mode, and
- * deep links all work before any visual language exists. The token layer is its
- * own piece of work, and it gets designed against something that already
- * behaves rather than against a mockup.
+ * Structural only. No visual design decisions live here: no type scale, no
+ * spacing rhythm, no component styling. What it DOES do is consume the surface
+ * and border tokens, because a shell that ignores them renders dark text on a
+ * dark ground the moment someone switches theme, and "unstyled" should never
+ * mean "unreadable".
  *
- * Nothing in here is a design decision. Layout and scroll containment only.
+ * The components themselves still consume nothing. That is the deliberate part.
  */
 
-/* Flex column rather than a hardcoded header height, which overlapped as soon
-   as the header grew a second row of controls. */
+:root {
+  /* Keeps form controls and scrollbars in step with the chosen theme. */
+  color-scheme: light dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: var(--lucet-font-sans);
+  background: var(--lucet-background);
+  color: var(--lucet-foreground);
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
 header {
-  padding: 1rem;
-  border-bottom: 1px solid;
   flex: none;
+  padding: var(--lucet-space-4);
+  border-bottom: 1px solid var(--lucet-border);
+}
+
+header h1 {
+  margin: 0;
+  font-size: var(--lucet-text-xl);
+}
+
+header p {
+  margin: var(--lucet-space-1) 0 var(--lucet-space-3);
+  color: var(--lucet-muted-foreground);
+  font-size: var(--lucet-text-sm);
+}
+
+fieldset {
+  border: 1px solid var(--lucet-border);
+  border-radius: var(--lucet-radius-md);
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  margin: 0 0 var(--lucet-space-2);
+  font-size: var(--lucet-text-sm);
+}
+
+legend {
+  color: var(--lucet-muted-foreground);
+  font-size: var(--lucet-text-xs);
+  padding: 0 var(--lucet-space-1);
 }
 
 main {
@@ -34,8 +73,8 @@ main {
 
 main > * {
   overflow-y: auto;
-  padding: 1rem;
-  border-left: 1px solid;
+  padding: var(--lucet-space-4);
+  border-left: 1px solid var(--lucet-border);
 }
 
 main > :first-child {
@@ -50,39 +89,55 @@ main[data-mode='drawer'] > :nth-child(2) {
 main[data-mode='drawer'] section[aria-label='Conversation'] {
   position: sticky;
   bottom: 0;
-  border: 1px solid;
-  background: Canvas;
+  border: 1px solid var(--lucet-border);
+  border-radius: var(--lucet-radius-lg);
+  background: var(--lucet-card);
   max-height: 60%;
   overflow-y: auto;
-  padding: 0.5rem;
-}
-
-pre {
-  overflow-x: auto;
-  font-size: 0.75rem;
-}
-
-textarea {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
+  padding: var(--lucet-space-2);
 }
 
 /* Tokens view is a single column, not the three-pane harness. */
 main[data-mode='tokens'] {
   display: block;
   overflow-y: auto;
+  border-left: 0;
 }
 
-main[data-mode='tokens'] table {
-  border-collapse: collapse;
-  font-size: 0.8125rem;
+code,
+pre {
+  font-family: var(--lucet-font-mono);
 }
 
-main[data-mode='tokens'] td,
-main[data-mode='tokens'] th {
-  text-align: left;
-  padding: 0.125rem 0.75rem 0.125rem 0;
-  vertical-align: middle;
-  font-weight: normal;
+pre {
+  overflow-x: auto;
+  font-size: var(--lucet-text-xs);
+}
+
+textarea,
+input,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--lucet-background);
+  border: 1px solid var(--lucet-input);
+  border-radius: var(--lucet-radius-md);
+  padding: var(--lucet-space-2);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--lucet-border);
+}
+
+:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
