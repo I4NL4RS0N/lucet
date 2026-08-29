@@ -38,9 +38,9 @@
   --lucet-duration-slow: 240ms;
 
   --lucet-highlight: none;
-  --lucet-control-gradient: none;
   --lucet-control-top: none;
   --lucet-control-lip: none;
+  --lucet-control-cast: none;
   --lucet-control-press: none;
   --lucet-primary-glow: none;
 }
@@ -86,26 +86,27 @@
   /*
    * TACTILE CONTROLS.
    *
-   * A control that looks pressable is doing light physics, not decoration. The
-   * ramp is vertical and short: lighter at the top where light lands, base
-   * through the middle, a shade darker at the bottom. A gradient that travels
-   * across hue reads as 2021; one that travels down lightness reads as a
-   * surface catching light.
+   * Reference direction, and the lesson in it is restraint. Their dark button
+   * ramps 323232 to 222222; the light one ramps E5E5E5 to E2E2E2, three values
+   * apart. The dimensionality is four nearly-invisible layers stacking, not one
+   * visible gradient.
    *
-   * Four parts, and the fourth is the one people skip. Without a press state
-   * that inverts the lighting it is a decorated rectangle, not a button.
+   * Critically, the white is a ONE PIXEL inner shadow at the top edge, not a
+   * wash across the face. That distinction is not cosmetic: a 14% white face
+   * overlay drops a primary button from 5.5:1 to 3.1:1 and fails WCAG 1.4.3,
+   * while a 1px edge line has no text on it and costs nothing. The fill ramp
+   * therefore modulates the fill's own lightness rather than overlaying white.
+   *
+   * Four layers, and the fourth is the one people skip: a press state that
+   * inverts the lighting. Without it, it is a decorated rectangle.
    */
-  --lucet-control-gradient: linear-gradient(
-    180deg,
-    oklch(1 0 0 / 0.14),
-    oklch(1 0 0 / 0) 55%,
-    oklch(0 0 0 / 0.06)
-  );
-  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.22);
-  /* The lip. A raised edge has an underside, and this is it. */
-  --lucet-control-lip: inset 0 -1px 0 oklch(0 0 0 / 0.22);
+  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.16);
+  /* The lip: an inner shadow rising from the bottom edge, softly spread. */
+  --lucet-control-lip: inset 0 -1px 1.2px 0.35px oklch(0 0 0 / 0.4);
+  /* Negative spread keeps the cast shadow tight instead of bleeding wide. */
+  --lucet-control-cast: 0 2px 4px -1px oklch(0 0 0 / 0.35);
   --lucet-control-press:
-    inset 0 1px 3px oklch(0 0 0 / 0.28), inset 0 -1px 0 oklch(1 0 0 / 0.1);
+    inset 0 1px 2.5px oklch(0 0 0 / 0.3), inset 0 -1px 0 oklch(1 0 0 / 0.08);
 
   /* Tied to the accent, so a greyscale default stays greyscale. */
   --lucet-primary-glow: 0 6px 20px -6px
@@ -115,11 +116,11 @@
 @media (prefers-color-scheme: dark) {
   :root[data-expression='expressive']:not([data-theme='light']) {
     --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
-    --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.12);
+    --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
   }
 }
 
 :root[data-theme='dark'][data-expression='expressive'] {
   --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
-  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.12);
+  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
 }

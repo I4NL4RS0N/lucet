@@ -455,32 +455,60 @@
  * ============================================================ */
 
 :root[data-expression='expressive'] .lucet-button[data-variant='primary'] {
-  background-image: var(--lucet-control-gradient);
-  box-shadow: var(--lucet-control-top), var(--lucet-control-lip), var(--lucet-primary-glow);
+  /*
+   * The ramp modulates the fill's own lightness. It never overlays white,
+   * because a white wash across the face is what broke contrast: 5.5:1 becomes
+   * 3.1:1 and the button fails AA. The lightest stop is the one that has to
+   * pass, which is why step 9 sits at L 0.50.
+   */
+  background-image: linear-gradient(
+    180deg,
+    oklch(from var(--lucet-primary) calc(l + 0.025) c h),
+    oklch(from var(--lucet-primary) calc(l - 0.03) c h)
+  );
+  box-shadow:
+    var(--lucet-control-top),
+    var(--lucet-control-lip),
+    /* The ring. A spread shadow rather than a border, so it composites with
+       the rest of the stack and costs nothing in layout. */
+    0 0 0 1px oklch(from var(--lucet-primary) calc(l - 0.06) c h),
+    var(--lucet-control-cast),
+    var(--lucet-primary-glow);
+  border-color: transparent;
   border-radius: var(--lucet-radius-container);
   padding-inline: var(--lucet-space-4);
 }
 
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
-  background-image: var(--lucet-control-gradient);
-  box-shadow: var(--lucet-control-top), var(--lucet-control-lip);
+  /* Three values apart, as the light reference is. Almost nothing, on purpose. */
+  background-image: linear-gradient(
+    180deg,
+    oklch(from var(--lucet-secondary) calc(l + 0.012) c h),
+    oklch(from var(--lucet-secondary) calc(l - 0.012) c h)
+  );
+  box-shadow:
+    var(--lucet-control-top),
+    var(--lucet-control-lip),
+    0 0 0 1px var(--lucet-border),
+    var(--lucet-control-cast);
+  border-color: transparent;
 }
 
 :root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled),
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
-  filter: brightness(1.06);
+  filter: brightness(1.04);
 }
 
 /*
- * The press. The lighting inverts: the lit edge goes to the bottom, the shadow
- * moves inside, and the control drops half a pixel. This is the part that makes
- * it feel like a button rather than look like one.
+ * The press. Lighting inverts: the lit edge goes to the bottom, the shadow
+ * moves inside, the cast shadow collapses, and the control drops half a pixel.
+ * This is the part that makes it feel like a button rather than look like one.
  */
 :root[data-expression='expressive'] .lucet-button:active:not(:disabled) {
   box-shadow: var(--lucet-control-press);
   background-image: none;
   transform: translateY(0.5px);
-  filter: brightness(0.97);
+  filter: brightness(0.98);
 }
 
 :root[data-expression='expressive'] .lucet-button:disabled {
@@ -493,6 +521,20 @@
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
   border-radius: var(--lucet-radius-full);
   padding-inline: var(--lucet-space-3);
+}
+
+/*
+ * Corner smoothing. The reference runs iOS-style squircles at 60%, and it is
+ * the detail that separates "rounded rectangle" from "considered object".
+ * Progressive enhancement: browsers without corner-shape get the plain radius,
+ * which is not a downgrade, just less.
+ */
+@supports (corner-shape: squircle) {
+  :root[data-expression='expressive'] .lucet-button,
+  :root[data-expression='expressive'] .lucet-composer,
+  :root[data-expression='expressive'] .sheet__stage {
+    corner-shape: squircle;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

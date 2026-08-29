@@ -210,10 +210,18 @@ select {
 
 :root[data-expression='expressive'] select {
   background-color: var(--lucet-card);
-  background-image: var(--lucet-control-gradient);
+  background-image: linear-gradient(
+    180deg,
+    oklch(from var(--lucet-card) calc(l + 0.012) c h),
+    oklch(from var(--lucet-card) calc(l - 0.012) c h)
+  );
   border-color: transparent;
   border-radius: var(--lucet-radius-full);
-  box-shadow: var(--lucet-control-top), var(--lucet-control-lip);
+  box-shadow:
+    var(--lucet-control-top),
+    var(--lucet-control-lip),
+    0 0 0 1px var(--lucet-border),
+    var(--lucet-control-cast);
 }
 
 :root[data-expression='expressive'] select:active {
