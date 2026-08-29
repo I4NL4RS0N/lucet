@@ -14,7 +14,7 @@
 
 /* ---------------------------------------------------------------
  * System: dense, quiet, enterprise-grade.
- * Depth comes from a hairline. Nothing floats.
+ * Depth comes from a hairline. Nothing floats, so nothing looks pressable.
  * --------------------------------------------------------------- */
 :root,
 :root[data-expression='system'] {
@@ -38,14 +38,17 @@
   --lucet-duration-slow: 240ms;
 
   --lucet-highlight: none;
-  --lucet-primary-gradient: none;
+  --lucet-control-gradient: none;
+  --lucet-control-top: none;
+  --lucet-control-lip: none;
+  --lucet-control-press: none;
   --lucet-primary-glow: none;
 }
 
 /* ---------------------------------------------------------------
  * Expressive: surfaces float, light comes from above.
  *
- * Three things carry it, and none of them is a gradient:
+ * Three things carry it, and none of them is a decorative gradient:
  *   1. containers are near-pill, controls inside are soft rectangles
  *   2. shadow is layered, not one blur. Real light falls off in stages
  *   3. a one-pixel top highlight, so a raised edge catches the light
@@ -81,20 +84,30 @@
   --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.5);
 
   /*
-   * The one gradient, and the one glow.
+   * TACTILE CONTROLS.
    *
-   * Reference direction wanted a vivid gradient CTA. Held to a single element
-   * and a narrow hue sweep: a gradient that travels far reads as 2021 and dates
-   * the whole piece, while a short one just reads as light falling on a
-   * surface. It sweeps within the accent rather than to a second colour, so it
-   * still works when the accent is greyscale, which is the default.
+   * A control that looks pressable is doing light physics, not decoration. The
+   * ramp is vertical and short: lighter at the top where light lands, base
+   * through the middle, a shade darker at the bottom. A gradient that travels
+   * across hue reads as 2021; one that travels down lightness reads as a
+   * surface catching light.
+   *
+   * Four parts, and the fourth is the one people skip. Without a press state
+   * that inverts the lighting it is a decorated rectangle, not a button.
    */
-  --lucet-primary-gradient: linear-gradient(
-    160deg,
-    oklch(from var(--lucet-primary) calc(l + 0.06) c calc(h - 12)),
-    var(--lucet-primary) 55%,
-    oklch(from var(--lucet-primary) calc(l - 0.05) c calc(h + 14))
+  --lucet-control-gradient: linear-gradient(
+    180deg,
+    oklch(1 0 0 / 0.14),
+    oklch(1 0 0 / 0) 55%,
+    oklch(0 0 0 / 0.06)
   );
+  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.22);
+  /* The lip. A raised edge has an underside, and this is it. */
+  --lucet-control-lip: inset 0 -1px 0 oklch(0 0 0 / 0.22);
+  --lucet-control-press:
+    inset 0 1px 3px oklch(0 0 0 / 0.28), inset 0 -1px 0 oklch(1 0 0 / 0.1);
+
+  /* Tied to the accent, so a greyscale default stays greyscale. */
   --lucet-primary-glow: 0 6px 20px -6px
     oklch(var(--lucet-al-9) calc(var(--lucet-accent-c) * 0.9) var(--lucet-accent-h) / 0.55);
 }
@@ -102,9 +115,11 @@
 @media (prefers-color-scheme: dark) {
   :root[data-expression='expressive']:not([data-theme='light']) {
     --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+    --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.12);
   }
 }
 
 :root[data-theme='dark'][data-expression='expressive'] {
   --lucet-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+  --lucet-control-top: inset 0 1px 0 oklch(1 0 0 / 0.12);
 }

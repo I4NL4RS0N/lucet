@@ -44,8 +44,19 @@
   --lucet-al-6: 0.865;
   --lucet-al-7: 0.815;
   --lucet-al-8: 0.740;
-  --lucet-al-9: 0.620;
-  --lucet-al-10: 0.575;
+  /*
+   * 0.52, and the number is not a taste decision.
+   *
+   * Step 9 is the solid a button is built from, and a button label is normal
+   * text, so WCAG 2.2 AA 1.4.3 demands 4.5:1. Measured across all ten accents,
+   * white text fails on every one of them above L 0.53 (teal is the binding
+   * constraint at 4.60). 0.52 clears it with margin on the worst case.
+   *
+   * This is why the brand solid is deeper than Radix's, whose step 9 is bright
+   * and only promises 3:1. Their step 9 is not required to carry text.
+   */
+  --lucet-al-9: 0.52;
+  --lucet-al-10: 0.475;
   --lucet-al-11: 0.505;
   --lucet-al-12: 0.310;
 
@@ -74,8 +85,8 @@
     --lucet-al-6: 0.380;
     --lucet-al-7: 0.445;
     --lucet-al-8: 0.545;
-    --lucet-al-9: 0.620;
-    --lucet-al-10: 0.670;
+    --lucet-al-9: 0.52;
+    --lucet-al-10: 0.6;
     --lucet-al-11: 0.775;
     --lucet-al-12: 0.905;
 
@@ -103,8 +114,8 @@
   --lucet-al-6: 0.380;
   --lucet-al-7: 0.445;
   --lucet-al-8: 0.545;
-  --lucet-al-9: 0.620;
-  --lucet-al-10: 0.670;
+  --lucet-al-9: 0.52;
+  --lucet-al-10: 0.6;
   --lucet-al-11: 0.775;
   --lucet-al-12: 0.905;
 

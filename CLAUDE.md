@@ -54,6 +54,10 @@ Repeated here because they are easy to violate by reflex:
 - **Not Storybook.** The docs site is one running interface with injected states,
   never component-at-a-time with a props panel.
 - All state logic lives in `core`. React stays thin.
+- **WCAG 2.2 AA is a hard requirement on every component**, not a pass at the
+  end. Watch 2.5.8 target size (24x24), 2.4.11 focus not obscured, 1.4.11
+  non-text contrast 3:1, and 1.4.1 use of colour: every state needs a distinct
+  silhouette, never colour alone.
 - Scope discipline: ten to twelve components done properly, with written
   rationale for each. Pick from the named patterns, do not build all ten.
 - **This repo is public. Never commit a secret.** History goes public with it and

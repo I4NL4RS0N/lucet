@@ -27,6 +27,15 @@
  * ============================================================ */
 
 .lucet-button {
+  /* WCAG 2.2 AA, 2.5.8 Target Size (Minimum). 24x24 is the floor, and small
+     ghost chips fall under it on padding alone. Enforced here so no variant
+     can opt out by accident. */
+  min-block-size: 1.75rem;
+  min-inline-size: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lucet-space-1);
   font: inherit;
   font-size: var(--lucet-text-sm);
   line-height: 1;
@@ -446,18 +455,37 @@
  * ============================================================ */
 
 :root[data-expression='expressive'] .lucet-button[data-variant='primary'] {
-  background-image: var(--lucet-primary-gradient);
-  box-shadow: var(--lucet-primary-glow), var(--lucet-highlight);
+  background-image: var(--lucet-control-gradient);
+  box-shadow: var(--lucet-control-top), var(--lucet-control-lip), var(--lucet-primary-glow);
   border-radius: var(--lucet-radius-container);
   padding-inline: var(--lucet-space-4);
 }
 
-:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
+:root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
+  background-image: var(--lucet-control-gradient);
+  box-shadow: var(--lucet-control-top), var(--lucet-control-lip);
+}
+
+:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled),
+:root[data-expression='expressive'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
   filter: brightness(1.06);
 }
 
-:root[data-expression='expressive'] .lucet-button[data-variant='primary']:disabled {
+/*
+ * The press. The lighting inverts: the lit edge goes to the bottom, the shadow
+ * moves inside, and the control drops half a pixel. This is the part that makes
+ * it feel like a button rather than look like one.
+ */
+:root[data-expression='expressive'] .lucet-button:active:not(:disabled) {
+  box-shadow: var(--lucet-control-press);
+  background-image: none;
+  transform: translateY(0.5px);
+  filter: brightness(0.97);
+}
+
+:root[data-expression='expressive'] .lucet-button:disabled {
   box-shadow: none;
+  background-image: none;
 }
 
 /* Chips go pill in Expressive, the way the reference does. */
@@ -467,41 +495,8 @@
   padding-inline: var(--lucet-space-3);
 }
 
-/* ============================================================
- * State icons
- *
- * Shape carries the meaning independently of colour, so the icon inherits the
- * state's foreground and needs no rules of its own beyond alignment.
- * ============================================================ */
-
-.lucet-icon {
-  flex: none;
-  /* Optical alignment to the cap height of the label beside it, not the box. */
-  margin-top: 0.1em;
-}
-
-/* The icon sits outside the text column so wrapped lines stay aligned to each
-   other rather than to the glyph. */
-.lucet-notice__body {
-  flex: 1 1 20ch;
-}
-
-.lucet-tool__head { align-items: center; }
-
-.lucet-tool[data-status='running'] .lucet-icon {
-  animation: lucet-spin 1.1s linear infinite;
-}
-
-@keyframes lucet-spin {
-  to { transform: rotate(360deg); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .lucet-tool[data-status='running'] .lucet-icon { animation: none; }
-}
-
-.lucet-notice[data-state='operational'] {
-  background: var(--lucet-state-operational-surface);
-  border-color: var(--lucet-state-operational-border);
-  color: var(--lucet-state-operational-foreground);
+  :root[data-expression='expressive'] .lucet-button:active:not(:disabled) {
+    transform: none;
+  }
 }

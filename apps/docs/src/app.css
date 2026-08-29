@@ -203,7 +203,22 @@ select {
   background: var(--lucet-background);
   border: 1px solid var(--lucet-input);
   border-radius: var(--lucet-radius-md);
-  padding: var(--lucet-space-1);
+  padding: var(--lucet-space-1) var(--lucet-space-2);
+  /* 2.5.8 Target Size (Minimum). */
+  min-block-size: 1.75rem;
+}
+
+:root[data-expression='expressive'] select {
+  background-color: var(--lucet-card);
+  background-image: var(--lucet-control-gradient);
+  border-color: transparent;
+  border-radius: var(--lucet-radius-full);
+  box-shadow: var(--lucet-control-top), var(--lucet-control-lip);
+}
+
+:root[data-expression='expressive'] select:active {
+  box-shadow: var(--lucet-control-press);
+  background-image: none;
 }
 
 textarea {
