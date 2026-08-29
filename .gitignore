@@ -54,3 +54,4 @@ scratch/
 
 # private, local-only. see CLAUDE.md
 docs/design-brief.md
+docs/todo.md
