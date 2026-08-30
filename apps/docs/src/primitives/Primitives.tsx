@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
- * The playground. Private, never deployed.
+ * The primitives page. Private, never deployed.
  *
  * Fourteen primitives on one page, with no prose between them. The point is to
  * settle look and feel where nothing else is competing for attention.
@@ -110,20 +110,71 @@ const Glyph = {
   ),
 }
 
-export function Playground() {
+/*
+ * Status glyphs.
+ *
+ * These were four abstract dots -- a circle, a rotated square, a square and a
+ * 3px bar -- differing only in silhouette so they would survive greyscale.
+ * They satisfied 1.4.1 and communicated nothing: nobody reads "degraded" out of
+ * a rotated square, and at 7px the bar just looked like a stray dash.
+ *
+ * Real glyphs carry the same greyscale distinction AND say what they mean, so
+ * the shape stops being a code the reader has to learn.
+ */
+const badgeStroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.25, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
+
+const StatusGlyph = {
+  ok: (
+    <svg className="badge__icon" viewBox="0 0 24 24" {...badgeStroke} aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </svg>
+  ),
+  warn: (
+    <svg className="badge__icon" viewBox="0 0 24 24" {...badgeStroke} aria-hidden>
+      <path d="M12 4.5 21 19.5H3z" />
+      <path d="M12 10v4" />
+      <path d="M12 17.2v.1" />
+    </svg>
+  ),
+  bad: (
+    <svg className="badge__icon" viewBox="0 0 24 24" {...badgeStroke} aria-hidden>
+      <path d="M8.4 3.5h7.2l5.1 5.1v7.2l-5.1 5.1H8.4L3.3 15.8V8.6z" />
+      <path d="M9.5 9.5l5 5M14.5 9.5l-5 5" />
+    </svg>
+  ),
+  info: (
+    <svg className="badge__icon" viewBox="0 0 24 24" {...badgeStroke} aria-hidden>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  ),
+}
+
+export function Primitives() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+
+  /*
+   * On the ROOT, not on this div. The library declares its tokens against
+   * :root[data-theme], so setting the attribute on a wrapper matches nothing
+   * and the page silently keeps whatever the OS preference was.
+   */
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    return () => document.documentElement.removeAttribute('data-theme')
+  }, [theme])
   const [checks, setChecks] = useState({ a: true, b: false })
   const [radio, setRadio] = useState('one')
   const [sw, setSw] = useState({ a: true, b: false })
   const [seg, setSeg] = useState('all')
 
   return (
-    <div className="pg" data-theme={theme}>
-      <header className="pg__bar">
-        <span className="pg__mark">
-          Lucet <span>· playground</span>
+    <div className="prim">
+      <header className="prim__bar">
+        <span className="prim__mark">
+          Lucet <span>· primitives</span>
         </span>
-        <div className="pg__bar-end">
+        <div className="prim__bar-end">
           <div className="seg" role="group" aria-label="Theme">
             {(['dark', 'light'] as const).map((t) => (
               <label key={t}>
@@ -135,9 +186,9 @@ export function Playground() {
         </div>
       </header>
 
-      <main className="pg__main">
-        <h1 className="pg__title">Primitives</h1>
-        <p className="pg__lede">
+      <main className="prim__main">
+        <h1 className="prim__title">Primitives</h1>
+        <p className="prim__lede">
           Every control the components will be built from, in every state.
           Private page — this is where the look gets settled before anything is
           composed.
@@ -267,10 +318,12 @@ export function Playground() {
           <Spec label="In use">
             <div className="row">
               <label className="select" style={{ inlineSize: 190 }}>
-                <select defaultValue="opus">
-                  <option value="opus">Claude Opus 4.6</option>
-                  <option value="sonnet">Claude Sonnet 4.5</option>
-                  <option value="haiku">Claude Haiku 4.5</option>
+                {/* Generic on purpose. A library that ships one vendor's model
+                    names reads as built for that vendor. */}
+                <select defaultValue="balanced">
+                  <option value="balanced">Balanced model</option>
+                  <option value="fast">Fast model</option>
+                  <option value="deep">Deep reasoning</option>
                 </select>
               </label>
               <label className="select" style={{ inlineSize: 150 }}>
@@ -405,16 +458,16 @@ export function Playground() {
           </Spec>
         </Section>
 
-        <Section n="09" name="Badge" note="four silhouettes, so they read in greyscale">
-          <span className="badge badge--ok"><span className="badge__dot" />Operational</span>
-          <span className="badge badge--warn"><span className="badge__dot" />Degraded</span>
-          <span className="badge badge--bad"><span className="badge__dot" />Down</span>
-          <span className="badge badge--info"><span className="badge__dot" />Scheduled</span>
+        <Section n="09" name="Badge" note="the glyph carries the meaning, not the colour">
+          <span className="badge badge--ok">{StatusGlyph.ok}Operational</span>
+          <span className="badge badge--warn">{StatusGlyph.warn}Degraded</span>
+          <span className="badge badge--bad">{StatusGlyph.bad}Down</span>
+          <span className="badge badge--info">{StatusGlyph.info}Scheduled</span>
           <span className="badge">Draft</span>
         </Section>
 
         <Section n="10" name="Avatar" note="initials, and a stack">
-          <span className="avatar avatar--accent">AI</span>
+          <span className="avatar avatar--solid">AI</span>
           <span className="avatar">AB</span>
           <span className="avatar avatar--lg">AB</span>
           <span className="avatar-stack">
@@ -486,6 +539,153 @@ export function Playground() {
             <div className="meter-row">
               <div className="meter meter--busy"><div className="meter__fill" /></div>
               <span>—</span>
+            </div>
+          </Spec>
+        </Section>
+
+        <Section n="15" name="Separator" note="a line is a line; it stays a border">
+          <Spec label="Default">
+            <div style={{ inlineSize: 260 }}><hr className="sep" /></div>
+          </Spec>
+          <Spec label="Strong">
+            <div style={{ inlineSize: 260 }}><hr className="sep sep--strong" /></div>
+          </Spec>
+        </Section>
+
+        <Section n="16" name="Link" note="underlined from the start, not on hover">
+          <Spec label="In prose">
+            <p style={{ maxInlineSize: 380, margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+              Answered from three sources, including{' '}
+              <a className="link" href="#0">the revised specification</a> and{' '}
+              <a className="link is-hover" href="#0">a summary from Tuesday</a>.
+            </p>
+          </Spec>
+        </Section>
+
+        <Section n="17" name="Keyboard" note="raised, because a key is a thing you press">
+          <div className="row">
+            <kbd>⌘</kbd><kbd>⇧</kbd><kbd>⏎</kbd><kbd>Esc</kbd><kbd>Tab</kbd>
+          </div>
+        </Section>
+
+        <Section n="18" name="Spinner" note="unknown duration, no false progress">
+          <div className="row">
+            <span className="spinner" />
+            <span className="spinner spinner--lg" />
+            <span style={{ fontSize: 13, color: 'var(--ink-3)' }}>Running…</span>
+          </div>
+        </Section>
+
+        <Section n="19" name="Skeleton" note="the shape of what is coming, not a spinner">
+          <div style={{ display: 'flex', gap: 12, inlineSize: 340 }}>
+            <span className="skel skel--circle" style={{ inlineSize: 28, blockSize: 28, flex: 'none' }} />
+            <div style={{ display: 'grid', gap: 8, flex: 1 }}>
+              <span className="skel skel--title" />
+              <span className="skel skel--text" />
+              <span className="skel skel--text" style={{ inlineSize: '80%' }} />
+            </div>
+          </div>
+        </Section>
+
+        <Section n="20" name="Disclosure" note="what reasoning and tool calls are built on">
+          <div style={{ display: 'grid', gap: 10, inlineSize: 420 }}>
+            <div className="disc">
+              <button className="disc__head" aria-expanded="false">
+                <span className="caret" />
+                Thought for 4 seconds
+                <span className="disc__meta">collapsed</span>
+              </button>
+            </div>
+            <div className="disc">
+              <button className="disc__head is-hover" aria-expanded="true">
+                <span className="caret" />
+                Searched 3 documents
+                <span className="disc__meta">2 of 3 returned</span>
+              </button>
+              <div className="disc__body">
+                Two sources came back and the third timed out, so this is not the
+                full picture.
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section n="21" name="Code" note="quoted material, so the surface is sunken">
+          <div style={{ display: 'grid', gap: 12, inlineSize: 460 }}>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+              Inline, as in <code>npm install</code>, sits in running text.
+            </p>
+            <div className="codeblock">
+              <div className="codeblock__bar">
+                bash
+                <button className="btn btn--sm btn--lead">{Glyph.copy} Copy</button>
+              </div>
+              <pre><code>{`npm install lucet lucet-react`}</code></pre>
+            </div>
+          </div>
+        </Section>
+
+        <Section n="22" name="Prose" note="a streamed answer is this — the most important surface here">
+          <div className="prose">
+            <p>
+              All three describe the same change, but only the last one gives a
+              date for it. Where the earlier two disagree with it, they are{' '}
+              <strong>older rather than wrong</strong>.
+            </p>
+            <h3>What changed</h3>
+            <ul>
+              <li>The review step now runs after approval, not before it.</li>
+              <li>Two fields were merged into one.</li>
+              <li>
+                The old <code>archive</code> flag is gone.
+              </li>
+            </ul>
+            <blockquote>
+              Anything filed before Tuesday follows the previous order.
+            </blockquote>
+          </div>
+        </Section>
+
+        <Section n="23" name="Loaders" note="waiting is not one state, so it is not one loader">
+          <Spec label="Long and unknown — calm, so it does not read as stuck">
+            <div className="row">
+              <span className="breathe" />
+              <span style={{ fontSize: 13, color: 'var(--ink-3)' }}>Still working</span>
+            </div>
+          </Spec>
+
+          <Spec label="Staggered — reads as progress, not a blinking blob">
+            <span className="dots"><i /><i /><i /></span>
+          </Spec>
+
+          <Spec label="Named activity, with elapsed">
+            <div style={{ display: 'grid', gap: 10 }}>
+              <span className="working">
+                <span className="breathe" />
+                <span className="working__label">Searching documents</span>
+                <span className="working__time">4.2s</span>
+              </span>
+              <span className="working">
+                <span className="breathe" />
+                <span className="working__label">Composing an answer</span>
+                <span className="working__time">1m 12s</span>
+              </span>
+            </div>
+          </Spec>
+
+          <Spec label="Text still arriving">
+            <p style={{ margin: 0, maxInlineSize: 330, fontSize: 15, color: 'var(--ink-2)' }}>
+              The review step now runs after approval, which means anything filed
+              before Tuesday follows the<span className="stream-cursor" />
+            </p>
+          </Spec>
+
+          <Spec label="Staged work, known sequence">
+            <div className="row">
+              <span className="steps">
+                <i data-state="done" /><i data-state="done" /><i data-state="now" /><i /><i />
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>Step 3 of 5</span>
             </div>
           </Spec>
         </Section>

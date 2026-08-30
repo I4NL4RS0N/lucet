@@ -1,223 +1,87 @@
-/*
- * The playground.
- *
- * A private page. It is never deployed -- Vite's default build input is
- * index.html, so this second entry exists only in dev.
- *
- * Its job is to settle look and feel on ordinary primitives, away from the
- * Konfabulator, because judging a design system through a page that does not
- * itself read well is how three rounds of tuning went nowhere.
- *
- * IT DELIBERATELY DOES NOT CONSUME THE SHIPPED TOKENS. The palette below is
- * local and self-contained. Polishing against the current tokens would only
- * reproduce the look we are replacing. Once a decision here is agreed it gets
- * promoted into packages/core/styles and this file loses the local copy.
- */
-
-/* ==========================================================================
- * PALETTE
- *
- * The single biggest failure of the previous dark theme was RANGE: page 0.12,
- * card 0.205 and every notice around 0.25, all crowded into the bottom of the
- * scale with nothing to separate against. All the material work was invisible
- * because there was no room for it to show.
- *
- * So the surfaces are spread deliberately, and every raised thing carries a
- * white ring whose alpha RISES with elevation -- the one idea worth taking
- * from the reference. Edge brightness and height become the same variable.
- * ========================================================================== */
-
-.pg {
-  color-scheme: dark;
-
-  --h: 265;
-
-  --page: oklch(0.165 0.006 var(--h));
-  --sunken: oklch(0.145 0.006 var(--h));
-  --surface: oklch(0.205 0.007 var(--h));
-  --raised: oklch(0.235 0.008 var(--h));
-  --field: oklch(0.185 0.007 var(--h));
-  --hover: oklch(0.30 0.011 var(--h));
-  --active: oklch(0.345 0.012 var(--h));
-
-  --ink: oklch(0.97 0.002 var(--h));
-  --ink-2: oklch(0.76 0.008 var(--h));
-  /* 0.60, not the reference's 0.541: at 0.541 the muted step lands near 3.5:1
-     on the page and fails 1.4.3. Quiet is not the same as unreadable. */
-  --ink-3: oklch(0.6 0.01 var(--h));
-
-  --line: oklch(1 0 0 / 0.08);
-  --line-strong: oklch(1 0 0 / 0.14);
-
-  /* Elevation-scaled ring. */
-  --ring-1: 0 0 0 1px oklch(1 0 0 / 0.09);
-  --ring-2: 0 0 0 1px oklch(1 0 0 / 0.12);
-  --ring-3: 0 0 0 1px oklch(1 0 0 / 0.16);
-
+.prim {
   /*
-   * RECESS DEPTH SCALES WITH THE RECESS.
+   * THIS BLOCK IS A MAPPING, NOT A PALETTE.
    *
-   * These were five hand-written insets with four different alphas, and worse,
-   * the same `0 1px 2px` on a 32px field and a 6px progress bar. On a 6px bar
-   * that covers half the object; in the segmented control's 3px gutter it has
-   * nowhere to land and reads as a smudge instead of a recess. The component
-   * was not wrong -- it was borrowing a recipe scaled for something four times
-   * its size.
+   * It used to declare 40-odd raw colours, deliberately, so the look could be
+   * settled without fighting the shipped tokens. That was the right way to
+   * START and the wrong thing to keep: two palettes drift, and the whole point
+   * of settling a look here was to move it into the library.
    *
-   * Three depths, chosen by the size of the hole, and nothing hand-rolls its
-   * own any more.
+   * Every decision below now lives in packages/core/styles. What remains is a
+   * short local vocabulary aliased onto the public token API, so the names read
+   * naturally on this page and there is still exactly one source of truth.
+   * Change a value in core and this page moves with it.
    */
-  --inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
-  --inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
-  --inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.3);
 
-  --cast-1: 0 1px 2px oklch(0 0 0 / 0.4);
-  --cast-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 4px 12px oklch(0 0 0 / 0.35);
-  --cast-3: 0 2px 6px oklch(0 0 0 / 0.45), 0 12px 32px oklch(0 0 0 / 0.5);
+  --page: var(--lucet-background);
+  --sunken: var(--lucet-subtle);
+  --surface: var(--lucet-card);
+  --raised: var(--lucet-secondary);
+  --field: var(--lucet-muted);
+  --hover: var(--lucet-hover);
+  --active: var(--lucet-hover-strong);
 
-  /* The lit top edge. This is what reads as thickness. */
-  --lit: inset 0 1px 0 oklch(1 0 0 / 0.1);
-  --lit-strong: inset 0 1px 0 oklch(1 0 0 / 0.16);
+  --ink: var(--lucet-foreground);
+  --ink-2: var(--lucet-subtle-foreground);
+  --ink-3: var(--lucet-muted-foreground);
 
-  /*
-   * An accent that is actually visible. Grey-by-default left every previous
-   * screen with no focal point at all, so nothing drew the eye anywhere.
-   */
-  /*
-   * THE FILL AND THE RING ARE DIFFERENT TOKENS, because they have different
-   * jobs and therefore different contrast floors. A fill carries label text and
-   * owes it 4.5:1 (1.4.3); a ring carries nothing and owes 3:1 (1.4.11).
-   *
-   * Collapsing them cost real contrast: at a single 0.62 the ring was
-   * comfortable at 5.22:1 but white-on-fill measured 3.59:1 and failed. The
-   * fill drops to 0.52 (5.47:1) and the ring stays bright at 0.62.
-   */
-  --accent: oklch(0.52 0.17 258);
-  --accent-hover: oklch(0.56 0.17 258);
-  --accent-ring: oklch(0.62 0.17 258);
-  --accent-ink: oklch(0.78 0.11 258);
-  --accent-on: oklch(0.99 0 0);
+  --line: var(--lucet-border);
+  --line-strong: var(--lucet-input);
 
-  --ok: oklch(0.72 0.15 155);
-  --warn: oklch(0.78 0.14 75);
-  --bad: oklch(0.66 0.18 22);
+  /* Materials. The ring ramps with elevation, the inset scales with the recess;
+     both families are core's now. */
+  --ring-1: var(--lucet-hairline);
+  --ring-2: var(--lucet-hairline-raised);
+  --ring-3: var(--lucet-hairline-overlay);
+  --inset-hair: var(--lucet-inset-hair);
+  --inset-shallow: var(--lucet-inset-shallow);
+  --inset-deep: var(--lucet-inset-deep);
+  --cast-1: var(--lucet-shade-1);
+  --cast-2: var(--lucet-shade-2);
+  --cast-3: var(--lucet-shade-3);
+  --lit: var(--lucet-edge-top);
+  --lit-strong: var(--lucet-edge-top);
 
-  /*
-   * TINTS ARE OPAQUE, AND THEY ARE NOT THE TONE AT LOW ALPHA.
-   *
-   * They used to be `tone / 0.14`. That works in dark, where the tone is
-   * LIGHTER than what sits behind it and the tint reads as a glow. In light the
-   * tone is darker than the surface, so compositing it at 14% over a grey stage
-   * greys it out -- the badges went muddy, and every one of them muddy in the
-   * same direction, which is the signature of a compositing problem rather than
-   * four bad colours.
-   *
-   * Alpha had a second cost: the same badge changed colour depending on whether
-   * it sat on the page, a card, or a stage. A status colour that shifts with its
-   * backdrop is not a status colour.
-   *
-   * So a tint gets its own lightness and chroma, derived from the tone's hue
-   * only. Same rule the shipped tones.css already states: surface chroma is not
-   * the tone chroma.
-   */
-  /*
-   * And the LABEL on a tint is not the tone either, for the same reason the
-   * accent fill is not the accent ring: the tone is tuned to be read on the
-   * page, and a tint is not the page. On the light tints the tone measured
-   * 4.40:1 for ok and 3.69:1 for warn -- warn worst, because a yellow that
-   * reads correctly on white is far too light on a yellow tint.
-   */
+  /* Neutral emphasis. Not --lucet-primary: that is the accent role, and this
+     page is greyscale until an accent is deliberately chosen. */
+  --solid: var(--lucet-solid);
+  --solid-hover: var(--lucet-solid-hover);
+  --solid-fg: var(--lucet-solid-foreground);
+  --ring-focus: var(--lucet-ring);
+
+  /* Status. The only colour on the page, because it is the only colour that
+     carries information. */
+  --ok: var(--lucet-tone-success-foreground);
+  --warn: var(--lucet-tone-caution-foreground);
+  --bad: var(--lucet-tone-danger-foreground);
+  --info: var(--lucet-tone-info-foreground);
   --ink-ok: var(--ok);
   --ink-warn: var(--warn);
   --ink-bad: var(--bad);
+  --ink-info: var(--info);
+  --tint-ok: var(--lucet-tone-success-surface);
+  --tint-warn: var(--lucet-tone-caution-surface);
+  --tint-bad: var(--lucet-tone-danger-surface);
+  --tint-info: var(--lucet-tone-info-surface);
+  --bad-solid: var(--lucet-tone-danger-foreground);
+  --bad-solid-hover: var(--lucet-tone-danger-foreground);
 
-  --tint-ok: oklch(from var(--ok) 0.27 0.05 h);
-  --tint-warn: oklch(from var(--warn) 0.27 0.05 h);
-  --tint-bad: oklch(from var(--bad) 0.27 0.06 h);
-  --tint-info: oklch(from var(--accent-ring) 0.27 0.06 h);
+  --r-control: var(--lucet-radius-control);
+  --r-surface: var(--lucet-radius-surface);
+  --r-panel: var(--lucet-radius-panel);
 
-  --r-control: 9px;
-  --r-surface: 12px;
-  --r-panel: 16px;
+  --focus-w: var(--lucet-focus-width);
+  --focus-offset: var(--lucet-focus-offset);
 
-  /*
-   * The focus ring is an OUTLINE, not box-shadow layers.
-   *
-   * As box-shadow it had two failures that only measuring exposed. It lost the
-   * cascade: `:checked` rules are declared after the focus rules and set their
-   * own box-shadow, so a checked checkbox and a selected segment cell painted
-   * NO focus ring at all -- a 2.4.7 Level A failure that looks fine in a
-   * screenshot because the checked style is itself a visible change.
-   *
-   * And its inner spacer was hardcoded to --page, so any control sitting on
-   * something else -- a segment cell sits in a --sunken well -- drew a halo in
-   * the wrong colour.
-   *
-   * An outline composites independently of box-shadow, needs no spacer colour,
-   * and follows border-radius.
-   */
-  --focus-w: 2px;
-  --focus-offset: 2px;
-
-  --fast: 110ms cubic-bezier(0.2, 0, 0.2, 1);
-}
-
-.pg[data-theme='light'] {
-  color-scheme: light;
-
-  --page: oklch(0.965 0.003 var(--h));
-  --sunken: oklch(0.93 0.004 var(--h));
-  --surface: oklch(1 0 0);
-  --raised: oklch(1 0 0);
-  --field: oklch(0.985 0.002 var(--h));
-  --hover: oklch(0.935 0.006 var(--h));
-  --active: oklch(0.895 0.008 var(--h));
-
-  --ink: oklch(0.22 0.01 var(--h));
-  --ink-2: oklch(0.44 0.012 var(--h));
-  --ink-3: oklch(0.54 0.012 var(--h));
-
-  --line: oklch(0 0 0 / 0.09);
-  --line-strong: oklch(0 0 0 / 0.16);
-
-  /* In light the ring is a DARK line, so rising reads as more defined rather
-     than brighter. Same idea, opposite direction. */
-  --ring-1: 0 0 0 1px oklch(0 0 0 / 0.08);
-  --ring-2: 0 0 0 1px oklch(0 0 0 / 0.1);
-  --ring-3: 0 0 0 1px oklch(0 0 0 / 0.13);
-
-  --inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.1);
-  --inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.08);
-  --inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.07);
-
-  --cast-1: 0 1px 1px oklch(0 0 0 / 0.05);
-  --cast-2: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 12px oklch(0 0 0 / 0.06);
-  --cast-3: 0 2px 6px oklch(0 0 0 / 0.08), 0 12px 32px oklch(0 0 0 / 0.1);
-
-  --lit: inset 0 1px 0 oklch(1 0 0 / 0.9);
-  --lit-strong: inset 0 1px 0 oklch(1 0 0 / 1);
-
-  --accent: oklch(0.55 0.19 258);
-  --accent-hover: oklch(0.5 0.19 258);
-  --accent-ring: oklch(0.55 0.19 258);
-  --accent-ink: oklch(0.45 0.17 258);
-
-  --ok: oklch(0.52 0.14 155);
-  --warn: oklch(0.58 0.13 75);
-  --bad: oklch(0.53 0.19 22);
-
-  --ink-ok: oklch(from var(--ok) 0.48 c h);
-  --ink-warn: oklch(from var(--warn) 0.50 c h);
-  --ink-bad: oklch(from var(--bad) 0.52 c h);
-
-  --tint-ok: oklch(from var(--ok) 0.945 0.045 h);
-  --tint-warn: oklch(from var(--warn) 0.945 0.05 h);
-  --tint-bad: oklch(from var(--bad) 0.945 0.04 h);
-  --tint-info: oklch(from var(--accent) 0.95 0.04 h);
+  --fast: var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 
 /* ==========================================================================
  * PAGE SHELL
+ *
+ * A second .prim rule, deliberately: the block above is the palette and this one
+ * is layout. Splitting them by concern is the reason there are two, and the
+ * only reason there should ever be two.
  * ========================================================================== */
 
 * { box-sizing: border-box; }
@@ -235,7 +99,7 @@ body {
   font-feature-settings: 'cv05' 1, 'ss03' 1;
 }
 
-.pg {
+.prim {
   min-block-size: 100vh;
   /* pretty is the default for short-to-medium text; balance is reserved for
      headings, where it only works up to six lines anyway. */
@@ -247,7 +111,7 @@ body {
   letter-spacing: -0.006em;
 }
 
-.pg__bar {
+.prim__bar {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -260,22 +124,22 @@ body {
   border-block-end: 1px solid var(--line);
 }
 
-.pg__mark {
+.prim__mark {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-.pg__mark span { color: var(--ink-3); font-weight: 450; }
+.prim__mark span { color: var(--ink-3); font-weight: 450; }
 
-.pg__bar-end { margin-inline-start: auto; display: flex; gap: 8px; }
+.prim__bar-end { margin-inline-start: auto; display: flex; gap: 8px; }
 
-.pg__main {
+.prim__main {
   max-inline-size: 940px;
   margin: 0 auto;
   padding: 56px 32px 160px;
 }
 
-.pg__title {
+.prim__title {
   text-wrap: balance;
   font-size: 30px;
   line-height: 1.15;
@@ -284,7 +148,7 @@ body {
   margin: 0 0 10px;
 }
 
-.pg__lede {
+.prim__lede {
   text-wrap: pretty;
   margin: 0 0 8px;
   color: var(--ink-2);
@@ -326,9 +190,12 @@ body {
   padding: 32px;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
+  /* Hugs its content. Centring left the taller specs floating in dead air. */
+  align-items: flex-start;
+  gap: 26px;
 }
+
+.stage .spec { gap: 9px; }
 
 .stage--cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); align-items: start; }
 .stage--tight { padding: 22px; }
@@ -422,24 +289,26 @@ body {
 }
 
 .btn:focus-visible,
-.btn.is-focus { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.btn.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 
 .btn:disabled,
 .btn.is-disabled { opacity: 0.42; cursor: not-allowed; }
 
 .btn--primary {
-  --btn-bg: var(--accent);
-  --btn-bg-hover: var(--accent-hover);
-  --btn-bg-active: var(--accent);
-  --btn-fg: var(--accent-on);
-  box-shadow: var(--lit-strong), 0 0 0 1px oklch(0 0 0 / 0.15), var(--cast-2);
+  --btn-bg: var(--solid);
+  --btn-bg-hover: var(--solid-hover);
+  --btn-bg-active: var(--solid);
+  --btn-fg: var(--solid-fg);
+  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.18), var(--cast-2);
 }
 
 .btn--danger {
-  --btn-bg: var(--bad);
-  --btn-bg-hover: oklch(from var(--bad) calc(l + 0.05) c h);
-  --btn-bg-active: var(--bad);
-  --btn-fg: oklch(0.99 0 0);
+  --btn-bg: var(--bad-solid);
+  --btn-bg-hover: var(--bad-solid-hover);
+  --btn-bg-active: var(--bad-solid);
+  /* A destructive fill is saturated in BOTH themes, so its label is white in
+     both. That is not a themed decision, which is why it does not invert. */
+  --btn-fg: var(--lucet-accent-on-solid);
 }
 
 /* A ghost has no material until you touch it. */
@@ -475,9 +344,9 @@ body {
   border-radius: 50%;
   border: 1.5px solid currentColor;
   border-block-start-color: transparent;
-  animation: pg-spin 0.6s linear infinite;
+  animation: prim-spin 0.6s linear infinite;
 }
-@keyframes pg-spin { to { rotate: 360deg; } }
+@keyframes prim-spin { to { rotate: 360deg; } }
 
 /* ==========================================================================
  * INPUT, TEXTAREA, SELECT
@@ -501,7 +370,6 @@ body {
   transition: box-shadow var(--fast), background-color var(--fast);
 }
 
-.pg[data-theme='light'] .field { box-shadow: var(--ring-2), var(--inset-deep); }
 
 /*
  * PLACEHOLDER, AND THE ONE PLACE THIS PAGE STEPS OUTSIDE AA.
@@ -522,15 +390,14 @@ body {
  * component must enforce the label, not merely document it.
  */
 .field::placeholder {
-  color: oklch(0.5 0.01 var(--h));
+  color: color-mix(in oklab, var(--ink-3) 62%, var(--field));
   /* Not italic. Italic reads as emphasis, which is the opposite of the job. */
 }
 
-.pg[data-theme='light'] .field::placeholder { color: oklch(0.67 0.012 var(--h)); }
 .field:hover:not(:disabled),
 .field.is-hover { background-color: var(--sunken); }
 .field:focus,
-.field.is-focus { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.field.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 .field:disabled,
 .field.is-disabled { opacity: 0.45; cursor: not-allowed; }
 
@@ -563,7 +430,7 @@ textarea.field {
 .select select:hover,
 .select.is-hover select { background-color: var(--hover); }
 .select select:focus-visible,
-.select.is-focus select { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.select.is-focus select { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 
 /* Chevron drawn on the WRAPPER, so it never fights the select's own layers. */
 .select::after {
@@ -599,8 +466,13 @@ textarea.field {
   border-radius: 5px;
   background-color: var(--field);
   box-shadow: var(--ring-2), var(--inset-shallow);
-  transition: background-color var(--fast), scale var(--fast);
-  transition: background-color var(--fast), box-shadow var(--fast), outline-color var(--fast);
+  /* One declaration. Two of these landed here across separate edits, and the
+     second silently dropped scale, so the press snapped instead of animating. */
+  transition:
+    background-color var(--fast),
+    box-shadow var(--fast),
+    outline-color var(--fast),
+    scale var(--fast);
 }
 .check__box--round { border-radius: 50%; }
 
@@ -633,14 +505,14 @@ textarea.field {
   inset-inline-start: 6px;
   inline-size: 4px;
   block-size: 8px;
-  border-inline-end: 2px solid var(--accent-on);
-  border-block-end: 2px solid var(--accent-on);
+  border-inline-end: 2px solid var(--solid-fg);
+  border-block-end: 2px solid var(--solid-fg);
   rotate: 45deg;
 }
 .check__box--round::after {
   inset: 5px;
   border-radius: 50%;
-  background: var(--accent-on);
+  background: var(--solid-fg);
 }
 
 /*
@@ -653,7 +525,7 @@ textarea.field {
 .check.is-hover .check__box { background-color: var(--hover); }
 
 .check:hover input:checked + .check__box,
-.check.is-hover input:checked + .check__box { background-color: var(--accent-hover); }
+.check.is-hover input:checked + .check__box { background-color: var(--solid-hover); }
 
 /* Pressed. A control that labels an Active state and then renders it
    identically to Default is worse than one that never claimed to have it. */
@@ -661,17 +533,17 @@ textarea.field {
 .check.is-active .check__box { background-color: var(--active); scale: 0.92; }
 
 .check:active input:checked + .check__box,
-.check.is-active input:checked + .check__box { background-color: var(--accent); scale: 0.92; }
+.check.is-active input:checked + .check__box { background-color: var(--solid); scale: 0.92; }
 
 .check:has(input:disabled):hover .check__box { background-color: var(--field); }
 
 .check input:checked + .check__box {
-  background-color: var(--accent);
+  background-color: var(--solid);
   box-shadow: 0 0 0 1px oklch(0 0 0 / 0.2), var(--cast-1);
 }
 .check input:checked + .check__box::after { opacity: 1; }
 .check input:focus-visible + .check__box,
-.check.is-focus .check__box { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.check.is-focus .check__box { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 .check input:disabled ~ * { opacity: 0.45; }
 
 .switch { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
@@ -714,7 +586,7 @@ textarea.field {
 .switch.is-hover .switch__track { background-color: var(--hover); }
 
 .switch:hover input:checked + .switch__track,
-.switch.is-hover input:checked + .switch__track { background-color: var(--accent-hover); }
+.switch.is-hover input:checked + .switch__track { background-color: var(--solid-hover); }
 
 /* The knob narrows under the press rather than the whole track scaling: a
    track that shrinks reads as the row collapsing. */
@@ -726,10 +598,10 @@ textarea.field {
 
 .switch:has(input:disabled):hover .switch__track { background-color: var(--field); }
 
-.switch input:checked + .switch__track { background-color: var(--accent); }
-.switch input:checked + .switch__track .switch__knob { translate: 14px 0; background: var(--accent-on); }
+.switch input:checked + .switch__track { background-color: var(--solid); }
+.switch input:checked + .switch__track .switch__knob { translate: 14px 0; background: var(--solid-fg); }
 .switch input:focus-visible + .switch__track,
-.switch.is-focus .switch__track { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.switch.is-focus .switch__track { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 .switch input:disabled ~ * { opacity: 0.45; }
 
 /* ==========================================================================
@@ -781,7 +653,7 @@ textarea.field {
   box-shadow: var(--lit), var(--ring-1), 0 1px 2px oklch(0 0 0 / 0.22);
 }
 .seg input:focus-visible + span,
-.seg .is-focus span { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.seg .is-focus span { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 
 /* ==========================================================================
  * BADGE
@@ -794,9 +666,9 @@ textarea.field {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  block-size: 21px;
-  padding-inline: 8px;
-  border-radius: 6px;
+  block-size: 23px;
+  padding-inline: 7px 9px;
+  border-radius: 7px;
   background-color: var(--raised);
   box-shadow: var(--ring-1);
   font-size: 12px;
@@ -805,17 +677,18 @@ textarea.field {
   white-space: nowrap;
 }
 
-.badge__dot { inline-size: 7px; block-size: 7px; flex: none; background: currentColor; }
+.badge__icon {
+  inline-size: 13px;
+  block-size: 13px;
+  flex: none;
+  /* Slightly heavier than the button glyphs: a 13px icon beside 12px text needs
+     more stroke than a 14px one beside 13px to hold the same optical weight. */
+}
+
 .badge--ok    { color: var(--ink-ok);   background-color: var(--tint-ok); }
 .badge--warn  { color: var(--ink-warn); background-color: var(--tint-warn); }
 .badge--bad   { color: var(--ink-bad);  background-color: var(--tint-bad); }
-.badge--info  { color: var(--accent-ink); background-color: var(--tint-info); }
-
-/* Distinct silhouettes: circle, diamond, square, bar. */
-.badge--ok   .badge__dot { border-radius: 50%; }
-.badge--warn .badge__dot { rotate: 45deg; border-radius: 1px; }
-.badge--bad  .badge__dot { border-radius: 1px; }
-.badge--info .badge__dot { border-radius: 1px; block-size: 3px; }
+.badge--info  { color: var(--ink-info); background-color: var(--tint-info); }
 
 /* ==========================================================================
  * AVATAR
@@ -835,7 +708,7 @@ textarea.field {
   letter-spacing: 0.02em;
 }
 .avatar--lg { inline-size: 36px; block-size: 36px; font-size: 13px; }
-.avatar--accent { background-color: var(--accent); color: var(--accent-on); }
+.avatar--solid { background-color: var(--solid); color: var(--solid-fg); }
 
 .avatar-stack { display: flex; }
 /*
@@ -949,7 +822,7 @@ textarea.field {
 .meter__fill {
   block-size: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  background: var(--solid);
 }
 .meter--ok .meter__fill { background: var(--ok); box-shadow: none; }
 
@@ -969,9 +842,9 @@ textarea.field {
    pretend to have one. */
 .meter--busy .meter__fill {
   inline-size: 35%;
-  animation: pg-slide 1.2s ease-in-out infinite;
+  animation: prim-slide 1.2s ease-in-out infinite;
 }
-@keyframes pg-slide {
+@keyframes prim-slide {
   0% { translate: -100% 0; }
   100% { translate: 320% 0; }
 }
@@ -1007,6 +880,324 @@ textarea.field {
   color: var(--ink-3);
 }
 
-/* The stage hugs its content: sections were mostly dead air before. */
-.stage { align-items: flex-start; gap: 26px; }
-.stage .spec { gap: 9px; }
+
+/* ==========================================================================
+ * THE SECOND NINE
+ *
+ * Worked backwards from what the AI components actually compose from rather
+ * than from a generic primitive checklist. Every one of these is load-bearing
+ * for something already planned: a streamed answer is prose, and prose that
+ * arrives token by token is most of what this library renders.
+ * ========================================================================== */
+
+.sep { block-size: 1px; inline-size: 100%; background: var(--line); border: 0; }
+.sep--strong { background: var(--line-strong); }
+
+/*
+ * A link inside running prose. Underlined from the start, because 1.4.1 does
+ * not accept colour as the only signal -- and here there is no colour to lean
+ * on anyway.
+ */
+.link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  border-radius: 3px;
+  transition: text-decoration-color var(--fast);
+}
+.link:hover, .link.is-hover { text-decoration-color: currentColor; }
+.link:focus-visible { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
+
+kbd, .kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 20px;
+  block-size: 20px;
+  padding-inline: 5px;
+  border-radius: 5px;
+  background-color: var(--raised);
+  box-shadow: var(--ring-2), var(--lit), 0 1px 0 oklch(0 0 0 / 0.25);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.spinner {
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  border-block-start-color: var(--ink-2);
+  animation: prim-spin 0.6s linear infinite;
+}
+.spinner--lg { inline-size: 20px; block-size: 20px; border-width: 2px; }
+
+/*
+ * Skeleton. The sweep is a keyframe rather than a transition because it is a
+ * staged loop with no target state to retarget toward -- the one case the
+ * reference skill reserves keyframes for.
+ */
+.skel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: var(--raised);
+}
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--ink) 7%, transparent) 50%, transparent);
+  animation: prim-sweep 1.4s ease-in-out infinite;
+}
+@keyframes prim-sweep { from { translate: -100% 0; } to { translate: 100% 0; } }
+
+.skel--text { block-size: 11px; border-radius: 4px; }
+.skel--title { block-size: 15px; inline-size: 45%; border-radius: 4px; }
+.skel--circle { border-radius: 50%; }
+
+/* Disclosure. The library already renders a .lucet-caret, so this is the
+   primitive that shape has been standing in for. */
+.disc {
+  inline-size: 100%;
+  border-radius: var(--r-surface);
+  background-color: var(--surface);
+  box-shadow: var(--ring-1);
+}
+
+.disc__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  inline-size: 100%;
+  min-block-size: 38px;
+  padding-inline: 12px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--fast);
+}
+.disc__head:hover, .disc__head.is-hover { background-color: var(--hover); }
+.disc__head:focus-visible { outline: var(--focus-w) solid var(--ring-focus); outline-offset: -2px; }
+
+.caret {
+  inline-size: 7px;
+  block-size: 7px;
+  flex: none;
+  border-inline-end: 1.5px solid var(--ink-3);
+  border-block-end: 1.5px solid var(--ink-3);
+  rotate: -45deg;
+  transition: rotate var(--fast);
+}
+.disc[open] .caret, .disc__head[aria-expanded='true'] .caret { rotate: 45deg; }
+
+.disc__meta { margin-inline-start: auto; font-size: 12px; color: var(--ink-3); }
+
+.disc__body {
+  padding: 2px 12px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* Code. A code surface is SUNKEN: it is quoted material, not a control. */
+code, .code {
+  padding: 1.5px 5px;
+  border-radius: 5px;
+  background-color: var(--sunken);
+  box-shadow: var(--ring-1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.codeblock {
+  border-radius: var(--r-surface);
+  background-color: var(--sunken);
+  box-shadow: var(--ring-1);
+  overflow: hidden;
+}
+
+.codeblock__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 12px;
+  block-size: 34px;
+  border-block-end: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.codeblock__bar .btn { margin-inline-start: auto; }
+
+.codeblock pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.codeblock pre code { padding: 0; background: none; box-shadow: none; font-size: inherit; }
+
+/*
+ * Prose. The single most important surface in the library: a streamed answer
+ * IS this. Measure is capped near 70 characters because a full-width answer is
+ * unreadable however good the type is.
+ */
+.prose {
+  max-inline-size: 68ch;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+.prose > * + * { margin-block-start: 0.9em; }
+.prose h2, .prose h3 {
+  margin-block-start: 1.6em;
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.prose h2 { font-size: 17px; }
+.prose h3 { font-size: 15px; }
+.prose strong { color: var(--ink); font-weight: 600; }
+.prose ul, .prose ol { padding-inline-start: 1.25em; }
+.prose li + li { margin-block-start: 0.35em; }
+.prose blockquote {
+  margin-inline: 0;
+  padding-inline-start: 14px;
+  border-inline-start: 2px solid var(--line-strong);
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel::after { animation: none; }
+  .spinner { animation: none; border-block-start-color: var(--line-strong); }
+}
+
+/* ==========================================================================
+ * LOADERS
+ *
+ * Four more, because waiting is not one state. A spinner says "briefly busy";
+ * held for thirty seconds it says "broken". An agent interface spends most of
+ * its time in exactly that long-unknown window, which is the one case a single
+ * spinner cannot cover.
+ *
+ * Each of these means something different, and the difference is the point:
+ *
+ *   spinner   short, unknown end        (above)
+ *   meter     known end                 (above)
+ *   skeleton  content whose shape is known (above)
+ *   breathe   LONG and unknown -- calm, so it does not read as stuck
+ *   stream    text mid-arrival
+ *   working   a named activity, with elapsed time
+ *   steps     staged work with a known sequence
+ *
+ * All four are keyframes rather than transitions: they are staged loops with no
+ * target state to retarget toward, which is the case the reference reserves
+ * keyframes for. Every one collapses to a static cue under reduced motion --
+ * motion is never the only channel.
+ * ========================================================================== */
+
+/* Long and unknown. Slow on purpose: fast motion reads as urgency, and there is
+   nothing urgent about waiting. */
+.breathe {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: prim-breathe 1.8s ease-in-out infinite;
+}
+@keyframes prim-breathe {
+  0%, 100% { opacity: 0.35; scale: 0.85; }
+  50%      { opacity: 1;    scale: 1; }
+}
+
+/* Three dots, staggered. The stagger is what stops it reading as one blinking
+   blob and starts it reading as progress. */
+.dots { display: inline-flex; gap: 4px; align-items: center; }
+.dots i {
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  animation: prim-breathe 1.2s ease-in-out infinite;
+}
+.dots i:nth-child(2) { animation-delay: 0.15s; }
+.dots i:nth-child(3) { animation-delay: 0.3s; }
+
+/*
+ * The streaming cursor. It sits at the end of text that is still arriving, so
+ * it must not shift the line: inline-block with a fixed size and no margin.
+ */
+.stream-cursor {
+  display: inline-block;
+  inline-size: 2px;
+  block-size: 1em;
+  vertical-align: -0.15em;
+  margin-inline-start: 2px;
+  border-radius: 1px;
+  background: var(--ink-2);
+  animation: prim-blink 1s steps(1) infinite;
+}
+@keyframes prim-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+/*
+ * A named activity with its elapsed time. The label is the important half:
+ * "Searching" tells you what is happening, where a bare spinner does not, and
+ * the timer is what makes a long wait legible instead of worrying.
+ */
+.working { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+.working__label {
+  background: linear-gradient(90deg, var(--ink-3) 40%, var(--ink) 50%, var(--ink-3) 60%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: prim-shimmer 2s linear infinite;
+}
+@keyframes prim-shimmer { from { background-position: 150% 0; } to { background-position: -150% 0; } }
+
+.working__time {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* Staged work. The sequence is known, so show the sequence. */
+.steps { display: inline-flex; align-items: center; gap: 6px; }
+.steps i {
+  inline-size: 18px;
+  block-size: 3px;
+  border-radius: 2px;
+  background: var(--line-strong);
+}
+.steps i[data-state='done'] { background: var(--ink-2); }
+.steps i[data-state='now'] {
+  background: var(--ink-2);
+  animation: prim-breathe 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The static cue survives; only the movement goes. */
+  .breathe, .dots i, .steps i[data-state='now'] { animation: none; opacity: 0.7; }
+  .stream-cursor { animation: none; }
+  .working__label {
+    animation: none;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: var(--ink-2);
+  }
+}
