@@ -29,15 +29,15 @@ const text = (t: string): MessagePart => ({ kind: 'text', id: `t${seq++}`, text:
 
 const NOTICES: readonly { state: NoticeState; label: string; body: string }[] = [
   { state: 'operational', label: 'All services operational.', body: 'The only green in the system, and it never appears inside the thread.' },
-  { state: 'refused', label: 'Declined.', body: 'I cannot make a buy or sell recommendation. I can lay the three side by side on spread, duration, and rating history.' },
+  { state: 'refused', label: 'Declined.', body: 'I cannot delete anything. I can show you exactly what would go, grouped by why it looks old.' },
   { state: 'interrupted', label: 'Stopped.', body: 'You stopped this before it finished. What arrived is still here.' },
   { state: 'partial', label: 'Incomplete.', body: 'Two of three sources returned. This is not the full picture.' },
   { state: 'degraded', label: 'Running slow.', body: 'The usual model is unavailable. Running on the fallback, which is faster and less careful.' },
   { state: 'down', label: 'Service unavailable.', body: 'The model provider is having an outage. Nothing you have written is lost.' },
   { state: 'failed', label: 'Failed.', body: 'The request could not be completed.' },
   { state: 'rate-limited', label: 'Limit reached.', body: 'You have hit this hour’s limit. It resets in 14 minutes.' },
-  { state: 'stale', label: 'From cache.', body: 'This answer is four hours old. A rating action this morning would not appear.' },
-  { state: 'uncertain', label: 'Low confidence.', body: 'This is the sector default rather than this issuer’s figure. Worth confirming.' },
+  { state: 'stale', label: 'From cache.', body: 'This answer is four hours old. Anything published this morning would not appear.' },
+  { state: 'uncertain', label: 'Low confidence.', body: 'This is the summary’s claim rather than the original’s. Worth confirming.' },
   { state: 'queued', label: 'Waiting.', body: 'Ada holds the turn. You can write your next prompt now.' },
 ]
 
@@ -59,7 +59,7 @@ function Spec({ title, note, children }: { title: string; note: string; children
 }
 
 export function Sheet() {
-  const [draft, setDraft] = useState('Compare the two portfolios on duration risk')
+  const [draft, setDraft] = useState('Compare the two plans on where they could slip')
 
   return (
     <section aria-label="Component sheet" className="sheet">
@@ -74,14 +74,14 @@ export function Sheet() {
         title="Message"
         note="The assistant gets no bubble. Its output is the artefact, so it reads as a document at full measure. The prompt keeps a surface because it is an utterance, and because you need to find it again scrolling back."
       >
-        <Message message={msg('user', [text('Summarise how issuance volume moved last quarter.')])} version="v_1" actions={<><Button variant="ghost">Restore</Button><Button variant="ghost">Copy</Button></>} />
-        <Message message={msg('assistant', [text('Issuance volume rose 12% quarter over quarter, driven almost entirely by investment grade. High yield was flat. The move is concentrated in the last three weeks, so it reads more like pulled-forward supply than a change in trend.')])} />
-        <Message message={msg('assistant', [text('The change affects how the sector adjustment is applied. Previously the adjustment was')], 'streaming')} />
+        <Message message={msg('user', [text('Summarise the three documents I shared.')])} version="v_1" actions={<><Button variant="ghost">Restore</Button><Button variant="ghost">Copy</Button></>} />
+        <Message message={msg('assistant', [text('All three describe the same change, but only the last one gives a date for it. Where the earlier two disagree with it, they are older rather than wrong.')])} />
+        <Message message={msg('assistant', [text('The change affects how the second stage is applied. Previously that step ran before the review, not after it.')], 'streaming')} />
       </Spec>
 
       <Spec title="Reasoning" note="Collapsed by default and never in the response body. Reasoning is working, not answer.">
-        <Reasoning text="Both hold long-dated paper. Portfolio A is barbelled, so its weighted duration understates its convexity." />
-        <Reasoning defaultOpen text="Both hold long-dated paper. Portfolio A is barbelled, so its weighted duration understates its convexity. Comparing weighted average duration alone would be misleading here." />
+        <Reasoning text="Both plans end on the same date, so comparing end dates says nothing. The second front-loads its dependencies, which shortens the critical path but leaves no slack." />
+        <Reasoning defaultOpen text="Both plans end on the same date, so comparing end dates says nothing. The second front-loads its dependencies, which shortens the critical path but leaves no slack." />
         <Reasoning streaming text="Checking the methodology note first" />
       </Spec>
 

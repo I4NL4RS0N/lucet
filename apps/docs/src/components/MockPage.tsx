@@ -20,13 +20,13 @@ export function MockPage({ children }: { children: ReactNode }) {
       </nav>
 
       <h1>Pacific Grid Holdings</h1>
-      <p>Q3 review. 14 documents, 3 rating actions, 1 methodology change.</p>
+      <p>Quarterly review. 14 documents, 3 revisions, 1 process change.</p>
 
       <h2>Recent actions</h2>
       <ul>
-        <li>Downgraded to BBB from BBB+, outlook stable</li>
-        <li>Sector adjustment methodology updated</li>
-        <li>Q3 issuance filed</li>
+        <li>Revision 7 replaces revision 6, superseded</li>
+        <li>Review step moved after approval</li>
+        <li>Third-quarter records archived</li>
       </ul>
 
       {children}
