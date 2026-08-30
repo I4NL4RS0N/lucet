@@ -11,12 +11,12 @@ including the ways it came back wrong.
   something you said, and you need to find it again while scrolling. In light
   mode this is the figure-ground law working: the prompt is white and
   forward, the document sits directly on the page.
-- **Authors are people, plainly.** A Lucet thread is shared, so turns carry
-  an avatar and a name instead of aligning by self — alignment stops meaning
-  anything with three people in the room. Your own turns just say *You*. The
-  assistant's avatar is **solid**, so it wears the accent when one is chosen:
-  the same call the working orbs made, and under monochrome it stays neutral
-  by construction.
+- **People have faces; the machine has output.** The group-chat grammar:
+  your own turns sit right with no avatar (you know who you are), other
+  people's turns sit left with a prominent avatar and their name —
+  multiplayer is the differentiator, so the humans get the faces. The
+  assistant gets no avatar and no header at all: the document is its
+  presence, the no-bubble position taken to its conclusion.
 - **A response is never simply "loading" or "done".** Streaming shows a caret
   riding the live edge of the text. The three unhappy endings are designed
   states with words: *Stopped early* (what arrived is kept), *Failed* (what
@@ -26,11 +26,11 @@ including the ways it came back wrong.
   parts and render as read-only chips — the composer's chips minus the
   verbs, same CSS, second name. The event log records exactly which went;
   the chips are that record made visible.
-- **Every prompt is a commit.** Each turn shows its version id as a quiet
-  mono marker — the seed the Version Marker + Restore pattern grows from.
-  Quiet through type, never through opacity: the old era faded it to ~3.2:1
-  with `opacity`, a failure no contrast audit can see. It stays at full
-  muted-foreground and lets the mono face and size do the hushing.
+- **Every prompt is still a commit — but the marker waits for its pattern.**
+  A raw `v_6` beside a name read as jargon, so turns separate with a quiet
+  hairline instead, and the version id stays in the contract. The marker
+  returns with Version Marker + Restore, where a restore affordance gives it
+  meaning beyond a label.
 
 ## Streamed text is announced
 

@@ -16,14 +16,14 @@ import { readStateParam, writeStateParam } from './lib/deep-link'
 /**
  * The Configurator: the app IS the page.
  *
- * A running product in a window frame, and beside it a plain list of event
- * triggers that inject states into it — the SuperFriendly philly.com
- * configurator crossed with Josh Puckett's state-machine tools. Clicking a
- * word makes the state HAPPEN in the running thread; nothing here is a
- * gallery, and the unhappy half of the list is the point.
+ * A running product beside a plain list of event triggers — the SuperFriendly
+ * philly.com configurator crossed with Josh Puckett's state-machine tools.
+ * Clicking a word makes the state HAPPEN in the running thread; the unhappy
+ * half of the list is the point.
  *
- * Theme and accent are tucked at the bottom of the rail: appearance is a
- * preference, the states are the show.
+ * The same components render in three containers — full page, a drawer over
+ * an application, a phone — because a library that only demos one container
+ * is quietly claiming that is the only place it works.
  */
 
 const ACCENTS = [
@@ -31,11 +31,20 @@ const ACCENTS = [
   'rose', 'green', 'teal', 'cyan', 'amber',
 ] as const
 
+type View = 'full' | 'drawer' | 'mobile'
+
+const VIEWS: readonly { value: View; label: string }[] = [
+  { value: 'full', label: 'Full page' },
+  { value: 'drawer', label: 'Drawer' },
+  { value: 'mobile', label: 'Mobile' },
+]
+
 function TriggerRail() {
   const lucet = useLucet()
   const groups = useTriggerGroups()
   const thread = useThread()
   const busy = thread.status !== 'idle'
+  const [firing, setFiring] = useState<string | null>(null)
 
   return (
     <nav aria-label="State triggers">
@@ -52,10 +61,15 @@ function TriggerRail() {
               disabled={busy}
               onClick={() => {
                 writeStateParam(scenario.id)
-                void lucet.trigger(scenario.id)
+                setFiring(scenario.id)
+                void lucet.trigger(scenario.id).finally(() => setFiring(null))
               }}
             >
-              {scenario.label}
+              <span className="cfg__trigger-caret" aria-hidden />
+              <span className="cfg__trigger-label">{scenario.label}</span>
+              {/* The clicked row works while its scenario runs: the rail is
+                  alive, not a list of links. */}
+              {firing === scenario.id ? <span className="cfg__firing" aria-hidden /> : null}
             </button>
           ))}
         </section>
@@ -81,21 +95,20 @@ function EventLog() {
   )
 }
 
-/** The running app: thread above, composer below, reset on the frame. */
-function TheApp() {
+/** The running app itself: thread above, composer below. Container-agnostic. */
+function AppCore() {
   const lucet = useLucet()
   const state = useThread()
   const attachCount = useRef(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Keep the newest turn in view while a response streams in.
   useEffect(() => {
     const el = scrollRef.current
     if (el && state.status !== 'idle') el.scrollTop = el.scrollHeight
   }, [state])
 
   return (
-    <section className="cfg__frame" aria-label="The running app">
+    <>
       <div className="cfg__frame-bar">
         <span className="cfg__frame-title">Thread</span>
         <button
@@ -163,12 +176,36 @@ function TheApp() {
           }}
         />
       </div>
-    </section>
+    </>
+  )
+}
+
+/** The neutral application the drawer slides over. Set dressing, real words. */
+function MockDocument() {
+  return (
+    <div className="cfg__mock-doc" aria-hidden>
+      <h2>Quarterly planning notes</h2>
+      <p>
+        Three of the five workstreams are on schedule. The remaining two are
+        blocked on the same review, which moved to Thursday.
+      </p>
+      <p>
+        Budget follows the revised figures from last month. Anything filed
+        before Tuesday uses the previous template; everything after uses the
+        new one.
+      </p>
+      <h3>Open items</h3>
+      <p>
+        Confirm the venue hold. Circulate the revised template. Close out the
+        two blocked workstreams once the review lands.
+      </p>
+    </div>
   )
 }
 
 export function App() {
   const lucet = useMemo(() => createLucet(), [])
+  const [view, setView] = useState<View>('full')
   const [themeState, setThemeState] = useState<ThemeState>({
     theme: 'system',
     accent: 'monochrome',
@@ -197,43 +234,82 @@ export function App() {
           Lucet <span>· the Configurator</span>
         </span>
         <p className="cfg__lede">One running thread. The states on the right happen to it.</p>
+
+        {/*
+         * Theme and accent live in the header, findable in one glance: how
+         * opinionated the library is about appearance IS part of the pitch,
+         * so the controls that prove it are not buried.
+         */}
+        <div className="cfg__prefs">
+          <label htmlFor="cfg-theme">Theme</label>
+          <select
+            id="cfg-theme"
+            value={themeState.theme}
+            onChange={(e) =>
+              setThemeState((prev) => ({ ...prev, theme: e.target.value as ThemeState['theme'] }))
+            }
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+          <label htmlFor="cfg-accent">Accent</label>
+          <select
+            id="cfg-accent"
+            value={themeState.accent}
+            onChange={(e) =>
+              setThemeState((prev) => ({ ...prev, accent: e.target.value as ThemeState['accent'] }))
+            }
+          >
+            {ACCENTS.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+        </div>
       </header>
 
       <div className="cfg__layout">
-        <TheApp />
+        <div className="cfg__main">
+          {/* Same components, three containers: a library that only demos one
+              container is quietly claiming that is the only place it works. */}
+          <div className="cfg__views" role="group" aria-label="Container">
+            {VIEWS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={view === value}
+                onClick={() => setView(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {view === 'full' ? (
+            <section className="cfg__frame" aria-label="The running app">
+              <AppCore />
+            </section>
+          ) : view === 'drawer' ? (
+            <section className="cfg__mock" aria-label="The running app, as a drawer">
+              <MockDocument />
+              <div className="cfg__drawer">
+                <AppCore />
+              </div>
+            </section>
+          ) : (
+            <section className="cfg__phone-stage" aria-label="The running app, on a phone">
+              <div className="cfg__phone">
+                <AppCore />
+              </div>
+            </section>
+          )}
+        </div>
 
         <div className="cfg__rail">
           <TriggerRail />
-
           <div className="cfg__aside">
-            <div className="cfg__aside-row">
-              <label htmlFor="cfg-theme">Theme</label>
-              <select
-                id="cfg-theme"
-                value={themeState.theme}
-                onChange={(e) =>
-                  setThemeState((prev) => ({ ...prev, theme: e.target.value as ThemeState['theme'] }))
-                }
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-              <label htmlFor="cfg-accent">Accent</label>
-              <select
-                id="cfg-accent"
-                value={themeState.accent}
-                onChange={(e) =>
-                  setThemeState((prev) => ({ ...prev, accent: e.target.value as ThemeState['accent'] }))
-                }
-              >
-                {ACCENTS.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                  </option>
-                ))}
-              </select>
-            </div>
             <EventLog />
           </div>
         </div>

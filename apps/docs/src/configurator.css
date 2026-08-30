@@ -2,9 +2,9 @@
  * The Configurator.
  *
  * The app IS the page (the philly.com configurator model): a running product
- * in a window frame, and beside it a plain list of event triggers (the
- * Puckett model) that inject states into it. Theme controls are tucked at the
- * bottom of the rail — the states are the show, appearance is a preference.
+ * in a window frame — or a drawer, or a phone — and beside it a plain list
+ * of event triggers (the Puckett model) that inject states into it. Theme
+ * and accent sit in the header: the library's opinions are part of the pitch.
  *
  * Everything here is page shell. The components inside the frame carry their
  * own styles from lucet-react; every value below is a token.
@@ -47,6 +47,36 @@ body {
   margin: 0;
   font-size: 13px;
   color: var(--lucet-muted-foreground);
+}
+
+/* Theme and accent, findable in one glance: the library's opinions about
+   appearance are part of the pitch, so their controls are not buried. */
+.cfg__prefs {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__prefs select {
+  appearance: none;
+  min-block-size: 26px;
+  padding: 2px 20px 2px 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background-color: transparent;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__prefs select:hover { background-color: var(--lucet-hover); }
+.cfg__prefs select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
 
 .cfg__layout {
@@ -237,7 +267,9 @@ body {
 }
 
 .cfg__trigger {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   inline-size: 100%;
   min-block-size: 28px;
   padding: 4px 8px;
@@ -260,6 +292,120 @@ body {
   outline-offset: -1px;
 }
 .cfg__trigger:disabled { opacity: 0.45; cursor: default; }
+
+/* The caret says "this does something" before any hover; hover confirms by
+   brightening it and sliding it a step. */
+.cfg__trigger-caret {
+  inline-size: 5px;
+  block-size: 5px;
+  flex: none;
+  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
+  border-block-end: 1.5px solid var(--lucet-muted-foreground);
+  rotate: -45deg;
+  transition: translate var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__trigger:hover:not(:disabled) .cfg__trigger-caret {
+  border-color: var(--lucet-foreground);
+  translate: 2px 0;
+}
+.cfg__trigger-label { min-inline-size: 0; }
+
+/* The clicked row works while its scenario runs. */
+.cfg__firing {
+  inline-size: 12px;
+  block-size: 12px;
+  flex: none;
+  margin-inline-start: auto;
+  border-radius: 50%;
+  border: 1.5px solid var(--lucet-input);
+  border-block-start-color: var(--lucet-muted-foreground);
+  animation: cfg-spin 0.6s linear infinite;
+}
+@keyframes cfg-spin { to { rotate: 360deg; } }
+
+/* ---- the container switch: same components, three places ---- */
+
+.cfg__main { display: grid; gap: 12px; min-inline-size: 0; }
+
+.cfg__views {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  inline-size: fit-content;
+  border-radius: 11px;
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+}
+.cfg__views button {
+  border: 0;
+  padding: 0 12px;
+  min-block-size: 26px;
+  border-radius: 8px;
+  background: none;
+  color: var(--lucet-muted-foreground);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__views button:hover:not([aria-pressed='true']) { background-color: var(--lucet-hover); color: var(--lucet-subtle-foreground); }
+.cfg__views button[aria-pressed='true'] {
+  background-color: var(--lucet-secondary);
+  color: var(--lucet-foreground);
+  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
+}
+.cfg__views button:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* Drawer view: the same app, sliding over someone's application. */
+.cfg__mock {
+  position: relative;
+  min-block-size: 620px;
+  background: var(--lucet-card);
+  border-radius: var(--lucet-radius-panel);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  overflow: hidden;
+}
+
+.cfg__mock-doc {
+  max-inline-size: 52ch;
+  padding: 40px 44px;
+}
+.cfg__mock-doc h2 { margin: 0 0 12px; font-size: 19px; letter-spacing: -0.015em; }
+.cfg__mock-doc h3 { margin: 20px 0 8px; font-size: 14px; }
+.cfg__mock-doc p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--lucet-subtle-foreground); }
+
+.cfg__drawer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(440px, 88%);
+  display: flex;
+  flex-direction: column;
+  background: var(--lucet-card);
+  border-inline-start: 1px solid var(--lucet-border);
+  box-shadow: var(--lucet-shade-3);
+}
+.cfg__drawer .cfg__scroll { max-block-size: none; flex: 1; }
+
+/* Mobile view: the same app, in a hand. */
+.cfg__phone-stage { display: grid; justify-content: center; padding-block: 8px; }
+.cfg__phone {
+  display: flex;
+  flex-direction: column;
+  inline-size: 390px;
+  block-size: 700px;
+  background: var(--lucet-card);
+  border-radius: 28px;
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  overflow: hidden;
+}
+.cfg__phone .cfg__scroll { max-block-size: none; flex: 1; }
 
 /* ---- tucked: appearance, then the event log ---- */
 

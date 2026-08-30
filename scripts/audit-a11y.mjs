@@ -65,11 +65,11 @@ function collect() {
     'rail title': '.cfg__rail-title',
     'rail group name': '.cfg__group-name',
     'rail trigger': '.cfg__trigger:not(:disabled)',
-    'aside label': '.cfg__aside-row label',
-    'aside select': '.cfg__aside select',
+    'prefs label': '.cfg__prefs label',
+    'prefs select': '.cfg__prefs select',
+    'view switch': '.cfg__views button',
     'log summary': '.cfg__log summary',
     'thread author': '.lucet-thread__author',
-    'thread version marker': '.lucet-thread__version',
     'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
     'thread document text': '.lucet-thread__doc .lucet-thread__text',
     'thread aside': '.lucet-thread__aside',
@@ -384,7 +384,6 @@ function collectComponents() {
   // The thread: prompts, documents, asides, endings, and the version marker.
   for (const [label, sel] of Object.entries({
     'thread author': '.lucet-thread__author',
-    'thread version marker': '.lucet-thread__version',
     'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
     'thread document text': '.lucet-thread__doc .lucet-thread__text',
     'thread aside': '.lucet-thread__aside',
@@ -666,7 +665,9 @@ async function main() {
     }
 
     // A pass that measures nothing must never report success.
-    if (mainChecks < 700) {
+    /* ~15 text pairs x 44 combos, calibrated after the group-chat change
+       removed the author line from self-only home threads. */
+    if (mainChecks < 600) {
       throw new Error(
         `the Configurator pass collected only ${mainChecks} elements across 44 combos -- ` +
           'its selectors and the page have drifted apart',

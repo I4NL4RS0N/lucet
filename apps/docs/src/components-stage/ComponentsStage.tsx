@@ -131,7 +131,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'Multiplayer — two people, one thread',
-    note: 'Turns are author-labelled, not aligned by self: alignment stops meaning anything with three people in the room.',
+    note: 'The group-chat grammar: yours sit right with no avatar, other people sit left with a face — the humans get the avatars, the assistant is just its document.',
     state: play([
       ...turn(1, 'Pull the numbers for the northern site.', { author: 'Ada', reply: 'Done — the totals are in the table above, and the outlier is flagged.' }),
       ...turn(2, 'And the same for the southern one?', { author: 'you', reply: 'Same shape, one difference: the southern site peaks a month later.' }),

@@ -14,10 +14,12 @@ import { StateIcon } from './StateIcon.js'
  *    measure with no container. The PROMPT keeps a surface: it is an
  *    utterance, something you said, and you need to find it again while
  *    scrolling.
- * 2. AUTHORS ARE PEOPLE, PLAINLY. A Lucet thread is shared, so turns are
- *    author-labelled (avatar + name) rather than aligned-by-self -- alignment
- *    stops meaning anything with three people in the room. Your own turns
- *    just say You.
+ * 2. PEOPLE HAVE FACES; THE MACHINE HAS OUTPUT. The group-chat grammar:
+ *    your own turns sit right with no avatar (you know who you are), other
+ *    people's turns sit left with a PROMINENT avatar -- multiplayer is the
+ *    differentiator, so the humans get the faces. The assistant gets no
+ *    avatar and no header at all: the document is its presence, which is the
+ *    no-bubble position taken to its conclusion.
  * 3. A RESPONSE IS NEVER SIMPLY "LOADING" OR "DONE". Streaming shows the
  *    caret on the live edge; interrupted, failed, and refused each end the
  *    message with words that say what happened and what survives.
@@ -84,15 +86,7 @@ function Part({ part, streaming, last }: { part: MessagePart; streaming: boolean
   }
 }
 
-function MessageView({
-  message,
-  self,
-  versionId,
-}: {
-  message: Message
-  self: boolean
-  versionId?: string | undefined
-}) {
+function MessageView({ message, self }: { message: Message; self: boolean }) {
   const isUser = message.role === 'user'
   const terminal = TERMINAL[message.status]
   const attachments = message.parts.filter((p) => p.kind === 'attachment')
@@ -100,24 +94,23 @@ function MessageView({
   const lastTextId = [...rest].reverse().find((p) => p.kind === 'text')?.id
 
   return (
-    <div className="lucet-thread__turn" data-role={message.role}>
-      <div className="lucet-thread__head">
-        {isUser ? (
-          self ? null : <Avatar name={message.authorId} size="sm" />
-        ) : (
-          /* Solid, so the assistant WEARS THE ACCENT when one is chosen --
-             the same call the working orbs made: the agent acting on your
-             request is the brand-forward moment. Monochrome stays neutral by
-             construction. Decided 2026-08-30. */
-          <Avatar name="AI" size="sm" solid />
-        )}
-        <span className="lucet-thread__author">
-          {isUser ? (self ? 'You' : message.authorId) : 'Assistant'}
-        </span>
-        {/* Every prompt is a commit. The marker is quiet until you look for
-            it -- the seed the Version Marker + Restore pattern grows from. */}
-        {versionId ? <span className="lucet-thread__version">{versionId}</span> : null}
-      </div>
+    <div className="lucet-thread__turn" data-role={message.role} data-self={self || undefined}>
+      {/*
+       * Heads only where they inform. Your own turns carry no head at all --
+       * position says it. Other PEOPLE get the prominent avatar and their
+       * name: the faces belong to the humans. The assistant gets a
+       * visually-hidden label for screen readers and nothing else; its
+       * document is its presence. (The version marker left with the heads;
+       * it returns with the Version Marker + Restore pattern, where a
+       * restore affordance gives it meaning beyond jargon.)
+       */}
+      {isUser && !self ? (
+        <div className="lucet-thread__head">
+          <Avatar name={message.authorId} />
+          <span className="lucet-thread__author">{message.authorId}</span>
+        </div>
+      ) : null}
+      {!isUser ? <span className="lucet-visually-hidden">Assistant</span> : null}
 
       <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
         {rest.map((part) => (
@@ -163,11 +156,7 @@ export function Thread({ state, selfId }: ThreadProps) {
     <div className="lucet-thread" role="log" aria-label="Conversation">
       {state.turns.map((turn) => (
         <article className="lucet-thread__pair" key={turn.id}>
-          <MessageView
-            message={turn.prompt}
-            self={turn.prompt.authorId === (selfId ?? null)}
-            versionId={turn.versionId}
-          />
+          <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
           {turn.response ? <MessageView message={turn.response} self={false} /> : null}
         </article>
       ))}

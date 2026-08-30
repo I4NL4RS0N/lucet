@@ -339,15 +339,13 @@ async function main() {
       endings: ['interrupted', 'failed', 'refused'].map(
         (k) => document.querySelectorAll(`.lucet-thread__ended[data-status="${k}"]`).length,
       ),
-      versions: document.querySelectorAll('.lucet-thread__version').length,
     }))
-    checks += 4
+    checks += 3
     if (thread.logs === 0 || thread.bareThreads > 0)
       failures.push(`thread: ${thread.bareThreads} thread(s) missing role="log" -- streaming is silent to screen readers`)
     if (thread.carets === 0) failures.push('thread: no streaming caret found on the streaming fixture')
     if (thread.endings.some((n) => n === 0))
       failures.push(`thread: an unhappy ending is missing from the stage (interrupted/failed/refused = ${thread.endings.join('/')})`)
-    if (thread.versions === 0) failures.push('thread: no version marker anywhere -- every prompt is a commit')
   } finally {
     await browser.close()
     dev?.kill()

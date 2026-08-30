@@ -1169,7 +1169,15 @@
   gap: var(--lucet-space-4);
 }
 
-.lucet-thread__turn { min-inline-size: 0; }
+.lucet-thread__turn { min-inline-size: 0; display: grid; justify-items: start; }
+/* The group-chat grammar: your own turns sit right. */
+.lucet-thread__turn[data-self] { justify-items: end; }
+
+/* Quiet separators between pairs: the structure Ian asked the marker to be. */
+.lucet-thread__pair + .lucet-thread__pair {
+  padding-block-start: var(--lucet-space-4);
+  border-block-start: 1px solid var(--lucet-border);
+}
 
 .lucet-thread__head {
   display: flex;
@@ -1185,15 +1193,7 @@
   color: var(--lucet-muted-foreground);
 }
 
-/* Mono and size carry the quietness; the COLOUR stays at full
-   muted-foreground because the marker is real text and 1.4.3 applies. The
-   old era faded it with opacity to ~3.2:1 -- a failure no audit could see.
-   An 80% mix here measured 3.9:1 in light: same trap, measurable this time. */
-.lucet-thread__version {
-  font-family: var(--lucet-font-mono);
-  font-size: var(--lucet-text-xs);
-  color: var(--lucet-muted-foreground);
-}
+
 
 /* The prompt: a raised surface, narrower than the response. What you said is
    the smaller thing on the page; what came back is the artefact. */
