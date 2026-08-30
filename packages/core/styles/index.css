@@ -40,3 +40,5 @@
 @import './expression.css';
 @import './radius.css';
 @import './scaling.css';
+/* Last, so it cannot be outranked by the expression layer. */
+@import './motion.css';

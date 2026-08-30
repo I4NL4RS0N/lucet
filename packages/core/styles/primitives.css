@@ -34,6 +34,10 @@
   --lucet-neutral-300: oklch(0.87 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-400: oklch(0.708 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-500: oklch(0.556 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* Secondary text. 500 passes on white at 4.73 and fails on anything dimmer,
+     which is every surface Expressive puts under it. Matches the reference's
+     secondary ink at 50.6%. */
+  --lucet-neutral-550: oklch(0.506 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-600: oklch(0.44 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-700: oklch(0.371 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-neutral-800: oklch(0.269 var(--lucet-neutral-c) var(--lucet-neutral-h));
@@ -138,14 +142,5 @@
   --lucet-focus-offset: 2px;
 }
 
-/*
- * Motion is a preference, not a flourish. Durations collapse to zero rather
- * than being individually guarded at every call site.
- */
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --lucet-duration-fast: 0ms;
-    --lucet-duration-normal: 0ms;
-    --lucet-duration-slow: 0ms;
-  }
-}
+/* Reduced motion is handled in motion.css, which must load last. */
+

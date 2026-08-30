@@ -35,7 +35,7 @@
   --lucet-default-secondary: var(--lucet-neutral-100);
   --lucet-default-secondary-foreground: var(--lucet-neutral-900);
   --lucet-default-muted: var(--lucet-neutral-100);
-  --lucet-default-muted-foreground: var(--lucet-neutral-500);
+  --lucet-default-muted-foreground: var(--lucet-neutral-550);
   --lucet-default-subtle: var(--lucet-neutral-50);
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);

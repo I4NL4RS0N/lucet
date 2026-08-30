@@ -1,0 +1,22 @@
+/**
+ * Reduced motion, applied last.
+ *
+ * Imported at the END of the token set on purpose. The expression layer
+ * re-declares the duration tokens at :root, so an earlier reduced-motion block
+ * ties on specificity and LOSES on source order: the preference was being
+ * silently overridden for anyone who set it, in both expressions.
+ *
+ * Motion is a preference, not a flourish. Durations collapse here once, rather
+ * than being guarded at every call site.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  :root[data-expression='system'],
+  :root[data-expression='expressive'] {
+    --lucet-duration-instant: 0ms;
+    --lucet-duration-fast: 0ms;
+    --lucet-duration-normal: 0ms;
+    --lucet-duration-slow: 0ms;
+  }
+}

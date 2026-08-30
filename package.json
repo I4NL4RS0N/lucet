@@ -20,12 +20,18 @@
     "clean": "rm -rf packages/*/dist apps/*/dist **/*.tsbuildinfo",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "npm run build && changeset publish"
+    "release": "npm run build && changeset publish",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "audit:a11y": "npm run build && node scripts/audit-a11y.mjs",
+    "verify": "npm run typecheck && npm run test && npm run audit:a11y"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
     "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.5",
+    "playwright": "^1.50.1"
   },
   "overrides": {
     "esbuild": "^0.28.1"
