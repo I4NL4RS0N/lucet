@@ -65,6 +65,15 @@
  * ============================================================ */
 
 /* ---------- light + system ---------- */
+/*
+ * DECIDED 2026-08-30: the settled primitives look IS the System expression.
+ * System is the default (no attribute) and the reference look every component
+ * is designed against. Expressive's deltas below still describe the previous
+ * component era -- gloss and glow tuned for surfaces that have since been
+ * redesigned -- and get reconciled PER COMPONENT as each is rebuilt, not in
+ * one speculative pass. Both expressions stay in the audit matrix throughout,
+ * so the reconciliation cannot drift unmeasured.
+ */
 :root,
 :root[data-expression='system'] {
   --lucet-edge-top: inset 0 0 0 0 transparent;
