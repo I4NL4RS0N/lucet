@@ -188,6 +188,42 @@ function Orb({
 }
 
 
+
+/*
+ * Placeholder artwork as inline SVG, so the media frame is exercised by real
+ * <img> elements rather than by coloured divs pretending to be images. The
+ * outline rule only means anything on a genuine replaced element.
+ */
+const swatch = (a: string, b: string) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="80" height="80" fill="url(#g)"/></svg>`,
+  )}`
+
+const ART = {
+  one: swatch('#6b7280', '#1f2937'),
+  two: swatch('#9ca3af', '#4b5563'),
+  three: swatch('#d1d5db', '#6b7280'),
+}
+
+const FileGlyph = {
+  doc: (
+    <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+    </svg>
+  ),
+  audio: (
+    <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
+      <path d="M5 10v4M9 7v10M13 5v14M17 9v6M21 11v2" />
+    </svg>
+  ),
+  close: (
+    <svg width="12" height="12" viewBox="0 0 24 24" {...stroke} aria-hidden>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  ),
+}
+
 export function Primitives() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
@@ -753,6 +789,146 @@ export function Primitives() {
           </Spec>
         </Section>
 
+
+        <Section n="25" name="Media" note="the outline is pure black or white, never tinted">
+          <Spec label="Square, wide, small">
+            <div className="row" style={{ alignItems: 'flex-start' }}>
+              <span className="media media--square" style={{ inlineSize: 68 }}>
+                <img src={ART.one} alt="" />
+              </span>
+              <span className="media media--wide" style={{ inlineSize: 132 }}>
+                <img src={ART.two} alt="" />
+              </span>
+              <span className="media media--square media--sm">
+                <img src={ART.three} alt="" />
+              </span>
+            </div>
+          </Spec>
+          <Spec label="Loading — the frame holds its shape">
+            <span className="media media--square media--loading skel" style={{ inlineSize: 68 }} />
+          </Spec>
+        </Section>
+
+        <Section n="26" name="Attachments" note="three variants, because a file means three things">
+          <Spec label="Grid — in a message, the picture is the content">
+            <div className="atts atts--grid">
+              {[ART.one, ART.two, ART.three].map((src, i) => (
+                <span className="att" key={i}>
+                  <span className="media media--square">
+                    <img src={src} alt="" />
+                  </span>
+                  <button className="att__remove" aria-label="Remove attachment">
+                    {FileGlyph.close}
+                  </button>
+                  <span className="att__name">image-{i + 1}.png</span>
+                </span>
+              ))}
+            </div>
+          </Spec>
+
+          <Spec label="Inline — in a composer, beside the caret">
+            <div className="atts atts--inline">
+              <span className="att">
+                <span className="att__icon">{FileGlyph.doc}</span>
+                <span className="att__name">quarterly-summary.pdf</span>
+                <button className="att__remove" aria-label="Remove quarterly-summary.pdf">
+                  {FileGlyph.close}
+                </button>
+              </span>
+              <span className="att">
+                <span className="att__icon">{FileGlyph.audio}</span>
+                <span className="att__name">interview.mp3</span>
+                <button className="att__remove" aria-label="Remove interview.mp3">
+                  {FileGlyph.close}
+                </button>
+              </span>
+            </div>
+          </Spec>
+
+          <Spec label="List — in sources, the metadata is the point">
+            <div className="atts atts--list" style={{ maxInlineSize: 380 }}>
+              <span className="att">
+                <span className="media media--square media--sm" style={{ inlineSize: 28 }}>
+                  <img src={ART.one} alt="" />
+                </span>
+                <span className="att__name">site-photograph.jpg</span>
+                <span className="att__meta">1.4 MB</span>
+                <button className="att__remove" aria-label="Remove site-photograph.jpg">
+                  {FileGlyph.close}
+                </button>
+              </span>
+              <span className="att is-hover">
+                <span className="att__icon">{FileGlyph.doc}</span>
+                <span className="att__name">a-file-with-a-very-long-name-that-truncates.pdf</span>
+                <span className="att__meta">820 KB</span>
+                <button className="att__remove" aria-label="Remove file">
+                  {FileGlyph.close}
+                </button>
+              </span>
+            </div>
+          </Spec>
+        </Section>
+
+        <Section n="27" name="Scroll area" note="content should never just stop">
+          <div className="scroller" style={{ maxBlockSize: 150, inlineSize: 320 }}>
+            <div style={{ display: 'grid', gap: 8, padding: '4px 2px' }}>
+              {[
+                'Read the source documents',
+                'Compare the two revisions',
+                'Note where they disagree',
+                'Check the dates on each',
+                'Flag anything unresolved',
+                'Draft the summary',
+                'Cite every claim',
+              ].map((t) => (
+                <span key={t} style={{ fontSize: 13, color: 'var(--ink-2)' }}>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </Section>
+
+        <Section n="28" name="Table" note="numbers are tabular, so a column never shifts">
+          <div style={{ inlineSize: '100%' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Step</th>
+                  <th>Status</th>
+                  <th className="num">Sources</th>
+                  <th className="num">Elapsed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Read the source documents</td>
+                  <td>
+                    <span className="badge badge--ok">{StatusGlyph.ok}Done</span>
+                  </td>
+                  <td className="num">12</td>
+                  <td className="num">4.2s</td>
+                </tr>
+                <tr className="is-hover">
+                  <td>Compare the two revisions</td>
+                  <td>
+                    <Orb state="thinking" label="Running" />
+                  </td>
+                  <td className="num">8</td>
+                  <td className="num">1.1s</td>
+                </tr>
+                <tr>
+                  <td>Draft the summary</td>
+                  <td>
+                    <span className="badge badge--warn">{StatusGlyph.warn}Partial</span>
+                  </td>
+                  <td className="num">3</td>
+                  <td className="num">9.7s</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Section>
       </main>
     </div>
   )

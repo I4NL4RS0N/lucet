@@ -1406,3 +1406,300 @@ code, .code {
   .orb[data-state='queued'] circle.orb__arc { stroke-dasharray: 1.5 999; }
   .orb[data-state='degraded'] circle.orb__arc { stroke-dasharray: 4 6; }
 }
+
+/* ==========================================================================
+ * MEDIA FRAME
+ *
+ * Everything that renders an image, a thumbnail or a video poster.
+ *
+ * THE OUTLINE RULE, applied here for the first time because nothing in this
+ * library rendered an image until now. Pure black at 0.1 in light, pure white
+ * at 0.1 in dark -- never a near-black or near-white from the palette. A tinted
+ * outline picks up the surrounding surface colour and reads as dirt along the
+ * image edge, which is exactly the artefact it is meant to prevent.
+ *
+ * outline rather than border, and inset by -1px, so it costs no layout and the
+ * image stays the size it was asked to be.
+ * ========================================================================== */
+
+.media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--r-surface);
+  background-color: var(--sunken);
+}
+
+.media img,
+.media video {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  /* Pure, untinted, and the same 0.1 in both themes. */
+  outline: 1px solid oklch(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+
+:root[data-theme='dark'] .media img,
+:root[data-theme='dark'] .media video {
+  outline-color: oklch(1 0 0 / 0.1);
+}
+
+.media--square { aspect-ratio: 1; }
+.media--wide { aspect-ratio: 16 / 9; }
+.media--sm { inline-size: 44px; }
+
+/* Loading: the frame holds its shape so nothing reflows when the image lands. */
+.media--loading { background-color: var(--raised); }
+
+/* ==========================================================================
+ * ATTACHMENTS
+ *
+ * Three variants, because the same file means different things in different
+ * places. In a composer it is a thing you are about to send and might remove;
+ * in a transcript it is a thing you already sent; in a source list it is
+ * evidence with metadata. One layout cannot carry all three.
+ *
+ *   grid    thumbnails. For messages, where the picture IS the content.
+ *   inline  compact chips. For the composer, where they sit beside a caret.
+ *   list    rows with type and size. For sources, where metadata is the point.
+ * ========================================================================== */
+
+.atts { display: flex; flex-wrap: wrap; gap: 8px; }
+.atts--grid { gap: 8px; }
+.atts--list { flex-direction: column; flex-wrap: nowrap; gap: 4px; inline-size: 100%; }
+
+.att {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+/* ---- grid ---- */
+.atts--grid .att {
+  inline-size: 68px;
+  flex-direction: column;
+  gap: 5px;
+}
+.atts--grid .att .media { inline-size: 68px; aspect-ratio: 1; }
+
+/* ---- inline ---- */
+.atts--inline .att {
+  block-size: 26px;
+  padding-inline: 7px 5px;
+  border-radius: 7px;
+  background-color: var(--raised);
+  box-shadow: var(--ring-2);
+  font-size: 12px;
+  max-inline-size: 190px;
+}
+
+/* ---- list ---- */
+.atts--list .att {
+  padding: 6px 6px 6px 8px;
+  border-radius: var(--r-control);
+  transition: background-color var(--fast);
+}
+.atts--list .att:hover,
+.atts--list .att.is-hover { background-color: var(--hover); }
+
+.att__name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  font-size: 13px;
+}
+.atts--grid .att__name { font-size: 11px; color: var(--ink-2); inline-size: 100%; text-align: center; }
+.atts--inline .att__name { font-size: 12px; }
+
+.att__meta {
+  margin-inline-start: auto;
+  flex: none;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+/* The type glyph, for anything that has no thumbnail to show. */
+.att__icon {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  flex: none;
+  border-radius: 6px;
+  background-color: var(--sunken);
+  box-shadow: var(--ring-1);
+  color: var(--ink-3);
+}
+.atts--inline .att__icon { inline-size: 16px; block-size: 16px; background: none; box-shadow: none; }
+
+/*
+ * Remove. It appears on hover in the grid variant, but is ALWAYS present for
+ * keyboard and touch: hiding a control behind hover puts it out of reach of
+ * everyone who does not use a pointer.
+ */
+.att__remove {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+  border: 0;
+  border-radius: 6px;
+  background-color: var(--raised);
+  box-shadow: var(--ring-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color var(--fast), opacity var(--fast);
+}
+.att__remove::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 32px;
+  block-size: 32px;
+}
+.att__remove:hover, .att__remove.is-hover { background-color: var(--hover); color: var(--ink); }
+.att__remove:focus-visible {
+  outline: var(--focus-w) solid var(--ring-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.atts--grid .att__remove {
+  position: absolute;
+  inset-block-start: 4px;
+  inset-inline-end: 4px;
+  opacity: 0;
+}
+.atts--grid .att:hover .att__remove,
+.atts--grid .att:focus-within .att__remove,
+.atts--grid .att.is-hover .att__remove { opacity: 1; }
+
+/* ==========================================================================
+ * SCROLL AREA
+ *
+ * A hard-clipped scroll edge is one of the clearest tells of an unfinished
+ * interface: content simply stops, with nothing saying whether more exists.
+ *
+ * The fade is a mask on the scroller itself rather than a gradient overlay,
+ * so it works over any background instead of only over the one it was matched
+ * to. Where scroll-driven animation is supported the fades resolve themselves
+ * -- no fade at the top until you have scrolled, none at the bottom once you
+ * arrive. Where it is not, both stay on, which is the safe wrong answer.
+ * ========================================================================== */
+
+.scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  --fade: 22px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade),
+    #000 calc(100% - var(--fade)),
+    transparent 100%
+  );
+}
+
+@supports (animation-timeline: scroll()) {
+  /*
+   * ONE animation with hold keyframes, not two ranges.
+   *
+   * The obvious shape is two scroll-driven animations -- one fading the top in
+   * over the first stretch, one fading the bottom out over the last. They
+   * cannot coexist: both animate mask-image, so the later simply wins. An
+   * earlier attempt instead passed two ranges to animation-range, which takes a
+   * single start/end pair; the declaration was invalid, so the animation pinned
+   * to its first keyframe and the mask never changed at all.
+   *
+   * So: one animation across the whole scroll, holding the both-fades state
+   * through the middle. The transitions happen in the first and last few
+   * percent, which is why the two inner keyframes are nearly at the ends.
+   */
+  .scroller {
+    animation: scroller-fade linear both;
+    animation-timeline: scroll(self block);
+  }
+  @keyframes scroller-fade {
+    /* At rest at the top: nothing hidden above, more to come below. */
+    0% {
+      mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+    }
+    /* Mid-scroll: content continues in both directions. */
+    8%, 92% {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+    }
+    /* At the end: nothing more below, so nothing is hidden there. */
+    100% {
+      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade), #000 100%);
+    }
+  }
+}
+
+/* The scrollbar is part of the surface, not a system artefact bolted onto it. */
+.scroller::-webkit-scrollbar { inline-size: 10px; }
+.scroller::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: var(--line-strong);
+}
+.scroller::-webkit-scrollbar-thumb:hover { background-color: var(--ink-3); }
+.scroller::-webkit-scrollbar-track { background: transparent; }
+
+/* ==========================================================================
+ * TABLE
+ *
+ * Rows of comparable things: task lists, sources, anything with columns.
+ * Numbers are tabular throughout, since a column of figures that shifts as it
+ * updates is worse than no column.
+ * ========================================================================== */
+
+.table { inline-size: 100%; border-collapse: collapse; font-size: 13px; }
+
+.table th {
+  padding: 0 10px 8px;
+  text-align: start;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 9px 10px;
+  border-block-start: 1px solid var(--line);
+  color: var(--ink-2);
+  vertical-align: middle;
+}
+.table td:first-child { color: var(--ink); }
+
+.table tbody tr { transition: background-color var(--fast); }
+.table tbody tr:hover,
+.table tbody tr.is-hover { background-color: var(--hover); }
+
+/* A numeric column aligns on the decimal, which means aligning on the end. */
+.table .num { text-align: end; font-variant-numeric: tabular-nums; }
+
+.table__head--sticky th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  background-color: var(--sunken);
+}
