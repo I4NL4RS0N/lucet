@@ -49,3 +49,10 @@ jobs:
       # colour and never render side by side.
       - name: Theme parity audit
         run: node scripts/audit-theme-parity.mjs
+
+      # The two audits above check what states LOOK like. This one drives a
+      # real pointer and checks that states ARRIVE: dead hovers, disabled
+      # controls that still react, and hit areas that sit over the wrong
+      # element all computed to perfectly legal colours.
+      - name: State transition audit
+        run: node scripts/audit-states.mjs

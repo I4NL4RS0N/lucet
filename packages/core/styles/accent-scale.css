@@ -93,14 +93,12 @@
     --lucet-al-9: 0.5;
     --lucet-al-10: 0.53;
   /*
-   * 0.53, not 0.6. Step 10 exists only to be the primary HOVER, and it carries
-   * a white label. At 0.6 that label measured 3.46:1 on teal and failed on nine
-   * of the eleven accents -- the audit found all nine the moment it started
-   * sweeping accents on the primitives page.
-   *
-   * 0.53 is the lightest value every accent survives. The colour travel is
-   * small, so the hover leans on the edge and cast changing too, which the
-   * button already does.
+   * A plain ramp step again. It used to be the primary hover, which is why it
+   * is capped at 0.53 -- the lightest value every accent survives with a white
+   * label; at 0.6 teal measured 3.46:1. The hover moved to
+   * --lucet-accent-hover, which shifts AWAY from the label instead and is not
+   * lightness-capped. The cap stays, because any future use of step 10 under
+   * a white label inherits the same constraint.
    */
     --lucet-al-11: 0.775;
     --lucet-al-12: 0.905;
@@ -132,14 +130,12 @@
   --lucet-al-9: 0.5;
   --lucet-al-10: 0.53;
   /*
-   * 0.53, not 0.6. Step 10 exists only to be the primary HOVER, and it carries
-   * a white label. At 0.6 that label measured 3.46:1 on teal and failed on nine
-   * of the eleven accents -- the audit found all nine the moment it started
-   * sweeping accents on the primitives page.
-   *
-   * 0.53 is the lightest value every accent survives. The colour travel is
-   * small, so the hover leans on the edge and cast changing too, which the
-   * button already does.
+   * A plain ramp step again. It used to be the primary hover, which is why it
+   * is capped at 0.53 -- the lightest value every accent survives with a white
+   * label; at 0.6 teal measured 3.46:1. The hover moved to
+   * --lucet-accent-hover, which shifts AWAY from the label instead and is not
+   * lightness-capped. The cap stays, because any future use of step 10 under
+   * a white label inherits the same constraint.
    */
   --lucet-al-11: 0.775;
   --lucet-al-12: 0.905;
@@ -175,6 +171,24 @@
   --lucet-accent-10: oklch(var(--lucet-al-10) calc(var(--lucet-accent-c) * var(--lucet-ac-10)) var(--lucet-accent-h));
   --lucet-accent-11: oklch(var(--lucet-al-11) calc(var(--lucet-accent-c) * var(--lucet-ac-11)) var(--lucet-accent-h));
   --lucet-accent-12: oklch(var(--lucet-al-12) calc(var(--lucet-accent-c) * var(--lucet-ac-12)) var(--lucet-accent-h));
+
+  /*
+   * The hover for the accent solid. NOT a scale step: the ramp answers "what
+   * is lighter or darker than what", and a hover answers "where does this fill
+   * go under the pointer" -- pointing hover at step 10 is how it ended up
+   * capped into invisibility (0.03 of travel) with amber moving backwards.
+   *
+   * The rule: a solid hovers AWAY from its label. Every accent with a white
+   * label darkens; an accent with a dark label (amber overrides the shift)
+   * lightens. Contrast under the pointer only ever improves, so this needs no
+   * cap, and all eleven accents move the same visible distance in both themes.
+   */
+  --lucet-accent-hover-shift: -0.06;
+  --lucet-accent-hover: oklch(
+    calc(var(--lucet-al-9) + var(--lucet-accent-hover-shift))
+    calc(var(--lucet-accent-c) * var(--lucet-ac-10))
+    var(--lucet-accent-h)
+  );
 }
 
 /*
@@ -210,4 +224,7 @@
 
   --lucet-al-9: 0.85;
   --lucet-al-10: 0.81;
+
+  /* Amber's label is dark, so away-from-label means LIGHTER here. */
+  --lucet-accent-hover-shift: 0.05;
 }

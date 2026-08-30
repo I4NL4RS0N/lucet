@@ -605,7 +605,7 @@ export function Primitives() {
             <div className="menu__item">Duplicate<kbd>⌘D</kbd></div>
             <div className="menu__item">Export</div>
             <div className="menu__sep" />
-            <div className="menu__item">Delete<kbd>⌫</kbd></div>
+            <div className="menu__item menu__item--danger">Delete<kbd>⌫</kbd></div>
           </div>
         </Section>
 

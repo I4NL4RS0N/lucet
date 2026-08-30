@@ -51,7 +51,9 @@ setting the bare shadcn name works without knowing Lucet exists.
 - `--lucet-muted`, `--lucet-muted-foreground`
 - `--lucet-subtle`, `--lucet-subtle-foreground`
 - `--lucet-border`, `--lucet-input`, `--lucet-ring`
-- `--lucet-hover`, `--lucet-hover-strong`
+- `--lucet-hover`, `--lucet-hover-strong` — translucent ink veils, not opaque colours. Paint one AS the background of anything that rests transparent (menu items, rows, ghost buttons); a control that owns an opaque background mixes the step over its resting colour with `color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), <rest>)`. One step, every surface, both themes.
+- `--lucet-hover-mix`, `--lucet-hover-mix-strong` — the percentages behind the veils, for the mix-over-rest form.
+- `--lucet-accent-hover` — where the accent solid goes under the pointer: away from its label, so contrast improves as you reach it. `--lucet-primary-hover` already resolves to this under an accent; reach for this one only when styling a custom accent-filled control.
 - `--lucet-accent-ink` — accent as TEXT. Step 12, because that is the step that clears 4.5:1 for every accent in both themes.
 
 ### Geometry
@@ -120,3 +122,4 @@ Do not build on these.
 - `--lucet-radius-root`, `--lucet-radius-control-inner` — derived; the nested-radius rule computes them.
 - `--lucet-font-system`, `--lucet-font-mono-system` — the fallback stacks behind the typeface slots.
 - `--lucet-line` — the raw line colour behind `--lucet-border`.
+- `--lucet-accent-hover-shift` — the signed lightness step behind `--lucet-accent-hover`. Negative for every accent with a white label; amber flips it positive because its label is dark.

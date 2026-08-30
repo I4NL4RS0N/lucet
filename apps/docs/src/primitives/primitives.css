@@ -218,17 +218,23 @@ body {
 
 .btn {
   /*
-   * Hover and active are VARIABLES, not hardcoded declarations.
+   * Hover and active are DERIVED, not chosen.
    *
    * They used to be hardcoded on .btn, so a variant that set only --btn-bg
-   * kept the generic grey hover: the danger button turned grey on hover, which
-   * is exactly the wrong signal on the one control you want people to hesitate
-   * over. Every variant now has to answer for all three of its states, and the
-   * generic rule can no longer stomp one.
+   * kept the generic grey hover. Then they were absolute colours, so the
+   * travel depended on where the variant happened to rest: measured with a
+   * real pointer, secondary moved 0.066 of lightness while ghost moved 0.19.
+   *
+   * Now every variant states only what it rests on, and the states are that
+   * colour with the system-wide breath of ink mixed over it -- the same
+   * perceived step on every variant, in both themes, including a transparent
+   * rest (mixing over transparent yields the bare veil, which is exactly what
+   * a ghost should hover to). A solid variant (primary, danger) still
+   * overrides the pair, because a solid hovers away from its label instead.
    */
   --btn-bg: var(--raised);
-  --btn-bg-hover: var(--hover);
-  --btn-bg-active: var(--active);
+  --btn-bg-hover: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--btn-bg));
+  --btn-bg-active: color-mix(in oklab, var(--ink) var(--lucet-hover-mix-strong), var(--btn-bg));
   --btn-fg: var(--ink);
 
   position: relative;
@@ -315,11 +321,10 @@ body {
   --btn-fg: var(--lucet-danger-solid-foreground);
 }
 
-/* A ghost has no material until you touch it. */
+/* A ghost has no material until you touch it. Its hover and active fall out
+   of the derivation above: ink mixed over transparent is the bare veil. */
 .btn--ghost {
   --btn-bg: transparent;
-  --btn-bg-hover: var(--hover);
-  --btn-bg-active: var(--active);
   --btn-fg: var(--ink-2);
   box-shadow: none;
 }
@@ -398,8 +403,15 @@ body {
   /* Not italic. Italic reads as emphasis, which is the opposite of the job. */
 }
 
+/*
+ * A field's hover is its RING, not its fill. The old rule moved the fill to
+ * the stage colour, so hovering an empty input made it dissolve into the
+ * surface behind it -- measured: the hovered background landed within 0.005
+ * of the well in both themes. A recess should not change depth under a
+ * pointer anyway; it firms its edge instead.
+ */
 .field:hover:not(:disabled),
-.field.is-hover { background-color: var(--sunken); }
+.field.is-hover { box-shadow: 0 0 0 1px var(--line-strong), var(--inset-deep); }
 .field:focus,
 .field.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 .field:disabled,
@@ -431,10 +443,19 @@ textarea.field {
   box-shadow: var(--lit), var(--ring-2), var(--cast-1);
   transition: background-color var(--fast);
 }
-.select select:hover,
-.select.is-hover select { background-color: var(--hover); }
+.select select:hover:not(:disabled),
+.select.is-hover select { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--raised)); }
 .select select:focus-visible,
 .select.is-focus select { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
+
+/*
+ * The select HAD no disabled state -- the audit that swept every other control
+ * never rendered this one disabled, so it shipped with nothing but the UA's
+ * grey text, and its hover kept firing while disabled. Same treatment as the
+ * button it is dressed as, chevron included.
+ */
+.select select:disabled { opacity: 0.42; cursor: not-allowed; }
+.select:has(select:disabled)::after { opacity: 0.42; }
 
 /* Chevron drawn on the WRAPPER, so it never fights the select's own layers. */
 .select::after {
@@ -526,7 +547,7 @@ textarea.field {
  * here: a minimal background transition, no more.
  */
 .check:hover .check__box,
-.check.is-hover .check__box { background-color: var(--hover); }
+.check.is-hover .check__box { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--field)); }
 
 .check:hover input:checked + .check__box,
 .check.is-hover input:checked + .check__box { background-color: var(--solid-hover); }
@@ -534,12 +555,10 @@ textarea.field {
 /* Pressed. A control that labels an Active state and then renders it
    identically to Default is worse than one that never claimed to have it. */
 .check:active .check__box,
-.check.is-active .check__box { background-color: var(--active); scale: 0.92; }
+.check.is-active .check__box { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix-strong), var(--field)); scale: 0.92; }
 
 .check:active input:checked + .check__box,
 .check.is-active input:checked + .check__box { background-color: var(--solid); scale: 0.92; }
-
-.check:has(input:disabled):hover .check__box { background-color: var(--field); }
 
 .check input:checked + .check__box {
   background-color: var(--solid);
@@ -563,12 +582,26 @@ textarea.field {
  */
 .check:has(input:disabled) { cursor: not-allowed; color: var(--ink-3); }
 
+/*
+ * FLAT, because inert things cast nothing and hold nothing.
+ *
+ * The first pass let the disabled-checked box inherit an INSET shadow from the
+ * unchecked rule and a hairline that resolved to its own background colour --
+ * a checked control rendered as an empty well wearing an invisible ring, with
+ * a tick two steps of grey away. It looked broken because it was three
+ * accidents stacked, not a state.
+ *
+ * Disabled keeps the silhouette and loses the material: no inset, no cast, a
+ * plain line for the unchecked box, and for the checked one a flat chip whose
+ * tick is PUNCHED OUT in the surface colour -- guaranteed legible in both
+ * themes because the chip sits mid-scale and the surface never does.
+ */
 .check input:disabled + .check__box {
   background-color: var(--field);
-  box-shadow: var(--ring-1), var(--inset-shallow);
+  box-shadow: 0 0 0 1px var(--line);
 }
-.check input:disabled:checked + .check__box { background-color: var(--line-strong); }
-.check input:disabled:checked + .check__box::after { border-color: var(--ink-3); background: var(--ink-3); }
+.check input:disabled:checked + .check__box { background-color: var(--line-strong); box-shadow: none; }
+.check input:disabled:checked + .check__box::after { border-color: var(--sunken); background: var(--sunken); }
 
 .switch { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }
@@ -607,7 +640,7 @@ textarea.field {
 }
 
 .switch:hover .switch__track,
-.switch.is-hover .switch__track { background-color: var(--hover); }
+.switch.is-hover .switch__track { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--field)); }
 
 .switch:hover input:checked + .switch__track,
 .switch.is-hover input:checked + .switch__track { background-color: var(--solid-hover); }
@@ -620,8 +653,6 @@ textarea.field {
 .switch:active input:checked + .switch__track .switch__knob,
 .switch.is-active input:checked + .switch__track .switch__knob { translate: 11px 0; }
 
-.switch:has(input:disabled):hover .switch__track { background-color: var(--field); }
-
 .switch input:checked + .switch__track { background-color: var(--solid); }
 .switch input:checked + .switch__track .switch__knob { translate: 14px 0; background: var(--solid-fg); }
 .switch input:focus-visible + .switch__track,
@@ -629,15 +660,17 @@ textarea.field {
 /* Same rule, same reason: the knob must stay legible against its track. */
 .switch:has(input:disabled) { cursor: not-allowed; color: var(--ink-3); }
 
+/* Same flat treatment as the checkbox, same reasoning. */
 .switch input:disabled + .switch__track {
   background-color: var(--field);
-  box-shadow: var(--ring-1), var(--inset-shallow);
+  box-shadow: 0 0 0 1px var(--line);
 }
-.switch input:disabled:checked + .switch__track { background-color: var(--line-strong); }
+.switch input:disabled:checked + .switch__track { background-color: var(--line-strong); box-shadow: none; }
 .switch input:disabled + .switch__track .switch__knob {
   background: var(--ink-3);
   box-shadow: none;
 }
+.switch input:disabled:checked + .switch__track .switch__knob { background: var(--sunken); }
 
 /* ==========================================================================
  * SEGMENTED CONTROL
@@ -667,11 +700,18 @@ textarea.field {
   white-space: nowrap;
   transition: color var(--fast), background-color var(--fast);
 }
+/*
+ * The veil, not a hardcoded white. The old overlays were oklch(1 0 0 / 0.04)
+ * and 0.07 -- white light, which exists only in dark. In light theme the
+ * hovered cell measured 0.0018 of lightness travel: a hover that was
+ * literally invisible, on the control that had been "a problem all night".
+ * The veil is ink, so it darkens light cells and lightens dark ones.
+ */
 .seg span:hover,
-.seg .is-hover span { color: var(--ink-2); background-color: oklch(1 0 0 / 0.04); }
+.seg .is-hover span { color: var(--ink-2); background-color: var(--hover); }
 
 .seg label:active span,
-.seg .is-active span { background-color: oklch(1 0 0 / 0.07); }
+.seg .is-active span { background-color: var(--active); }
 
 /*
  * The selected cell used to carry a full drop shadow AND a bright ring inside
@@ -689,6 +729,11 @@ textarea.field {
 }
 .seg input:focus-visible + span,
 .seg .is-focus span { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
+
+/* The SELECTED cell shows no hover, deliberately: it is already at its
+   destination, and a raised cell that shifts under the pointer reads as
+   loose. The unselected cells carry the affordance. */
+.seg input:checked + span:hover { background-color: var(--raised); color: var(--ink); }
 
 /* ==========================================================================
  * BADGE
@@ -821,6 +866,14 @@ textarea.field {
 }
 .menu__item:hover,
 .menu__item.is-hover { background-color: var(--hover); color: var(--ink); }
+/*
+ * A destructive item is inked as one BEFORE it is hovered. Reading "Delete"
+ * in the same grey as "Duplicate" and only learning its weight from position
+ * is the menu equivalent of a grey danger button.
+ */
+.menu__item--danger { color: var(--bad); }
+.menu__item--danger:hover,
+.menu__item--danger.is-hover { color: var(--bad); }
 .menu__item[aria-checked='true'] { color: var(--ink); }
 .menu__item kbd {
   margin-inline-start: auto;
@@ -1549,6 +1602,14 @@ code, .code {
  * everyone who does not use a pointer.
  */
 .att__remove {
+  /*
+   * position: relative is LOAD-BEARING. Without it the 32px hit-area
+   * pseudo-element below anchors to the nearest positioned ancestor -- the
+   * attachment itself -- and floats over the middle of the chip, so clicking
+   * a FILENAME removed the file. Found by asking elementFromPoint what
+   * actually sat at the name's centre: att__remove, on both inline chips.
+   */
+  position: relative;
   display: inline-grid;
   place-items: center;
   inline-size: 20px;

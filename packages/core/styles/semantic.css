@@ -60,7 +60,23 @@
   --lucet-default-subtle: oklch(0.955 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);
-  --lucet-default-input: var(--lucet-line);
+  /*
+   * INPUT IS THE STRONG LINE, AND IT WAS NEVER STRONGER.
+   *
+   * Both border and input pointed at --lucet-line, in every theme, so the
+   * "strong" role was a fiction the whole time: the Separator specimen showed
+   * Default and Strong as two identical rules, a field's ring was no firmer
+   * than a card's, and the disabled checkbox drew its hairline in its own
+   * background colour -- an invisible ring on the one control whose shape is
+   * all it has left. A role that resolves to another role's value is not a
+   * role; this is the fifth collision of that exact kind in this file.
+   *
+   * Strengthened toward ink rather than given its own literal, so it stays one
+   * step firmer than whatever the line is in every theme and expression.
+   * Declared once; --lucet-line and --lucet-foreground both invert on their
+   * own, so the dark blocks below do not restate it.
+   */
+  --lucet-default-input: color-mix(in oklab, var(--lucet-line), var(--lucet-foreground) 20%);
   /*
    * Step 11, whose job in the scale is guaranteed readable contrast against
    * the surface. That is exactly what a focus indicator needs, and it
@@ -89,25 +105,47 @@
    */
   --lucet-default-accent-ink: var(--lucet-accent-12);
   /*
-   * HOVER MUST NOT EQUAL THE THING IT HOVERS.
+   * HOVER IS A VEIL, NOT A DESTINATION.
    *
-   * --lucet-hover was the same token as --lucet-secondary, in both themes. Any
-   * control resting on secondary -- which is every secondary button -- had a
-   * hover state that computed to its own resting colour and therefore did
-   * nothing at all. The same collision put muted on secondary and subtle on
-   * card, so a field and a raised control were one value, and a quiet surface
-   * and a card were another.
+   * Two designs failed here before this one. First --lucet-hover was the same
+   * token as --lucet-secondary, so hover computed to the resting colour and
+   * did nothing. Then it was one absolute colour -- and one destination cannot
+   * serve surfaces that rest at different distances from it. Measured with a
+   * real pointer, a button moved 0.066 of lightness, a table row moved 0.19,
+   * and a segment cell moved 0.0018 in light because its overlay was a
+   * hardcoded white that only exists in dark. Hover FELT erratic because it
+   * measured erratic: a 5x spread between neighbouring controls.
    *
-   * Four roles, four values, and enough travel between them to be seen. The
-   * neutral scale has no step between 0.269 and 0.371, so the dark hover pair
-   * is written against the greyscale axis directly rather than snapped to a
-   * step that is 0.1 away.
+   * So hover is relative now: the surface under the pointer takes on a fixed
+   * breath of ink. Transparent-resting things (menu items, rows, ghost
+   * buttons, segment cells) paint the veil directly as a background; a control
+   * that owns an opaque background mixes the same step over its resting
+   * colour:
    *
-   * scripts/audit-theme-parity.mjs asserts these stay distinct at runtime.
+   *   color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), <rest>)
+   *
+   * Either way the perceived travel is the same on every surface, and the
+   * direction is right by construction, because ink is light in dark and dark
+   * in light. Declared once: --lucet-foreground already inverts with the
+   * theme, so the dark blocks below do not restate any of this.
    */
-  --lucet-default-hover: oklch(0.905 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-hover-strong: oklch(0.855 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-primary-hover: var(--lucet-accent-solid-hover, var(--lucet-accent-10));
+  --lucet-hover-mix: 8%;
+  --lucet-hover-mix-strong: 13%;
+  --lucet-default-hover: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), transparent);
+  --lucet-default-hover-strong: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), transparent);
+  /*
+   * A SOLID HOVERS AWAY FROM ITS LABEL.
+   *
+   * The old hover was accent step 10, which had to be capped at the lightest
+   * value every accent survives with a white label -- leaving 0.03 of travel,
+   * a hover you could measure but not see, and amber moving the opposite way
+   * from the other ten. Toward the label was the wrong direction all along:
+   * it is why the cap existed. Away from the label the fill is free to move a
+   * visible distance, the label's contrast only ever improves, and all eleven
+   * accents shift the same amount. --lucet-accent-hover applies the rule to
+   * the accent axis; the neutral and danger solids below follow it too.
+   */
+  --lucet-default-primary-hover: var(--lucet-accent-solid-hover, var(--lucet-accent-hover));
   /*
    * SOLID: neutral emphasis, and deliberately NOT --lucet-primary.
    *
@@ -121,7 +159,9 @@
    * not fight over one token.
    */
   --lucet-default-solid: oklch(0.24 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-solid-hover: oklch(0.14 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* Away from the white label, by the same ~0.06 every other solid moves.
+     0.14 was visibly stronger than every neighbouring hover for no reason. */
+  --lucet-default-solid-hover: oklch(0.175 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-foreground: var(--lucet-neutral-0);
   /*
    * A DESTRUCTIVE FILL IS NOT THE DANGER TONE.
@@ -199,16 +239,18 @@
     --lucet-default-subtle: var(--lucet-neutral-950);
     --lucet-default-subtle-foreground: var(--lucet-neutral-200);
     --lucet-default-border: var(--lucet-line);
-    --lucet-default-input: var(--lucet-line);
+    /* hover, hover-strong, primary-hover and input are NOT restated here:
+       they derive from --lucet-foreground and --lucet-line, which invert on
+       their own. One declaration, no copy to drift. */
     --lucet-default-ring: var(--lucet-accent-11);
-    --lucet-default-hover: oklch(0.335 var(--lucet-neutral-c) var(--lucet-neutral-h));
-    --lucet-default-hover-strong: oklch(0.395 var(--lucet-neutral-c) var(--lucet-neutral-h));
-    --lucet-default-primary-hover: var(--lucet-accent-solid-hover, var(--lucet-accent-10));
     --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
-      --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-danger-solid: oklch(0.54 0.19 22);
-    --lucet-default-danger-solid-hover: oklch(0.58 0.19 22);
+    /* Darker, not lighter: away from the white label, like every solid. The
+       old 0.58 moved toward it -- the only hover in dark that dimmed its own
+       contrast. */
+    --lucet-default-danger-solid-hover: oklch(0.48 0.19 22);
     --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
   }
 }
@@ -229,15 +271,17 @@
   --lucet-default-subtle: var(--lucet-neutral-950);
   --lucet-default-subtle-foreground: var(--lucet-neutral-200);
   --lucet-default-border: var(--lucet-line);
-  --lucet-default-input: var(--lucet-line);
+  /* hover, hover-strong, primary-hover and input are NOT restated here:
+     they derive from --lucet-foreground and --lucet-line, which invert on
+     their own. One declaration, no copy to drift. */
   --lucet-default-ring: var(--lucet-accent-11);
-  --lucet-default-hover: oklch(0.335 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-hover-strong: oklch(0.395 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-primary-hover: var(--lucet-accent-solid-hover, var(--lucet-accent-10));
   --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-danger-solid: oklch(0.54 0.19 22);
-  --lucet-default-danger-solid-hover: oklch(0.58 0.19 22);
+  /* Darker, not lighter: away from the white label, like every solid. The
+     old 0.58 moved toward it -- the only hover in dark that dimmed its own
+     contrast. */
+  --lucet-default-danger-solid-hover: oklch(0.48 0.19 22);
   --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
 }

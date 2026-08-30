@@ -109,8 +109,14 @@
   background-color: var(--lucet-primary-hover);
 }
 
+/*
+ * Secondary owns an opaque background, so the veil is MIXED over its resting
+ * colour rather than painted on top: --lucet-hover is translucent ink, and
+ * setting it as background-color would replace the fill instead of tinting it.
+ * Ghost rests transparent, so it takes the veil directly.
+ */
 .lucet-button[data-variant='secondary']:hover:not(:disabled) {
-  background-color: var(--lucet-hover-strong);
+  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-secondary));
 }
 
 .lucet-button[data-variant='ghost']:hover:not(:disabled) {
@@ -120,7 +126,9 @@
 
 /* System has no press treatment of its own, so the active state is a step
    further along the same scale rather than a lighting change. */
-.lucet-button[data-variant='secondary']:active:not(:disabled),
+.lucet-button[data-variant='secondary']:active:not(:disabled) {
+  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), var(--lucet-secondary));
+}
 .lucet-button[data-variant='ghost']:active:not(:disabled) {
   background-color: var(--lucet-hover-strong);
 }
@@ -553,7 +561,7 @@
 }
 
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
-  background-color: var(--lucet-hover-strong);
+  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), var(--lucet-secondary));
 }
 
 /*

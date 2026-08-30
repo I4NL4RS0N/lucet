@@ -197,7 +197,8 @@ button {
   transition: background var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 
-button:hover:not(:disabled) { background-color: var(--lucet-hover-strong); }
+/* Opaque-resting: mix the hover step over the fill; the raw token is a veil. */
+button:hover:not(:disabled) { background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-secondary)); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
@@ -346,7 +347,7 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 
-.control__field select:hover { background-color: var(--lucet-hover); }
+.control__field select:hover { background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-card)); }
 
 .control__field select:active {
   box-shadow: var(--lucet-material-pressed);

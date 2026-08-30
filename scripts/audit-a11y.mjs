@@ -20,7 +20,7 @@
 
 import { spawn } from 'node:child_process'
 import { chromium } from 'playwright'
-import { AA_NON_TEXT, AA_TEXT, MIN_TARGET_PX, contrastRatio } from './contrast.mjs'
+import { AA_NON_TEXT, AA_TEXT, MIN_TARGET_PX, contrastRatio, flattenBackground } from './contrast.mjs'
 
 const THEMES = ['light', 'dark']
 const EXPRESSIONS = ['system', 'expressive']
@@ -35,14 +35,23 @@ const URL = process.env.AUDIT_URL ?? `http://localhost:${PORT}/`
 
 /** Collects raw colour strings and geometry. No maths happens in here. */
 function collect() {
+  /*
+   * A CHAIN, not the first hit. The old walk returned the first
+   * non-transparent ancestor colour -- which reads a translucent layer (a
+   * hover veil, dark's --lucet-line) as if it were opaque, measuring a
+   * background that is never painted. The node side composites the chain with
+   * flattenBackground() instead.
+   */
   const bgOf = (el) => {
+    const chain = []
     let node = el
     while (node) {
       const c = getComputedStyle(node).backgroundColor
-      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c
+      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') chain.push(c)
       node = node.parentElement
     }
-    return 'rgb(255, 255, 255)'
+    chain.push('rgb(255, 255, 255)')
+    return chain
   }
 
   const text = []
@@ -152,14 +161,23 @@ async function probeFocus(page) {
  * enabled.
  */
 function collectPrimitives() {
+  /*
+   * A CHAIN, not the first hit. The old walk returned the first
+   * non-transparent ancestor colour -- which reads a translucent layer (a
+   * hover veil, dark's --lucet-line) as if it were opaque, measuring a
+   * background that is never painted. The node side composites the chain with
+   * flattenBackground() instead.
+   */
   const bgOf = (el) => {
+    const chain = []
     let node = el
     while (node) {
       const c = getComputedStyle(node).backgroundColor
-      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c
+      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') chain.push(c)
       node = node.parentElement
     }
-    return 'rgb(255, 255, 255)'
+    chain.push('rgb(255, 255, 255)')
+    return chain
   }
 
   const text = []
@@ -330,12 +348,13 @@ async function main() {
 
           for (const { label, fg, bg } of text) {
             checks++
-            const ratio = contrastRatio(fg, bg)
+            const bgFlat = flattenBackground(bg)
+            const ratio = bgFlat === null ? null : contrastRatio(fg, bgFlat)
             if (ratio === null) {
-              failures.push(`${where}  ${label}: could not resolve (${fg} on ${bg})`)
+              failures.push(`${where}  ${label}: could not resolve (${fg} on ${[].concat(bg).join(' < ')})`)
             } else if (ratio < AA_TEXT) {
               failures.push(
-                `${where}  ${label}: ${ratio}:1 (needs ${AA_TEXT}, 1.4.3)\n      ${fg} on ${bg}`,
+                `${where}  ${label}: ${ratio}:1 (needs ${AA_TEXT}, 1.4.3)\n      ${fg} on ${bgFlat} (${[].concat(bg).join(' < ')})`,
               )
             }
           }
@@ -424,12 +443,13 @@ async function main() {
 
         for (const { label, fg, bg } of text) {
           checks++
-          const ratio = contrastRatio(fg, bg)
+          const bgFlat = flattenBackground(bg)
+          const ratio = bgFlat === null ? null : contrastRatio(fg, bgFlat)
           if (ratio === null) {
-            failures.push(`${where}  ${label}: could not resolve (${fg} on ${bg})`)
+            failures.push(`${where}  ${label}: could not resolve (${fg} on ${[].concat(bg).join(' < ')})`)
           } else if (ratio < AA_TEXT) {
             failures.push(
-              `${where}  ${label}: ${ratio}:1 (needs ${AA_TEXT}, 1.4.3)\n      ${fg} on ${bg}`,
+              `${where}  ${label}: ${ratio}:1 (needs ${AA_TEXT}, 1.4.3)\n      ${fg} on ${bgFlat} (${[].concat(bg).join(' < ')})`,
             )
           }
         }

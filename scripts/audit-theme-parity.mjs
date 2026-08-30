@@ -24,6 +24,7 @@
 
 import { spawn } from 'node:child_process'
 import { chromium } from 'playwright'
+import { flattenBackground, oklabLightness } from './contrast.mjs'
 
 const EXPRESSIONS = ['system', 'expressive']
 const ACCENTS = [
@@ -87,12 +88,46 @@ async function main() {
    * A role that resolves to another role's value is not a role. These pairs
    * must differ, and by enough to see.
    */
+  /*
+   * Each pair carries the SURFACE it is judged over. The hover tokens are
+   * translucent ink now, so their lightness only exists once they are
+   * composited over something -- and the honest something is the surface the
+   * role actually acts on. Opaque pairs pass through compositing unchanged,
+   * so one rule covers both kinds.
+   *
+   * border/input joined the list after the fifth collision of this exact
+   * kind: both resolved to --lucet-line in every theme, so "line-strong" was
+   * a fiction -- the Separator specimen showed Default and Strong as two
+   * identical rules and nobody could see the difference because there was
+   * none.
+   */
   const DISTINCT = [
-    ['--lucet-secondary', '--lucet-hover', 0.02],
-    ['--lucet-hover', '--lucet-hover-strong', 0.02],
-    ['--lucet-muted', '--lucet-secondary', 0.015],
-    ['--lucet-card', '--lucet-subtle', 0.01],
+    ['--lucet-secondary', '--lucet-hover', 0.02, '--lucet-secondary'],
+    ['--lucet-hover', '--lucet-hover-strong', 0.015, '--lucet-secondary'],
+    ['--lucet-muted', '--lucet-secondary', 0.015, null],
+    ['--lucet-card', '--lucet-subtle', 0.01, null],
+    ['--lucet-border', '--lucet-input', 0.02, '--lucet-card'],
   ]
+
+  /*
+   * Resolve tokens to CONCRETE colours by painting them: a probe div's
+   * computed backgroundColor is the browser's own evaluation of the token,
+   * color-mix and all. Reading the custom property returns the unresolved
+   * expression, which cannot be compared numerically.
+   */
+  function resolveDistinctColors(names) {
+    const probe = document.createElement('div')
+    document.body.appendChild(probe)
+    const out = {}
+    for (const n of names) {
+      probe.style.backgroundColor = ''
+      probe.style.backgroundColor = `var(${n})`
+      out[n] = getComputedStyle(probe).backgroundColor
+    }
+    probe.remove()
+    return out
+  }
+  const DISTINCT_NAMES = [...new Set(DISTINCT.flatMap(([a, b, , base]) => [a, b, base]).filter(Boolean))]
 
   /*
    * SURFACES ARE NOT ON THIS LIST, and that is deliberate.
@@ -109,10 +144,6 @@ async function main() {
    * resting colour is broken in every expression, at every elevation.
    */
 
-  const lightnessOf = (v) => {
-    const m = String(v).match(/oklch\(\s*([\d.]+)/)
-    return m ? Number(m[1]) : null
-  }
 
 
   try {
@@ -147,20 +178,31 @@ async function main() {
             { theme, expression, accent },
           )
           const viaAttribute = await page.evaluate(dumpTokens)
+          // Resolved HERE, while the attribute path is live: the pairs are
+          // judged against the same state the dump describes.
+          const resolvedDistinct =
+            accent === ACCENTS[0] && expression === EXPRESSIONS[0]
+              ? await page.evaluate(resolveDistinctColors, DISTINCT_NAMES)
+              : null
 
           // Path B: the OS preference, with no attribute to override it.
           await page.emulateMedia({ colorScheme: theme })
           await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
           const viaPreference = await page.evaluate(dumpTokens)
 
-          if (accent === ACCENTS[0] && expression === EXPRESSIONS[0]) {
-            for (const [a, b, min] of DISTINCT) {
+          if (resolvedDistinct) {
+            const resolved = resolvedDistinct
+            for (const [a, b, min, base] of DISTINCT) {
               const av = viaAttribute[a]
               const bv = viaAttribute[b]
-              const la = lightnessOf(av)
-              const lb = lightnessOf(bv)
+              const under = base ? [resolved[base], 'rgb(255, 255, 255)'] : ['rgb(255, 255, 255)']
+              const la = oklabLightness(flattenBackground([resolved[a], ...under]))
+              const lb = oklabLightness(flattenBackground([resolved[b], ...under]))
               const delta = la !== null && lb !== null ? Math.abs(la - lb) : null
-              if (av === bv || (delta !== null && delta < min)) {
+              // A pair may sit exactly at its minimum by design; the sRGB
+              // roundtrip costs ~1e-4 of L, so the comparison carries that
+              // tolerance rather than failing on float noise.
+              if (av === bv || delta === null || delta < min - 0.0005) {
                 roleFailures.push({ theme, a, b, av, bv, delta: delta?.toFixed(3) ?? 'n/a', min })
               }
             }

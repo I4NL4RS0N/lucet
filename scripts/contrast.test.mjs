@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contrastRatio, relativeLuminance, toLinearRGB } from './contrast.mjs'
+import { contrastRatio, flattenBackground, oklabLightness, relativeLuminance, toLinearRGB, toSRGBA } from './contrast.mjs'
 
 /**
  * The audit is only as trustworthy as its maths. Two earlier hand-rolled
@@ -54,5 +54,44 @@ describe('contrast ratio', () => {
   it('agrees with a known WCAG pair', () => {
     // #767676 on white is the canonical 4.54:1 boundary case.
     expect(contrastRatio('rgb(118,118,118)', 'rgb(255,255,255)')).toBeCloseTo(4.54, 1)
+  })
+})
+
+describe('alpha compositing', () => {
+  it('parses alpha from every colour syntax', () => {
+    expect(toSRGBA('rgba(255, 255, 255, 0.5)').a).toBe(0.5)
+    expect(toSRGBA('oklch(0.42 0.006 264 / 0.4)').a).toBe(0.4)
+    expect(toSRGBA('oklab(0.9 0 0 / 0.08)').a).toBe(0.08)
+    expect(toSRGBA('transparent').a).toBe(0)
+    expect(toSRGBA('rgb(10, 20, 30)').a).toBe(1)
+  })
+
+  it('flattens a translucent veil over an opaque base', () => {
+    // 8% white over black should land near rgb(20,20,20), not be read as white.
+    const flat = flattenBackground(['rgba(255, 255, 255, 0.08)', 'rgb(0, 0, 0)'])
+    const m = flat.match(/\d+/g).map(Number)
+    expect(m[0]).toBeGreaterThan(10)
+    expect(m[0]).toBeLessThan(31)
+  })
+
+  it('stops at the first opaque layer', () => {
+    expect(flattenBackground(['rgb(10, 10, 10)', 'rgb(200, 200, 200)'])).toBe('rgb(10, 10, 10)')
+  })
+
+  it('composites over white when nothing is opaque, as browsers do', () => {
+    const flat = flattenBackground(['rgba(0, 0, 0, 0.5)'])
+    const [r, g, b] = flat.match(/[\d.]+/g).map(Number)
+    expect(r).toBeCloseTo(127.5, 0)
+    expect(g).toBeCloseTo(127.5, 0)
+    expect(b).toBeCloseTo(127.5, 0)
+  })
+
+  it('fails loudly on an unparseable layer instead of guessing', () => {
+    expect(flattenBackground(['var(--nope)', 'rgb(0, 0, 0)'])).toBeNull()
+  })
+
+  it('reports oklab lightness for translucent input composited over white', () => {
+    expect(oklabLightness('rgb(0, 0, 0)')).toBeCloseTo(0, 2)
+    expect(oklabLightness('rgb(255, 255, 255)')).toBeCloseTo(1, 2)
   })
 })

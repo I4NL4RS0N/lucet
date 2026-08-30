@@ -10,6 +10,14 @@
       rel="stylesheet"
     />
     <title>Lucet · Primitives</title>
+    <script>
+      // Before first paint, not in a React effect. The page mounted with no
+      // data-theme for a frame, then the effect landed and every control
+      // cross-faded from the OS-preference values to the page's own -- a
+      // visible smear on every load, because transitions were already armed.
+      document.documentElement.setAttribute('data-theme', 'dark')
+      document.documentElement.setAttribute('data-accent', 'monochrome')
+    </script>
   </head>
   <body>
     <div id="root"></div>
