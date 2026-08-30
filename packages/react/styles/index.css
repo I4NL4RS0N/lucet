@@ -173,7 +173,7 @@
 .lucet-message[data-role='user'] .lucet-message__body {
   background: var(--lucet-subtle);
   color: var(--lucet-subtle-foreground);
-  border-radius: var(--lucet-radius-lg);
+  border-radius: var(--lucet-radius-surface);
   padding: var(--lucet-space-3) var(--lucet-space-4);
   /* Narrower than the response. A prompt is the smaller thing on the page. */
   max-width: 46ch;
@@ -294,7 +294,7 @@
 .lucet-tool {
   margin: 0 0 var(--lucet-space-3);
   padding: var(--lucet-space-2) var(--lucet-space-3);
-  border-radius: var(--lucet-radius-md);
+  border-radius: var(--lucet-radius-surface);
   border: 1px solid var(--lucet-border);
   background: var(--lucet-subtle);
   font-size: var(--lucet-text-sm);
@@ -370,7 +370,7 @@
   gap: var(--lucet-space-2);
   margin: 0 0 var(--lucet-space-3);
   padding: var(--lucet-space-3);
-  border-radius: var(--lucet-radius-md);
+  border-radius: var(--lucet-radius-surface);
   border: 1px solid var(--lucet-border);
   background: var(--lucet-subtle);
   font-size: var(--lucet-text-sm);
@@ -433,9 +433,14 @@
   /* Contains its own visually-hidden label. */
   position: relative;
   border: 1px solid var(--lucet-input);
-  border-radius: var(--lucet-radius-xl);
+  /*
+   * A panel, not a control: it is multi-line, so it takes no fixed height. But
+   * its padding and radius come from the same tokens as everything else, which
+   * is what stops it drifting the way the buttons and selects did.
+   */
+  border-radius: var(--lucet-radius-panel);
   background: var(--lucet-card);
-  padding: var(--lucet-space-2);
+  padding: var(--lucet-control-inset);
   transition:
     border-color var(--lucet-duration-fast) var(--lucet-ease-out),
     box-shadow var(--lucet-duration-normal) var(--lucet-ease-out);
@@ -448,7 +453,7 @@
 .lucet-composer__lock {
   margin: 0 0 var(--lucet-space-2);
   padding: var(--lucet-space-2) var(--lucet-space-3);
-  border-radius: var(--lucet-radius-md);
+  border-radius: var(--lucet-radius-surface);
   background: var(--lucet-state-queued-surface);
   color: var(--lucet-state-queued-foreground);
   font-size: var(--lucet-text-sm);
@@ -465,7 +470,7 @@
   font: inherit;
   font-size: var(--lucet-text-base);
   line-height: var(--lucet-leading-normal);
-  padding: var(--lucet-space-2);
+  padding: var(--lucet-space-2) calc(var(--lucet-control-pad-x) - var(--lucet-control-inset));
   resize: vertical;
 }
 

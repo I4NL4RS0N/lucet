@@ -148,7 +148,7 @@ p { line-height: var(--lucet-leading-prose); }
 :root[data-expression='expressive'] main > * {
   border-left: 0;
   background: var(--lucet-card);
-  border-radius: var(--lucet-radius-xl);
+  border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-material-raised);
 }
 
@@ -160,7 +160,7 @@ main[data-mode='drawer'] > :nth-child(2) { position: relative; }
 main[data-mode='drawer'] section[aria-label='Conversation'] {
   position: sticky;
   bottom: 0;
-  border-radius: var(--lucet-radius-lg);
+  border-radius: var(--lucet-radius-panel);
   background: var(--lucet-popover);
   box-shadow: var(--lucet-material-overlay);
   max-height: 60%;
@@ -237,7 +237,7 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
    the ground they will actually sit on, not inside a decorated frame. */
 .sheet__stage {
   padding: var(--lucet-space-4);
-  border-radius: var(--lucet-radius-xl);
+  border-radius: var(--lucet-radius-panel);
   background: var(--lucet-card);
   box-shadow: var(--lucet-material-raised);
 }
@@ -252,11 +252,26 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
  * strip and forced every cell to a different width.
  * ============================================================ */
 
+/*
+ * Controls size to their content by default.
+ *
+ * A forced uniform column looked tidy with seven axes and stops scaling the
+ * moment one option is longer than the rest: every control in the row grows to
+ * match the widest, and a row of mostly-empty fields is worse than a ragged
+ * one. `data-controls="uniform"` opts back in where a set genuinely is
+ * comparable. When a Select ships in the library this becomes a width prop with
+ * the same default.
+ */
 .controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--lucet-space-2) var(--lucet-space-3);
+}
+
+.controls[data-controls='uniform'] {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
-  gap: var(--lucet-space-2) var(--lucet-space-3);
-  align-items: end;
 }
 
 .control {
@@ -265,9 +280,10 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   min-width: 0;
 }
 
-/* View is a different kind of control and five segments do not fit a column,
-   so it takes its own row rather than being clipped by one. */
+/* View takes its own row: five segments read as a group, not as a seventh
+   field in the same run. */
 .control:has(.segmented) {
+  flex-basis: 100%;
   grid-column: 1 / -1;
 }
 
@@ -305,7 +321,6 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 
 .control__field select {
   appearance: none;
-  width: 100%;
   /* Same height and radius as a button, so a row of controls lines up. */
   min-block-size: var(--lucet-control-height);
   /* Same trap as the buttons: without this the gradient is sized to the
@@ -313,7 +328,9 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
      mismatched band. */
   background-origin: border-box;
   padding-block: 0;
-  padding-inline: var(--lucet-space-7) var(--lucet-control-pad-x);
+  /* start, then end. The chevron sits at the END, so that is the side that
+     needs the room. Reversed, the text runs straight into it. */
+  padding-inline: var(--lucet-control-pad-x) var(--lucet-space-7);
   /* background-color, not the shorthand: the shorthand would reset
      background-origin above and reinstate the mismatched band. */
   background-color: var(--lucet-card);
@@ -322,6 +339,9 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   border: 0;
   box-shadow: var(--lucet-material-control);
   border-radius: var(--lucet-radius-control);
+  /* Intrinsic width: the field is as wide as its longest option, plus room for
+     the chevron. */
+  width: auto;
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }

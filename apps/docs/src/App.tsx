@@ -42,7 +42,7 @@ export function App() {
     accent: 'gray',
     neutral: 'subtle',
     expression: 'system',
-    radius: 'medium',
+    radius: 'default',
     scale: '100',
     typeface: 'inter',
   })

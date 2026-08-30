@@ -17,8 +17,16 @@ export const ACCENTS = [
 /** The grey itself. Pure by default; the rest exist to harmonise with an accent. */
 export const NEUTRALS = ['subtle', 'pure', 'cool', 'warm', 'accent'] as const
 
-/** Global geometry. Overrides the expression default and a host's --radius. */
-export const RADII = ['none', 'small', 'medium', 'large', 'full'] as const
+/**
+ * Global geometry override.
+ *
+ * `default` sets no attribute at all, so the expression's own radius applies.
+ * It has to be the default here: shipping this control preset to `medium` meant
+ * an explicit override was always in force, which silently outranked
+ * Expressive's geometry. Everything except the controls stayed at System's
+ * radii and the two expressions looked half-applied.
+ */
+export const RADII = ['default', 'none', 'small', 'medium', 'large', 'full'] as const
 
 /** One multiplier over spacing and type. Narrow on purpose. */
 export const SCALES = ['90', '95', '100', '105', '110'] as const
@@ -87,7 +95,8 @@ export function useApplyTheme({
     root.setAttribute('data-accent', accent)
     root.setAttribute('data-neutral', neutral)
     root.setAttribute('data-expression', expression)
-    root.setAttribute('data-radius', radius)
+    if (radius === 'default') root.removeAttribute('data-radius')
+    else root.setAttribute('data-radius', radius)
     root.setAttribute('data-scale', scale)
     root.setAttribute('data-typeface', typeface)
   }, [theme, accent, neutral, expression, radius, scale, typeface])

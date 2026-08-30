@@ -161,7 +161,24 @@
    * When the outer radius is a true pill the arithmetic still holds: an inner
    * element is 2*inset shorter, so its pill radius is outer - inset exactly.
    */
+  /*
+   * THREE ROLES, not seven steps.
+   *
+   * Components were each picking a step off the scale, so in one expression a
+   * notice was 6px, a message body 8px, a button 18px and a panel 12px, with no
+   * relationship between them. Roles keep them congruent:
+   *
+   *   control  anything you press, and anything small sitting beside it
+   *   surface  content blocks: notices, tool calls, message bodies
+   *   panel    containers that hold the above
+   *
+   * surface tracks control exactly, so a notice and a button standing together
+   * agree. panel steps up by one increment, which is what makes a container
+   * read as containing rather than as another sibling.
+   */
   --lucet-radius-control: var(--lucet-radius-lg);
+  --lucet-radius-surface: var(--lucet-radius-control);
+  --lucet-radius-panel: calc(var(--lucet-radius-control) + 4px);
   --lucet-radius-control-inner: max(
     0px,
     calc(var(--lucet-radius-control) - var(--lucet-control-inset))

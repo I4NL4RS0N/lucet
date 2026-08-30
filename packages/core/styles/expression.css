@@ -51,6 +51,10 @@
    * still perfectly concentric.
    */
   --lucet-radius-control: calc(var(--lucet-control-height) / 2);
+  /* Content blocks stay softer than a pill, or every paragraph looks like a
+     chip. Panels step up from there. */
+  --lucet-radius-surface: 0.875rem;
+  --lucet-radius-panel: 1.25rem;
   --lucet-control-height-md: calc(2.25rem * var(--lucet-scale));
 
   --lucet-leading-prose: 1.7;

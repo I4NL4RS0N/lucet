@@ -48,7 +48,7 @@
   --lucet-material-raised: var(--lucet-hairline), var(--lucet-shade-1);
   --lucet-material-overlay: var(--lucet-hairline), var(--lucet-shade-3);
   --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.1), var(--lucet-hairline);
-  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.06), var(--lucet-hairline);
+  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.04), var(--lucet-hairline);
 
   --lucet-gloss: none;
 }
@@ -84,8 +84,14 @@
 :root[data-expression='expressive'] {
   /* Strong, because in light mode the lit edge is the whole effect. */
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.9);
-  --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.07);
-  --lucet-hairline: 0 0 0 1px oklch(0 0 0 / 0.09);
+  /*
+   * NO LIP IN LIGHT. The reference's light button has a top inner highlight, a
+   * cast, and a ring, and no bottom inner shadow; its dark button has all four.
+   * Stacking an inset lip, a 1px ring and a contact shadow all along the bottom
+   * edge triple-darkens it and reads as a smudge rather than as thickness.
+   */
+  --lucet-edge-bottom: inset 0 0 0 0 transparent;
+  --lucet-hairline: 0 0 0 1px oklch(0 0 0 / 0.07);
 
   /*
    * The first stop is a CONTACT shadow: half a pixel, no blur, hard against the
@@ -94,9 +100,9 @@
    * "has thickness".
    */
   --lucet-shade-1:
-    0 0.5px 0 oklch(0 0 0 / 0.05),
-    0 1px 2px oklch(0 0 0 / 0.08),
-    0 2px 5px oklch(0 0 0 / 0.06);
+    0 0.5px 0 oklch(0 0 0 / 0.04),
+    0 1px 2px oklch(0 0 0 / 0.06),
+    0 3px 4px -1px oklch(0 0 0 / 0.1);
   --lucet-shade-2:
     0 0.5px 0 oklch(0 0 0 / 0.04),
     0 1px 2px oklch(0 0 0 / 0.06),
