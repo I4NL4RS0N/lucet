@@ -41,6 +41,19 @@ Two of these encode deliberate calls:
 On submit, ready attachments go with the turn (the event log records exactly
 which); anything still uploading or failed stays behind, visible.
 
+## Multiplayer, said plainly
+
+A Lucet thread is **shared and single-writer**. When anyone submits, the
+composer locks for everyone until the response settles; prompts written in
+the meantime queue and send when the turn frees. Most AI tools cannot say
+that sentence — they have no concept of another person in the thread — so
+the component goes out of its way to make the context unmistakable: a lock
+held by another participant shows **their avatar** and copy that names the
+shared thread, while your own running turn shows the working orb. The full
+Presence & Turn Lock pattern (who is here, cursors-in-thread) builds on this
+contract later; the lock ships in the baseline because retrofitting
+single-writer semantics is the kind of surgery that never lands cleanly.
+
 ## What is deliberately not here yet
 
 - Attachment parts on the submitted *message* — that representation belongs

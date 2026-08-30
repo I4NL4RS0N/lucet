@@ -40,8 +40,10 @@ const settle = (id: string, status: 'ready' | 'failed', reason: string | null = 
   reason,
 })
 
-/* The state matrix, one fixture per row. */
-const FIXTURES: readonly { label: string; note: string; state: ThreadState; streaming?: boolean }[] = [
+type Fixture = { label: string; note: string; state: ThreadState; streaming?: boolean }
+
+/* The single-player state matrix. */
+const CORE_FIXTURES: readonly Fixture[] = [
   {
     label: 'Empty',
     note: 'Send is quiet and disabled. An empty composer explains itself, so no words.',
@@ -63,19 +65,30 @@ const FIXTURES: readonly { label: string; note: string; state: ThreadState; stre
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
   },
   {
-    label: 'Locked — someone’s turn',
-    note: 'The field stays writable and Send becomes QUEUE. Locked is not dead.',
-    state: play([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
-  },
-  {
-    label: 'Queued',
-    note: 'A settled fact, not a spinner: it sends the moment the turn frees.',
-    state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }, type('And what about the appendix?')]),
-  },
-  {
     label: 'Service down',
     note: 'Down blocks with words. Degraded deliberately does not block at all.',
     state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'The model provider is having an outage. Nothing you have written is lost.' }]),
+  },
+]
+
+/*
+ * The multiplayer matrix, staged apart ON PURPOSE. A Lucet thread is
+ * single-writer and shared: when anyone submits, the composer locks for
+ * everyone until the response settles. Most AI tools have no idea another
+ * person could be in the room, which is exactly why these states carry a
+ * FACE and copy that names the shared thread -- the context has to be
+ * unmistakable to someone arriving from a single-player world.
+ */
+const MULTI_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Locked — another person’s turn',
+    note: 'Ada submitted; the thread is single-writer, so the composer closes for everyone. Her avatar makes the multiplayer explicit — and the field stays writable, because locked is not dead: Send becomes QUEUE.',
+    state: play([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
+  },
+  {
+    label: 'Queued behind her turn',
+    note: 'A settled fact, not a spinner: your prompt sends the moment her response finishes.',
+    state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }, type('And what about the appendix?')]),
   },
 ]
 
@@ -104,6 +117,7 @@ function Live() {
       composer={state.composer}
       model={state.model}
       service={state.service}
+      selfId="you"
       streaming={state.status === 'streaming'}
       onStop={() => lucet.abort()}
       onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
@@ -180,7 +194,7 @@ export function ComponentsStage() {
 
         <Section n="02" name="Prompt input — every state" note="fixtures replayed through the reducer">
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
-            {FIXTURES.map((f) => (
+            {CORE_FIXTURES.map((f) => (
               <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
                 <span className="spec__label">{f.label}</span>
                 <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
@@ -188,6 +202,7 @@ export function ComponentsStage() {
                     composer={f.state.composer}
                     model={f.state.model}
                     service={f.state.service}
+                    selfId="you"
                     onChange={noop}
                     onSubmit={noop}
                     onQueue={noop}
@@ -203,13 +218,43 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="03" name="Prompt input — streaming" note="send becomes stop; the lock holds the thread">
+        <Section
+          n="03"
+          name="Prompt input — multiplayer"
+          note="a Lucet thread is shared and single-writer; most AI tools cannot say that sentence"
+        >
+          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+            {MULTI_FIXTURES.map((f) => (
+              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
+                <span className="spec__label">{f.label}</span>
+                <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
+                  <PromptInput
+                    composer={f.state.composer}
+                    model={f.state.model}
+                    service={f.state.service}
+                    selfId="you"
+                    onChange={noop}
+                    onSubmit={noop}
+                    onQueue={noop}
+                    onModelChange={noop}
+                    onRemoveAttachment={noop}
+                    onAttach={noop}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section n="04" name="Prompt input — streaming" note="your own turn: send becomes stop; the lock holds the thread">
           <div className="stage">
             <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
               <PromptInput
                 composer={play([{ type: 'composer/locked', by: 'you' }]).composer}
                 model={play([]).model}
                 service={play([]).service}
+                selfId="you"
                 streaming
                 onStop={noop}
                 onChange={noop}

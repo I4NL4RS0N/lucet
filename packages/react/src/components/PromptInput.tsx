@@ -7,6 +7,7 @@ import type {
 } from 'lucet'
 import { describeSubmitBlocker, submitBlocker } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
+import { Avatar } from './Avatar.js'
 
 /**
  * The prompt input, rendered FROM the contract.
@@ -41,6 +42,12 @@ export interface PromptInputProps {
   onRemoveAttachment: (id: string) => void
   /** The host owns file picking; the library never touches file IO. */
   onAttach?: (() => void) | undefined
+  /**
+   * Who is at THIS keyboard, matched against composer.lockedBy. In a
+   * multiplayer thread the lock is usually someone else's turn, and the strip
+   * shows the person; without selfId every lock reads as anonymous machinery.
+   */
+  selfId?: string | undefined
   /** A response is streaming: swap send for stop. */
   streaming?: boolean
   onStop?: (() => void) | undefined
@@ -92,6 +99,7 @@ export function PromptInput({
   onModelChange,
   onRemoveAttachment,
   onAttach,
+  selfId,
   streaming = false,
   onStop,
   placeholder = 'Ask anything',
@@ -103,11 +111,19 @@ export function PromptInput({
 
   /*
    * The strip: locked, queued, and down get the top of the surface, a tone,
-   * and an orb -- these are exactly the waits the orb set names, and as a
-   * grey line beside the button they were honestly invisible. One strip at a
-   * time, most severe first. Attachment blockers stay by the button, where
-   * the chips are.
+   * and a MARK -- as a grey line beside the button these were honestly
+   * invisible. One strip at a time, most severe first. Attachment blockers
+   * stay by the button, where the chips are.
+   *
+   * The mark is chosen for what the wait actually is. Locked by ANOTHER
+   * PERSON shows their avatar, because multiplayer is the part nobody
+   * expects from an AI composer and a face is the clearest possible
+   * statement of it; the copy names the shared thread outright. Locked by
+   * you (your own response running) is machine work, so it gets the working
+   * orb. Queued and down keep their orbs from the not-working set.
    */
+  const lockedByOther =
+    composer.locked && composer.lockedBy !== null && composer.lockedBy !== (selfId ?? null)
   const strip =
     service.status === 'down'
       ? {
@@ -121,16 +137,19 @@ export function PromptInput({
             orb: 'queued' as const,
             text: 'Queued — sends when the current response finishes',
           }
-        : composer.locked
+        : lockedByOther
           ? {
               tone: 'neutral' as const,
-              orb: 'thinking' as const,
-              text:
-                composer.lockedBy && composer.lockedBy !== 'you'
-                  ? `${composer.lockedBy} is running a turn — your prompt will queue`
-                  : 'A response is in progress — your prompt will queue',
+              who: composer.lockedBy!,
+              text: `${composer.lockedBy} is taking a turn in this shared thread — your prompt will queue`,
             }
-          : null
+          : composer.locked
+            ? {
+                tone: 'neutral' as const,
+                orb: 'thinking' as const,
+                text: 'A response is in progress — your prompt will queue',
+              }
+            : null
 
   const trySend = () => {
     if (blocker === null) onSubmit()
@@ -148,7 +167,14 @@ export function PromptInput({
     >
       {strip ? (
         <div className="lucet-prompt__status" data-tone={strip.tone} role="status">
-          <ActivityOrb state={strip.orb} label={strip.text} />
+          {'who' in strip ? (
+            <span className="lucet-orb-row">
+              <Avatar name={strip.who} size="sm" />
+              <span className="lucet-orb-row__label">{strip.text}</span>
+            </span>
+          ) : (
+            <ActivityOrb state={strip.orb} label={strip.text} />
+          )}
         </div>
       ) : null}
 

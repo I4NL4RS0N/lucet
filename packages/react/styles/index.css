@@ -1040,3 +1040,27 @@
   background-color: var(--lucet-tone-danger-surface);
   color: var(--lucet-tone-danger-foreground);
 }
+
+/* ============================================================
+ * Avatar — identity only. Promoted from the lab when the turn lock needed
+ * to show WHO holds the turn.
+ * ============================================================ */
+
+.lucet-avatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--lucet-secondary);
+  box-shadow: var(--lucet-hairline-raised);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--lucet-subtle-foreground);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+.lucet-avatar--sm { inline-size: 20px; block-size: 20px; font-size: 9px; }
+.lucet-avatar--lg { inline-size: 36px; block-size: 36px; font-size: 13px; }
+.lucet-avatar--solid { background-color: var(--lucet-primary); color: var(--lucet-primary-foreground); }
