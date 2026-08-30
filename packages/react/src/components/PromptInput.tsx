@@ -8,6 +8,7 @@ import type {
 import { describeSubmitBlocker, submitBlocker } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
+import { StateIcon } from './StateIcon.js'
 
 /**
  * The prompt input, rendered FROM the contract.
@@ -241,7 +242,22 @@ export function PromptInput({
                   orb: 'thinking' as const,
                   text: 'A response is in progress — your prompt will queue',
                 }
-              : null
+              : blocker === 'attachment-failed'
+                ? {
+                    // Caution, not danger: the chip already wears the red for
+                    // the OBJECT that failed; the strip is the instruction,
+                    // and it sits directly above the chip it points at.
+                    tone: 'caution' as const,
+                    icon: 'failed' as const,
+                    text: describeSubmitBlocker('attachment-failed'),
+                  }
+                : blocker === 'attachment-uploading'
+                  ? {
+                      tone: 'neutral' as const,
+                      spin: true,
+                      text: describeSubmitBlocker('attachment-uploading'),
+                    }
+                  : null
 
   const trySend = () => {
     if (blocker === null) onSubmit()
@@ -266,6 +282,16 @@ export function PromptInput({
                   collapse in miniature. The person holding the floor IS the
                   emphasis of this strip. */}
               <Avatar name={strip.who} size="sm" solid />
+              <span className="lucet-orb-row__label">{strip.text}</span>
+            </span>
+          ) : 'icon' in strip ? (
+            <span className="lucet-orb-row">
+              <StateIcon name={strip.icon} />
+              <span className="lucet-orb-row__label">{strip.text}</span>
+            </span>
+          ) : 'spin' in strip ? (
+            <span className="lucet-orb-row">
+              <span className="lucet-prompt__att-spin" aria-hidden />
               <span className="lucet-orb-row__label">{strip.text}</span>
             </span>
           ) : (
@@ -329,18 +355,6 @@ export function PromptInput({
         </label>
 
         {tools}
-
-        {/*
-         * The words by the button cover only the ATTACHMENT blockers now --
-         * their chips are in reach of the same glance. Locked, queued, and
-         * down moved up into the strip; empty stays wordless because an empty
-         * composer explains itself.
-         */}
-        <p className="lucet-prompt__why" role="status">
-          {blocker === 'attachment-uploading' || blocker === 'attachment-failed'
-            ? describeSubmitBlocker(blocker)
-            : ''}
-        </p>
 
         {/*
          * Send is the arrow -- a convention every AI composer has taught.

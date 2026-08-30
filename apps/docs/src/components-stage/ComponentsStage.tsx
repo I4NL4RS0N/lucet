@@ -72,7 +72,7 @@ const CORE_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'Attachment failed',
-    note: 'The failure lives on the chip, with its reason. Sending is blocked until it is removed — never silently dropped.',
+    note: 'The chip wears the red for the OBJECT; the caution strip above carries the instruction, sitting directly over the chip it points at. Nothing wraps the bar at narrow widths — the bar holds controls only.',
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
   },
   {

@@ -874,16 +874,10 @@
   outline-offset: var(--lucet-focus-offset);
 }
 
-/* The words. Empty when there is nothing worth saying; role=status either
-   way, so a blocker is announced the moment it appears. */
-.lucet-prompt__why {
-  margin: 0 0 0 auto;
-  padding-inline-end: var(--lucet-space-1);
-  font-size: var(--lucet-text-xs);
-  color: var(--lucet-muted-foreground);
-  text-align: end;
-  text-wrap: pretty;
-}
+/* No text lives in the bar. Words go in the strip above -- at narrow widths
+   a sentence between the picker and the send button wrapped the whole bar.
+   The last control (send or stop) holds the trailing edge on its own. */
+.lucet-prompt__bar > :last-child { margin-inline-start: auto; }
 
 /* Icon-only button: square, glyph-carried, label in aria. */
 .lucet-button[data-icon] {
@@ -1062,9 +1056,14 @@
 }
 .lucet-prompt__status .lucet-orb { --lucet-orb-size: 16px; }
 
+.lucet-prompt__status .lucet-orb-row__label { text-wrap: pretty; }
 .lucet-prompt__status[data-tone='info'] {
   background-color: var(--lucet-tone-info-surface);
   color: var(--lucet-tone-info-foreground);
+}
+.lucet-prompt__status[data-tone='caution'] {
+  background-color: var(--lucet-tone-caution-surface);
+  color: var(--lucet-tone-caution-foreground);
 }
 .lucet-prompt__status[data-tone='danger'] {
   background-color: var(--lucet-tone-danger-surface);
