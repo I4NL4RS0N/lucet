@@ -54,6 +54,21 @@ Presence & Turn Lock pattern (who is here, cursors-in-thread) builds on this
 contract later; the lock ships in the baseline because retrofitting
 single-writer semantics is the kind of surgery that never lands cleanly.
 
+## The bar stays small, and here is the overflow plan
+
+The toolbar holds the send button plus, at most, attach, the model picker,
+and — when it lands — the scope control. That is the ceiling. Anything
+beyond collapses into an overflow menu (`⋯`) built on the menu recipe, and
+the `tools` slot is where a host adds controls today, accepting that they
+compete for the same ceiling. The auto-collapse ships with the scope
+control, because that is the moment the bar first genuinely runs out of
+room; building the machinery before the crowd exists would be speculation.
+
+Attachment chips follow two rules worth naming: icons are by **category**
+(document, table, image, video, audio, archive, code — silhouettes that
+survive 13px, never vendor branding), and truncation always **preserves the
+extension**, because the extension is what actually tells you the format.
+
 ## What is deliberately not here yet
 
 - Attachment parts on the submitted *message* — that representation belongs

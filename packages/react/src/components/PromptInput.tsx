@@ -43,6 +43,13 @@ export interface PromptInputProps {
   /** The host owns file picking; the library never touches file IO. */
   onAttach?: (() => void) | undefined
   /**
+   * Extra controls after the model picker (a scope selector, a mic). The bar
+   * deliberately holds few things; when scope control lands, anything beyond
+   * attach + model + scope collapses into an overflow menu built on the menu
+   * recipe -- see the rationale doc.
+   */
+  tools?: React.ReactNode
+  /**
    * Who is at THIS keyboard, matched against composer.lockedBy. In a
    * multiplayer thread the lock is usually someone else's turn, and the strip
    * shows the person; without selfId every lock reads as anonymous machinery.
@@ -54,6 +61,77 @@ export interface PromptInputProps {
   placeholder?: string
 }
 
+/*
+ * File-type icons, by CATEGORY, not by brand. At 13px, pdf-vs-docx can only
+ * be told apart with vendor colours, which would be the loudest thing in the
+ * composer; the category gives a readable silhouette and the EXTENSION gives
+ * the precise format -- which is why truncation below always preserves it.
+ */
+type FileCategory = 'doc' | 'table' | 'image' | 'video' | 'audio' | 'archive' | 'code'
+
+const EXT_CATEGORY: Record<string, FileCategory> = {
+  pdf: 'doc', doc: 'doc', docx: 'doc', txt: 'doc', rtf: 'doc', md: 'doc', pages: 'doc',
+  xls: 'table', xlsx: 'table', csv: 'table', tsv: 'table', numbers: 'table',
+  png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', webp: 'image', svg: 'image', heic: 'image',
+  mp4: 'video', mov: 'video', webm: 'video', mkv: 'video', avi: 'video',
+  mp3: 'audio', wav: 'audio', m4a: 'audio', ogg: 'audio', flac: 'audio',
+  zip: 'archive', tar: 'archive', gz: 'archive', rar: 'archive', '7z': 'archive',
+  js: 'code', ts: 'code', tsx: 'code', jsx: 'code', py: 'code', json: 'code',
+  html: 'code', css: 'code', sh: 'code', yaml: 'code', yml: 'code',
+}
+
+/** base + extension, split so the extension can survive truncation. */
+function splitName(name: string): { base: string; ext: string } {
+  const dot = name.lastIndexOf('.')
+  if (dot <= 0 || dot === name.length - 1) return { base: name, ext: '' }
+  return { base: name.slice(0, dot), ext: name.slice(dot) }
+}
+
+function categoryOf(att: ComposerAttachment): FileCategory {
+  const { ext } = splitName(att.name)
+  const byExt = EXT_CATEGORY[ext.slice(1).toLowerCase()]
+  if (byExt) return byExt
+  if (att.fileKind === 'image') return 'image'
+  if (att.fileKind === 'audio') return 'audio'
+  return 'doc'
+}
+
+const FILE_GLYPHS: Record<FileCategory, React.ReactNode> = {
+  doc: (
+    <>
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+      <path d="M14 3v5h5" />
+    </>
+  ),
+  table: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M4 11h16M10 5v14" />
+    </>
+  ),
+  image: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="M4 16l5-4 4 3 3-2 4 3" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M10 9.5v5l4.5-2.5z" />
+    </>
+  ),
+  audio: <path d="M5 10v4M9 7v10M13 5v14M17 9v6M21 11v2" />,
+  archive: (
+    <>
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M12 5v3m0 2v1m0 2v1" />
+    </>
+  ),
+  code: <path d="M9 8l-4 4 4 4M15 8l4 4-4 4" />,
+}
+
 function AttachmentChip({
   att,
   onRemove,
@@ -61,17 +139,22 @@ function AttachmentChip({
   att: ComposerAttachment
   onRemove: (id: string) => void
 }) {
+  const { base, ext } = splitName(att.name)
   return (
     <span className="lucet-prompt__att" data-status={att.status}>
       {att.status === 'uploading' ? (
         <span className="lucet-prompt__att-spin" aria-hidden />
       ) : (
         <svg className="lucet-prompt__att-icon" viewBox="0 0 24 24" aria-hidden>
-          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-          <path d="M14 3v5h5" />
+          {FILE_GLYPHS[categoryOf(att)]}
         </svg>
       )}
-      <span className="lucet-prompt__att-name">{att.name}</span>
+      {/* The base truncates; the extension NEVER does. A chip that reads
+          "quarterly-repo…" tells you less than one that reads "quarterl….pdf". */}
+      <span className="lucet-prompt__att-name" title={att.name}>
+        <span className="lucet-prompt__att-base">{base}</span>
+        <span className="lucet-prompt__att-ext">{ext}</span>
+      </span>
       {att.status === 'failed' ? (
         <span className="lucet-prompt__att-reason">{att.reason ?? 'Failed'}</span>
       ) : null}
@@ -99,6 +182,7 @@ export function PromptInput({
   onModelChange,
   onRemoveAttachment,
   onAttach,
+  tools,
   selfId,
   streaming = false,
   onStop,
@@ -143,13 +227,21 @@ export function PromptInput({
               who: composer.lockedBy!,
               text: `${composer.lockedBy} is taking a turn in this shared thread — your prompt will queue`,
             }
-          : composer.locked
+          : streaming
             ? {
+                // The strip is Stop's context: what is running, and what
+                // stopping costs (nothing that already arrived).
                 tone: 'neutral' as const,
-                orb: 'thinking' as const,
-                text: 'A response is in progress — your prompt will queue',
+                orb: 'composing' as const,
+                text: 'Responding to your prompt — Stop keeps what has already arrived',
               }
-            : null
+            : composer.locked
+              ? {
+                  tone: 'neutral' as const,
+                  orb: 'thinking' as const,
+                  text: 'A response is in progress — your prompt will queue',
+                }
+              : null
 
   const trySend = () => {
     if (blocker === null) onSubmit()
@@ -169,7 +261,11 @@ export function PromptInput({
         <div className="lucet-prompt__status" data-tone={strip.tone} role="status">
           {'who' in strip ? (
             <span className="lucet-orb-row">
-              <Avatar name={strip.who} size="sm" />
+              {/* Solid, because the default avatar is drawn in the strip's own
+                  background colour -- an invisible chip, the border==input
+                  collapse in miniature. The person holding the floor IS the
+                  emphasis of this strip. */}
+              <Avatar name={strip.who} size="sm" solid />
               <span className="lucet-orb-row__label">{strip.text}</span>
             </span>
           ) : (
@@ -231,6 +327,8 @@ export function PromptInput({
             ))}
           </select>
         </label>
+
+        {tools}
 
         {/*
          * The words by the button cover only the ATTACHMENT blockers now --

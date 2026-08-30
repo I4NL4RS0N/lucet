@@ -60,6 +60,17 @@ const CORE_FIXTURES: readonly Fixture[] = [
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'site-photograph.jpg', 'image')]),
   },
   {
+    label: 'Attachment variety',
+    note: 'Icons are by CATEGORY (a silhouette that survives 13px); the extension carries the exact format, which is why truncation keeps it — a chip reading "quarterl….pdf" beats "quarterly-rep…".',
+    state: play([
+      type('Compare these.'),
+      add('v1', 'site-visit-recordings-2026-08-final-selects-building-a.mp4'), settle('v1', 'ready'),
+      add('v2', 'budget-projections-fy27.xlsx'), settle('v2', 'ready'),
+      add('v3', 'design-notes.md'), settle('v3', 'ready'),
+      add('v4', 'archive-of-previous-revisions.zip'), settle('v4', 'ready'),
+    ]),
+  },
+  {
     label: 'Attachment failed',
     note: 'The failure lives on the chip, with its reason. Sending is blocked until it is removed — never silently dropped.',
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),

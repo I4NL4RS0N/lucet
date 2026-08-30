@@ -692,11 +692,18 @@
 }
 
 .lucet-prompt__att-name {
+  display: flex;
+  align-items: baseline;
+  min-inline-size: 0;
+  white-space: nowrap;
+}
+/* The base gives way; the extension survives any squeeze. */
+.lucet-prompt__att-base {
   min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
+.lucet-prompt__att-ext { flex: none; }
 
 /* Failed is a state the chip WEARS, not a toast that vanished. The reason
    rides on the chip and the send button stays blocked until it is removed. */
@@ -830,7 +837,11 @@
   appearance: none;
   border: 0;
   background-color: transparent;
-  padding: 5px 22px 5px 8px;
+  /* The D1 ghost decision, applied consistently: a hairline at rest, no
+     fill. Fully naked, the chevron floated in the ether until hover drew
+     the container around it. */
+  box-shadow: var(--lucet-hairline);
+  padding: 5px 20px 5px 9px;
   border-radius: var(--lucet-radius-control);
   font: inherit;
   font-size: var(--lucet-text-sm);
@@ -844,7 +855,7 @@
 .lucet-prompt__model::after {
   content: '';
   position: absolute;
-  inset-inline-end: 9px;
+  inset-inline-end: 8px;
   inset-block-start: 50%;
   inline-size: 5px;
   block-size: 5px;
