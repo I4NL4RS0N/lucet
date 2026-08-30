@@ -63,8 +63,8 @@
   --tint-warn: var(--lucet-tone-caution-surface);
   --tint-bad: var(--lucet-tone-danger-surface);
   --tint-info: var(--lucet-tone-info-surface);
-  --bad-solid: var(--lucet-tone-danger-foreground);
-  --bad-solid-hover: var(--lucet-tone-danger-foreground);
+  --bad-solid: var(--lucet-danger-solid);
+  --bad-solid-hover: var(--lucet-danger-solid-hover);
 
   --r-control: var(--lucet-radius-control);
   --r-surface: var(--lucet-radius-surface);
@@ -291,6 +291,8 @@ body {
 .btn:focus-visible,
 .btn.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 
+/* A button MAY fade: its outline carries no state, so dimming it costs nothing
+   a reader needed. Contrast on disabled controls is exempt from 1.4.3. */
 .btn:disabled,
 .btn.is-disabled { opacity: 0.42; cursor: not-allowed; }
 
@@ -306,9 +308,7 @@ body {
   --btn-bg: var(--bad-solid);
   --btn-bg-hover: var(--bad-solid-hover);
   --btn-bg-active: var(--bad-solid);
-  /* A destructive fill is saturated in BOTH themes, so its label is white in
-     both. That is not a themed decision, which is why it does not invert. */
-  --btn-fg: var(--lucet-accent-on-solid);
+  --btn-fg: var(--lucet-danger-solid-foreground);
 }
 
 /* A ghost has no material until you touch it. */
@@ -544,7 +544,27 @@ textarea.field {
 .check input:checked + .check__box::after { opacity: 1; }
 .check input:focus-visible + .check__box,
 .check.is-focus .check__box { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
-.check input:disabled ~ * { opacity: 0.45; }
+/*
+ * DISABLED IS NOT OPACITY, on anything whose SHAPE carries its state.
+ *
+ * A blanket 45% opacity composites both the track and the knob toward the page
+ * behind them: over a dark surface a 0.93 track lands near 0.50 and a 0.16 knob
+ * near 0.15, so the two converge and the knob stops being visible. The knob's
+ * POSITION is the only thing that says on or off, which makes that a 1.4.1
+ * failure, not just a dull-looking control.
+ *
+ * So a disabled control keeps its silhouette and loses its emphasis: muted
+ * colours, full opacity, internal contrast intact. Only the LABEL fades, since
+ * text has no silhouette to protect.
+ */
+.check:has(input:disabled) { cursor: not-allowed; color: var(--ink-3); }
+
+.check input:disabled + .check__box {
+  background-color: var(--field);
+  box-shadow: var(--ring-1), var(--inset-shallow);
+}
+.check input:disabled:checked + .check__box { background-color: var(--line-strong); }
+.check input:disabled:checked + .check__box::after { border-color: var(--ink-3); background: var(--ink-3); }
 
 .switch { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }
@@ -602,7 +622,18 @@ textarea.field {
 .switch input:checked + .switch__track .switch__knob { translate: 14px 0; background: var(--solid-fg); }
 .switch input:focus-visible + .switch__track,
 .switch.is-focus .switch__track { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
-.switch input:disabled ~ * { opacity: 0.45; }
+/* Same rule, same reason: the knob must stay legible against its track. */
+.switch:has(input:disabled) { cursor: not-allowed; color: var(--ink-3); }
+
+.switch input:disabled + .switch__track {
+  background-color: var(--field);
+  box-shadow: var(--ring-1), var(--inset-shallow);
+}
+.switch input:disabled:checked + .switch__track { background-color: var(--line-strong); }
+.switch input:disabled + .switch__track .switch__knob {
+  background: var(--ink-3);
+  box-shadow: none;
+}
 
 /* ==========================================================================
  * SEGMENTED CONTROL
@@ -1374,4 +1405,110 @@ code, .code {
   .orb[data-state='composing'] circle.orb__arc { stroke-dasharray: 40 16; rotate: -90deg; }
   .orb[data-state='queued'] circle.orb__arc { stroke-dasharray: 1.5 999; }
   .orb[data-state='degraded'] circle.orb__arc { stroke-dasharray: 4 6; }
+}
+
+
+/* ==========================================================================
+ * PIXEL ORBS
+ *
+ * A 5x5 grid of cells whose brightness animates. Same six states as the ring
+ * orbs above; a different medium for them.
+ *
+ * ON THE IDIOM. The dot matrix is old and generic -- loading indicators have
+ * used one for decades -- so unlike a particular 3D dotted sphere it is not a
+ * signature anyone owns. What stays ours is the SEMANTICS: which states exist,
+ * and the argument that half of them are the agent NOT working. The medium
+ * happens to suit that better than rings did, because stalling, queueing and
+ * degrading all read naturally as pattern behaviour rather than as a slower
+ * spin.
+ *
+ * HOW THE PATTERNS ARE MADE. Every cell gets --x, --y and --i, and each state
+ * derives its animation delay from those. The pattern is the DELAY FUNCTION,
+ * not twenty-five hand-written keyframes:
+ *
+ *   thinking   delay from (x + y)          a diagonal sweep, inward
+ *   searching  delay from x                a straight left-to-right scan
+ *   composing  delay from distance to centre, so it fills outward
+ *   blocked    no delay at all             the whole grid breathes as one
+ *   queued     perimeter only, one cell    a position in a queue, creeping
+ *   degraded   delay from a hashed index   arrhythmic, so it reads as faulty
+ * ========================================================================== */
+
+.pix {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  inline-size: var(--pix-size, 22px);
+  block-size: var(--pix-size, 22px);
+  flex: none;
+  color: var(--ink-2);
+}
+.pix--sm { --pix-size: 16px; gap: 1px; }
+.pix--lg { --pix-size: 34px; gap: 2px; }
+
+.pix i {
+  display: block;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.14;
+}
+
+/* The cell is square and the grid is square, so nothing needs measuring. */
+.pix i { aspect-ratio: 1; }
+
+@keyframes pix-lit {
+  0%, 100% { opacity: 0.12; }
+  50%      { opacity: 1; }
+}
+
+.pix[data-state='thinking'] i {
+  animation: pix-lit 1.6s ease-in-out infinite;
+  animation-delay: calc((var(--x) + var(--y)) * 90ms);
+}
+
+.pix[data-state='searching'] i {
+  animation: pix-lit 1.1s ease-in-out infinite;
+  animation-delay: calc(var(--x) * 130ms);
+}
+
+.pix[data-state='composing'] i {
+  animation: pix-lit 1.9s ease-in-out infinite;
+  animation-delay: calc(var(--d) * 150ms);
+}
+
+/* Nothing staggered: the machine is idle and the person is the bottleneck, so
+   the whole grid breathes as one rather than travelling. */
+.pix[data-state='blocked'] i {
+  animation: pix-lit 2.6s ease-in-out infinite;
+  opacity: 0.3;
+}
+
+/* Only the perimeter, creeping. Not progress -- a position in a line. */
+.pix[data-state='queued'] { color: var(--info); }
+.pix[data-state='queued'] i { opacity: 0.08; }
+.pix[data-state='queued'] i[data-edge] {
+  animation: pix-lit 3.2s linear infinite;
+  animation-delay: calc(var(--e) * 200ms);
+}
+
+/* Arrhythmic on purpose: a fallback should not look like healthy work. */
+.pix[data-state='degraded'] { color: var(--warn); }
+.pix[data-state='degraded'] i {
+  animation: pix-lit 1.4s steps(3) infinite;
+  animation-delay: calc(var(--h) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * Each state keeps a DISTINCT static pattern rather than freezing to one
+   * uniform grid, which would delete the information the set carries.
+   */
+  .pix i { animation: none !important; }
+  .pix[data-state='thinking'] i { opacity: calc(0.14 + (var(--x) + var(--y)) * 0.1); }
+  .pix[data-state='searching'] i { opacity: calc(0.14 + var(--x) * 0.2); }
+  .pix[data-state='composing'] i { opacity: calc(1 - var(--d) * 0.28); }
+  .pix[data-state='blocked'] i { opacity: 0.4; }
+  .pix[data-state='queued'] i { opacity: 0.08; }
+  .pix[data-state='queued'] i[data-edge] { opacity: 0.75; }
+  .pix[data-state='degraded'] i { opacity: calc(0.14 + var(--h) * 0.09); }
 }

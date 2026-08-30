@@ -102,6 +102,18 @@
   --lucet-default-solid: oklch(0.24 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-hover: oklch(0.14 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-foreground: var(--lucet-neutral-0);
+  /*
+   * A DESTRUCTIVE FILL IS NOT THE DANGER TONE.
+   *
+   * --lucet-tone-danger-foreground is tuned to be READ, as text on a danger
+   * tint, so in dark it is a light red. Used as a button fill it put a white
+   * label at 1.72:1 -- a severe 1.4.3 failure that looked like a plausible red
+   * button. Third time this exact collapse has cost contrast: a fill carrying
+   * a label and a colour carrying a label are different jobs.
+   */
+  --lucet-default-danger-solid: oklch(0.53 0.19 22);
+  --lucet-default-danger-solid-hover: oklch(0.47 0.19 22);
+  --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
 
   /* The public semantic surface. Components consume only these. */
   --lucet-background: var(--background, var(--lucet-default-background));
@@ -130,6 +142,9 @@
   --lucet-solid: var(--solid, var(--lucet-default-solid));
   --lucet-solid-hover: var(--solid-hover, var(--lucet-default-solid-hover));
   --lucet-solid-foreground: var(--solid-foreground, var(--lucet-default-solid-foreground));
+  --lucet-danger-solid: var(--danger-solid, var(--lucet-default-danger-solid));
+  --lucet-danger-solid-hover: var(--danger-solid-hover, var(--lucet-default-danger-solid-hover));
+  --lucet-danger-solid-foreground: var(--danger-solid-foreground, var(--lucet-default-danger-solid-foreground));
   --lucet-accent-ink: var(--accent-ink, var(--lucet-default-accent-ink));
 
   /*
@@ -170,7 +185,10 @@
     --lucet-default-primary-hover: var(--lucet-accent-10);
     --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
-    --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
+      --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-default-danger-solid: oklch(0.54 0.19 22);
+    --lucet-default-danger-solid-hover: oklch(0.58 0.19 22);
+    --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
   }
 }
 
@@ -198,4 +216,7 @@
   --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-danger-solid: oklch(0.54 0.19 22);
+  --lucet-default-danger-solid-hover: oklch(0.58 0.19 22);
+  --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
 }

@@ -44,6 +44,7 @@ setting the bare shadcn name works without knowing Lucet exists.
 - `--lucet-background`, `--lucet-foreground`
 - `--lucet-card`, `--lucet-card-foreground`
 - `--lucet-popover`, `--lucet-popover-foreground`
+- `--lucet-danger-solid`, `--lucet-danger-solid-hover`, `--lucet-danger-solid-foreground` — the fill for a destructive control. NOT the danger tone: that one is tuned to be read as text on a tint, and using it as a fill put a white label at 1.72:1.
 - `--lucet-solid`, `--lucet-solid-hover`, `--lucet-solid-foreground` — NEUTRAL emphasis, and the default for anything that must be the strongest thing on screen. Near-black on light, near-white on dark.
 - `--lucet-primary`, `--lucet-primary-foreground`, `--lucet-primary-hover` — the ACCENT role. Equal to the neutral solid until a consumer sets an accent, at which point primary carries the colour and solid does not.
 - `--lucet-secondary`, `--lucet-secondary-foreground`
