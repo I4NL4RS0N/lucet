@@ -1,6 +1,6 @@
 # Lucet docs site (the Konfabulator).
-# This repo has its own Netlify project. Never link it to any other site on the
-# account. Confirm the target project before deploying.
+# This repo has its own Netlify project. Confirm the target project before
+# deploying; the CLI uses whatever .netlify link is in the working directory.
 
 [build]
   command = "npm run build"
@@ -9,7 +9,7 @@
 [build.environment]
   NODE_VERSION = "24"
 
-# Unlike the portfolio, this site is meant to be found. No noindex header here.
+# This site is meant to be found. No noindex header, no robots exclusion.
 
 [[redirects]]
   from = "/*"
