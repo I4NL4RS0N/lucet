@@ -22,7 +22,8 @@
   },
   "files": [
     "dist",
-    "styles"
+    "styles",
+    "NOTICE"
   ],
   "publishConfig": {
     "access": "public"
