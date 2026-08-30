@@ -53,6 +53,15 @@ function Spec({ label, children }: { label: string; children: React.ReactNode })
   )
 }
 
+/*
+ * The accent axis. Monochrome is the default and hands primary to the neutral
+ * solid, so the page is greyscale until an accent is deliberately chosen.
+ */
+const ACCENTS = [
+  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
+  'rose', 'green', 'teal', 'cyan', 'amber',
+] as const
+
 /** The five states every interactive control has to answer for. */
 const STATES = [
   { cls: '', label: 'Default' },
@@ -226,6 +235,7 @@ const FileGlyph = {
 
 export function Primitives() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [accent, setAccent] = useState('monochrome')
 
   /*
    * On the ROOT, not on this div. The library declares its tokens against
@@ -236,6 +246,11 @@ export function Primitives() {
     document.documentElement.setAttribute('data-theme', theme)
     return () => document.documentElement.removeAttribute('data-theme')
   }, [theme])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-accent', accent)
+    return () => document.documentElement.removeAttribute('data-accent')
+  }, [accent])
   const [checks, setChecks] = useState({ a: true, b: false })
   const [radio, setRadio] = useState('one')
   const [sw, setSw] = useState({ a: true, b: false })
@@ -248,6 +263,19 @@ export function Primitives() {
           Lucet <span>· primitives</span>
         </span>
         <div className="prim__bar-end">
+          <label className="select" style={{ inlineSize: 128 }}>
+            <select
+              value={accent}
+              onChange={(e) => setAccent(e.target.value)}
+              aria-label="Accent"
+            >
+              {ACCENTS.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="seg" role="group" aria-label="Theme">
             {(['dark', 'light'] as const).map((t) => (
               <label key={t}>

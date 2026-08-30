@@ -400,11 +400,25 @@ async function main() {
           '*, *::before, *::after { transition: none !important; animation: none !important; }',
       })
 
+      /*
+       * Across ACCENTS as well as themes, now that choosing one actually moves
+       * something. Until the accent axis was wired through, primary was neutral
+       * whatever you picked, so light and dark were the only variables here.
+       * Now amber's fill takes a dark label and indigo's takes a white one, and
+       * only measuring says whether every one of them clears 4.5:1.
+       */
       for (const theme of THEMES) {
-        await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
-        await page.waitForTimeout(120)
+        for (const accent of ACCENTS) {
+        await page.evaluate(
+          ({ t, a }) => {
+            document.documentElement.setAttribute('data-theme', t)
+            document.documentElement.setAttribute('data-accent', a)
+          },
+          { t: theme, a: accent },
+        )
+        await page.waitForTimeout(60)
 
-        const where = `primitives/${theme}`
+        const where = `primitives/${theme}/${accent}`
         const { text, targets } = await page.evaluate(collectPrimitives)
         primitivesChecks += text.length + targets.length
 
@@ -425,13 +439,14 @@ async function main() {
             `${where}  target "${t.label}" is ${t.w}x${t.h} (needs ${MIN_TARGET_PX}, 2.5.8)`,
           )
         }
+        }
       }
     } finally {
       dev.kill()
     }
 
     // A pass that measures nothing must never report success.
-    if (primitivesChecks < 40) {
+    if (primitivesChecks < 400) {
       throw new Error(
         `the primitives pass collected only ${primitivesChecks} elements across both themes -- ` +
           'it has stopped matching the page, which is how the first version reported two',

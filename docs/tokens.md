@@ -112,6 +112,7 @@ Do not build on these.
 - `--lucet-accent-#` (steps 1–12) — generated from those curves. Use the named roles instead: `--lucet-primary` to fill, `--lucet-ring` to ring, `--lucet-accent-ink` to write with. If you need a step for a job with no name, that is a missing role — ask for it rather than reaching past the API.
 - `--lucet-neutral-#` — the raw grey ramp.
 - `--lucet-default-*` — the pre-interop fallbacks. Every one is already reachable through its public alias.
+- `--lucet-accent-solid`, `--lucet-accent-solid-hover`, `--lucet-accent-solid-fg` — set only by the monochrome accent, so primary falls back to the neutral solid instead of the mid-grey the scale generates at zero chroma. To override primary yourself, set the public `--primary` instead.
 - `--lucet-surface-ground`, `--lucet-surface-raised`, `--lucet-surface-overlay`, `--lucet-surface-sunken` — feed the semantic layer.
 - `--lucet-edge-top`, `--lucet-edge-bottom`, `--lucet-hairline`, `--lucet-hairline-raised`, `--lucet-hairline-overlay`, `--lucet-shade-#`, `--lucet-inset-hair`, `--lucet-inset-shallow`, `--lucet-inset-deep`, `--lucet-gloss` — the primitives the materials are built from. The ring family ramps with elevation and the inset family is chosen by the size of the recess; both are assembled for you by the four materials.
 - `--lucet-shadow-color`, `--lucet-shadow-alpha`, `--lucet-primary-glow`

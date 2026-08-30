@@ -42,11 +42,15 @@
   --lit: var(--lucet-edge-top);
   --lit-strong: var(--lucet-edge-top);
 
-  /* Neutral emphasis. Not --lucet-primary: that is the accent role, and this
-     page is greyscale until an accent is deliberately chosen. */
-  --solid: var(--lucet-solid);
-  --solid-hover: var(--lucet-solid-hover);
-  --solid-fg: var(--lucet-solid-foreground);
+  /*
+   * --lucet-primary, not --lucet-solid. Under monochrome primary IS the neutral
+   * solid, so the page is greyscale by default; choose an accent and primary,
+   * selection and focus take it together. Pointing at solid directly would make
+   * the accent axis inert here, which is what it was before.
+   */
+  --solid: var(--lucet-primary);
+  --solid-hover: var(--lucet-primary-hover);
+  --solid-fg: var(--lucet-primary-foreground);
   --ring-focus: var(--lucet-ring);
 
   /* Status. The only colour on the page, because it is the only colour that

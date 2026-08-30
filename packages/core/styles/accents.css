@@ -32,6 +32,35 @@
   --lucet-accent-h: 250;
   --lucet-accent-c: 0;
   --lucet-accent-on-solid: oklch(0.99 0 0);
+
+  /*
+   * At zero chroma the generated accent solid is a MID-GREY -- the weakest
+   * possible choice for the element whose whole job is to be the strongest. So
+   * monochrome hands primary to the neutral solid: near-white on dark,
+   * near-black on light.
+   *
+   * This is what gives the accent axis meaning again now the system is
+   * greyscale. With no accent chosen nothing is coloured; choosing one moves
+   * primary, selection and focus together without painting the interface.
+   * Accent marks what the USER chose. Neutral marks what the system pushes.
+   */
+}
+
+/*
+ * The monochrome fallback has to be scoped to monochrome ALONE.
+ *
+ * It first lived in the rule above, which is `:root, [data-accent='monochrome']`
+ * -- and :root matches the html element whatever its data-accent says. So the
+ * fallback applied under every accent, and choosing indigo left the primary
+ * button black while only the focus ring turned indigo.
+ *
+ * :root:not([data-accent]) covers the default, where no attribute is set at all.
+ */
+:root:not([data-accent]),
+[data-accent='monochrome'] {
+  --lucet-accent-solid: var(--lucet-solid);
+  --lucet-accent-solid-hover: var(--lucet-solid-hover);
+  --lucet-accent-solid-fg: var(--lucet-solid-foreground);
 }
 
 /* Nearly grey, with just enough cast to read as deliberate. */

@@ -91,7 +91,17 @@
     --lucet-al-7: 0.445;
     --lucet-al-8: 0.545;
     --lucet-al-9: 0.5;
-    --lucet-al-10: 0.6;
+    --lucet-al-10: 0.53;
+  /*
+   * 0.53, not 0.6. Step 10 exists only to be the primary HOVER, and it carries
+   * a white label. At 0.6 that label measured 3.46:1 on teal and failed on nine
+   * of the eleven accents -- the audit found all nine the moment it started
+   * sweeping accents on the primitives page.
+   *
+   * 0.53 is the lightest value every accent survives. The colour travel is
+   * small, so the hover leans on the edge and cast changing too, which the
+   * button already does.
+   */
     --lucet-al-11: 0.775;
     --lucet-al-12: 0.905;
 
@@ -120,7 +130,17 @@
   --lucet-al-7: 0.445;
   --lucet-al-8: 0.545;
   --lucet-al-9: 0.5;
-  --lucet-al-10: 0.6;
+  --lucet-al-10: 0.53;
+  /*
+   * 0.53, not 0.6. Step 10 exists only to be the primary HOVER, and it carries
+   * a white label. At 0.6 that label measured 3.46:1 on teal and failed on nine
+   * of the eleven accents -- the audit found all nine the moment it started
+   * sweeping accents on the primitives page.
+   *
+   * 0.53 is the lightest value every accent survives. The colour travel is
+   * small, so the hover leans on the edge and cast changing too, which the
+   * button already does.
+   */
   --lucet-al-11: 0.775;
   --lucet-al-12: 0.905;
 
