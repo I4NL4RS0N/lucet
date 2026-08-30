@@ -41,6 +41,14 @@ describe('composer attachments', () => {
     ])
   })
 
+  it('a failed attachment can be retried: back to uploading, reason cleared', () => {
+    const s = play([add('a1'), settle('a1', 'failed', 'Too large'), { type: 'attachment/retried', id: 'a1' }])
+    expect(s.composer.attachments).toMatchObject([{ id: 'a1', status: 'uploading', reason: null }])
+    // Retrying something that has not failed is a no-op, not a reset.
+    const s2 = play([add('b1'), settle('b1', 'ready'), { type: 'attachment/retried', id: 'b1' }])
+    expect(s2.composer.attachments).toMatchObject([{ id: 'b1', status: 'ready' }])
+  })
+
   it('remove removes, and unknown ids are ignored', () => {
     const s = play([add('a1'), { type: 'attachment/removed', id: 'a1' }, { type: 'attachment/removed', id: 'nope' }])
     expect(s.composer.attachments).toEqual([])

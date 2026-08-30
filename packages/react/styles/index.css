@@ -1093,3 +1093,43 @@
 .lucet-avatar--sm { inline-size: 20px; block-size: 20px; font-size: 9px; }
 .lucet-avatar--lg { inline-size: 36px; block-size: 36px; font-size: 13px; }
 .lucet-avatar--solid { background-color: var(--lucet-primary); color: var(--lucet-primary-foreground); }
+
+/* ============================================================
+ * Tooltip — promoted from the lab when the Stop button needed one. Inverted
+ * (the D4 decision): an annotation ABOUT the interface, not part of it, so
+ * it wears the neutral solid and never the accent. Shown on hover AND
+ * focus-within, so the keyboard gets it too.
+ * ============================================================ */
+
+.lucet-tipwrap { position: relative; display: inline-flex; }
+
+.lucet-tip {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  z-index: 5;
+  margin-block-end: 4px;
+  padding: 5px 9px;
+  border-radius: calc(var(--lucet-radius-control) - 2px);
+  background-color: var(--lucet-solid);
+  color: var(--lucet-solid-foreground);
+  box-shadow: var(--lucet-shade-2);
+  font-size: var(--lucet-text-xs);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: -50% 4px;
+  transition: opacity 90ms ease-out, translate 90ms ease-out;
+}
+
+.lucet-tipwrap:hover .lucet-tip,
+.lucet-tipwrap:focus-within .lucet-tip {
+  opacity: 1;
+  translate: -50% 0;
+  transition-duration: 130ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-tip { transition: opacity 90ms ease-out; translate: -50% 0; }
+}

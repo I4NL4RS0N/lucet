@@ -47,13 +47,13 @@ export function submitBlocker(state: SubmitBlockerInput): SubmitBlocker | null {
 export function describeSubmitBlocker(blocker: SubmitBlocker): string {
   switch (blocker) {
     case 'locked':
-      return 'A response is in progress — your prompt will queue'
+      return 'A response is being written — yours will send next'
     case 'service-down':
-      return 'The service is unreachable right now'
+      return 'Can’t reach the service right now'
     case 'attachment-uploading':
-      return 'Waiting for an attachment to finish uploading'
+      return 'Uploading your attachment…'
     case 'attachment-failed':
-      return 'An attachment failed — remove it to send'
+      return 'An attachment didn’t upload — try again or remove it'
     case 'empty':
       return 'Write something or attach a file'
   }

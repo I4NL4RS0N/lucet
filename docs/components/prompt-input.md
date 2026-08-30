@@ -34,9 +34,10 @@ button teaches nothing.
 
 Two of these encode deliberate calls:
 
-- **A failed attachment blocks sending.** Submitting around it would silently
-  send less than the person thinks they sent. Remove it or fix it; the
-  interface does not guess.
+- **A failed attachment blocks sending, and offers a way back.** Submitting
+  around it would silently send less than the person thinks they sent. The
+  chip carries *try again* and *remove* — because the person still has the
+  file, "remove it" was never the only honest answer.
 - **Degraded does not block; down does.** They are different problems and get
   different treatment throughout the library.
 

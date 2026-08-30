@@ -30,6 +30,7 @@ export type LucetEvent =
       sizeBytes: number
     }
   | { type: 'attachment/settled'; id: string; status: 'ready' | 'failed'; reason: string | null }
+  | { type: 'attachment/retried'; id: string }
   | { type: 'attachment/removed'; id: string }
   | { type: 'model/changed'; modelId: string }
   | {
@@ -93,6 +94,8 @@ export function describeEvent(event: LucetEvent): string {
       return `Attaching ${event.name}`
     case 'attachment/settled':
       return event.status === 'ready' ? 'Attachment ready' : 'Attachment failed'
+    case 'attachment/retried':
+      return 'Attachment retrying'
     case 'attachment/removed':
       return 'Attachment removed'
     case 'model/changed':

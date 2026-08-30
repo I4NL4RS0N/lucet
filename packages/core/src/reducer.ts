@@ -137,6 +137,22 @@ export function reduce(
         },
       }
 
+    /* A failed upload can be TRIED AGAIN: the person still has the file, so
+       "remove it" was never the only honest answer. Back to uploading, slate
+       clean. */
+    case 'attachment/retried':
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          attachments: state.composer.attachments.map((a) =>
+            a.id === event.id && a.status === 'failed'
+              ? { ...a, status: 'uploading', reason: null }
+              : a,
+          ),
+        },
+      }
+
     case 'attachment/removed':
       return {
         ...state,

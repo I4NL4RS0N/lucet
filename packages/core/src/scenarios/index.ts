@@ -173,9 +173,9 @@ export const serviceDown = defineScenario({
     'Down is not degraded. Degraded means wait or switch. Down means protect the draft and say so.',
   prompt: 'Draft the summary section.',
   steps: [
-    { type: 'service', status: 'down', message: 'The model provider is having an outage. Nothing you have written is lost.' },
+    { type: 'service', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' },
     { type: 'wait', ms: 300 },
-    { type: 'fail', reason: 'Cannot reach the model. Your prompt is still in the composer.' },
+    { type: 'fail', reason: 'We couldn’t reach the AI service. Your prompt is still here — try again in a moment.' },
   ],
 })
 

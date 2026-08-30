@@ -46,22 +46,22 @@ type Fixture = { label: string; note: string; state: ThreadState; streaming?: bo
 const CORE_FIXTURES: readonly Fixture[] = [
   {
     label: 'Empty',
-    note: 'Send is quiet and disabled. An empty composer explains itself, so no words.',
+    note: 'Nothing to send yet, so the arrow waits. No nagging text — an empty box explains itself.',
     state: play([]),
   },
   {
     label: 'Composing',
-    note: 'Text present, nothing blocking.',
+    note: 'Something to send: the arrow is ready.',
     state: play([type('Summarise the attached documents and list anything unresolved.')]),
   },
   {
     label: 'Attachment uploading',
-    note: 'Uploading is a state. Send waits, and says so.',
+    note: 'A file is still uploading, so sending waits — and says so, up top.',
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'site-photograph.jpg', 'image')]),
   },
   {
     label: 'Attachment variety',
-    note: 'Icons are by CATEGORY (a silhouette that survives 13px); the extension carries the exact format, which is why truncation keeps it — a chip reading "quarterl….pdf" beats "quarterly-rep…".',
+    note: 'Icons show the kind of file, and the ending (.pdf, .mp4) never gets cut off, because the ending is what tells you the format.',
     state: play([
       type('Compare these.'),
       add('v1', 'site-visit-recordings-2026-08-final-selects-building-a.mp4'), settle('v1', 'ready'),
@@ -72,13 +72,13 @@ const CORE_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'Attachment failed',
-    note: 'The chip wears the red for the OBJECT; the caution strip above carries the instruction, sitting directly over the chip it points at. Nothing wraps the bar at narrow widths — the bar holds controls only.',
+    note: 'This file didn’t upload. Try again (↻) or remove it (×) — it is never dropped silently. The strip above says what to do; the chip says which file and why.',
     state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
   },
   {
     label: 'Service down',
-    note: 'Down blocks with words. Degraded deliberately does not block at all.',
-    state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'The model provider is having an outage. Nothing you have written is lost.' }]),
+    note: 'Nothing can send right now, and it says so. Your draft stays in the box. (A merely slow service never blocks you.)',
+    state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' }]),
   },
 ]
 
@@ -93,12 +93,12 @@ const CORE_FIXTURES: readonly Fixture[] = [
 const MULTI_FIXTURES: readonly Fixture[] = [
   {
     label: 'Locked — another person’s turn',
-    note: 'Ada submitted; the thread is single-writer, so the composer closes for everyone. Her avatar makes the multiplayer explicit — and the field stays writable, because locked is not dead: Send becomes QUEUE.',
+    note: 'Ada pressed send, so the thread is hers until her answer finishes. You can keep typing — Queue lines yours up to go next.',
     state: play([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
   },
   {
     label: 'Queued behind her turn',
-    note: 'A settled fact, not a spinner: your prompt sends the moment her response finishes.',
+    note: 'Yours is lined up. It sends itself the moment her answer finishes — nothing to watch, nothing to redo.',
     state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }, type('And what about the appendix?')]),
   },
 ]
@@ -136,6 +136,10 @@ function Live() {
       onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
       onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
       onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
+      onRetryAttachment={(id) => {
+        lucet.store.dispatch({ type: 'attachment/retried', id })
+        setTimeout(() => lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }), 1200)
+      }}
       onAttach={() => {
         // The host owns file IO; the stage fakes one honestly. Every third
         // attachment fails, so the failure path stays one click away.
@@ -193,17 +197,17 @@ export function ComponentsStage() {
       <main className="prim__main">
         <h1 className="prim__title">Components</h1>
         <p className="prim__lede">
-          Composites, staged the way the primitives were: every state, built by
-          replaying real events through the real reducer. Private page.
+          The prompt box, in every state it can be in. Each specimen is a real
+          state, not a picture of one. Private page.
         </p>
 
-        <Section n="01" name="Prompt input" note="live, on the bare page — the surface it actually ships on">
+        <Section n="01" name="Prompt input" note="try it — type, attach, send">
           <div style={{ maxInlineSize: 620, paddingBlock: 8 }}>
             <Live />
           </div>
         </Section>
 
-        <Section n="02" name="Prompt input — every state" note="fixtures replayed through the reducer">
+        <Section n="02" name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             {CORE_FIXTURES.map((f) => (
               <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
@@ -219,6 +223,7 @@ export function ComponentsStage() {
                     onQueue={noop}
                     onModelChange={noop}
                     onRemoveAttachment={noop}
+                    onRetryAttachment={noop}
                     onAttach={noop}
                     {...(f.streaming ? { streaming: true, onStop: noop } : {})}
                   />
@@ -232,7 +237,7 @@ export function ComponentsStage() {
         <Section
           n="03"
           name="Prompt input — multiplayer"
-          note="a Lucet thread is shared and single-writer; most AI tools cannot say that sentence"
+          note="one thread, several people, one turn at a time — most AI tools cannot do this"
         >
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             {MULTI_FIXTURES.map((f) => (
@@ -249,6 +254,7 @@ export function ComponentsStage() {
                     onQueue={noop}
                     onModelChange={noop}
                     onRemoveAttachment={noop}
+                    onRetryAttachment={noop}
                     onAttach={noop}
                   />
                 </div>
@@ -258,7 +264,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="04" name="Prompt input — streaming" note="your own turn: send becomes stop; the lock holds the thread">
+        <Section n="04" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
           <div className="stage">
             <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
               <PromptInput

@@ -41,6 +41,9 @@ export interface PromptInputProps {
   onQueue?: ((text: string) => void) | undefined
   onModelChange: (modelId: string) => void
   onRemoveAttachment: (id: string) => void
+  /** Try a failed upload again. The person still has the file; "remove it"
+      was never the only honest answer. */
+  onRetryAttachment?: ((id: string) => void) | undefined
   /** The host owns file picking; the library never touches file IO. */
   onAttach?: (() => void) | undefined
   /**
@@ -136,9 +139,11 @@ const FILE_GLYPHS: Record<FileCategory, React.ReactNode> = {
 function AttachmentChip({
   att,
   onRemove,
+  onRetry,
 }: {
   att: ComposerAttachment
   onRemove: (id: string) => void
+  onRetry?: ((id: string) => void) | undefined
 }) {
   const { base, ext } = splitName(att.name)
   return (
@@ -157,7 +162,19 @@ function AttachmentChip({
         <span className="lucet-prompt__att-ext">{ext}</span>
       </span>
       {att.status === 'failed' ? (
-        <span className="lucet-prompt__att-reason">{att.reason ?? 'Failed'}</span>
+        <span className="lucet-prompt__att-reason">{att.reason ?? 'Didn’t upload'}</span>
+      ) : null}
+      {att.status === 'failed' && onRetry ? (
+        <button
+          type="button"
+          className="lucet-prompt__att-remove"
+          aria-label={`Try uploading ${att.name} again`}
+          onClick={() => onRetry(att.id)}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4" />
+          </svg>
+        </button>
       ) : null}
       <button
         type="button"
@@ -182,6 +199,7 @@ export function PromptInput({
   onQueue,
   onModelChange,
   onRemoveAttachment,
+  onRetryAttachment,
   onAttach,
   tools,
   selfId,
@@ -220,13 +238,13 @@ export function PromptInput({
         ? {
             tone: 'info' as const,
             orb: 'queued' as const,
-            text: 'Queued — sends when the current response finishes',
+            text: 'Queued — yours sends next',
           }
         : lockedByOther
           ? {
               tone: 'neutral' as const,
               who: composer.lockedBy!,
-              text: `${composer.lockedBy} is taking a turn in this shared thread — your prompt will queue`,
+              text: `${composer.lockedBy} is taking a turn in this shared thread — yours sends next`,
             }
           : streaming
             ? {
@@ -242,7 +260,7 @@ export function PromptInput({
               ? {
                   tone: 'neutral' as const,
                   orb: 'thinking' as const,
-                  text: 'A response is in progress — your prompt will queue',
+                  text: 'Sending…',
                 }
               : blocker === 'attachment-failed'
                 ? {
@@ -305,7 +323,7 @@ export function PromptInput({
       {composer.attachments.length > 0 ? (
         <div className="lucet-prompt__atts">
           {composer.attachments.map((att) => (
-            <AttachmentChip key={att.id} att={att} onRemove={onRemoveAttachment} />
+            <AttachmentChip key={att.id} att={att} onRemove={onRemoveAttachment} onRetry={onRetryAttachment} />
           ))}
         </div>
       ) : null}
@@ -365,9 +383,20 @@ export function PromptInput({
          * contact. Icons for conventions, words for novelties.
          */}
         {streaming && onStop ? (
-          <button type="button" className="lucet-button" data-variant="secondary" onClick={onStop}>
-            Stop
-          </button>
+          <span className="lucet-tipwrap">
+            <button
+              type="button"
+              className="lucet-button"
+              data-variant="secondary"
+              aria-describedby={`${id}-stop-tip`}
+              onClick={onStop}
+            >
+              Stop
+            </button>
+            <span className="lucet-tip" role="tooltip" id={`${id}-stop-tip`}>
+              Stops the response. What’s written so far stays.
+            </span>
+          </span>
         ) : canQueue || queued ? (
           <button
             type="submit"
