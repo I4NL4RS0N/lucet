@@ -89,38 +89,11 @@
   --lucet-accent-on-solid: oklch(0.99 0 0);
 }
 
-/* ---------------------------------------------------------------
- * The light-solid variant.
- *
- * Yellow is light. Forcing its solid step down to the shared L 0.62 does not
- * make a darker yellow, it makes mud, which is exactly what the Scales view
- * showed. Radix draws the same distinction: a few hues get a pale solid and
- * take dark text on it.
- *
- * So this is a second CURVE, not per-accent hand-tuning. Any hue that lives in
- * the light part of the gamut opts into it, and the accent itself is still just
- * a hue and a peak chroma.
- * --------------------------------------------------------------- */
 [data-accent='amber'] {
   --lucet-accent-h: 80;
   --lucet-accent-c: 0.19;
+  /* Pale at step 9, so its solid takes dark text. The curve that makes it pale
+     lives in accent-scale.css; see the note there about specificity. */
   --lucet-accent-on-solid: oklch(0.24 0 0);
-
-  /* Light end carries far more chroma, or pale yellow reads as beige. */
-  --lucet-ac-1: 0.1;
-  --lucet-ac-2: 0.22;
-  --lucet-ac-3: 0.4;
-  --lucet-ac-4: 0.55;
-  --lucet-ac-5: 0.68;
-  --lucet-ac-6: 0.8;
-  --lucet-ac-7: 0.9;
-  --lucet-ac-8: 0.97;
-
-  /* The solid stays pale. Text steps go dark and drop chroma. */
-  --lucet-al-9: 0.85;
-  --lucet-al-10: 0.81;
-  --lucet-al-11: 0.56;
-  --lucet-al-12: 0.3;
-  --lucet-ac-11: 0.95;
-  --lucet-ac-12: 0.55;
 }
+

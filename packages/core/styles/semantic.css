@@ -40,9 +40,16 @@
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
-  /* Step 9, not 8. On a light surface accent-8 is about 2.3:1 against
-     white, under the 3:1 that 1.4.11 requires of a focus indicator. */
-  --lucet-default-ring: var(--lucet-accent-9);
+  /*
+   * Step 11, whose job in the scale is guaranteed readable contrast against
+   * the surface. That is exactly what a focus indicator needs, and it
+   * inverts with the theme on its own.
+   *
+   * Not step 9: that is the brand solid, and for light-solid accents like
+   * amber it is deliberately pale. Amber's ring measured 1.68:1 on a light
+   * surface, well under the 3:1 that 1.4.11 requires.
+   */
+  --lucet-default-ring: var(--lucet-accent-11);
   --lucet-default-hover: var(--lucet-neutral-100);
   --lucet-default-hover-strong: var(--lucet-neutral-200);
   --lucet-default-primary-hover: var(--lucet-accent-10);
@@ -104,7 +111,7 @@
     --lucet-default-subtle-foreground: var(--lucet-neutral-200);
     --lucet-default-border: var(--lucet-line);
     --lucet-default-input: var(--lucet-line);
-    --lucet-default-ring: var(--lucet-accent-8);
+    --lucet-default-ring: var(--lucet-accent-11);
     --lucet-default-hover: var(--lucet-neutral-800);
     --lucet-default-hover-strong: var(--lucet-neutral-700);
     --lucet-default-primary-hover: var(--lucet-accent-10);
@@ -128,7 +135,7 @@
   --lucet-default-subtle-foreground: var(--lucet-neutral-200);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
-  --lucet-default-ring: var(--lucet-accent-8);
+  --lucet-default-ring: var(--lucet-accent-11);
   --lucet-default-hover: var(--lucet-neutral-800);
   --lucet-default-hover-strong: var(--lucet-neutral-700);
   --lucet-default-primary-hover: var(--lucet-accent-10);

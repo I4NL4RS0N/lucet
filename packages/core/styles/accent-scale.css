@@ -156,3 +156,38 @@
   --lucet-accent-11: oklch(var(--lucet-al-11) calc(var(--lucet-accent-c) * var(--lucet-ac-11)) var(--lucet-accent-h));
   --lucet-accent-12: oklch(var(--lucet-al-12) calc(var(--lucet-accent-c) * var(--lucet-ac-12)) var(--lucet-accent-h));
 }
+
+/*
+ * THE LIGHT-SOLID CURVE.
+ *
+ * Yellow is light. Forcing its solid down to the shared L 0.50 does not make a
+ * darker yellow, it makes mud. So a few hues take a second curve where the
+ * solid stays pale and carries dark text. Radix draws the same distinction.
+ *
+ * DECLARED HERE, AFTER THE THEME BLOCKS, AND THAT PLACEMENT IS THE POINT.
+ *
+ * A theme block is `:root[data-theme='dark']` and redefines every step, so it
+ * outranks a plain `[data-accent='...']` override. Amber's pale solid silently
+ * reverted to L 0.50 in dark mode while still carrying dark text, and measured
+ * 2.7:1. Matching specificity plus later source order makes the accent win in
+ * both themes, which is correct: the solid should be the same colour in light
+ * and dark, exactly as Radix keeps its step 9 fixed across themes.
+ *
+ * Only the steps that are actually consumed are overridden. The text steps
+ * (11, 12) are deliberately left to the theme, because those must invert with
+ * it and a global override would put dark text on a dark ground.
+ */
+:root[data-accent='amber'] {
+  /* The light end carries far more chroma, or pale yellow reads as beige. */
+  --lucet-ac-1: 0.1;
+  --lucet-ac-2: 0.22;
+  --lucet-ac-3: 0.4;
+  --lucet-ac-4: 0.55;
+  --lucet-ac-5: 0.68;
+  --lucet-ac-6: 0.8;
+  --lucet-ac-7: 0.9;
+  --lucet-ac-8: 0.97;
+
+  --lucet-al-9: 0.85;
+  --lucet-al-10: 0.81;
+}
