@@ -567,15 +567,28 @@ export function Primitives() {
           <span className="badge">Draft</span>
         </Section>
 
-        <Section n="10" name="Avatar" note="initials, and a stack">
-          <span className="avatar avatar--solid">AI</span>
-          <span className="avatar">AB</span>
-          <span className="avatar avatar--lg">AB</span>
-          <span className="avatar-stack">
-            <span className="avatar">AB</span>
-            <span className="avatar">CD</span>
-            <span className="avatar">EF</span>
-          </span>
+        <Section n="10" name="Avatar" note="a mark by default, a control when it needs to be">
+          <Spec label="Identity — inert on purpose">
+            <div className="row">
+              <span className="avatar avatar--solid">AI</span>
+              <span className="avatar">AB</span>
+              <span className="avatar avatar--lg">AB</span>
+              <span className="avatar-stack">
+                <span className="avatar">AB</span>
+                <span className="avatar">CD</span>
+                <span className="avatar">EF</span>
+              </span>
+            </div>
+          </Spec>
+          <Spec label="Interactive, all states">
+            <StateRow
+              render={(cls) => (
+                <button className={`avatar ${cls}`} disabled={cls === 'is-disabled'}>
+                  AB
+                </button>
+              )}
+            />
+          </Spec>
         </Section>
 
         <Section n="11" name="Tooltip" note="hover or focus the control — these are real">
@@ -937,7 +950,10 @@ export function Primitives() {
                   <td className="num">12</td>
                   <td className="num">4.2s</td>
                 </tr>
-                <tr className="is-hover">
+                {/* No forced is-hover row: unlabeled, it read as a zebra
+                    stripe rather than a state specimen. Row hover is real —
+                    point at one. */}
+                <tr>
                   <td>Compare the two revisions</td>
                   <td>
                     <Orb state="thinking" label="Running" />

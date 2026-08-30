@@ -67,6 +67,8 @@ const PROBES = [
   { sec: 'Switch', hover: '.states .switch:has(input[disabled])', probe: '.switch__track', part: 'switch disabled', expect: 'none' },
   { sec: 'Segmented control', hover: '.seg[role="group"] label:nth-child(2)', probe: 'span', part: 'seg unselected', bg: true },
   { sec: 'Segmented control', hover: '.seg[role="group"] label:nth-child(1)', probe: 'span', part: 'seg selected', expect: 'none' },
+  { sec: 'Avatar', hover: 'button.avatar:not([disabled])', part: 'avatar' },
+  { sec: 'Avatar', hover: 'button.avatar[disabled]', part: 'avatar disabled', expect: 'none' },
   { sec: 'Menu', hover: '.menu__item:nth-child(2)', part: 'menu item', bg: true },
   { sec: 'Menu', hover: '.menu__item--danger', part: 'menu danger item', bg: true },
   { sec: 'Dialog', hover: '.dialog .btn--ghost', part: 'dialog ghost', bg: true },
@@ -76,7 +78,10 @@ const PROBES = [
   { sec: 'Code', hover: '.codeblock__bar .btn', part: 'copy btn' },
   { sec: 'Attachments', hover: '.atts--inline .att:nth-child(1) .att__remove', part: 'att remove' },
   { sec: 'Attachments', hover: '.atts--list .att:not(.is-hover)', part: 'att row', bg: true },
-  { sec: 'Table', hover: 'tbody tr:nth-child(1)', probe: 'td', part: 'table row', bg: true },
+  /* min 0.02: the row veil is DELIBERATELY half strength -- a full-width row
+     is the largest hover surface on the page and the standard step read as a
+     selection stripe. The floor drops with it; dead still fails. */
+  { sec: 'Table', hover: 'tbody tr:nth-child(1)', probe: 'td', part: 'table row', bg: true, min: 0.02 },
 ]
 
 /* Signals that count as a visible response. outlineColor is NOT here: it
@@ -176,7 +181,10 @@ async function main() {
         }
         found++
         checks++
-        await loc.scrollIntoViewIfNeeded()
+        // Centre, never minimal: a minimal scroll can park the target under
+        // the sticky bar, where a forced hover lands on the bar instead and
+        // reads as a dead hover that is actually an occluded pointer.
+        await loc.evaluate((el) => el.scrollIntoView({ block: 'center' }))
         await page.mouse.move(2, 2)
         await page.waitForTimeout(130)
         const before = await snapshot(page, String(i), p.probe)
@@ -195,14 +203,15 @@ async function main() {
             )
           }
         } else {
-          const moved = dL !== null && Math.abs(dL) >= MIN_DL
+          const need = p.min ?? MIN_DL
+          const moved = dL !== null && Math.abs(dL) >= need
           const signalled = SIGNALS.some((k) => changed.includes(k))
           // On a veil-carrying control the background wash IS the hover;
           // a text-colour nudge alone is how the light-theme segment shipped
           // an invisible hover while this audit's first draft passed it.
           if (p.bg ? !moved : !moved && !signalled) {
             failures.push(
-              `${where}  ${p.part}: hover is dead -- dL ${dL === null ? 'unresolvable' : dL.toFixed(4)} (needs ${MIN_DL})${p.bg ? ' and the background is the signal here' : ' and no shadow/colour/decoration change'}`,
+              `${where}  ${p.part}: hover is dead -- dL ${dL === null ? 'unresolvable' : dL.toFixed(4)} (needs ${need})${p.bg ? ' and the background is the signal here' : ' and no shadow/colour/decoration change'}`,
             )
           }
           if (dL === null) warnings.push(`${where}  ${p.part}: background chain had an unparseable layer`)

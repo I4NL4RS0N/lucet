@@ -617,7 +617,12 @@ textarea.field {
   box-shadow: 0 0 0 1px var(--line);
 }
 .check input:disabled:checked + .check__box { background-color: var(--line-strong); box-shadow: none; }
-.check input:disabled:checked + .check__box::after { border-color: var(--sunken); background: var(--sunken); }
+/* border-color for the drawn L, background ONLY for the round dot. One rule
+   setting both filled the L's transparent body with a 4x8 rectangle -- the
+   "odd icon": a blob wearing a tick. The enabled path never hits this because
+   its square tick sets borders alone. */
+.check input:disabled:checked + .check__box:not(.check__box--round)::after { border-color: var(--sunken); }
+.check input:disabled:checked + .check__box--round::after { background: var(--sunken); }
 
 .switch { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
 .switch input { position: absolute; opacity: 0; pointer-events: none; }
@@ -805,6 +810,22 @@ textarea.field {
 }
 .avatar--lg { inline-size: 36px; block-size: 36px; font-size: 13px; }
 .avatar--solid { background-color: var(--solid); color: var(--solid-fg); }
+
+/*
+ * An avatar is sometimes a control -- account menu, profile, presence. As a
+ * <button> it keeps the identity mark and gains the same state grammar as
+ * everything else: ink to hover, shadow to press. A bare <span> avatar stays
+ * inert, which is the correct default for a mark that merely identifies.
+ */
+button.avatar { border: 0; padding: 0; font-family: inherit; cursor: pointer; transition: background-color var(--fast), scale var(--fast); }
+button.avatar:hover:not(:disabled),
+.avatar.is-hover { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--raised)); }
+button.avatar:active:not(:disabled),
+.avatar.is-active { background-color: color-mix(in oklab, oklch(0 0 0) var(--lucet-press-mix), var(--raised)); scale: 0.94; }
+button.avatar:focus-visible,
+.avatar.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
+button.avatar:disabled,
+.avatar.is-disabled { opacity: 0.42; cursor: not-allowed; }
 
 .avatar-stack { display: flex; }
 /*
@@ -1099,6 +1120,11 @@ kbd, .kbd {
   cursor: pointer;
   transition: background-color var(--fast);
 }
+/* An OPEN head sits on its own body: rounded bottom corners there carve a
+   notch into the container the moment the hover wash paints them. Square
+   while open, fully rounded when the head IS the whole surface. */
+.disc__head[aria-expanded='true'] { border-radius: var(--r-surface) var(--r-surface) 0 0; }
+
 .disc__head:hover, .disc__head.is-hover { background-color: var(--hover); }
 .disc__head:focus-visible { outline: var(--focus-w) solid var(--ring-focus); outline-offset: -2px; }
 
@@ -1349,6 +1375,19 @@ code, .code {
   flex: none;
   color: var(--ink-2);
 }
+
+/*
+ * The three WORKING states take the accent (primary), because the agent
+ * working on your request is the most brand-forward moment the interface
+ * has, and the accent axis already means "what you chose". Under monochrome
+ * that resolves to the neutral solid, so the default stays greyscale.
+ * The other half deliberately does not: blocked is waiting on YOU (neutral,
+ * still), queued and degraded keep their information tones. The label always
+ * carries the meaning; the colour is enhancement, never the channel.
+ */
+.orb[data-state='thinking'],
+.orb[data-state='searching'],
+.orb[data-state='composing'] { color: var(--solid); }
 .orb--sm { --orb-size: 16px; }
 .orb--lg { --orb-size: 34px; }
 
@@ -1780,8 +1819,11 @@ code, .code {
 .table td:first-child { color: var(--ink); }
 
 .table tbody tr { transition: background-color var(--fast); }
+/* HALF the veil. A row is the largest hover surface on the page, and
+   perceived salience scales with area: the standard step across 900px read
+   as a selection stripe, not a hover. */
 .table tbody tr:hover,
-.table tbody tr.is-hover { background-color: var(--hover); }
+.table tbody tr.is-hover { background-color: color-mix(in oklab, var(--lucet-foreground) calc(var(--lucet-hover-mix) / 2), transparent); }
 
 /* A numeric column aligns on the decimal, which means aligning on the end. */
 .table .num { text-align: end; font-variant-numeric: tabular-nums; }
