@@ -20,7 +20,10 @@
 
 /* ---------- Light + System (default) ---------- */
 :root {
-  --lucet-surface-ground: var(--lucet-neutral-0);
+  /* neutral-50, NOT pure white -- see the figure-ground note in semantic.css:
+     the page recedes a step so pure white can mean "touchable". Expressive
+     light recedes further still, in its own block below. */
+  --lucet-surface-ground: var(--lucet-neutral-50);
   --lucet-surface-raised: var(--lucet-neutral-0);
   --lucet-surface-overlay: var(--lucet-neutral-0);
   --lucet-surface-sunken: var(--lucet-neutral-50);

@@ -24,6 +24,15 @@
 
 :root {
   /* Our own defaults, used only when the host has not defined shadcn's names. */
+  /*
+   * 0.985, NOT pure white. Light mode had the figure-ground inverted: a pure
+   * white page with grey (0.97) raised controls means everything you can
+   * touch is DARKER than the ground it stands on -- which is light mode's
+   * own grammar for "disabled", and exactly why the theme read washed out.
+   * Measured against the references: Beautiful UI's page is 0.985 with pure
+   * white surfaces and visible rings; shadcn separates white cards with
+   * 0.922 borders. The page recedes a step so white can mean "touchable".
+   */
   --lucet-default-background: var(--lucet-surface-ground);
   --lucet-default-foreground: var(--lucet-neutral-950);
   --lucet-default-card: var(--lucet-surface-raised);
@@ -44,9 +53,12 @@
    */
   --lucet-default-primary: var(--lucet-accent-solid, var(--lucet-accent-9));
   --lucet-default-primary-foreground: var(--lucet-accent-solid-fg, var(--lucet-accent-on-solid));
-  --lucet-default-secondary: var(--lucet-neutral-100);
+  /* Raised controls are the lightest thing on screen: pure white, carried by
+     their ring and cast. White pops forward; grey sinks. */
+  --lucet-default-secondary: oklch(1 0 0);
   --lucet-default-secondary-foreground: var(--lucet-neutral-900);
-  --lucet-default-muted: var(--lucet-neutral-50);
+  /* Fields must read as recesses again now the page is 0.985. */
+  --lucet-default-muted: oklch(0.961 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-muted-foreground: var(--lucet-neutral-550);
   /*
    * The quiet surface, and in light it was barely a surface at all: 0.985
@@ -54,10 +66,10 @@
    * hairline with nothing inside it. Dark had 0.020 plus a visible ring to
    * help; light had neither.
    *
-   * 0.955 gives it 0.045, which is enough to read as recessed without turning
-   * the page grey.
+   * 0.945 keeps the well 0.04 below the 0.985 page, so a genuine recess (a
+   * code block, a segmented track) still reads as one.
    */
-  --lucet-default-subtle: oklch(0.955 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-subtle: oklch(0.945 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);
   /*

@@ -197,11 +197,25 @@ body {
   border-radius: var(--r-panel);
   box-shadow: var(--ring-1);
   padding: 32px;
+  /* Light overrides below: the well is a dark-mode idea. */
   display: flex;
   flex-wrap: wrap;
   /* Hugs its content. Centring left the taller specs floating in dead air. */
   align-items: flex-start;
   gap: 26px;
+}
+
+/*
+ * In LIGHT the stage is a white surface, not a well. A sunken grey container
+ * was the largest grey field on screen and made every specimen swim -- the
+ * washed-out feeling was mostly this. Real apps give components a white
+ * surface in light mode (shadcn previews, BUI cards), so the lab does too.
+ * Dark keeps the well: objects lit from above in a recess read correctly
+ * there, and dark was never the problem.
+ */
+:root[data-theme='light'] .stage {
+  background: var(--surface);
+  box-shadow: var(--ring-1), var(--cast-1);
 }
 
 .stage .spec { gap: 9px; }
