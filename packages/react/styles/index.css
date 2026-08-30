@@ -601,3 +601,276 @@
     transform: none;
   }
 }
+
+/* ============================================================
+ * Prompt input — the new-era composer, rendered from the contract.
+ *
+ * One surface, and it is the FIELD: the container itself is the inset
+ * material, with the textarea, attachments, and toolbar living inside it.
+ * The old .lucet-composer stays until the Konfabulator is rebuilt against
+ * this component.
+ *
+ * Every state rule here mirrors something the core contract can be in;
+ * nothing is decorative. Hover is ink, press is shadow, and the disabled
+ * send explains itself through .lucet-prompt__why.
+ * ============================================================ */
+
+.lucet-prompt {
+  background-color: var(--lucet-muted);
+  border-radius: var(--lucet-radius-surface);
+  box-shadow: var(--lucet-material-inset);
+  padding: var(--lucet-space-2) var(--lucet-space-2) var(--lucet-space-2) var(--lucet-space-3);
+  transition: box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+/* The ring belongs to the SURFACE, not the textarea: the whole object is the
+   field, so the whole object shows focus. 2.4.7 either way; this way it also
+   reads as one thing. */
+.lucet-prompt:focus-within {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+.lucet-prompt__field {
+  display: block;
+  inline-size: 100%;
+  border: 0;
+  background: none;
+  padding: var(--lucet-space-1) 0;
+  font: inherit;
+  font-size: var(--lucet-text-base);
+  line-height: var(--lucet-leading-prose);
+  color: var(--lucet-foreground);
+  resize: none;
+  outline: none;
+  /* Grows with content where supported (Chromium); elsewhere the min/max pair
+     still holds the shape and scrolls. Grows, never jumps. */
+  field-sizing: content;
+  min-block-size: 1.6em;
+  max-block-size: 12em;
+}
+
+.lucet-prompt__field::placeholder {
+  /* Same recipe as the primitives page: quieter than real text on purpose,
+     legal because the field always carries a programmatic label. */
+  color: color-mix(in oklab, var(--lucet-muted-foreground) 62%, var(--lucet-muted));
+}
+
+/* ---- attachments ---- */
+
+.lucet-prompt__atts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lucet-space-1);
+  margin-block-end: var(--lucet-space-2);
+}
+
+.lucet-prompt__att {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 26px;
+  padding-inline: 8px 4px;
+  border-radius: var(--lucet-radius-control);
+  background-color: var(--lucet-secondary);
+  box-shadow: var(--lucet-hairline-raised);
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-foreground);
+  max-inline-size: 260px;
+}
+
+.lucet-prompt__att-icon {
+  inline-size: 13px;
+  block-size: 13px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--lucet-muted-foreground);
+}
+
+.lucet-prompt__att-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Failed is a state the chip WEARS, not a toast that vanished. The reason
+   rides on the chip and the send button stays blocked until it is removed. */
+.lucet-prompt__att[data-status='failed'] {
+  color: var(--lucet-tone-danger-foreground);
+  background-color: var(--lucet-tone-danger-surface);
+  box-shadow: var(--lucet-hairline);
+}
+.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-icon { color: inherit; }
+.lucet-prompt__att-reason {
+  flex: none;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.lucet-prompt__att[data-status='uploading'] .lucet-prompt__att-name {
+  color: var(--lucet-muted-foreground);
+}
+
+.lucet-prompt__att-spin {
+  inline-size: 12px;
+  block-size: 12px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--lucet-input);
+  border-block-start-color: var(--lucet-muted-foreground);
+  animation: lucet-prompt-spin 0.6s linear infinite;
+}
+@keyframes lucet-prompt-spin { to { rotate: 360deg; } }
+
+.lucet-prompt__att-remove {
+  /* position: relative is load-bearing: the hit-area pseudo below anchors
+     here. Without it the 24px zone floats over the middle of the chip and
+     clicking a FILENAME removes the file — the exact regression the states
+     audit now guards on the primitives page. */
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 18px;
+  block-size: 18px;
+  flex: none;
+  border: 0;
+  border-radius: calc(var(--lucet-radius-control) - 3px);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-prompt__att-remove::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 24px;
+  block-size: 24px;
+}
+.lucet-prompt__att-remove svg {
+  inline-size: 10px;
+  block-size: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.lucet-prompt__att-remove:hover { background-color: var(--lucet-hover); }
+.lucet-prompt__att-remove:active { background-color: var(--lucet-press); }
+.lucet-prompt__att-remove:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: 1px;
+}
+
+/* ---- the bar ---- */
+
+.lucet-prompt__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-1);
+  margin-block-start: var(--lucet-space-1);
+}
+
+.lucet-prompt__tool {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  flex: none;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-prompt__tool::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 40px;
+  block-size: 40px;
+}
+.lucet-prompt__tool svg {
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-prompt__tool:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-prompt__tool:active { background-color: var(--lucet-press); }
+.lucet-prompt__tool:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* Ghost select: inside the composer a raised control would be the loudest
+   thing in the field. The picker whispers until touched, like every other
+   transparent-resting control. */
+.lucet-prompt__model {
+  position: relative;
+  display: inline-block;
+}
+.lucet-prompt__model select {
+  appearance: none;
+  border: 0;
+  background-color: transparent;
+  padding: 5px 22px 5px 8px;
+  border-radius: var(--lucet-radius-control);
+  font: inherit;
+  font-size: var(--lucet-text-sm);
+  font-weight: 500;
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-prompt__model::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: 9px;
+  inset-block-start: 50%;
+  inline-size: 5px;
+  block-size: 5px;
+  margin-block-start: -3.5px;
+  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
+  border-block-end: 1.5px solid var(--lucet-muted-foreground);
+  rotate: 45deg;
+  pointer-events: none;
+}
+.lucet-prompt__model select:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-prompt__model select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* The words. Empty when there is nothing worth saying; role=status either
+   way, so a blocker is announced the moment it appears. */
+.lucet-prompt__why {
+  margin: 0 0 0 auto;
+  padding-inline-end: var(--lucet-space-1);
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+  text-align: end;
+  text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-prompt__att-spin { animation: none; }
+}

@@ -9,6 +9,10 @@
 
 import type { SubmitBlocker, ThreadState } from './types.js'
 
+/** The slice the blocker logic actually reads, so components holding only
+    composer + service can call it without inventing a whole thread. */
+export type SubmitBlockerInput = Pick<ThreadState, 'composer' | 'service'>
+
 /**
  * Why the composer cannot submit right now, or null when it can.
  *
@@ -22,7 +26,7 @@ import type { SubmitBlocker, ThreadState } from './types.js'
  *                         thinks they sent, which is worse than waiting
  *   empty                 nothing to send; attachments alone are enough
  */
-export function submitBlocker(state: ThreadState): SubmitBlocker | null {
+export function submitBlocker(state: SubmitBlockerInput): SubmitBlocker | null {
   const { composer, service } = state
   if (composer.locked) return 'locked'
   if (service.status === 'down') return 'service-down'
