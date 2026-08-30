@@ -1,25 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
   <!--
-    The Lucet mark: an orb of light larger than its frame.
+    The Lucet mark: an orb of light larger than its tile.
 
-    Lucet means "it shines". The library's signature geometry is the activity
-    orb - rings of light, arc fragments, a core - so the mark is that orb,
-    CROPPED: the arcs sweep through the frame and leave it on three sides,
-    because the light continues past what you can see. Drawn with the orb's
-    own technique (dasharray fragments on circles), not illustrated.
-
-    Two rings only, so it survives 16px. The gaps face upper-left; the light
-    reads as turning, not broadcasting.
+    Lucet means "it shines", and light needs dark to shine: the arcs and core
+    sit on a graphite tile with a diagonal gradient, a top sheen, and a
+    hairline edge - the mark is a made object, not a line drawing. The inner
+    ring and core are the orb, drawn with the orb's own dasharray technique;
+    the outer arc enters and leaves the tile, glancing off its lower edge,
+    because the light continues past what you can see. The tile stays dark in
+    both themes, the way a lamp stays a lamp in daylight.
   -->
-  <style>
-    .s { stroke: #1a1a1f; } .f { fill: #1a1a1f; }
-    @media (prefers-color-scheme: dark) {
-      .s { stroke: #ededf0; } .f { fill: #ededf0; }
-    }
-  </style>
-  <g fill="none" stroke-linecap="round" class="s">
-    <circle cx="46" cy="50" r="23" stroke-width="6" stroke-dasharray="95 50" transform="rotate(105 46 50)"/>
-    <circle cx="46" cy="50" r="52" stroke-width="5" stroke-dasharray="120 65 55 87" transform="rotate(-40 46 50)"/>
+  <defs>
+    <linearGradient id="lm-plate" x1="0" y1="0" x2="0.45" y2="1">
+      <stop offset="0" stop-color="#2a2a33"/>
+      <stop offset="0.52" stop-color="#18181f"/>
+      <stop offset="1" stop-color="#0d0d12"/>
+    </linearGradient>
+    <linearGradient id="lm-sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.13"/>
+      <stop offset="0.38" stop-color="#fff" stop-opacity="0.02"/>
+      <stop offset="0.62" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="lm-halo">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="lm-clip"><rect width="96" height="96" rx="27"/></clipPath>
+  </defs>
+  <rect width="96" height="96" rx="27" fill="url(#lm-plate)"/>
+  <g clip-path="url(#lm-clip)">
+    <circle cx="46" cy="50" r="17" fill="url(#lm-halo)"/>
+    <g fill="none" stroke-linecap="round">
+      <circle cx="46" cy="50" r="23" stroke="#F2F3F9" stroke-width="6" stroke-dasharray="95 50" transform="rotate(105 46 50)"/>
+      <circle cx="46" cy="50" r="52" stroke="#B9BCCB" stroke-width="5" stroke-dasharray="150 177" transform="rotate(28 46 50)"/>
+    </g>
+    <circle cx="46" cy="50" r="7" fill="#FFFFFF"/>
+    <rect width="96" height="96" rx="27" fill="url(#lm-sheen)"/>
   </g>
-  <circle cx="46" cy="50" r="7" class="f"/>
+  <rect x="0.5" y="0.5" width="95" height="95" rx="26.5" fill="none" stroke="#fff" stroke-opacity="0.09"/>
 </svg>

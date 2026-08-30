@@ -231,16 +231,39 @@ export function App() {
     <LucetProvider lucet={lucet}>
       <header className="cfg__bar">
         <span className="cfg__mark">
-          {/* The mark: an orb of light larger than its frame — the arcs leave
-              on three sides because the light continues past what you can
-              see. Drawn with the orb's own dasharray technique. Full
-              rationale in public/favicon.svg. */}
+          {/* The mark: an orb of light on a graphite tile — a made object,
+              not a line drawing. Dark in both themes, the way a lamp stays a
+              lamp in daylight. Full rationale in public/favicon.svg. */}
           <svg className="cfg__logo" viewBox="0 0 96 96" aria-hidden>
-            <g fill="none" stroke="currentColor" strokeLinecap="round">
-              <circle cx="46" cy="50" r="23" strokeWidth="6" strokeDasharray="95 50" transform="rotate(105 46 50)" />
-              <circle cx="46" cy="50" r="52" strokeWidth="5" strokeDasharray="120 65 55 87" transform="rotate(-40 46 50)" />
+            <defs>
+              <linearGradient id="lgo-p" x1="0" y1="0" x2="0.45" y2="1">
+                <stop offset="0" stopColor="#2a2a33" />
+                <stop offset="0.52" stopColor="#18181f" />
+                <stop offset="1" stopColor="#0d0d12" />
+              </linearGradient>
+              <linearGradient id="lgo-s" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#fff" stopOpacity="0.13" />
+                <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
+                <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
+              </linearGradient>
+              <radialGradient id="lgo-h">
+                <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
+                <stop offset="1" stopColor="#fff" stopOpacity="0" />
+              </radialGradient>
+              <clipPath id="lgo-c">
+                <rect width="96" height="96" rx="27" />
+              </clipPath>
+            </defs>
+            <rect width="96" height="96" rx="27" fill="url(#lgo-p)" />
+            <g clipPath="url(#lgo-c)">
+              <circle cx="46" cy="50" r="17" fill="url(#lgo-h)" />
+              <g fill="none" strokeLinecap="round">
+                <circle cx="46" cy="50" r="23" stroke="#F2F3F9" strokeWidth="6" strokeDasharray="95 50" transform="rotate(105 46 50)" />
+                <circle cx="46" cy="50" r="52" stroke="#B9BCCB" strokeWidth="5" strokeDasharray="150 177" transform="rotate(28 46 50)" />
+              </g>
+              <circle cx="46" cy="50" r="7" fill="#FFFFFF" />
+              <rect width="96" height="96" rx="27" fill="url(#lgo-s)" />
             </g>
-            <circle cx="46" cy="50" r="7" fill="currentColor" />
           </svg>
           Lucet <span>· the Configurator</span>
         </span>

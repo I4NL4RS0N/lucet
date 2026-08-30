@@ -41,7 +41,18 @@ body {
 }
 
 .cfg__mark { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-.cfg__logo { inline-size: 22px; block-size: 22px; overflow: visible; }
+/* The tile floats: the lithos shadow grammar — hairline separator, contact,
+   mid, ambient — in one stack, so the mark reads as an object on both page
+   grounds. */
+.cfg__logo {
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 7px;
+  box-shadow:
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 1px 1px oklch(0 0 0 / 0.35),
+    0 4px 10px -3px oklch(0 0 0 / 0.35);
+}
 .cfg__mark span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
 
 .cfg__lede {
