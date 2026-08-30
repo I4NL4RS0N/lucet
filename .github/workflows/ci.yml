@@ -18,14 +18,18 @@ jobs:
 
       - run: npm ci
 
+      # Build first. The docs app imports the workspace packages by their
+      # published names, so their .d.ts files have to exist before anything can
+      # typecheck. A clean checkout has no dist, which is why this passed
+      # locally and failed on the first CI run.
+      - name: Build
+        run: npm run build
+
       - name: Typecheck
         run: npm run typecheck
 
       - name: Unit tests
         run: npm test
-
-      - name: Build
-        run: npm run build
 
       # The accessibility audit drives a real browser on purpose: three of the
       # four contrast failures found by hand were cascade or paint behaviour
