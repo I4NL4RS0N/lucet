@@ -40,11 +40,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ianlarson1337/lucet.git",
+    "url": "git+https://github.com/I4NL4RS0N/lucet.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/ianlarson1337/lucet",
+  "homepage": "https://github.com/I4NL4RS0N/lucet",
   "bugs": {
-    "url": "https://github.com/ianlarson1337/lucet/issues"
+    "url": "https://github.com/I4NL4RS0N/lucet/issues"
   }
 }

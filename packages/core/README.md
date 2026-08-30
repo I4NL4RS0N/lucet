@@ -4,7 +4,7 @@ Framework-free state logic for AI interface components.
 
 **Status: not ready. This is a name placeholder at `0.0.1`.**
 There is no stable API yet, and what is here will change. Please do not build
-on it. Watch [the repository](https://github.com/ianlarson1337/lucet) for the first
+on it. Watch [the repository](https://github.com/I4NL4RS0N/lucet) for the first
 real release.
 
 ## What this will be
