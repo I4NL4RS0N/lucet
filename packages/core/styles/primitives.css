@@ -133,10 +133,6 @@
   --lucet-ease-out: cubic-bezier(0.2, 0, 0, 1);
   --lucet-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* A field looks recessed, not raised. Lifted straight from how the
-     reference treats inputs, and it is the detail that sells the surface. */
-  --lucet-shadow-inset-field: inset 0 1px 2px oklch(0 0 0 / 0.08);
-
   --lucet-border-width: 1px;
   --lucet-focus-width: 2px;
   --lucet-focus-offset: 2px;

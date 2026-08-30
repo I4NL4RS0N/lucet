@@ -65,6 +65,9 @@
    * silently undoes this and brings back the mismatched 1px band.
    */
   background-origin: border-box;
+  /* One material for every pressable thing. Variants change emphasis, never
+     structure, which is what stops the set drifting apart. */
+  box-shadow: var(--lucet-material-control);
   cursor: pointer;
   white-space: nowrap;
   transition:
@@ -76,17 +79,22 @@
 .lucet-button[data-variant='primary'] {
   background-color: var(--lucet-primary);
   color: var(--lucet-primary-foreground);
+  box-shadow: var(--lucet-material-control), var(--lucet-primary-glow);
 }
 
 .lucet-button[data-variant='secondary'] {
   background-color: var(--lucet-secondary);
   color: var(--lucet-secondary-foreground);
-  border-color: var(--lucet-border);
+  /* The gloss goes on neutral fills only. On the brand fill it would be a white
+     wash under the label, which is the contrast trap from earlier. */
+  background-image: var(--lucet-gloss);
 }
 
 .lucet-button[data-variant='ghost'] {
   background-color: transparent;
   color: var(--lucet-muted-foreground);
+  /* Ghost is not a surface, so it has no material until it is hovered. */
+  box-shadow: none;
 }
 
 .lucet-button[data-variant='primary']:hover:not(:disabled) {
@@ -274,6 +282,7 @@
  * reader has to act on.
  * ============================================================ */
 
+/* Flat: content sitting ON a surface, not floating above it. */
 .lucet-tool {
   margin: 0 0 var(--lucet-space-3);
   padding: var(--lucet-space-2) var(--lucet-space-3);
@@ -456,7 +465,7 @@
 
 /* A field is recessed, not raised. The detail that sells the surface. */
 :root[data-expression='system'] .lucet-composer {
-  box-shadow: var(--lucet-shadow-inset-field);
+  box-shadow: var(--lucet-material-inset);
 }
 
 .lucet-composer__field::placeholder { color: var(--lucet-muted-foreground); }
@@ -478,8 +487,8 @@
 
 /* Expressive lifts the composer off the page, the way the reference does. */
 :root[data-expression='expressive'] .lucet-composer {
-  border-color: transparent;
-  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+  border-width: 0;
+  box-shadow: var(--lucet-material-raised);
 }
 
 /*
@@ -491,10 +500,7 @@
  * which is a 2.4.7 Focus Visible failure at Level A.
  */
 :root[data-expression='expressive'] .lucet-composer:focus-within {
-  box-shadow:
-    0 0 0 var(--lucet-focus-width) var(--lucet-ring),
-    var(--lucet-elevation-3),
-    var(--lucet-highlight);
+  box-shadow: 0 0 0 var(--lucet-focus-width) var(--lucet-ring), var(--lucet-material-raised);
 }
 
 /* ============================================================
@@ -508,43 +514,21 @@
 
 :root[data-expression='expressive'] .lucet-button[data-variant='primary'] {
   /*
-   * The ramp modulates the fill's own lightness. It never overlays white,
-   * because a white wash across the face is what broke contrast: 5.5:1 becomes
-   * 3.1:1 and the button fails AA. The lightest stop is the one that has to
-   * pass, which is why step 9 sits at L 0.50.
+   * The ramp modulates the fill's own lightness and never overlays white,
+   * because a white wash across the face lightens the surface under the label
+   * and costs contrast. The lightest stop is what has to pass.
    */
   background-image: linear-gradient(
     180deg,
     oklch(from var(--lucet-primary) calc(l + 0.025) c h),
     oklch(from var(--lucet-primary) calc(l - 0.03) c h)
   );
-  box-shadow:
-    var(--lucet-control-top),
-    var(--lucet-control-lip),
-    /* The ring. A spread shadow rather than a border, so it composites with
-       the rest of the stack and costs nothing in layout. */
-    0 0 0 1px oklch(from var(--lucet-primary) calc(l - 0.06) c h),
-    var(--lucet-control-cast),
-    var(--lucet-primary-glow);
-  /* The ring is a shadow here, so the border is dead weight and the source of
-     the halo. */
   border-width: 0;
   border-radius: var(--lucet-radius-container);
   padding-inline: var(--lucet-space-4);
 }
 
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
-  /* Three values apart, as the light reference is. Almost nothing, on purpose. */
-  background-image: linear-gradient(
-    180deg,
-    oklch(from var(--lucet-secondary) calc(l + 0.012) c h),
-    oklch(from var(--lucet-secondary) calc(l - 0.012) c h)
-  );
-  box-shadow:
-    var(--lucet-control-top),
-    var(--lucet-control-lip),
-    0 0 0 1px var(--lucet-border),
-    var(--lucet-control-cast);
   border-width: 0;
 }
 
@@ -561,19 +545,22 @@
 }
 
 /*
- * The press. Lighting inverts: the lit edge goes to the bottom, the shadow
- * moves inside, the cast shadow collapses, and the control drops half a pixel.
- * This is the part that makes it feel like a button rather than look like one.
+ * The press. Lighting inverts: the lit edge moves to the bottom, the shadow
+ * moves inside, the cast collapses, and the control drops half a pixel. This is
+ * the part that makes it feel like a button rather than look like one.
  */
-:root[data-expression='expressive'] .lucet-button:active:not(:disabled) {
-  box-shadow: var(--lucet-control-press);
+.lucet-button:active:not(:disabled) {
+  box-shadow: var(--lucet-material-pressed);
   background-image: none;
   transform: translateY(0.5px);
-  filter: brightness(0.98);
+}
+
+.lucet-button[data-variant='ghost']:active:not(:disabled) {
+  transform: none;
 }
 
 :root[data-expression='expressive'] .lucet-button:disabled {
-  box-shadow: none;
+  box-shadow: var(--lucet-hairline);
   background-image: none;
 }
 
@@ -584,12 +571,10 @@
   padding-inline: var(--lucet-space-3);
 }
 
-/*
- * Corner smoothing. The reference runs iOS-style squircles at 60%, and it is
- * the detail that separates "rounded rectangle" from "considered object".
- * Progressive enhancement: browsers without corner-shape get the plain radius,
- * which is not a downgrade, just less.
- */
+@media (prefers-reduced-motion: reduce) {
+  .lucet-button:active:not(:disabled) { transform: none; }
+}
+
 @supports (corner-shape: squircle) {
   :root[data-expression='expressive'] .lucet-button,
   :root[data-expression='expressive'] .lucet-composer,

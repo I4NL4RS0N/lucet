@@ -39,7 +39,7 @@ const TYPE = [
 
 const SPACE = ['1', '2', '3', '4', '6', '8', '12', '16']
 const RADII = ['sm', 'md', 'lg', 'xl']
-const ELEVATION = ['1', '2', '3']
+const MATERIALS = ['flat', 'control', 'raised', 'overlay']
 
 function useResolved(names: readonly string[], signal: string): Record<string, string> {
   const [values, setValues] = useState<Record<string, string>>({})
@@ -222,10 +222,11 @@ export function Tokens({ theme, accent, neutral, expression, radius, scale, type
       ))}
       <p style={caption}>unit: {v['--lucet-space-unit']}</p>
 
-      <h3>Radius and elevation</h3>
+      <h3>Radius and material</h3>
       <p style={{ maxWidth: '38rem' }}>
-        Both move with expression. System uses a hairline border for depth;
-        Expressive uses a soft shadow. That difference is the whole axis.
+        Four materials, and a component picks one rather than composing its own.
+        System draws depth as a line; Expressive gives surfaces thickness and
+        lights them from above. Same four names, different physics.
       </p>
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', margin: '0.75rem 0' }}>
         {RADII.map((r) => (
@@ -243,18 +244,18 @@ export function Tokens({ theme, accent, neutral, expression, radius, scale, type
             <div style={caption}>{v[`--lucet-radius-${r}`]}</div>
           </div>
         ))}
-        {ELEVATION.map((e) => (
-          <div key={e} style={{ textAlign: 'center' }}>
+        {MATERIALS.map((m) => (
+          <div key={m} style={{ textAlign: 'center' }}>
             <div
               style={{
                 width: '4rem',
                 height: '4rem',
                 background: 'var(--lucet-card)',
                 borderRadius: 'var(--lucet-radius-lg)',
-                boxShadow: `var(--lucet-elevation-${e})`,
+                boxShadow: `var(--lucet-material-${m})`,
               }}
             />
-            <div style={caption}>elev {e}</div>
+            <div style={caption}>{m}</div>
           </div>
         ))}
       </div>

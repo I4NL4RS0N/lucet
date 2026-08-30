@@ -1,0 +1,174 @@
+/**
+ * Materials.
+ *
+ * Every component was assembling its own shadow stack by hand, so nothing
+ * agreed: the segmented control was flat, selects carried a four-layer stack,
+ * buttons a fifth, panels something else again. Depth has to be a shared
+ * vocabulary or it reads as accident.
+ *
+ * Four materials, and a component picks one rather than composing its own:
+ *
+ *   flat     content that sits ON a surface. Notices, tool calls. A line only.
+ *   control  anything you press. Buttons, selects, segments, chips.
+ *   raised   surfaces that float above the ground. Panels, cards, composer.
+ *   overlay  surfaces above those. Drawers, popovers, menus.
+ *
+ * Each is built from four primitives so the recipes stay legible:
+ *
+ *   --lucet-edge-top      the lit top edge, where light lands
+ *   --lucet-edge-bottom   the underside of a raised edge. The lip
+ *   --lucet-hairline      a 1px ring, drawn as spread rather than a border so
+ *                         it composites with the shadows and costs no layout
+ *   --lucet-shade-1..3    cast shadow, in increasing distance from the surface
+ *
+ * Shadows are layered rather than single blurs because real light falls off in
+ * stages, and a single large blur reads as a smudge.
+ *
+ * All four theme x expression combinations are written out. Verbose, but a
+ * reader can see every depth decision without resolving a cascade in their head.
+ */
+
+/* ============================================================
+ * SYSTEM. Depth is a line. Nothing floats, so nothing is glossy.
+ * ============================================================ */
+
+/* ---------- light + system ---------- */
+:root,
+:root[data-expression='system'] {
+  --lucet-edge-top: inset 0 0 0 0 transparent;
+  --lucet-edge-bottom: inset 0 0 0 0 transparent;
+  --lucet-hairline: 0 0 0 1px var(--lucet-border);
+
+  --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.04);
+  --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.05), 0 2px 6px oklch(0 0 0 / 0.04);
+  --lucet-shade-3: 0 2px 4px oklch(0 0 0 / 0.06), 0 8px 20px oklch(0 0 0 / 0.08);
+
+  --lucet-material-flat: var(--lucet-hairline);
+  --lucet-material-control: var(--lucet-hairline), var(--lucet-shade-1);
+  --lucet-material-raised: var(--lucet-hairline), var(--lucet-shade-1);
+  --lucet-material-overlay: var(--lucet-hairline), var(--lucet-shade-3);
+  --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.1), var(--lucet-hairline);
+  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.06), var(--lucet-hairline);
+
+  --lucet-gloss: none;
+}
+
+/* ---------- dark + system ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-expression='expressive']) {
+    --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
+    --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.3);
+    --lucet-shade-3: 0 2px 4px oklch(0 0 0 / 0.45), 0 8px 20px oklch(0 0 0 / 0.5);
+    --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.5), var(--lucet-hairline);
+    --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.35), var(--lucet-hairline);
+  }
+}
+
+:root[data-theme='dark']:not([data-expression='expressive']) {
+  --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
+  --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.3);
+  --lucet-shade-3: 0 2px 4px oklch(0 0 0 / 0.45), 0 8px 20px oklch(0 0 0 / 0.5);
+  --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.5), var(--lucet-hairline);
+  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.35), var(--lucet-hairline);
+}
+
+/* ============================================================
+ * EXPRESSIVE. Light comes from above and surfaces have thickness.
+ *
+ * The gloss is a short vertical ramp on the FILL, never a white wash across
+ * the face: a face overlay lightens the surface under its own label and costs
+ * contrast, while an edge highlight costs nothing.
+ * ============================================================ */
+
+/* ---------- light + expressive ---------- */
+:root[data-expression='expressive'] {
+  /* Strong, because in light mode the lit edge is the whole effect. */
+  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.9);
+  --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.07);
+  --lucet-hairline: 0 0 0 1px oklch(0 0 0 / 0.09);
+
+  /*
+   * The first stop is a CONTACT shadow: half a pixel, no blur, hard against the
+   * edge. It is what makes an object read as sitting on the surface rather than
+   * hovering over it, and it is the difference between "has a shadow" and
+   * "has thickness".
+   */
+  --lucet-shade-1:
+    0 0.5px 0 oklch(0 0 0 / 0.05),
+    0 1px 2px oklch(0 0 0 / 0.08),
+    0 2px 5px oklch(0 0 0 / 0.06);
+  --lucet-shade-2:
+    0 0.5px 0 oklch(0 0 0 / 0.04),
+    0 1px 2px oklch(0 0 0 / 0.06),
+    0 5px 10px oklch(0 0 0 / 0.06),
+    0 14px 28px oklch(0 0 0 / 0.07);
+  --lucet-shade-3:
+    0 0.5px 0 oklch(0 0 0 / 0.05),
+    0 2px 5px oklch(0 0 0 / 0.07),
+    0 10px 24px oklch(0 0 0 / 0.1),
+    0 28px 56px oklch(0 0 0 / 0.12);
+
+  --lucet-material-flat: var(--lucet-hairline);
+  --lucet-material-control:
+    var(--lucet-edge-top), var(--lucet-edge-bottom), var(--lucet-hairline), var(--lucet-shade-1);
+  --lucet-material-raised: var(--lucet-edge-top), var(--lucet-hairline), var(--lucet-shade-2);
+  --lucet-material-overlay: var(--lucet-edge-top), var(--lucet-hairline), var(--lucet-shade-3);
+  --lucet-material-pressed:
+    inset 0 1px 3px oklch(0 0 0 / 0.14), inset 0 -1px 0 oklch(1 0 0 / 0.5), var(--lucet-hairline);
+  --lucet-material-inset:
+    inset 0 1px 2px oklch(0 0 0 / 0.08), var(--lucet-hairline);
+
+  /* The one gloss: a short ramp on the fill itself. */
+  --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.75), oklch(1 0 0 / 0.15) 48%, oklch(1 0 0 / 0) 100%);
+}
+
+/* ---------- dark + expressive ---------- */
+@media (prefers-color-scheme: dark) {
+  :root[data-expression='expressive']:not([data-theme='light']) {
+    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
+    --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
+    /* Lighter than the fill, not darker. That is how a lit edge works. */
+    --lucet-hairline: 0 0 0 1px oklch(1 0 0 / 0.09);
+
+    --lucet-shade-1:
+      0 0.5px 0 oklch(0 0 0 / 0.5),
+      0 1px 2px oklch(0 0 0 / 0.45),
+      0 2px 5px oklch(0 0 0 / 0.35);
+    --lucet-shade-2:
+      0 0.5px 0 oklch(0 0 0 / 0.45),
+      0 1px 2px oklch(0 0 0 / 0.45),
+      0 5px 10px oklch(0 0 0 / 0.4),
+      0 14px 28px oklch(0 0 0 / 0.45);
+    --lucet-shade-3:
+      0 0.5px 0 oklch(0 0 0 / 0.5),
+      0 2px 5px oklch(0 0 0 / 0.5),
+      0 10px 24px oklch(0 0 0 / 0.55),
+      0 28px 56px oklch(0 0 0 / 0.6);
+
+    --lucet-material-pressed:
+      inset 0 1px 3px oklch(0 0 0 / 0.55), inset 0 -1px 0 oklch(1 0 0 / 0.06), var(--lucet-hairline);
+    --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.4), var(--lucet-hairline);
+    --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
+  }
+}
+
+:root[data-theme='dark'][data-expression='expressive'] {
+  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
+  --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
+  --lucet-hairline: 0 0 0 1px oklch(1 0 0 / 0.09);
+
+  --lucet-shade-1: 0 1px 1.5px oklch(0 0 0 / 0.4), 0 1px 3px oklch(0 0 0 / 0.3);
+  --lucet-shade-2:
+    0 1px 2px oklch(0 0 0 / 0.4),
+    0 4px 8px oklch(0 0 0 / 0.35),
+    0 12px 24px oklch(0 0 0 / 0.4);
+  --lucet-shade-3:
+    0 2px 4px oklch(0 0 0 / 0.45),
+    0 8px 20px oklch(0 0 0 / 0.5),
+    0 24px 48px oklch(0 0 0 / 0.55);
+
+  --lucet-material-pressed:
+    inset 0 1px 3px oklch(0 0 0 / 0.55), inset 0 -1px 0 oklch(1 0 0 / 0.06), var(--lucet-hairline);
+  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.4), var(--lucet-hairline);
+  --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
+}

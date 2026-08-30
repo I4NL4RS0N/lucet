@@ -149,7 +149,7 @@ p { line-height: var(--lucet-leading-prose); }
   border-left: 0;
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-xl);
-  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+  box-shadow: var(--lucet-material-raised);
 }
 
 
@@ -160,10 +160,9 @@ main[data-mode='drawer'] > :nth-child(2) { position: relative; }
 main[data-mode='drawer'] section[aria-label='Conversation'] {
   position: sticky;
   bottom: 0;
-  border: 1px solid var(--lucet-border);
   border-radius: var(--lucet-radius-lg);
   background: var(--lucet-popover);
-  box-shadow: var(--lucet-elevation-3), var(--lucet-highlight);
+  box-shadow: var(--lucet-material-overlay);
   max-height: 60%;
   overflow-y: auto;
   padding: var(--lucet-space-3);
@@ -198,7 +197,7 @@ button {
   transition: background var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 
-button:hover:not(:disabled) { background: var(--lucet-hover-strong); }
+button:hover:not(:disabled) { background-color: var(--lucet-hover-strong); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
@@ -240,12 +239,7 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   padding: var(--lucet-space-4);
   border-radius: var(--lucet-radius-xl);
   background: var(--lucet-card);
-  border: 1px solid var(--lucet-border);
-}
-
-:root[data-expression='expressive'] .sheet__stage {
-  border-color: transparent;
-  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
+  box-shadow: var(--lucet-material-raised);
 }
 
 .sheet__stage > * + * { margin-top: var(--lucet-space-4); }
@@ -321,8 +315,10 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   /* background-color, not the shorthand: the shorthand would reset
      background-origin above and reinstate the mismatched band. */
   background-color: var(--lucet-card);
+  background-image: var(--lucet-gloss);
   color: inherit;
-  border: 1px solid var(--lucet-border);
+  border: 0;
+  box-shadow: var(--lucet-material-control);
   /* Deliberately not the pill. A field with a chevron reads as a rounded
      rectangle; a pill reads as a chip that happens to have an arrow in it. */
   border-radius: var(--lucet-radius-lg);
@@ -332,28 +328,23 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 
 .control__field select:hover { background-color: var(--lucet-hover); }
 
-:root[data-expression='expressive'] .control__field select {
-  /* The ring is a shadow here, so the border is dead weight. */
-  border-width: 0;
-  background-image: linear-gradient(
-    180deg,
-    oklch(from var(--lucet-card) calc(l + 0.012) c h),
-    oklch(from var(--lucet-card) calc(l - 0.012) c h)
-  );
-  box-shadow:
-    var(--lucet-control-top),
-    var(--lucet-control-lip),
-    0 0 0 1px var(--lucet-border),
-    var(--lucet-control-cast);
+.control__field select:active {
+  box-shadow: var(--lucet-material-pressed);
+  background-image: none;
 }
 
-:root[data-expression='expressive'] .control__field select:active {
-  box-shadow: var(--lucet-control-press);
-  background-image: none;
+.control__field select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
 
 /* ---------- segmented control ---------- */
 
+/*
+ * A recessed track with a raised thumb, which is what the metaphor has always
+ * been. Previously the track was flat and the thumb wore a hairline, so it read
+ * as a list of tabs rather than as a control.
+ */
 .segmented {
   display: inline-flex;
   flex-wrap: wrap;
@@ -365,6 +356,7 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   border-radius: var(--lucet-radius-lg);
   min-block-size: 2rem;
   box-sizing: border-box;
+  box-shadow: var(--lucet-material-inset);
 }
 
 .segment { position: relative; display: flex; }
@@ -394,9 +386,10 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 .segment:hover span { color: var(--lucet-foreground); }
 
 .segment input:checked + span {
-  background: var(--lucet-card);
+  background-color: var(--lucet-card);
+  background-image: var(--lucet-gloss);
   color: var(--lucet-foreground);
-  box-shadow: var(--lucet-elevation-1);
+  box-shadow: var(--lucet-material-control);
 }
 
 .segment input:focus-visible + span {
