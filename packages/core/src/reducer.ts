@@ -82,8 +82,19 @@ export function reduce(
     case 'composer/changed':
       return { ...state, composer: { ...state.composer, text: event.text } }
 
+    /*
+     * Queuing LODGES the prompt and clears the field: your message is on its
+     * way, and the field belongs to whatever you want to say after it. The
+     * old design left the text in the field and merely promoted it back on
+     * unlock -- which also meant anything typed after queueing was silently
+     * overwritten by the promotion.
+     */
     case 'composer/queued':
-      return { ...state, composer: { ...state.composer, queued: event.text } }
+      return { ...state, composer: { ...state.composer, queued: event.text, text: '' } }
+
+    /* The runtime takes the queued prompt to send it. See createLucet. */
+    case 'composer/dequeued':
+      return { ...state, composer: { ...state.composer, queued: null } }
 
     case 'composer/locked':
       return {
@@ -91,21 +102,18 @@ export function reduce(
         composer: { ...state.composer, locked: true, lockedBy: event.by },
       }
 
-    case 'composer/unlocked': {
-      // Being unlocked promotes anything queued while waiting, rather than
-      // making the person retype what they already wrote.
-      const { queued } = state.composer
+    /*
+     * Unlock ONLY unlocks. The queued prompt is not promoted back into the
+     * field -- "Queued — yours sends next" is a promise, and the runtime
+     * keeps it by actually submitting the queued text when the turn frees
+     * (see createLucet). A reducer that merely refilled the field made the
+     * copy a lie.
+     */
+    case 'composer/unlocked':
       return {
         ...state,
-        composer: {
-          ...state.composer,
-          text: queued ?? state.composer.text,
-          locked: false,
-          lockedBy: null,
-          queued: null,
-        },
+        composer: { ...state.composer, locked: false, lockedBy: null },
       }
-    }
 
     case 'attachment/added':
       return {

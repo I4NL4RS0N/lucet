@@ -195,8 +195,8 @@ const MULTI_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'Queued behind her turn',
-    note: 'Yours is lined up. It sends itself the moment her answer finishes — nothing to watch, nothing to redo.',
-    state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }, type('And what about the appendix?')]),
+    note: 'Yours is lodged and the field is yours again for whatever comes next. It sends itself the moment her answer finishes — a promise the runtime keeps, not just copy.',
+    state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }]),
   },
 ]
 

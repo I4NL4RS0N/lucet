@@ -89,13 +89,46 @@ export function createLucet(options: LucetOptions = {}): Lucet {
 
   let controller: AbortController | null = null
 
+  const submitScenario = (text: string): Scenario => ({
+    id: 'submit',
+    label: 'Submitted prompt',
+    group: 'Baseline',
+    description: 'A prompt sent from the composer.',
+    prompt: text,
+    steps: defaultReply,
+  })
+
   async function run(scenario: Scenario): Promise<void> {
     controller?.abort()
-    controller = new AbortController()
+    const own = new AbortController()
+    controller = own
     try {
-      await runtime.run(scenario, controller.signal)
+      await runtime.run(scenario, own.signal)
     } finally {
-      controller = null
+      if (controller === own) controller = null
+    }
+
+    /*
+     * THE QUEUE PROMISE, KEPT HERE. The strip says "Queued — yours sends
+     * next", so when a turn frees, anything queued actually sends -- by the
+     * library, not by every host remembering to. Stopping a response is
+     * different: Stop means "I am taking control", so an unsent queued prompt
+     * is handed back to the field instead of firing behind your back (unless
+     * a newer draft is already there, in which case it stays lodged and goes
+     * after the next completed turn).
+     */
+    const after = store.getState()
+    if (after.composer.queued !== null && !after.composer.locked) {
+      const queued = after.composer.queued
+      if (own.signal.aborted) {
+        if (after.composer.text.trim() === '') {
+          store.dispatch({ type: 'composer/dequeued' })
+          store.dispatch({ type: 'composer/changed', text: queued })
+        }
+      } else {
+        store.dispatch({ type: 'composer/dequeued' })
+        await run(submitScenario(queued))
+      }
     }
   }
 
@@ -107,14 +140,7 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     subscribe: (listener) => store.subscribe(listener),
 
     submit(text) {
-      return run({
-        id: 'submit',
-        label: 'Submitted prompt',
-        group: 'Baseline',
-        description: 'A prompt sent from the composer.',
-        prompt: text,
-        steps: defaultReply,
-      })
+      return run(submitScenario(text))
     },
 
     trigger(id) {

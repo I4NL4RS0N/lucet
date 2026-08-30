@@ -10,8 +10,12 @@ State first. The component renders `ComposerState` + `ModelState` and never
 owns state of its own:
 
 - **Text**, with the turn lock and the queue. When anyone submits, the
-  composer locks for everyone until the response settles; what you type while
-  locked queues, and unlocking promotes it instead of making you retype.
+  composer locks for everyone until the response settles. Queuing **lodges**
+  your prompt and clears the field — and "yours sends next" is kept by the
+  runtime, which actually submits the queued prompt the moment the turn
+  frees. Stopping a response is different: Stop means *I am taking control*,
+  so an unsent queued prompt is handed back to the field instead of firing
+  behind your back. Both behaviours are contract-tested.
 - **Attachments**, where *uploading is a state, not an instant*. Every
   attachment is `uploading → ready | failed`, and a failure carries its
   reason. Most composers pretend attaching is synchronous, which leaves the

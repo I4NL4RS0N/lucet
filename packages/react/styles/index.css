@@ -888,8 +888,14 @@
 
 /* No text lives in the bar. Words go in the strip above -- at narrow widths
    a sentence between the picker and the send button wrapped the whole bar.
-   The last control (send or stop) holds the trailing edge on its own. */
-.lucet-prompt__bar > :last-child { margin-inline-start: auto; }
+   The actions group holds the trailing edge; while a response streams with a
+   draft typed, it holds Queue AND Stop. */
+.lucet-prompt__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-1);
+  margin-inline-start: auto;
+}
 
 /* Icon-only button: square, glyph-carried, label in aria. */
 .lucet-button[data-icon] {

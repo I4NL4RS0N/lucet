@@ -383,44 +383,55 @@ export function PromptInput({
          * other tool has, and a differentiator explains itself on first
          * contact. Icons for conventions, words for novelties.
          */}
-        {streaming && onStop ? (
-          <span className="lucet-tipwrap">
+        <span className="lucet-prompt__actions">
+          {/* While a response streams, a typed draft gets its Queue button
+              BESIDE Stop. Without it the keyboard could queue and the pointer
+              could not -- an affordance for a novel semantic has to be
+              visible, not implied. */}
+          {streaming && canQueue && composer.text.trim() ? (
+            <button type="submit" className="lucet-button" data-variant="secondary">
+              Queue
+            </button>
+          ) : null}
+          {streaming && onStop ? (
+            <span className="lucet-tipwrap">
+              <button
+                type="button"
+                className="lucet-button"
+                data-variant="secondary"
+                aria-describedby={`${id}-stop-tip`}
+                onClick={onStop}
+              >
+                Stop
+              </button>
+              <span className="lucet-tip" role="tooltip" id={`${id}-stop-tip`}>
+                Stops the response. What’s written so far stays.
+              </span>
+            </span>
+          ) : canQueue || queued ? (
             <button
-              type="button"
+              type="submit"
               className="lucet-button"
               data-variant="secondary"
-              aria-describedby={`${id}-stop-tip`}
-              onClick={onStop}
+              disabled={!canQueue}
             >
-              Stop
+              {canQueue ? 'Queue' : 'Queued'}
             </button>
-            <span className="lucet-tip" role="tooltip" id={`${id}-stop-tip`}>
-              Stops the response. What’s written so far stays.
-            </span>
-          </span>
-        ) : canQueue || queued ? (
-          <button
-            type="submit"
-            className="lucet-button"
-            data-variant="secondary"
-            disabled={!canQueue}
-          >
-            {canQueue ? 'Queue' : 'Queued'}
-          </button>
-        ) : (
-          <button
-            type="submit"
-            className="lucet-button"
-            data-variant="primary"
-            data-icon="true"
-            aria-label="Send"
-            disabled={blocker !== null}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M12 19V5M6 11l6-6 6 6" />
-            </svg>
-          </button>
-        )}
+          ) : (
+            <button
+              type="submit"
+              className="lucet-button"
+              data-variant="primary"
+              data-icon="true"
+              aria-label="Send"
+              disabled={blocker !== null}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d="M12 19V5M6 11l6-6 6 6" />
+              </svg>
+            </button>
+          )}
+        </span>
       </div>
     </form>
   )

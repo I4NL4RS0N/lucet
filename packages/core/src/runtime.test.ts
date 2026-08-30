@@ -74,16 +74,63 @@ describe('the turn lock', () => {
     expect(lucet.getState().composer.locked).toBe(false)
   })
 
-  it('promotes a queued prompt on unlock rather than discarding it', () => {
+  it('queuing lodges the prompt and clears the field; unlock leaves both for the runtime', () => {
     const store = createStore({ id: 't' })
     store.dispatch({ type: 'composer/locked', by: 'ada' })
+    store.dispatch({ type: 'composer/changed', text: 'next one' })
     store.dispatch({ type: 'composer/queued', text: 'next one' })
+    // Lodged: the field belongs to whatever comes after it.
+    expect(store.getState().composer).toMatchObject({ text: '', queued: 'next one' })
+    store.dispatch({ type: 'composer/changed', text: 'a newer draft' })
     store.dispatch({ type: 'composer/unlocked' })
+    // Unlock does NOT refill the field: the old promotion silently overwrote
+    // anything typed after queueing. Sending is the runtime's job.
     expect(store.getState().composer).toMatchObject({
       locked: false,
-      queued: null,
-      text: 'next one',
+      queued: 'next one',
+      text: 'a newer draft',
     })
+  })
+
+  it('KEEPS THE PROMISE: a queued prompt sends itself when the turn frees', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    const first = lucet.submit('first question')
+    // Mid-turn: the composer is locked, and a second prompt is queued.
+    expect(lucet.getState().composer.locked).toBe(true)
+    lucet.store.dispatch({ type: 'composer/queued', text: 'second question' })
+    await first
+    // Both turns exist; the queued one was taken and sent by the library.
+    const turns = lucet.getState().turns
+    expect(turns).toHaveLength(2)
+    expect(turns[1]?.prompt.parts).toMatchObject([{ kind: 'text', text: 'second question' }])
+    expect(lucet.getState().composer.queued).toBeNull()
+    expect(lucet.getLog().some((e) => e.event.type === 'composer/dequeued')).toBe(true)
+  })
+
+  /** Sleeps forever unless aborted, so a test can stop a run mid-flight. */
+  const heldScheduler = {
+    sleep: (_ms: number, signal?: AbortSignal) =>
+      new Promise<void>((_resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new DOMException('Aborted', 'AbortError'))
+          return
+        }
+        signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), {
+          once: true,
+        })
+      }),
+  }
+
+  it('hands a queued prompt back to the field when the response is STOPPED', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: heldScheduler })
+    const first = lucet.submit('first question')
+    lucet.store.dispatch({ type: 'composer/queued', text: 'second question' })
+    lucet.abort()
+    await first
+    // Stop means "I am taking control": nothing fires behind your back, and
+    // the unsent prompt is yours again.
+    expect(lucet.getState().turns).toHaveLength(1)
+    expect(lucet.getState().composer).toMatchObject({ queued: null, text: 'second question' })
   })
 })
 

@@ -22,6 +22,7 @@ export type LucetEvent =
   | { type: 'composer/queued'; text: string }
   | { type: 'composer/locked'; by: string }
   | { type: 'composer/unlocked' }
+  | { type: 'composer/dequeued' }
   | {
       type: 'attachment/added'
       id: string
@@ -90,6 +91,8 @@ export function describeEvent(event: LucetEvent): string {
       return `Composer locked by ${event.by}`
     case 'composer/unlocked':
       return 'Composer unlocked'
+    case 'composer/dequeued':
+      return 'Queued prompt taken to send'
     case 'attachment/added':
       return `Attaching ${event.name}`
     case 'attachment/settled':
