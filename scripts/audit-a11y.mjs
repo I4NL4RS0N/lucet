@@ -25,7 +25,7 @@ import { AA_NON_TEXT, AA_TEXT, MIN_TARGET_PX, contrastRatio } from './contrast.m
 const THEMES = ['light', 'dark']
 const EXPRESSIONS = ['system', 'expressive']
 const ACCENTS = [
-  'gray', 'slate', 'blue', 'indigo', 'violet', 'magenta',
+  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',
 ]
 

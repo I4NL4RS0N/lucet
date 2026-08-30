@@ -28,7 +28,7 @@
  * through the library.
  */
 :root,
-[data-accent='gray'] {
+[data-accent='monochrome'] {
   --lucet-accent-h: 250;
   --lucet-accent-c: 0;
   --lucet-accent-on-solid: oklch(0.99 0 0);

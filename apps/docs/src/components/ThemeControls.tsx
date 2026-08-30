@@ -10,7 +10,7 @@ import { useEffect } from 'react'
  */
 
 export const ACCENTS = [
-  'gray', 'slate', 'blue', 'indigo', 'violet', 'magenta',
+  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',
 ] as const
 

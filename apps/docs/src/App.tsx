@@ -39,7 +39,7 @@ export function App() {
   const [mode, setMode] = useState<Mode>('full')
   const [themeState, setThemeState] = useState<ThemeState>({
     theme: 'system',
-    accent: 'gray',
+    accent: 'monochrome',
     neutral: 'subtle',
     expression: 'system',
     radius: 'default',

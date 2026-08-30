@@ -70,6 +70,21 @@
   --lucet-default-hover: var(--lucet-neutral-100);
   --lucet-default-hover-strong: var(--lucet-neutral-200);
   --lucet-default-primary-hover: var(--lucet-accent-10);
+  /*
+   * SOLID: neutral emphasis, and deliberately NOT --lucet-primary.
+   *
+   * The default look is greyscale, and at zero chroma the accent solid is a
+   * mid-grey -- which is the weakest thing you could pick for the element whose
+   * whole job is to be the strongest. So emphasis gets its own role at maximum
+   * contrast: near-black on light, near-white on dark.
+   *
+   * Primary stays the ACCENT role, so a consumer who sets an accent still gets
+   * a coloured primary. Neutral by default, colour on request, and the two do
+   * not fight over one token.
+   */
+  --lucet-default-solid: oklch(0.24 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-solid-hover: oklch(0.14 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-solid-foreground: var(--lucet-neutral-0);
 
   /* The public semantic surface. Components consume only these. */
   --lucet-background: var(--background, var(--lucet-default-background));
@@ -95,6 +110,9 @@
   --lucet-border: var(--border, var(--lucet-default-border));
   --lucet-input: var(--input, var(--lucet-default-input));
   --lucet-ring: var(--ring, var(--lucet-default-ring));
+  --lucet-solid: var(--solid, var(--lucet-default-solid));
+  --lucet-solid-hover: var(--solid-hover, var(--lucet-default-solid-hover));
+  --lucet-solid-foreground: var(--solid-foreground, var(--lucet-default-solid-foreground));
   --lucet-accent-ink: var(--accent-ink, var(--lucet-default-accent-ink));
 
   /*
@@ -133,6 +151,9 @@
     --lucet-default-hover: var(--lucet-neutral-800);
     --lucet-default-hover-strong: var(--lucet-neutral-700);
     --lucet-default-primary-hover: var(--lucet-accent-10);
+    --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
   }
 }
 
@@ -157,4 +178,7 @@
   --lucet-default-hover: var(--lucet-neutral-800);
   --lucet-default-hover-strong: var(--lucet-neutral-700);
   --lucet-default-primary-hover: var(--lucet-accent-10);
+  --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-solid-foreground: oklch(0.16 var(--lucet-neutral-c) var(--lucet-neutral-h));
 }

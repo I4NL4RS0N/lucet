@@ -27,7 +27,7 @@ import { chromium } from 'playwright'
 
 const EXPRESSIONS = ['system', 'expressive']
 const ACCENTS = [
-  'gray', 'slate', 'blue', 'indigo', 'violet', 'magenta',
+  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',
 ]
 

@@ -44,7 +44,8 @@ setting the bare shadcn name works without knowing Lucet exists.
 - `--lucet-background`, `--lucet-foreground`
 - `--lucet-card`, `--lucet-card-foreground`
 - `--lucet-popover`, `--lucet-popover-foreground`
-- `--lucet-primary`, `--lucet-primary-foreground`, `--lucet-primary-hover`
+- `--lucet-solid`, `--lucet-solid-hover`, `--lucet-solid-foreground` — NEUTRAL emphasis, and the default for anything that must be the strongest thing on screen. Near-black on light, near-white on dark.
+- `--lucet-primary`, `--lucet-primary-foreground`, `--lucet-primary-hover` — the ACCENT role. Equal to the neutral solid until a consumer sets an accent, at which point primary carries the colour and solid does not.
 - `--lucet-secondary`, `--lucet-secondary-foreground`
 - `--lucet-muted`, `--lucet-muted-foreground`
 - `--lucet-subtle`, `--lucet-subtle-foreground`
@@ -111,7 +112,7 @@ Do not build on these.
 - `--lucet-neutral-#` — the raw grey ramp.
 - `--lucet-default-*` — the pre-interop fallbacks. Every one is already reachable through its public alias.
 - `--lucet-surface-ground`, `--lucet-surface-raised`, `--lucet-surface-overlay`, `--lucet-surface-sunken` — feed the semantic layer.
-- `--lucet-edge-top`, `--lucet-edge-bottom`, `--lucet-hairline`, `--lucet-shade-#`, `--lucet-gloss` — the primitives the materials are built from.
+- `--lucet-edge-top`, `--lucet-edge-bottom`, `--lucet-hairline`, `--lucet-hairline-raised`, `--lucet-hairline-overlay`, `--lucet-shade-#`, `--lucet-inset-hair`, `--lucet-inset-shallow`, `--lucet-inset-deep`, `--lucet-gloss` — the primitives the materials are built from. The ring family ramps with elevation and the inset family is chosen by the size of the recess; both are assembled for you by the four materials.
 - `--lucet-shadow-color`, `--lucet-shadow-alpha`, `--lucet-primary-glow`
 - `--lucet-space-base`, `--lucet-space-unit` — the spacing scale's own arithmetic.
 - `--lucet-radius-root`, `--lucet-radius-control-inner` — derived; the nested-radius rule computes them.

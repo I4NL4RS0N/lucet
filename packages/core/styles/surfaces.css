@@ -46,10 +46,17 @@
 /* ---------- Dark + System ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --lucet-surface-ground: var(--lucet-neutral-950);
+    /*
+     * Four distinct steps, which it did not have. Raised and overlay were the
+     * same value, so a menu floating over a card had nothing but its shadow to
+     * separate them, and sunken was PURE BLACK -- a hole rather than a recess,
+     * and the reason the old dark theme had no room for any of the material work
+     * to show. Ground moves up so the surfaces above it have somewhere to go.
+     */
+    --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
-    --lucet-surface-overlay: var(--lucet-neutral-900);
-    --lucet-surface-sunken: var(--lucet-neutral-1000);
+    --lucet-surface-overlay: var(--lucet-neutral-850);
+    --lucet-surface-sunken: var(--lucet-neutral-950);
     --lucet-line: var(--lucet-neutral-800);
     --lucet-shadow-color: 0 0 0;
     --lucet-shadow-alpha: 0.5;
@@ -57,10 +64,17 @@
 }
 
 :root[data-theme='dark'] {
-  --lucet-surface-ground: var(--lucet-neutral-950);
+  /*
+   * Four distinct steps, which it did not have. Raised and overlay were the
+   * same value, so a menu floating over a card had nothing but its shadow to
+   * separate them, and sunken was PURE BLACK -- a hole rather than a recess,
+   * and the reason the old dark theme had no room for any of the material work
+   * to show. Ground moves up so the surfaces above it have somewhere to go.
+   */
+  --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
-  --lucet-surface-overlay: var(--lucet-neutral-900);
-  --lucet-surface-sunken: var(--lucet-neutral-1000);
+  --lucet-surface-overlay: var(--lucet-neutral-850);
+  --lucet-surface-sunken: var(--lucet-neutral-950);
   --lucet-line: var(--lucet-neutral-800);
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.5;
@@ -74,10 +88,10 @@
     /* Near-black ground, surfaces lifted clear of it. Deeper than System, not
        lighter: the drama comes from the gap between ground and surface, not
        from raising the floor. */
-    --lucet-surface-ground: oklch(0.12 0.004 264);
+    --lucet-surface-ground: oklch(0.155 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
     --lucet-surface-overlay: var(--lucet-neutral-850);
-    --lucet-surface-sunken: oklch(0.09 0.004 264);
+    --lucet-surface-sunken: oklch(0.135 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-line: oklch(0.42 0.006 264 / 0.4);
     --lucet-shadow-color: 0 0 0;
     --lucet-shadow-alpha: 0.6;
@@ -85,10 +99,10 @@
 }
 
 :root[data-theme='dark'][data-expression='expressive'] {
-  --lucet-surface-ground: oklch(0.12 0.004 264);
+  --lucet-surface-ground: oklch(0.155 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
   --lucet-surface-overlay: var(--lucet-neutral-850);
-  --lucet-surface-sunken: oklch(0.09 0.004 264);
+  --lucet-surface-sunken: oklch(0.135 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-line: oklch(0.42 0.006 264 / 0.4);
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.6;
