@@ -21,7 +21,6 @@
   --lucet-space-base: 0.25rem;
   /* 8px, the dominant radius in the reference. 6px falls out as the md step. */
   --lucet-radius-base: 0.5rem;
-  --lucet-radius-container-base: var(--lucet-radius-lg);
 
   --lucet-leading-prose: 1.6;
 
@@ -41,20 +40,11 @@
  * --------------------------------------------------------------- */
 :root[data-expression='expressive'] {
   --lucet-space-base: 0.34375rem;
-  --lucet-radius-base: 1.125rem;
-  /* Containers go near-pill. Controls inside stay rectangular, or the whole
-     thing turns into a bag of lozenges. */
-  --lucet-radius-container-base: var(--lucet-radius-full);
   /*
-   * A true pill, derived from the height rather than a magic 9999. Deriving it
-   * keeps the nesting arithmetic exact and means a thumb inside a track is
-   * still perfectly concentric.
+   * Softer than System, and that is the whole difference: the roles are derived
+   * identically in both expressions, from this one number. No pills.
    */
-  --lucet-radius-control: calc(var(--lucet-control-height) / 2);
-  /* Content blocks stay softer than a pill, or every paragraph looks like a
-     chip. Panels step up from there. */
-  --lucet-radius-surface: 0.875rem;
-  --lucet-radius-panel: 1.25rem;
+  --lucet-radius-base: 0.875rem;
   --lucet-control-height-md: calc(2.25rem * var(--lucet-scale));
 
   --lucet-leading-prose: 1.7;

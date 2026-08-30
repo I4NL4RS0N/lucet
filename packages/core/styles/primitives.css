@@ -123,8 +123,9 @@
   --lucet-radius-md: max(0px, calc(var(--lucet-radius-root) - 2px));
   --lucet-radius-lg: var(--lucet-radius-root);
   --lucet-radius-xl: calc(var(--lucet-radius-root) + 4px);
+  /* Kept for circles and for the `full` opt-in. Nothing in the system reaches
+     for it by default: pills are not the house style. */
   --lucet-radius-full: 9999px;
-  --lucet-radius-container: var(--lucet-radius-container-override, var(--lucet-radius-container-base, var(--lucet-radius-xl)));
 
   /* Motion. Overridden wholesale under reduced motion, see the bottom. */
   --lucet-duration-instant: 0ms;
@@ -175,6 +176,13 @@
    * surface tracks control exactly, so a notice and a button standing together
    * agree. panel steps up by one increment, which is what makes a container
    * read as containing rather than as another sibling.
+   *
+   * ONE DERIVATION, TWO BASE VALUES. Both expressions compute these the same
+   * way and differ only in --lucet-radius-base. Expressive briefly derived its
+   * control radius from the control HEIGHT instead, to make a true pill, and
+   * that broke the relationship: a pill is not a value you can share, it moves
+   * with the density knob, and matching it would have tied a paragraph's
+   * roundness to how tall the buttons happen to be.
    */
   --lucet-radius-control: var(--lucet-radius-lg);
   --lucet-radius-surface: var(--lucet-radius-control);

@@ -11,13 +11,10 @@
 
 [data-radius='none'] {
   --lucet-radius-override: 0px;
-  /* Square means square. A pill container here would be incoherent. */
-  --lucet-radius-container-override: 0px;
 }
 
 [data-radius='small'] {
   --lucet-radius-override: 0.25rem;
-  --lucet-radius-container-override: var(--lucet-radius-xl);
 }
 
 [data-radius='medium'] {
@@ -28,7 +25,8 @@
   --lucet-radius-override: 0.875rem;
 }
 
+/* The one place a caller can ask for near-pill geometry. Opt in, never the
+   default. */
 [data-radius='full'] {
   --lucet-radius-override: 1.25rem;
-  --lucet-radius-container-override: var(--lucet-radius-full);
 }
