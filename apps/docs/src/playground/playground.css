@@ -1,0 +1,1012 @@
+/*
+ * The playground.
+ *
+ * A private page. It is never deployed -- Vite's default build input is
+ * index.html, so this second entry exists only in dev.
+ *
+ * Its job is to settle look and feel on ordinary primitives, away from the
+ * Konfabulator, because judging a design system through a page that does not
+ * itself read well is how three rounds of tuning went nowhere.
+ *
+ * IT DELIBERATELY DOES NOT CONSUME THE SHIPPED TOKENS. The palette below is
+ * local and self-contained. Polishing against the current tokens would only
+ * reproduce the look we are replacing. Once a decision here is agreed it gets
+ * promoted into packages/core/styles and this file loses the local copy.
+ */
+
+/* ==========================================================================
+ * PALETTE
+ *
+ * The single biggest failure of the previous dark theme was RANGE: page 0.12,
+ * card 0.205 and every notice around 0.25, all crowded into the bottom of the
+ * scale with nothing to separate against. All the material work was invisible
+ * because there was no room for it to show.
+ *
+ * So the surfaces are spread deliberately, and every raised thing carries a
+ * white ring whose alpha RISES with elevation -- the one idea worth taking
+ * from the reference. Edge brightness and height become the same variable.
+ * ========================================================================== */
+
+.pg {
+  color-scheme: dark;
+
+  --h: 265;
+
+  --page: oklch(0.165 0.006 var(--h));
+  --sunken: oklch(0.145 0.006 var(--h));
+  --surface: oklch(0.205 0.007 var(--h));
+  --raised: oklch(0.235 0.008 var(--h));
+  --field: oklch(0.185 0.007 var(--h));
+  --hover: oklch(0.30 0.011 var(--h));
+  --active: oklch(0.345 0.012 var(--h));
+
+  --ink: oklch(0.97 0.002 var(--h));
+  --ink-2: oklch(0.76 0.008 var(--h));
+  /* 0.60, not the reference's 0.541: at 0.541 the muted step lands near 3.5:1
+     on the page and fails 1.4.3. Quiet is not the same as unreadable. */
+  --ink-3: oklch(0.6 0.01 var(--h));
+
+  --line: oklch(1 0 0 / 0.08);
+  --line-strong: oklch(1 0 0 / 0.14);
+
+  /* Elevation-scaled ring. */
+  --ring-1: 0 0 0 1px oklch(1 0 0 / 0.09);
+  --ring-2: 0 0 0 1px oklch(1 0 0 / 0.12);
+  --ring-3: 0 0 0 1px oklch(1 0 0 / 0.16);
+
+  /*
+   * RECESS DEPTH SCALES WITH THE RECESS.
+   *
+   * These were five hand-written insets with four different alphas, and worse,
+   * the same `0 1px 2px` on a 32px field and a 6px progress bar. On a 6px bar
+   * that covers half the object; in the segmented control's 3px gutter it has
+   * nowhere to land and reads as a smudge instead of a recess. The component
+   * was not wrong -- it was borrowing a recipe scaled for something four times
+   * its size.
+   *
+   * Three depths, chosen by the size of the hole, and nothing hand-rolls its
+   * own any more.
+   */
+  --inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
+  --inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
+  --inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.3);
+
+  --cast-1: 0 1px 2px oklch(0 0 0 / 0.4);
+  --cast-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 4px 12px oklch(0 0 0 / 0.35);
+  --cast-3: 0 2px 6px oklch(0 0 0 / 0.45), 0 12px 32px oklch(0 0 0 / 0.5);
+
+  /* The lit top edge. This is what reads as thickness. */
+  --lit: inset 0 1px 0 oklch(1 0 0 / 0.1);
+  --lit-strong: inset 0 1px 0 oklch(1 0 0 / 0.16);
+
+  /*
+   * An accent that is actually visible. Grey-by-default left every previous
+   * screen with no focal point at all, so nothing drew the eye anywhere.
+   */
+  /*
+   * THE FILL AND THE RING ARE DIFFERENT TOKENS, because they have different
+   * jobs and therefore different contrast floors. A fill carries label text and
+   * owes it 4.5:1 (1.4.3); a ring carries nothing and owes 3:1 (1.4.11).
+   *
+   * Collapsing them cost real contrast: at a single 0.62 the ring was
+   * comfortable at 5.22:1 but white-on-fill measured 3.59:1 and failed. The
+   * fill drops to 0.52 (5.47:1) and the ring stays bright at 0.62.
+   */
+  --accent: oklch(0.52 0.17 258);
+  --accent-hover: oklch(0.56 0.17 258);
+  --accent-ring: oklch(0.62 0.17 258);
+  --accent-ink: oklch(0.78 0.11 258);
+  --accent-on: oklch(0.99 0 0);
+
+  --ok: oklch(0.72 0.15 155);
+  --warn: oklch(0.78 0.14 75);
+  --bad: oklch(0.66 0.18 22);
+
+  /*
+   * TINTS ARE OPAQUE, AND THEY ARE NOT THE TONE AT LOW ALPHA.
+   *
+   * They used to be `tone / 0.14`. That works in dark, where the tone is
+   * LIGHTER than what sits behind it and the tint reads as a glow. In light the
+   * tone is darker than the surface, so compositing it at 14% over a grey stage
+   * greys it out -- the badges went muddy, and every one of them muddy in the
+   * same direction, which is the signature of a compositing problem rather than
+   * four bad colours.
+   *
+   * Alpha had a second cost: the same badge changed colour depending on whether
+   * it sat on the page, a card, or a stage. A status colour that shifts with its
+   * backdrop is not a status colour.
+   *
+   * So a tint gets its own lightness and chroma, derived from the tone's hue
+   * only. Same rule the shipped tones.css already states: surface chroma is not
+   * the tone chroma.
+   */
+  /*
+   * And the LABEL on a tint is not the tone either, for the same reason the
+   * accent fill is not the accent ring: the tone is tuned to be read on the
+   * page, and a tint is not the page. On the light tints the tone measured
+   * 4.40:1 for ok and 3.69:1 for warn -- warn worst, because a yellow that
+   * reads correctly on white is far too light on a yellow tint.
+   */
+  --ink-ok: var(--ok);
+  --ink-warn: var(--warn);
+  --ink-bad: var(--bad);
+
+  --tint-ok: oklch(from var(--ok) 0.27 0.05 h);
+  --tint-warn: oklch(from var(--warn) 0.27 0.05 h);
+  --tint-bad: oklch(from var(--bad) 0.27 0.06 h);
+  --tint-info: oklch(from var(--accent-ring) 0.27 0.06 h);
+
+  --r-control: 9px;
+  --r-surface: 12px;
+  --r-panel: 16px;
+
+  /*
+   * The focus ring is an OUTLINE, not box-shadow layers.
+   *
+   * As box-shadow it had two failures that only measuring exposed. It lost the
+   * cascade: `:checked` rules are declared after the focus rules and set their
+   * own box-shadow, so a checked checkbox and a selected segment cell painted
+   * NO focus ring at all -- a 2.4.7 Level A failure that looks fine in a
+   * screenshot because the checked style is itself a visible change.
+   *
+   * And its inner spacer was hardcoded to --page, so any control sitting on
+   * something else -- a segment cell sits in a --sunken well -- drew a halo in
+   * the wrong colour.
+   *
+   * An outline composites independently of box-shadow, needs no spacer colour,
+   * and follows border-radius.
+   */
+  --focus-w: 2px;
+  --focus-offset: 2px;
+
+  --fast: 110ms cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.pg[data-theme='light'] {
+  color-scheme: light;
+
+  --page: oklch(0.965 0.003 var(--h));
+  --sunken: oklch(0.93 0.004 var(--h));
+  --surface: oklch(1 0 0);
+  --raised: oklch(1 0 0);
+  --field: oklch(0.985 0.002 var(--h));
+  --hover: oklch(0.935 0.006 var(--h));
+  --active: oklch(0.895 0.008 var(--h));
+
+  --ink: oklch(0.22 0.01 var(--h));
+  --ink-2: oklch(0.44 0.012 var(--h));
+  --ink-3: oklch(0.54 0.012 var(--h));
+
+  --line: oklch(0 0 0 / 0.09);
+  --line-strong: oklch(0 0 0 / 0.16);
+
+  /* In light the ring is a DARK line, so rising reads as more defined rather
+     than brighter. Same idea, opposite direction. */
+  --ring-1: 0 0 0 1px oklch(0 0 0 / 0.08);
+  --ring-2: 0 0 0 1px oklch(0 0 0 / 0.1);
+  --ring-3: 0 0 0 1px oklch(0 0 0 / 0.13);
+
+  --inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.1);
+  --inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.08);
+  --inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.07);
+
+  --cast-1: 0 1px 1px oklch(0 0 0 / 0.05);
+  --cast-2: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 12px oklch(0 0 0 / 0.06);
+  --cast-3: 0 2px 6px oklch(0 0 0 / 0.08), 0 12px 32px oklch(0 0 0 / 0.1);
+
+  --lit: inset 0 1px 0 oklch(1 0 0 / 0.9);
+  --lit-strong: inset 0 1px 0 oklch(1 0 0 / 1);
+
+  --accent: oklch(0.55 0.19 258);
+  --accent-hover: oklch(0.5 0.19 258);
+  --accent-ring: oklch(0.55 0.19 258);
+  --accent-ink: oklch(0.45 0.17 258);
+
+  --ok: oklch(0.52 0.14 155);
+  --warn: oklch(0.58 0.13 75);
+  --bad: oklch(0.53 0.19 22);
+
+  --ink-ok: oklch(from var(--ok) 0.48 c h);
+  --ink-warn: oklch(from var(--warn) 0.50 c h);
+  --ink-bad: oklch(from var(--bad) 0.52 c h);
+
+  --tint-ok: oklch(from var(--ok) 0.945 0.045 h);
+  --tint-warn: oklch(from var(--warn) 0.945 0.05 h);
+  --tint-bad: oklch(from var(--bad) 0.945 0.04 h);
+  --tint-info: oklch(from var(--accent) 0.95 0.04 h);
+}
+
+/* ==========================================================================
+ * PAGE SHELL
+ * ========================================================================== */
+
+* { box-sizing: border-box; }
+
+/* Once, at the root. The skill is explicit that per-element smoothing is the
+   bad case, because elements that miss it render heavier than their neighbours. */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+}
+
+.pg {
+  min-block-size: 100vh;
+  /* pretty is the default for short-to-medium text; balance is reserved for
+     headings, where it only works up to six lines anyway. */
+  text-wrap: pretty;
+  background: var(--page);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+}
+
+.pg__bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px;
+  background: color-mix(in oklab, var(--page) 82%, transparent);
+  backdrop-filter: blur(12px);
+  border-block-end: 1px solid var(--line);
+}
+
+.pg__mark {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pg__mark span { color: var(--ink-3); font-weight: 450; }
+
+.pg__bar-end { margin-inline-start: auto; display: flex; gap: 8px; }
+
+.pg__main {
+  max-inline-size: 940px;
+  margin: 0 auto;
+  padding: 56px 32px 160px;
+}
+
+.pg__title {
+  text-wrap: balance;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin: 0 0 10px;
+}
+
+.pg__lede {
+  text-wrap: pretty;
+  margin: 0 0 8px;
+  color: var(--ink-2);
+  font-size: 15px;
+  max-inline-size: 62ch;
+}
+
+/* ---- a section, and its stage ---- */
+
+.sec { margin-block-start: 64px; }
+
+.sec__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+
+.sec__n {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+
+.sec__name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); }
+
+/*
+ * The stage. Every specimen sits on one, and the stage is a step DOWN from the
+ * page rather than up: a well, so the objects in it read as lit from above and
+ * the page frames them. Raising the stage instead would put it in competition
+ * with the things standing on it.
+ */
+.stage {
+  background: var(--sunken);
+  border-radius: var(--r-panel);
+  box-shadow: var(--ring-1);
+  padding: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.stage--cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); align-items: start; }
+.stage--tight { padding: 22px; }
+
+.spec { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.spec__label {
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+ * BUTTON
+ * ========================================================================== */
+
+.btn {
+  /*
+   * Hover and active are VARIABLES, not hardcoded declarations.
+   *
+   * They used to be hardcoded on .btn, so a variant that set only --btn-bg
+   * kept the generic grey hover: the danger button turned grey on hover, which
+   * is exactly the wrong signal on the one control you want people to hesitate
+   * over. Every variant now has to answer for all three of its states, and the
+   * generic rule can no longer stomp one.
+   */
+  --btn-bg: var(--raised);
+  --btn-bg-hover: var(--hover);
+  --btn-bg-active: var(--active);
+  --btn-fg: var(--ink);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  block-size: 32px;
+  padding-inline: 13px;
+  border: 0;
+  border-radius: var(--r-control);
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.008em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--lit), var(--ring-2), var(--cast-1);
+  transition:
+    background-color var(--fast),
+    box-shadow var(--fast),
+    scale var(--fast);
+}
+
+/*
+ * A 32px control is comfortably past WCAG 2.2 AA's 24x24 floor, but a pointer
+ * target wants more. The hit area is extended to 40x40 with a pseudo-element so
+ * it costs no layout and does not change how the control looks.
+ */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  min-inline-size: 100%;
+  min-block-size: 40px;
+  inline-size: 100%;
+}
+
+.btn:hover:not(:disabled),
+.btn.is-hover {
+  background-color: var(--btn-bg-hover);
+  box-shadow: var(--lit-strong), var(--ring-3), var(--cast-2);
+}
+.btn--ghost:hover:not(:disabled),
+.btn--ghost.is-hover { box-shadow: none; }
+
+/*
+ * 0.96, per the reference skill: below about 0.95 a press reads as the control
+ * shrinking rather than being pushed. The cast collapses at the same time,
+ * because something pressed flat against a surface has nothing left to cast
+ * into -- the shadow doing the work is the inset one.
+ */
+.btn:active:not(:disabled),
+.btn.is-active {
+  background-color: var(--btn-bg-active);
+  scale: 0.96;
+  box-shadow: var(--ring-2), var(--inset-shallow);
+}
+
+.btn:focus-visible,
+.btn.is-focus { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+
+.btn:disabled,
+.btn.is-disabled { opacity: 0.42; cursor: not-allowed; }
+
+.btn--primary {
+  --btn-bg: var(--accent);
+  --btn-bg-hover: var(--accent-hover);
+  --btn-bg-active: var(--accent);
+  --btn-fg: var(--accent-on);
+  box-shadow: var(--lit-strong), 0 0 0 1px oklch(0 0 0 / 0.15), var(--cast-2);
+}
+
+.btn--danger {
+  --btn-bg: var(--bad);
+  --btn-bg-hover: oklch(from var(--bad) calc(l + 0.05) c h);
+  --btn-bg-active: var(--bad);
+  --btn-fg: oklch(0.99 0 0);
+}
+
+/* A ghost has no material until you touch it. */
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-bg-hover: var(--hover);
+  --btn-bg-active: var(--active);
+  --btn-fg: var(--ink-2);
+  box-shadow: none;
+}
+.btn--ghost:hover:not(:disabled),
+.btn--ghost.is-hover { color: var(--ink); }
+.btn--ghost:active:not(:disabled),
+.btn--ghost.is-active { box-shadow: none; }
+
+.btn--sm { block-size: 26px; padding-inline: 10px; font-size: 12px; border-radius: 7px; }
+.btn--lg { block-size: 40px; padding-inline: 18px; font-size: 14px; border-radius: 11px; }
+
+/*
+ * OPTICAL ALIGNMENT. An icon carries less visual weight than a word, so equal
+ * padding makes the icon look pushed toward its edge. The icon side loses 2px.
+ */
+.btn--lead { padding-inline: 11px 13px; }
+.btn--trail { padding-inline: 13px 11px; }
+
+.btn--icon { inline-size: 32px; padding-inline: 0; }
+.btn--icon.btn--sm { inline-size: 26px; }
+.btn--icon.btn--lg { inline-size: 40px; }
+
+.btn__spin {
+  inline-size: 13px;
+  block-size: 13px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  border-block-start-color: transparent;
+  animation: pg-spin 0.6s linear infinite;
+}
+@keyframes pg-spin { to { rotate: 360deg; } }
+
+/* ==========================================================================
+ * INPUT, TEXTAREA, SELECT
+ *
+ * A field is INSET where a control is raised. Same radius, opposite depth --
+ * that opposition is most of what tells you which things you press and which
+ * things you type into.
+ * ========================================================================== */
+
+.field {
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 11px;
+  border: 0;
+  border-radius: var(--r-control);
+  background-color: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  box-shadow: var(--ring-1), var(--inset-deep);
+  transition: box-shadow var(--fast), background-color var(--fast);
+}
+
+.pg[data-theme='light'] .field { box-shadow: var(--ring-2), var(--inset-deep); }
+
+/*
+ * PLACEHOLDER, AND THE ONE PLACE THIS PAGE STEPS OUTSIDE AA.
+ *
+ * At --ink-3 the placeholder measured 4.72:1 dark and 4.85:1 light -- sitting
+ * right on the 1.4.3 floor, which is exactly why it read as typed content
+ * rather than as a prompt. There was no headroom at all: dropping 0.02 of
+ * lightness already failed.
+ *
+ * So this is deliberate, and it is the only rule here that does not clear AA.
+ * It lands near 3.4:1, which is where most systems put placeholder text.
+ *
+ * THE CONDITION THAT MAKES IT DEFENSIBLE: a placeholder must never be the only
+ * label. 1.4.3 exempts incidental text, and a placeholder is incidental only
+ * when the field is already named by a visible <label> or aria-label. If a
+ * field is ever shipped with the placeholder doing the labelling, this rule is
+ * a genuine failure rather than a considered exception -- so the promoted
+ * component must enforce the label, not merely document it.
+ */
+.field::placeholder {
+  color: oklch(0.5 0.01 var(--h));
+  /* Not italic. Italic reads as emphasis, which is the opposite of the job. */
+}
+
+.pg[data-theme='light'] .field::placeholder { color: oklch(0.67 0.012 var(--h)); }
+.field:hover:not(:disabled),
+.field.is-hover { background-color: var(--sunken); }
+.field:focus,
+.field.is-focus { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.field:disabled,
+.field.is-disabled { opacity: 0.45; cursor: not-allowed; }
+
+textarea.field {
+  block-size: auto;
+  min-block-size: 78px;
+  padding-block: 9px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.select { position: relative; display: block; inline-size: 100%; }
+
+.select select {
+  appearance: none;
+  inline-size: 100%;
+  block-size: 32px;
+  padding-inline: 11px 30px;
+  border: 0;
+  border-radius: var(--r-control);
+  background-color: var(--raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--lit), var(--ring-2), var(--cast-1);
+  transition: background-color var(--fast);
+}
+.select select:hover,
+.select.is-hover select { background-color: var(--hover); }
+.select select:focus-visible,
+.select.is-focus select { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+
+/* Chevron drawn on the WRAPPER, so it never fights the select's own layers. */
+.select::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: 11px;
+  inset-block-start: 50%;
+  inline-size: 6px;
+  block-size: 6px;
+  margin-block-start: -4px;
+  border-inline-end: 1.5px solid var(--ink-3);
+  border-block-end: 1.5px solid var(--ink-3);
+  rotate: 45deg;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+ * CHECKBOX, RADIO, SWITCH
+ *
+ * Every one of these has to be distinguishable with colour removed (1.4.1), so
+ * each checked state carries a SHAPE -- a tick, a dot, a moved knob -- and not
+ * merely a fill.
+ * ========================================================================== */
+
+.check { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
+.check input { position: absolute; opacity: 0; pointer-events: none; }
+
+.check__box {
+  position: relative;
+  inline-size: 17px;
+  block-size: 17px;
+  flex: none;
+  border-radius: 5px;
+  background-color: var(--field);
+  box-shadow: var(--ring-2), var(--inset-shallow);
+  transition: background-color var(--fast), scale var(--fast);
+  transition: background-color var(--fast), box-shadow var(--fast), outline-color var(--fast);
+}
+.check__box--round { border-radius: 50%; }
+
+/*
+ * The visible box is 17px. The skill asks for 40x40 in dense desktop, extended
+ * with a pseudo-element so it costs no layout. ::before is the hit area,
+ * ::after is the tick -- the label's min-height alone left the target only
+ * 17px WIDE wherever the label carries no text.
+ */
+.check__box::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 40px;
+  block-size: 40px;
+}
+
+.check__box::after {
+  content: '';
+  position: absolute;
+  opacity: 0;
+  transition: opacity var(--fast);
+}
+
+/* The tick is drawn, not a glyph: a glyph would shift with the typeface. */
+.check__box:not(.check__box--round)::after {
+  inset-block-start: 3px;
+  inset-inline-start: 6px;
+  inline-size: 4px;
+  block-size: 8px;
+  border-inline-end: 2px solid var(--accent-on);
+  border-block-end: 2px solid var(--accent-on);
+  rotate: 45deg;
+}
+.check__box--round::after {
+  inset: 5px;
+  border-radius: 50%;
+  background: var(--accent-on);
+}
+
+/*
+ * HOVER. These three had none -- only checked, focus and disabled were ever
+ * written, so two thirds of the state matrix was missing on the controls people
+ * click most. The skill's rule for high-frequency interactions applies exactly
+ * here: a minimal background transition, no more.
+ */
+.check:hover .check__box,
+.check.is-hover .check__box { background-color: var(--hover); }
+
+.check:hover input:checked + .check__box,
+.check.is-hover input:checked + .check__box { background-color: var(--accent-hover); }
+
+/* Pressed. A control that labels an Active state and then renders it
+   identically to Default is worse than one that never claimed to have it. */
+.check:active .check__box,
+.check.is-active .check__box { background-color: var(--active); scale: 0.92; }
+
+.check:active input:checked + .check__box,
+.check.is-active input:checked + .check__box { background-color: var(--accent); scale: 0.92; }
+
+.check:has(input:disabled):hover .check__box { background-color: var(--field); }
+
+.check input:checked + .check__box {
+  background-color: var(--accent);
+  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.2), var(--cast-1);
+}
+.check input:checked + .check__box::after { opacity: 1; }
+.check input:focus-visible + .check__box,
+.check.is-focus .check__box { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.check input:disabled ~ * { opacity: 0.45; }
+
+.switch { display: inline-flex; align-items: center; gap: 9px; min-block-size: 40px; cursor: pointer; font-size: 13px; }
+.switch input { position: absolute; opacity: 0; pointer-events: none; }
+
+.switch__track {
+  position: relative;
+  inline-size: 34px;
+  block-size: 20px;
+  flex: none;
+  border-radius: 999px;
+  background-color: var(--field);
+  box-shadow: var(--ring-2), var(--inset-shallow);
+  transition: background-color var(--fast);
+}
+
+.switch__track::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 100%;
+  block-size: 40px;
+}
+
+.switch__knob {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  inline-size: 14px;
+  block-size: 14px;
+  border-radius: 50%;
+  background: var(--ink-2);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.4);
+  transition: translate var(--fast), background-color var(--fast), inline-size var(--fast);
+}
+
+.switch:hover .switch__track,
+.switch.is-hover .switch__track { background-color: var(--hover); }
+
+.switch:hover input:checked + .switch__track,
+.switch.is-hover input:checked + .switch__track { background-color: var(--accent-hover); }
+
+/* The knob narrows under the press rather than the whole track scaling: a
+   track that shrinks reads as the row collapsing. */
+.switch:active .switch__knob,
+.switch.is-active .switch__knob { inline-size: 17px; }
+
+.switch:active input:checked + .switch__track .switch__knob,
+.switch.is-active input:checked + .switch__track .switch__knob { translate: 11px 0; }
+
+.switch:has(input:disabled):hover .switch__track { background-color: var(--field); }
+
+.switch input:checked + .switch__track { background-color: var(--accent); }
+.switch input:checked + .switch__track .switch__knob { translate: 14px 0; background: var(--accent-on); }
+.switch input:focus-visible + .switch__track,
+.switch.is-focus .switch__track { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+.switch input:disabled ~ * { opacity: 0.45; }
+
+/* ==========================================================================
+ * SEGMENTED CONTROL
+ * ========================================================================== */
+
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 11px;
+  background-color: var(--sunken);
+  box-shadow: var(--ring-1), var(--inset-hair);
+}
+
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+
+.seg span {
+  display: block;
+  padding: 0 12px;
+  line-height: 26px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--fast), background-color var(--fast);
+}
+.seg span:hover,
+.seg .is-hover span { color: var(--ink-2); background-color: oklch(1 0 0 / 0.04); }
+
+.seg label:active span,
+.seg .is-active span { background-color: oklch(1 0 0 / 0.07); }
+
+/*
+ * The selected cell used to carry a full drop shadow AND a bright ring inside
+ * an already-recessed well. Three shadow systems fighting in six pixels: the
+ * well's own inset, the cell's cast landing on a wall two pixels away, and a
+ * white ring reading as a fourth edge. It looked like a smear.
+ *
+ * A raised thing in a recess gets a lit top edge and the faintest contact
+ * shadow. That is all the room there is.
+ */
+.seg input:checked + span {
+  color: var(--ink);
+  background-color: var(--raised);
+  box-shadow: var(--lit), var(--ring-1), 0 1px 2px oklch(0 0 0 / 0.22);
+}
+.seg input:focus-visible + span,
+.seg .is-focus span { outline: var(--focus-w) solid var(--accent-ring); outline-offset: var(--focus-offset); }
+
+/* ==========================================================================
+ * BADGE
+ *
+ * Never colour alone (1.4.1). Every status badge carries a dot whose SHAPE
+ * differs, so the four read apart in greyscale.
+ * ========================================================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  block-size: 21px;
+  padding-inline: 8px;
+  border-radius: 6px;
+  background-color: var(--raised);
+  box-shadow: var(--ring-1);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.badge__dot { inline-size: 7px; block-size: 7px; flex: none; background: currentColor; }
+.badge--ok    { color: var(--ink-ok);   background-color: var(--tint-ok); }
+.badge--warn  { color: var(--ink-warn); background-color: var(--tint-warn); }
+.badge--bad   { color: var(--ink-bad);  background-color: var(--tint-bad); }
+.badge--info  { color: var(--accent-ink); background-color: var(--tint-info); }
+
+/* Distinct silhouettes: circle, diamond, square, bar. */
+.badge--ok   .badge__dot { border-radius: 50%; }
+.badge--warn .badge__dot { rotate: 45deg; border-radius: 1px; }
+.badge--bad  .badge__dot { border-radius: 1px; }
+.badge--info .badge__dot { border-radius: 1px; block-size: 3px; }
+
+/* ==========================================================================
+ * AVATAR
+ * ========================================================================== */
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 50%;
+  background-color: var(--raised);
+  box-shadow: var(--ring-2), var(--lit);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.avatar--lg { inline-size: 36px; block-size: 36px; font-size: 13px; }
+.avatar--accent { background-color: var(--accent); color: var(--accent-on); }
+
+.avatar-stack { display: flex; }
+/*
+ * A stack overlaps, but not so far that the initials stop being initials. At
+ * -6px with a 3px ring the ring ate into the neighbour's letters, so every disc
+ * but the last read as a fragment.
+ */
+.avatar-stack .avatar { margin-inline-start: -5px; box-shadow: var(--ring-2), 0 0 0 2px var(--sunken); }
+.avatar-stack .avatar:first-child { margin-inline-start: 0; }
+
+/* ==========================================================================
+ * TOOLTIP, MENU, DIALOG — the OVERLAY material
+ *
+ * These earn their place on the page: they are the only things that exercise
+ * the top elevation, and layering is where dark themes usually come apart.
+ * ========================================================================== */
+
+/*
+ * A real tooltip, not a specimen of one. These were static spans, so they
+ * demonstrated the material and nothing else -- no trigger, no timing, no
+ * focus behaviour, and no way to tell whether any of it worked.
+ *
+ * Shown on hover AND focus-within, so it is reachable by keyboard. Enter rises
+ * 4px; the exit is smaller and quicker, per the skill's rule that exits should
+ * be subtler than enters.
+ */
+.tipwrap { position: relative; display: inline-flex; }
+
+.tip {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  z-index: 5;
+  margin-block-end: 4px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  background-color: var(--raised);
+  box-shadow: var(--ring-3), var(--cast-2);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  translate: -50% 4px;
+  transition: opacity 90ms ease-out, translate 90ms ease-out;
+}
+
+.tipwrap:hover .tip,
+.tipwrap:focus-within .tip,
+.tipwrap.is-hover .tip {
+  opacity: 1;
+  translate: -50% 0;
+  transition-duration: 130ms;
+}
+
+.menu {
+  inline-size: 210px;
+  padding: 5px;
+  border-radius: var(--r-surface);
+  background-color: var(--raised);
+  box-shadow: var(--lit), var(--ring-3), var(--cast-3);
+}
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 9px;
+  line-height: 28px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.menu__item:hover,
+.menu__item.is-hover { background-color: var(--hover); color: var(--ink); }
+.menu__item[aria-checked='true'] { color: var(--ink); }
+.menu__item kbd {
+  margin-inline-start: auto;
+  font: inherit;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.menu__sep { block-size: 1px; margin: 5px 4px; background: var(--line); }
+
+.dialog {
+  inline-size: 100%;
+  max-inline-size: 380px;
+  padding: 20px;
+  border-radius: var(--r-panel);
+  background-color: var(--surface);
+  box-shadow: var(--lit), var(--ring-3), var(--cast-3);
+}
+.dialog__title { margin: 0 0 6px; font-size: 15px; font-weight: 600; letter-spacing: -0.015em; }
+.dialog__body { margin: 0 0 18px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+.dialog__foot { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ==========================================================================
+ * PROGRESS / METER
+ * ========================================================================== */
+
+.meter {
+  inline-size: 100%;
+  block-size: 6px;
+  border-radius: 999px;
+  background-color: var(--sunken);
+  box-shadow: var(--ring-1), var(--inset-hair);
+  overflow: hidden;
+}
+.meter__fill {
+  block-size: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+}
+.meter--ok .meter__fill { background: var(--ok); box-shadow: none; }
+
+.meter-row { display: flex; align-items: center; gap: 10px; inline-size: 100%; }
+/* The readout is the one number here that changes, so it is the one number
+   that needs fixed-width digits. */
+.meter-row span {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+  flex: none;
+  inline-size: 34px;
+  text-align: end;
+}
+
+/* Indeterminate: a travelling band, because a bar with no known end should not
+   pretend to have one. */
+.meter--busy .meter__fill {
+  inline-size: 35%;
+  animation: pg-slide 1.2s ease-in-out infinite;
+}
+@keyframes pg-slide {
+  0% { translate: -100% 0; }
+  100% { translate: 320% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meter--busy .meter__fill { animation: none; inline-size: 100%; opacity: 0.4; }
+  .btn__spin { animation: none; }
+  * { transition-duration: 1ms !important; }
+}
+
+/* ==========================================================================
+ * STATE GRIDS
+ *
+ * Every control shows all five states at once. A row of specimens is only
+ * honest if the states are the real ones, so the is-* classes above mirror the
+ * pseudo-class rules exactly rather than approximating them.
+ * ========================================================================== */
+
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.states { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; }
+
+.states__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.states__label {
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+}
+
+/* The stage hugs its content: sections were mostly dead air before. */
+.stage { align-items: flex-start; gap: 26px; }
+.stage .spec { gap: 9px; }
