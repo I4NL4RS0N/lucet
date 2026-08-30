@@ -342,18 +342,37 @@ export function PromptInput({
             : ''}
         </p>
 
+        {/*
+         * Send is the arrow -- a convention every AI composer has taught.
+         * Queue, Queued, and Stop KEEP THEIR WORDS: those carry semantics no
+         * other tool has, and a differentiator explains itself on first
+         * contact. Icons for conventions, words for novelties.
+         */}
         {streaming && onStop ? (
           <button type="button" className="lucet-button" data-variant="secondary" onClick={onStop}>
             Stop
+          </button>
+        ) : canQueue || queued ? (
+          <button
+            type="submit"
+            className="lucet-button"
+            data-variant="secondary"
+            disabled={!canQueue}
+          >
+            {canQueue ? 'Queue' : 'Queued'}
           </button>
         ) : (
           <button
             type="submit"
             className="lucet-button"
-            data-variant={canQueue || queued ? 'secondary' : 'primary'}
-            disabled={blocker !== null && !canQueue}
+            data-variant="primary"
+            data-icon="true"
+            aria-label="Send"
+            disabled={blocker !== null}
           >
-            {canQueue ? 'Queue' : queued ? 'Queued' : 'Send'}
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M12 19V5M6 11l6-6 6 6" />
+            </svg>
           </button>
         )}
       </div>

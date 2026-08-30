@@ -18,9 +18,11 @@ owns state of its own:
   failure nowhere to live except a toast.
 - **Model choice**, on the thread rather than the composer: it applies to the
   next turn, drives projected cost, and is the extension point the Budget
-  Meter grows out of. Options are capability-named (`Balanced`, `Fast`,
+  Meter grows out of. Options are capability-named (`Auto`, `Fast`,
   `Deep reasoning`) — a library that ships one vendor's model names reads as
-  built for that vendor.
+  built for that vendor — and the default is **Auto**, which describes what
+  happens to your prompt (the system fits the model to it) rather than
+  describing a tier of machine.
 
 ## The position: a send button that says why
 
@@ -53,6 +55,13 @@ shared thread, while your own running turn shows the working orb. The full
 Presence & Turn Lock pattern (who is here, cursors-in-thread) builds on this
 contract later; the lock ships in the baseline because retrofitting
 single-writer semantics is the kind of surgery that never lands cleanly.
+
+## Icons for conventions, words for novelties
+
+Send renders as the arrow: every AI composer has taught that glyph, so the
+words add nothing. Queue, Queued, and Stop keep their words, because they
+carry semantics most tools do not have, and a differentiator explains itself
+on first contact.
 
 ## The bar stays small, and here is the overflow plan
 

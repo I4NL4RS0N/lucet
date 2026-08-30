@@ -12,9 +12,14 @@ export interface ReducerContext {
 /**
  * Deliberately capability-shaped, never vendor-named. A library that ships one
  * vendor's model names reads as built for that vendor.
+ *
+ * The default is AUTO -- the system fits the model to each prompt (a trivial
+ * request goes to something fast and cheap, a hard one to the reasoner).
+ * "Balanced" held this slot first and told the user nothing: a tier name
+ * describes the machine, "Auto" describes what happens to your prompt.
  */
 export const defaultModels: readonly ModelOption[] = [
-  { id: 'balanced', label: 'Balanced', note: 'Good at most things' },
+  { id: 'auto', label: 'Auto', note: 'Fits the model to each prompt' },
   { id: 'fast', label: 'Fast', note: 'Quick answers, lighter reasoning' },
   { id: 'deep', label: 'Deep reasoning', note: 'Slower, best for hard problems' },
 ]
@@ -29,7 +34,7 @@ export function createInitialState(
     turns: [],
     status: 'idle',
     composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [] },
-    model: { selectedId: models[0]?.id ?? 'balanced', options: models },
+    model: { selectedId: models[0]?.id ?? 'auto', options: models },
     service: { status: 'operational', message: null, dismissed: false },
     usage: {
       threadTokens: 0,

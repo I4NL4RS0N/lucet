@@ -421,8 +421,8 @@ export function Primitives() {
               <label className="select" style={{ inlineSize: 190 }}>
                 {/* Generic on purpose. A library that ships one vendor's model
                     names reads as built for that vendor. */}
-                <select defaultValue="balanced">
-                  <option value="balanced">Balanced model</option>
+                <select defaultValue="auto">
+                  <option value="auto">Auto model</option>
                   <option value="fast">Fast model</option>
                   <option value="deep">Deep reasoning</option>
                 </select>

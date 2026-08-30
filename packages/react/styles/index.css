@@ -795,6 +795,9 @@
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;
+  /* Same hairline as the model select one gap away: two ghosts side by side
+     must wear the same containment or the pair reads as a mistake. */
+  box-shadow: var(--lucet-hairline);
   color: var(--lucet-muted-foreground);
   cursor: pointer;
   transition:
@@ -880,6 +883,22 @@
   color: var(--lucet-muted-foreground);
   text-align: end;
   text-wrap: pretty;
+}
+
+/* Icon-only button: square, glyph-carried, label in aria. */
+.lucet-button[data-icon] {
+  inline-size: var(--lucet-control-height);
+  min-inline-size: var(--lucet-control-height);
+  padding-inline: 0;
+}
+.lucet-button[data-icon] svg {
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 @media (prefers-reduced-motion: reduce) {
