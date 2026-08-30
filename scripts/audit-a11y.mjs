@@ -282,6 +282,97 @@ function collectPrimitives() {
   return { text, targets }
 }
 
+/**
+ * The components stage: the prompt input in every state. Same discipline as
+ * the primitives pass -- this page is where the component's look is decided,
+ * so a failure here becomes a failure everywhere one promotion later.
+ */
+function collectComponents() {
+  const bgOf = (el) => {
+    const chain = []
+    let node = el
+    while (node) {
+      const c = getComputedStyle(node).backgroundColor
+      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') chain.push(c)
+      node = node.parentElement
+    }
+    chain.push('rgb(255, 255, 255)')
+    return chain
+  }
+
+  const text = []
+  const targets = []
+
+  // Every status strip, by tone: the words must clear AA on the tinted band.
+  for (const el of document.querySelectorAll('.lucet-prompt__status')) {
+    text.push({
+      label: `strip ${el.dataset.tone ?? 'neutral'}`,
+      fg: getComputedStyle(el).color,
+      bg: bgOf(el),
+    })
+  }
+
+  // Chips in each status, plus the failed chip's reason.
+  const seenChip = new Set()
+  for (const el of document.querySelectorAll('.lucet-prompt__att')) {
+    const status = el.dataset.status ?? 'ready'
+    if (seenChip.has(status)) continue
+    seenChip.add(status)
+    text.push({ label: `att chip ${status}`, fg: getComputedStyle(el).color, bg: bgOf(el) })
+  }
+  const reason = document.querySelector('.lucet-prompt__att-reason')
+  if (reason) text.push({ label: 'att reason', fg: getComputedStyle(reason).color, bg: bgOf(reason) })
+
+  // Field text, the model select, and the buttons on their own fills.
+  const field = document.querySelector('.lucet-prompt__field')
+  if (field) text.push({ label: 'prompt field', fg: getComputedStyle(field).color, bg: bgOf(field) })
+  const select = document.querySelector('.lucet-prompt__model select')
+  if (select) text.push({ label: 'model select', fg: getComputedStyle(select).color, bg: bgOf(select) })
+  const seenBtn = new Set()
+  for (const el of document.querySelectorAll('.lucet-prompt .lucet-button')) {
+    if (el.disabled) continue
+    const key = `${el.dataset.variant}/${el.textContent.trim() || 'icon'}`
+    if (seenBtn.has(key)) continue
+    seenBtn.add(key)
+    text.push({ label: `button ${key}`, fg: getComputedStyle(el).color, bg: bgOf(el) })
+  }
+
+  // The tooltip is opacity 0 at rest, but its colours are what they are.
+  const tip = document.querySelector('.lucet-tip')
+  if (tip) text.push({ label: 'tooltip', fg: getComputedStyle(tip).color, bg: bgOf(tip) })
+
+  // The solid avatar in the multiplayer strip.
+  const avatar = document.querySelector('.lucet-prompt__status .lucet-avatar')
+  if (avatar) text.push({ label: 'strip avatar', fg: getComputedStyle(avatar).color, bg: bgOf(avatar) })
+
+  // 2.5.8, honestly: the effective target includes hit-area pseudo-elements.
+  const pseudoBox = (el) => {
+    let best = { w: 0, h: 0 }
+    for (const pe of ['::before', '::after']) {
+      const cs = getComputedStyle(el, pe)
+      if (cs.content === 'none') continue
+      const w = parseFloat(cs.width)
+      const h = parseFloat(cs.height)
+      if (Number.isFinite(w) && Number.isFinite(h) && w * h > best.w * best.h) best = { w, h }
+    }
+    return best
+  }
+  for (const el of document.querySelectorAll(
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled])',
+  )) {
+    const r = el.getBoundingClientRect()
+    if (!r.width || !r.height) continue
+    const p = pseudoBox(el)
+    const w = Math.max(r.width, p.w)
+    const h = Math.max(r.height, p.h)
+    if (w < 24 || h < 24) {
+      targets.push({ label: el.getAttribute('aria-label') ?? el.textContent.trim().slice(0, 20), w: Math.round(w), h: Math.round(h) })
+    }
+  }
+
+  return { text, targets }
+}
+
 async function main() {
   const preview = spawn(
     'npx',
@@ -400,6 +491,7 @@ async function main() {
       stdio: 'ignore',
     })
     let primitivesChecks = 0
+    let componentsChecks = 0
     try {
       let reached = false
       for (let i = 0; i < 40; i++) {
@@ -461,11 +553,64 @@ async function main() {
         }
         }
       }
+
+      /*
+       * SAME SERVER, SECOND PAGE: the components stage. Text on tone strips,
+       * chips in every status, the tooltip, and the hit-area honesty of the
+       * small chip buttons.
+       */
+      await page.goto(`http://localhost:${DEV_PORT}/components.html`)
+      await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
+      await page.addStyleTag({
+        content:
+          '*, *::before, *::after { transition: none !important; animation: none !important; }',
+      })
+      for (const theme of THEMES) {
+        for (const accent of ACCENTS) {
+          await page.evaluate(
+            ({ t, a }) => {
+              document.documentElement.setAttribute('data-theme', t)
+              document.documentElement.setAttribute('data-accent', a)
+            },
+            { t: theme, a: accent },
+          )
+          await page.waitForTimeout(60)
+
+          const where = `components/${theme}/${accent}`
+          const { text, targets } = await page.evaluate(collectComponents)
+          componentsChecks += text.length + targets.length
+
+          for (const { label, fg, bg } of text) {
+            checks++
+            const bgFlat = flattenBackground(bg)
+            const ratio = bgFlat === null ? null : contrastRatio(fg, bgFlat)
+            if (ratio === null) {
+              failures.push(`${where}  ${label}: could not resolve (${fg} on ${[].concat(bg).join(' < ')})`)
+            } else if (ratio < AA_TEXT) {
+              failures.push(
+                `${where}  ${label}: ${ratio}:1 (needs ${AA_TEXT}, 1.4.3)\n      ${fg} on ${bgFlat} (${[].concat(bg).join(' < ')})`,
+              )
+            }
+          }
+          for (const t of targets) {
+            checks++
+            failures.push(
+              `${where}  target "${t.label}" is ${t.w}x${t.h} (needs ${MIN_TARGET_PX}, 2.5.8)`,
+            )
+          }
+        }
+      }
     } finally {
       dev.kill()
     }
 
     // A pass that measures nothing must never report success.
+    if (componentsChecks < 300) {
+      throw new Error(
+        `the components pass collected only ${componentsChecks} elements -- ` +
+          'it has stopped matching the page, which is how a pass reports success while measuring nothing',
+      )
+    }
     if (primitivesChecks < 400) {
       throw new Error(
         `the primitives pass collected only ${primitivesChecks} elements across both themes -- ` +

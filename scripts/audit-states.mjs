@@ -47,6 +47,25 @@ const ACCENTS = ['slate', 'blue', 'indigo', 'violet', 'magenta', 'rose', 'green'
  * it is already at its destination -- rather than an omission. If that
  * decision is ever reversed, flip the expectation here with it.
  */
+/*
+ * The components stage gets its own probe set: the prompt input's small
+ * controls are exactly the kind that die quietly (a ghost select, 18px chip
+ * buttons, a tooltip that must APPEAR). Swept in both themes; the accent
+ * sweep stays on the primitives page, which already proves the accent axis.
+ */
+const COMPONENT_PROBES = [
+  { sec: 'Prompt input', hover: '.lucet-prompt__tool', part: 'attach tool', bg: true },
+  { sec: 'Prompt input', hover: '.lucet-prompt__model select', part: 'model select', bg: true },
+  { sec: 'Prompt input', hover: '[aria-label="Send"][disabled]', part: 'send disabled', expect: 'none' },
+  { sec: 'Prompt input — every state', hover: '[aria-label="Send"]:not([disabled])', part: 'send enabled' },
+  { sec: 'Prompt input — every state', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
+  { sec: 'Prompt input — every state', hover: '.lucet-prompt__att [aria-label^="Remove"]', part: 'chip remove', bg: true },
+  { sec: 'Prompt input — multiplayer', hover: 'button.lucet-button:not([disabled])', part: 'queue button' },
+  { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap button', part: 'stop button' },
+  /* The tooltip must ARRIVE: hover the wrap, watch the tip's opacity. */
+  { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap', probe: '.lucet-tip', part: 'stop tooltip appears' },
+]
+
 const PROBES = [
   { sec: 'Button', hover: '.row .btn--primary', part: 'primary' },
   { sec: 'Button', hover: '.row .btn:not([class*="--"])', part: 'secondary' },
@@ -86,8 +105,8 @@ const PROBES = [
 
 /* Signals that count as a visible response. outlineColor is NOT here: it
    tracks currentColor on elements whose outline-style is none, so it changes
-   without painting a pixel. */
-const SIGNALS = ['boxShadow', 'color', 'textDecorationColor']
+   without painting a pixel. opacity IS: it is how the tooltip arrives. */
+const SIGNALS = ['boxShadow', 'color', 'textDecorationColor', 'opacity']
 const STYLE_KEYS = ['backgroundColor', 'boxShadow', 'color', 'textDecorationColor', 'transform', 'opacity', 'scale']
 
 async function snapshot(page, id, probeSel) {
@@ -148,14 +167,17 @@ async function main() {
     if (!reached) throw new Error('primitives page never came up')
     await page.waitForSelector('.sec', { timeout: 15000 })
 
-    await page.evaluate((probes) => {
-      const secs = [...document.querySelectorAll('.sec')]
-      const byName = (name) => secs.find((s) => s.querySelector('.sec__name')?.textContent === name)
-      probes.forEach((p, i) => {
-        const el = byName(p.sec)?.querySelector(p.hover)
-        if (el) el.setAttribute('data-crit', String(i))
-      })
-    }, PROBES)
+    const tagProbes = (list) =>
+      page.evaluate((probes) => {
+        for (const el of document.querySelectorAll('[data-crit]')) el.removeAttribute('data-crit')
+        const secs = [...document.querySelectorAll('.sec')]
+        const byName = (name) => secs.find((s) => s.querySelector('.sec__name')?.textContent === name)
+        probes.forEach((p, i) => {
+          const el = byName(p.sec)?.querySelector(p.hover)
+          if (el) el.setAttribute('data-crit', String(i))
+        })
+      }, list)
+    await tagProbes(PROBES)
 
     const setState = (theme, accent) =>
       page.evaluate(
@@ -166,12 +188,12 @@ async function main() {
         [theme, accent],
       )
 
-    const sweep = async (theme, accent, probes) => {
+    const sweep = async (theme, accent, probes, all = PROBES) => {
       await setState(theme, accent)
       await page.waitForTimeout(50)
       let found = 0
-      for (let i = 0; i < PROBES.length; i++) {
-        const p = PROBES[i]
+      for (let i = 0; i < all.length; i++) {
+        const p = all[i]
         if (!probes.includes(p)) continue
         const where = `${theme}/${accent}`
         const loc = page.locator(`[data-crit="${i}"]`)
@@ -279,6 +301,32 @@ async function main() {
         `disabled checkbox: tick is ${Math.abs((bgL ?? 0) - (tickL ?? 0)).toFixed(3)} L from its box (needs 0.15)`,
       )
     }
+    /*
+     * PAGE TWO: the components stage, same server. Both themes, monochrome --
+     * the accent behaviour of the shared tokens is already proven above.
+     */
+    await page.goto(url.replace('primitives.html', 'components.html'))
+    await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
+    await tagProbes(COMPONENT_PROBES)
+    for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
+
+    // Chip hit-area honesty: the middle of a chip's NAME must never hit the
+    // remove or retry button -- the pseudo-anchor regression, guarded here too.
+    const chipHits = await page.evaluate(() => {
+      const out = []
+      for (const name of document.querySelectorAll('.lucet-prompt__att-name')) {
+        name.scrollIntoView({ block: 'center' })
+        const r = name.getBoundingClientRect()
+        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+        out.push({ file: name.textContent.slice(0, 30), hit: el?.closest('button') ? 'button' : 'name' })
+      }
+      return out
+    })
+    for (const h of chipHits) {
+      checks++
+      if (h.hit === 'button') failures.push(`components hit-area  the middle of "${h.file}" hits a BUTTON`)
+    }
+    if (chipHits.length < 6) failures.push(`components hit-area: only ${chipHits.length} chip names found (expected 6+)`)
   } finally {
     await browser.close()
     dev?.kill()
@@ -291,7 +339,7 @@ async function main() {
     console.error('')
     process.exit(1)
   }
-  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas) across both themes and ${ACCENTS.length + 1} accents.`)
+  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas, tooltip arrival) across two pages, both themes, ${ACCENTS.length + 1} accents.`)
 }
 
 main()
