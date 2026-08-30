@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { App } from './App'
 import 'lucet/styles.css'
 import 'lucet-react/styles.css'
-import './app.css'
+import './configurator.css'
 
 const el = document.getElementById('root')
 if (!el) throw new Error('#root not found')

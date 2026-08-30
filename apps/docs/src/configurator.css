@@ -1,0 +1,340 @@
+/*
+ * The Configurator.
+ *
+ * The app IS the page (the philly.com configurator model): a running product
+ * in a window frame, and beside it a plain list of event triggers (the
+ * Puckett model) that inject states into it. Theme controls are tucked at the
+ * bottom of the rail — the states are the show, appearance is a preference.
+ *
+ * Everything here is page shell. The components inside the frame carry their
+ * own styles from lucet-react; every value below is a token.
+ */
+
+* { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+  background: var(--lucet-background);
+  color: var(--lucet-foreground);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
+  text-wrap: pretty;
+}
+
+/* ---- shell ---- */
+
+.cfg__bar {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-inline-size: 1240px;
+  margin: 0 auto;
+  padding: 18px 32px 0;
+}
+
+.cfg__mark { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.cfg__mark span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
+
+.cfg__lede {
+  margin: 0;
+  font-size: 13px;
+  color: var(--lucet-muted-foreground);
+}
+
+.cfg__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 264px;
+  gap: 40px;
+  max-inline-size: 1240px;
+  margin: 0 auto;
+  padding: 24px 32px 80px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .cfg__layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- the app frame: a real product window ---- */
+
+.cfg__frame {
+  display: flex;
+  flex-direction: column;
+  background: var(--lucet-card);
+  border-radius: var(--lucet-radius-panel);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  overflow: hidden;
+}
+
+.cfg__frame-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  block-size: 40px;
+  padding-inline: 14px 8px;
+  border-block-end: 1px solid var(--lucet-border);
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+
+.cfg__frame-title { font-weight: 500; color: var(--lucet-subtle-foreground); }
+
+.cfg__reset {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  margin-inline-start: auto;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__reset::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 40px;
+  block-size: 40px;
+}
+.cfg__reset svg {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cfg__reset:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__reset:active { background-color: var(--lucet-press); }
+.cfg__reset:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/*
+ * The thread scrolls inside the frame; the composer stays put below it.
+ * The fade recipe is the scroll-area primitive's, settled in the lab:
+ * content must never just stop.
+ */
+.cfg__scroll {
+  flex: 1;
+  min-block-size: 340px;
+  max-block-size: min(58vh, 640px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 24px 12px;
+  --fade: 20px;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--fade),
+    #000 calc(100% - var(--fade)),
+    transparent 100%
+  );
+}
+
+@supports (animation-timeline: scroll()) {
+  .cfg__scroll {
+    animation: cfg-scroll-fade linear both;
+    animation-timeline: scroll(self block);
+  }
+  @keyframes cfg-scroll-fade {
+    0% {
+      mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+    }
+    8%, 92% {
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+    }
+    100% {
+      mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade), #000 100%);
+    }
+  }
+}
+
+.cfg__scroll::-webkit-scrollbar { inline-size: 10px; }
+.cfg__scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: var(--lucet-input);
+}
+.cfg__scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* The empty thread: words, not void. A v1 answer — the designed empty state
+   is an open design question owned by this page (see todo). */
+.cfg__empty {
+  display: grid;
+  place-content: center;
+  gap: 4px;
+  text-align: center;
+  min-block-size: 300px;
+  color: var(--lucet-muted-foreground);
+  font-size: 13px;
+}
+.cfg__empty strong { color: var(--lucet-subtle-foreground); font-weight: 500; }
+
+.cfg__composer {
+  padding: 12px 16px 16px;
+  border-block-start: 1px solid var(--lucet-border);
+}
+
+/* ---- the rail: plain words that do things ---- */
+
+.cfg__rail {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.cfg__rail-title {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+
+.cfg__group { display: grid; }
+.cfg__group + .cfg__group {
+  margin-block-start: 10px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--lucet-border);
+}
+
+.cfg__group-name {
+  margin: 0 0 2px;
+  padding-inline: 8px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+
+.cfg__trigger {
+  display: block;
+  inline-size: 100%;
+  min-block-size: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__trigger:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__trigger:active:not(:disabled) { background-color: var(--lucet-press); }
+.cfg__trigger:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -1px;
+}
+.cfg__trigger:disabled { opacity: 0.45; cursor: default; }
+
+/* ---- tucked: appearance, then the event log ---- */
+
+.cfg__aside {
+  margin-block-start: 14px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--lucet-border);
+  display: grid;
+  gap: 8px;
+}
+
+.cfg__aside-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+
+.cfg__aside select {
+  appearance: none;
+  flex: 1;
+  min-block-size: 26px;
+  padding: 2px 20px 2px 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background-color: transparent;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__aside select:hover { background-color: var(--lucet-hover); }
+.cfg__aside select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+.cfg__log summary {
+  min-block-size: 28px;
+  display: flex;
+  align-items: center;
+  padding-inline: 8px;
+  border-radius: var(--lucet-radius-control);
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__log summary::-webkit-details-marker { display: none; }
+.cfg__log summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__log summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -1px;
+}
+
+.cfg__log-body {
+  margin-block-start: 6px;
+  max-block-size: 260px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: var(--lucet-radius-surface);
+  background: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--lucet-subtle-foreground);
+}
+.cfg__log-body div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cfg__log-body span { color: var(--lucet-muted-foreground); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cfg__scroll { animation: none; }
+}

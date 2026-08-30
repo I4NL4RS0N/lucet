@@ -36,11 +36,9 @@ const URL = process.env.AUDIT_URL ?? `http://localhost:${PORT}/`
 /** Collects raw colour strings and geometry. No maths happens in here. */
 function collect() {
   /*
-   * A CHAIN, not the first hit. The old walk returned the first
-   * non-transparent ancestor colour -- which reads a translucent layer (a
-   * hover veil, dark's --lucet-line) as if it were opaque, measuring a
-   * background that is never painted. The node side composites the chain with
-   * flattenBackground() instead.
+   * The Configurator home, seeded via deep link (?state=...) before this runs
+   * so the thread has real content in every combo. A chain, composited node-
+   * side -- see flattenBackground.
    */
   const bgOf = (el) => {
     const chain = []
@@ -57,24 +55,26 @@ function collect() {
   const text = []
   const nonText = []
   const targets = []
-
   const add = (list, label, fg, bg) => list.push({ label, fg, bg })
 
-  for (const el of document.querySelectorAll('.lucet-notice')) {
-    add(text, `notice:${el.dataset.state}`, getComputedStyle(el).color, bgOf(el))
-  }
-  for (const el of document.querySelectorAll('.lucet-tool')) {
-    add(text, `tool:${el.dataset.status}`, getComputedStyle(el).color, bgOf(el))
-  }
   for (const [label, sel] of Object.entries({
     body: 'body',
-    'muted note': '.sheet__note',
-    'reasoning summary': '.lucet-reasoning__summary',
-    'message author': '.lucet-message__author',
-    'tool status label': '.lucet-tool__status',
-    'version marker': '.lucet-message__version',
-    'control label': '.control__label',
-    'segment (unselected)': '.segment input:not(:checked) + span',
+    wordmark: '.cfg__mark',
+    lede: '.cfg__lede',
+    'frame title': '.cfg__frame-title',
+    'rail title': '.cfg__rail-title',
+    'rail group name': '.cfg__group-name',
+    'rail trigger': '.cfg__trigger:not(:disabled)',
+    'aside label': '.cfg__aside-row label',
+    'aside select': '.cfg__aside select',
+    'log summary': '.cfg__log summary',
+    'thread author': '.lucet-thread__author',
+    'thread version marker': '.lucet-thread__version',
+    'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
+    'thread document text': '.lucet-thread__doc .lucet-thread__text',
+    'thread aside': '.lucet-thread__aside',
+    'composer field': '.lucet-prompt__field',
+    'composer select': '.lucet-prompt__model select',
   })) {
     const el = document.querySelector(sel)
     if (el) add(text, label, getComputedStyle(el).color, bgOf(el))
@@ -86,15 +86,37 @@ function collect() {
     .find((b) => !b.disabled)
   if (primary) {
     const cs = getComputedStyle(primary)
-    add(text, 'primary button (base)', cs.color, cs.backgroundColor)
+    add(text, 'primary button (base)', cs.color, [cs.backgroundColor])
     const stops = cs.backgroundImage.match(/oklch\([^)]+\)|oklab\([^)]+\)|rgba?\([^)]+\)/g) ?? []
-    stops.forEach((stop, i) => add(text, `primary button (gradient stop ${i})`, cs.color, stop))
+    stops.forEach((stop, i) => add(text, `primary button (gradient stop ${i})`, cs.color, [stop]))
   }
 
-  for (const el of document.querySelectorAll('.lucet-button, .control__field select, .segment')) {
+  // 2.5.8, with hit-area pseudo-elements counted honestly.
+  const pseudoBox = (el) => {
+    let best = { w: 0, h: 0 }
+    for (const pe of ['::before', '::after']) {
+      const cs = getComputedStyle(el, pe)
+      if (cs.content === 'none') continue
+      const w = parseFloat(cs.width)
+      const h = parseFloat(cs.height)
+      if (Number.isFinite(w) && Number.isFinite(h) && w * h > best.w * best.h) best = { w, h }
+    }
+    return best
+  }
+  for (const el of document.querySelectorAll(
+    '.cfg__trigger, .cfg__reset, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled])',
+  )) {
     const r = el.getBoundingClientRect()
-    if (r.width && r.height && (r.width < 24 || r.height < 24)) {
-      targets.push({ label: el.textContent.trim().slice(0, 20) || el.tagName, w: Math.round(r.width), h: Math.round(r.height) })
+    if (!r.width || !r.height) continue
+    const p = pseudoBox(el)
+    const w = Math.max(r.width, p.w)
+    const h = Math.max(r.height, p.h)
+    if (w < 24 || h < 24) {
+      targets.push({
+        label: el.getAttribute('aria-label') ?? el.textContent.trim().slice(0, 20) ?? el.tagName,
+        w: Math.round(w),
+        h: Math.round(h),
+      })
     }
   }
 
@@ -108,12 +130,18 @@ function collect() {
  * indicator" for every combination.
  */
 async function probeFocus(page) {
-  const composer = page.locator('.lucet-composer').first()
+  const composer = page.locator('.lucet-prompt').first()
   const field = composer.locator('textarea').first()
   const read = () =>
     composer.evaluate((el) => {
       const cs = getComputedStyle(el)
-      return { shadow: cs.boxShadow, border: cs.borderColor, outline: cs.outlineStyle, bg: cs.backgroundColor }
+      return {
+        shadow: cs.boxShadow,
+        border: cs.borderColor,
+        outline: cs.outlineStyle,
+        outlineColor: cs.outlineColor,
+        bg: cs.backgroundColor,
+      }
     })
 
   // Start from a known-unfocused state. Without this the previous iteration's
@@ -140,11 +168,19 @@ async function probeFocus(page) {
     after.border !== before.border ||
     after.outline !== before.outline
 
-  // The indicator is a border in System and a shadow in Expressive, so read
-  // whichever actually moved.
+  /*
+   * Read the indicator that ACTUALLY appeared. The new composer focuses via
+   * outline; the old one used a border or a shadow. Grading the wrong
+   * property is how this probe once failed 22 combos against the inset
+   * material's own shadow -- a black that was never the focus ring.
+   */
   const pick = /oklch\([^)]+\)|oklab\([^)]+\)|rgba?\([^)]+\)/
   const ring =
-    after.border !== before.border ? after.border : ((after.shadow.match(pick) ?? [])[0] ?? null)
+    after.outline !== 'none' && after.outline !== before.outline
+      ? after.outlineColor
+      : after.border !== before.border
+        ? after.border
+        : ((after.shadow.match(pick) ?? [])[0] ?? null)
 
   return { changed, ring, surface: after.bg }
 }
@@ -398,6 +434,7 @@ async function main() {
   const browser = await chromium.launch()
   const failures = []
   let checks = 0
+  let mainChecks = 0
 
   try {
     const page = await browser.newPage()
@@ -412,14 +449,24 @@ async function main() {
      * an audit that lies.
      */
     await page.emulateMedia({ reducedMotion: 'reduce' })
+    /*
+     * Seeded through the deep link, the way a shared state link lands: the
+     * thread then has a prompt, a tool aside, and a document in every one of
+     * the 44 combos, instead of being measured empty.
+     */
     for (let i = 0; i < 40; i++) {
       try {
-        await page.goto(URL, { timeout: 2000 })
+        await page.goto(`${URL}?state=tool-partial-failure`, { timeout: 2000 })
         break
       } catch {
         await new Promise((r) => setTimeout(r, 500))
       }
     }
+    await page.waitForSelector('.lucet-thread__pair', { timeout: 15000 })
+    await page.waitForFunction(
+      () => !document.querySelector('.lucet-thread__caret'),
+      { timeout: 15000 },
+    )
 
     // Belt and braces. emulateMedia alone relies on the page honouring the
     // preference; this guarantees it, because getComputedStyle returns the
@@ -428,13 +475,10 @@ async function main() {
       content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
     })
 
-    // The Sheet renders every component in every state, which is exactly the
-    // surface the audit needs.
-    // The segment's input overlays its label by design, so target the control
-    // itself rather than the text on top of it.
-    await page.getByRole('radio', { name: 'Sheet' }).check()
-    await page.waitForTimeout(400)
-
+    /* The old shell's Sheet mode is gone with the Configurator rebuild; the
+       every-component-every-state surface is now the components stage, which
+       has its own pass below. This loop measures the HOME as a visitor lands
+       on it, deep-linked into a real state. */
     for (const theme of THEMES) {
       for (const expression of EXPRESSIONS) {
         for (const accent of ACCENTS) {
@@ -451,6 +495,7 @@ async function main() {
 
           const where = `${theme}/${expression}/${accent}`
           const { text, targets } = await page.evaluate(collect)
+          mainChecks += text.length + targets.length
           const focus = await probeFocus(page)
 
           for (const { label, fg, bg } of text) {
@@ -621,6 +666,12 @@ async function main() {
     }
 
     // A pass that measures nothing must never report success.
+    if (mainChecks < 700) {
+      throw new Error(
+        `the Configurator pass collected only ${mainChecks} elements across 44 combos -- ` +
+          'its selectors and the page have drifted apart',
+      )
+    }
     if (componentsChecks < 300) {
       throw new Error(
         `the components pass collected only ${componentsChecks} elements -- ` +
