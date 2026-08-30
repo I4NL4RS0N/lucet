@@ -1142,7 +1142,13 @@ kbd, .kbd {
 .disc__meta { margin-inline-start: auto; font-size: 12px; color: var(--ink-3); }
 
 .disc__body {
-  padding: 2px 12px 12px;
+  /*
+   * 28px start: 12px head padding + 7px caret + 9px gap, so the body sits
+   * UNDER THE LABEL and the caret column reads as a gutter. At 12px the body
+   * outdented past its own heading, which read as a misalignment rather than
+   * a hierarchy. 4px of air below the head so the text does not hug the bar.
+   */
+  padding: 4px 12px 13px 28px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--ink-2);
@@ -1169,8 +1175,13 @@ code, .code {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 8px 0 12px;
-  block-size: 34px;
+  /*
+   * 38px, matching the disclosure head, and the same reason: a 26px button in
+   * a 34px bar left 4px of clearance, which read as the button jammed against
+   * both edges. 6px of air and a 10px inset from the trailing edge.
+   */
+  padding: 0 10px 0 12px;
+  block-size: 38px;
   border-block-end: 1px solid var(--line);
   font-size: 12px;
   color: var(--ink-3);
