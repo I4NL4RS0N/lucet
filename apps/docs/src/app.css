@@ -26,12 +26,23 @@ body {
   -webkit-font-smoothing: antialiased;
   background: var(--lucet-background);
   color: var(--lucet-foreground);
-  display: flex;
-  flex-direction: column;
   height: 100vh;
   transition:
     background var(--lucet-duration-normal) var(--lucet-ease-out),
     color var(--lucet-duration-normal) var(--lucet-ease-out);
+}
+
+/*
+ * React mounts into #root, so the flex column has to live HERE, not on body.
+ * Putting it on body applied the layout to this wrapper instead of to the
+ * header and panes, and main sized itself to content: 2967px inside a 691px
+ * viewport, which made the whole document scroll rather than the panes.
+ */
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 /* ---------- header ---------- */
@@ -54,20 +65,9 @@ header p {
   font-size: var(--lucet-text-sm);
 }
 
-fieldset {
-  display: inline-block;
-  border: 1px solid var(--lucet-border);
-  border-radius: var(--lucet-radius-lg);
-  padding: var(--lucet-space-2) var(--lucet-space-3);
-  margin: 0 var(--lucet-space-2) var(--lucet-space-2) 0;
-  font-size: var(--lucet-text-sm);
-}
 
-legend {
-  color: var(--lucet-muted-foreground);
-  font-size: var(--lucet-text-xs);
-  padding: 0 var(--lucet-space-1);
-}
+
+
 
 /* ---------- panes ---------- */
 
@@ -92,9 +92,19 @@ main > :first-child { border-left: 0; }
  * The rail and inspector stack instead.
  */
 @media (max-width: 1100px) {
+  /*
+   * Stacked panes size to their content, which overflowed the flex row and
+   * made the whole document scroll instead of the panes. Scrolling moves up to
+   * main and the panes stop managing it themselves.
+   */
   main {
     grid-template-columns: minmax(0, 1fr);
     grid-auto-rows: min-content;
+    overflow-y: auto;
+  }
+
+  main > * {
+    overflow-y: visible;
   }
 
   main > * {
@@ -199,37 +209,11 @@ button {
 button:hover:not(:disabled) { background: var(--lucet-hover-strong); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-select:hover { background-color: var(--lucet-hover); }
 
-select {
-  background: var(--lucet-background);
-  border: 1px solid var(--lucet-input);
-  border-radius: var(--lucet-radius-md);
-  padding: var(--lucet-space-1) var(--lucet-space-2);
-  /* 2.5.8 Target Size (Minimum). */
-  min-block-size: 1.75rem;
-}
 
-:root[data-expression='expressive'] select {
-  background-color: var(--lucet-card);
-  background-image: linear-gradient(
-    180deg,
-    oklch(from var(--lucet-card) calc(l + 0.012) c h),
-    oklch(from var(--lucet-card) calc(l - 0.012) c h)
-  );
-  border-color: transparent;
-  border-radius: var(--lucet-radius-full);
-  box-shadow:
-    var(--lucet-control-top),
-    var(--lucet-control-lip),
-    0 0 0 1px var(--lucet-border),
-    var(--lucet-control-cast);
-}
 
-:root[data-expression='expressive'] select:active {
-  box-shadow: var(--lucet-control-press);
-  background-image: none;
-}
+
+
 
 textarea {
   display: block;
@@ -275,3 +259,153 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 }
 
 .sheet__stage > * + * { margin-top: var(--lucet-space-4); }
+
+/* ============================================================
+ * Header controls
+ *
+ * Seven axes is a lot of chrome, so it is laid out on a grid with the label
+ * above the field. Inline labels ran the controls together into an unscannable
+ * strip and forced every cell to a different width.
+ * ============================================================ */
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--lucet-space-2) var(--lucet-space-3);
+  align-items: end;
+}
+
+.control {
+  display: grid;
+  gap: var(--lucet-space-1);
+  min-width: 0;
+}
+
+/* View is a different kind of control and five segments do not fit a column,
+   so it takes its own row rather than being clipped by one. */
+.control:has(.segmented) {
+  grid-column: 1 / -1;
+}
+
+.control__label {
+  font-size: var(--lucet-text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--lucet-tracking-wide);
+  color: var(--lucet-muted-foreground);
+}
+
+/*
+ * The chevron is drawn here rather than left to the OS. A native select arrow
+ * inside a heavily rounded control is exactly the mismatch that read as wonky,
+ * and putting it on the wrapper avoids fighting the select's own background
+ * layers.
+ */
+.control__field {
+  position: relative;
+  display: block;
+}
+
+.control__field::after {
+  content: '';
+  position: absolute;
+  right: var(--lucet-space-3);
+  top: 50%;
+  width: 0.4em;
+  height: 0.4em;
+  margin-top: -0.28em;
+  border-right: 1.5px solid var(--lucet-muted-foreground);
+  border-bottom: 1.5px solid var(--lucet-muted-foreground);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.control__field select {
+  appearance: none;
+  width: 100%;
+  min-block-size: 2rem;
+  padding: var(--lucet-space-2) var(--lucet-space-7) var(--lucet-space-2) var(--lucet-space-3);
+  background: var(--lucet-card);
+  color: inherit;
+  border: 1px solid var(--lucet-border);
+  /* Deliberately not the pill. A field with a chevron reads as a rounded
+     rectangle; a pill reads as a chip that happens to have an arrow in it. */
+  border-radius: var(--lucet-radius-lg);
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+.control__field select:hover { background-color: var(--lucet-hover); }
+
+:root[data-expression='expressive'] .control__field select {
+  border-color: transparent;
+  background-image: linear-gradient(
+    180deg,
+    oklch(from var(--lucet-card) calc(l + 0.012) c h),
+    oklch(from var(--lucet-card) calc(l - 0.012) c h)
+  );
+  box-shadow:
+    var(--lucet-control-top),
+    var(--lucet-control-lip),
+    0 0 0 1px var(--lucet-border),
+    var(--lucet-control-cast);
+}
+
+:root[data-expression='expressive'] .control__field select:active {
+  box-shadow: var(--lucet-control-press);
+  background-image: none;
+}
+
+/* ---------- segmented control ---------- */
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
+  padding: 2px;
+  gap: 2px;
+  background: var(--lucet-muted);
+  border-radius: var(--lucet-radius-lg);
+  min-block-size: 2rem;
+  box-sizing: border-box;
+}
+
+.segment { position: relative; display: flex; }
+
+/* Focusable, not hidden. Removing it from the tree would break keyboard use. */
+.segment input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segment span {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--lucet-space-3);
+  border-radius: calc(var(--lucet-radius-lg) - 2px);
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-muted-foreground);
+  white-space: nowrap;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+
+.segment:hover span { color: var(--lucet-foreground); }
+
+.segment input:checked + span {
+  background: var(--lucet-card);
+  color: var(--lucet-foreground);
+  box-shadow: var(--lucet-elevation-1);
+}
+
+.segment input:focus-visible + span {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+:root[data-expression='expressive'] .segmented { border-radius: var(--lucet-radius-full); }
+:root[data-expression='expressive'] .segment span { border-radius: var(--lucet-radius-full); }

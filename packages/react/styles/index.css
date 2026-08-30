@@ -10,8 +10,20 @@
  *   import 'lucet-react/styles.css'
  */
 
+/*
+ * Visually hidden, and genuinely out of the way.
+ *
+ * The usual recipe omits top/left, so the element keeps its static position.
+ * With no positioned ancestor its containing block is the initial one, which
+ * means a scroll container's overflow does NOT clip it: three invisible 1px
+ * labels sitting far down a scrolled pane extended the document to 3042px and
+ * made the whole page scroll. Pinning to the containing block origin means it
+ * can never extend anything, wherever it appears.
+ */
 .lucet-visually-hidden {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   padding: 0;
@@ -396,6 +408,8 @@
  * ============================================================ */
 
 .lucet-composer {
+  /* Contains its own visually-hidden label. */
+  position: relative;
   border: 1px solid var(--lucet-input);
   border-radius: var(--lucet-radius-xl);
   background: var(--lucet-card);

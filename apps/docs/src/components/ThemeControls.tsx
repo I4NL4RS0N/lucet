@@ -97,6 +97,14 @@ export interface ThemeControlsProps extends ThemeState {
   onChange: (next: Partial<ThemeState>) => void
 }
 
+/**
+ * One labelled control cell.
+ *
+ * The label sits ABOVE the field rather than beside it. With seven axes, inline
+ * labels run together into a strip nobody can scan, and they force every cell
+ * to a different width so nothing aligns. Stacked labels let the whole row sit
+ * on a grid.
+ */
 function Select<T extends string>({
   name,
   value,
@@ -109,15 +117,17 @@ function Select<T extends string>({
   onSelect: (value: T) => void
 }) {
   return (
-    <label>
-      {name}{' '}
-      <select value={value} onChange={(e) => onSelect(e.target.value as T)}>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+    <label className="control">
+      <span className="control__label">{name}</span>
+      <span className="control__field">
+        <select value={value} onChange={(e) => onSelect(e.target.value as T)}>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </span>
     </label>
   )
 }

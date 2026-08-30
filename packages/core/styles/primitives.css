@@ -63,6 +63,7 @@
   --lucet-space-3: calc(var(--lucet-space-unit) * 3);
   --lucet-space-4: calc(var(--lucet-space-unit) * 4);
   --lucet-space-6: calc(var(--lucet-space-unit) * 6);
+  --lucet-space-7: calc(var(--lucet-space-unit) * 7);
   --lucet-space-8: calc(var(--lucet-space-unit) * 8);
   --lucet-space-12: calc(var(--lucet-space-unit) * 12);
   --lucet-space-16: calc(var(--lucet-space-unit) * 16);

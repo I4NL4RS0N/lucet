@@ -71,28 +71,32 @@ export function App() {
         <h1>Lucet</h1>
         <p>The Konfabulator. Scripted runtime, real states, one running thread.</p>
 
-        <fieldset>
-          <legend>View</legend>
-          {MODES.map(({ value, label }) => (
-            <label key={value}>
-              <input
-                type="radio"
-                name="mode"
-                checked={mode === value}
-                onChange={() => setMode(value)}
-              />
-              {label}
-            </label>
-          ))}
-        </fieldset>
+        <div className="controls">
+          {/* A segmented control, not loose radios. Same information, and it
+              stops the header reading as a form. */}
+          <div className="control">
+            <span className="control__label">View</span>
+            <div className="segmented" role="group" aria-label="View">
+              {MODES.map(({ value, label }) => (
+                <label key={value} className="segment">
+                  <input
+                    type="radio"
+                    name="mode"
+                    checked={mode === value}
+                    onChange={() => setMode(value)}
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
 
-        <fieldset>
-          <legend>Appearance</legend>
           <ThemeControls
             {...themeState}
             onChange={(next) => setThemeState((prev) => ({ ...prev, ...next }))}
           />
-        </fieldset>
+        </div>
+
       </header>
 
       {mode === 'tokens' ? (
