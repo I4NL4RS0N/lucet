@@ -345,6 +345,22 @@ function collectComponents() {
   const avatar = document.querySelector('.lucet-prompt__status .lucet-avatar')
   if (avatar) text.push({ label: 'strip avatar', fg: getComputedStyle(avatar).color, bg: bgOf(avatar) })
 
+  // The thread: prompts, documents, asides, endings, and the version marker.
+  for (const [label, sel] of Object.entries({
+    'thread author': '.lucet-thread__author',
+    'thread version marker': '.lucet-thread__version',
+    'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
+    'thread document text': '.lucet-thread__doc .lucet-thread__text',
+    'thread aside': '.lucet-thread__aside',
+    'thread aside meta': '.lucet-thread__aside-meta',
+    'thread ending': '.lucet-thread__ended',
+    'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
+    'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
+  })) {
+    const el = document.querySelector(sel)
+    if (el) text.push({ label, fg: getComputedStyle(el).color, bg: bgOf(el) })
+  }
+
   // 2.5.8, honestly: the effective target includes hit-area pseudo-elements.
   const pseudoBox = (el) => {
     let best = { w: 0, h: 0 }

@@ -1185,6 +1185,16 @@
   color: var(--lucet-muted-foreground);
 }
 
+/* Mono and size carry the quietness; the COLOUR stays at full
+   muted-foreground because the marker is real text and 1.4.3 applies. The
+   old era faded it with opacity to ~3.2:1 -- a failure no audit could see.
+   An 80% mix here measured 3.9:1 in light: same trap, measurable this time. */
+.lucet-thread__version {
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+}
+
 /* The prompt: a raised surface, narrower than the response. What you said is
    the smaller thing on the page; what came back is the artefact. */
 .lucet-thread__prompt {

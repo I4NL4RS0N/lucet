@@ -84,7 +84,15 @@ function Part({ part, streaming, last }: { part: MessagePart; streaming: boolean
   }
 }
 
-function MessageView({ message, self }: { message: Message; self: boolean }) {
+function MessageView({
+  message,
+  self,
+  versionId,
+}: {
+  message: Message
+  self: boolean
+  versionId?: string | undefined
+}) {
   const isUser = message.role === 'user'
   const terminal = TERMINAL[message.status]
   const attachments = message.parts.filter((p) => p.kind === 'attachment')
@@ -97,11 +105,18 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
         {isUser ? (
           self ? null : <Avatar name={message.authorId} size="sm" />
         ) : (
+          /* Solid, so the assistant WEARS THE ACCENT when one is chosen --
+             the same call the working orbs made: the agent acting on your
+             request is the brand-forward moment. Monochrome stays neutral by
+             construction. Decided 2026-08-30. */
           <Avatar name="AI" size="sm" solid />
         )}
         <span className="lucet-thread__author">
           {isUser ? (self ? 'You' : message.authorId) : 'Assistant'}
         </span>
+        {/* Every prompt is a commit. The marker is quiet until you look for
+            it -- the seed the Version Marker + Restore pattern grows from. */}
+        {versionId ? <span className="lucet-thread__version">{versionId}</span> : null}
       </div>
 
       <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
@@ -139,10 +154,20 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
 
 export function Thread({ state, selfId }: ThreadProps) {
   return (
-    <div className="lucet-thread">
+    /*
+     * role="log": streamed text must reach people who are not looking at it.
+     * Additions announce politely; a real-world host may want to throttle
+     * announcements per sentence rather than per chunk, which is noted in the
+     * rationale doc as the streaming component's future concern.
+     */
+    <div className="lucet-thread" role="log" aria-label="Conversation">
       {state.turns.map((turn) => (
         <article className="lucet-thread__pair" key={turn.id}>
-          <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
+          <MessageView
+            message={turn.prompt}
+            self={turn.prompt.authorId === (selfId ?? null)}
+            versionId={turn.versionId}
+          />
           {turn.response ? <MessageView message={turn.response} self={false} /> : null}
         </article>
       ))}

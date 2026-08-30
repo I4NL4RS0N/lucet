@@ -327,6 +327,27 @@ async function main() {
       if (h.hit === 'button') failures.push(`components hit-area  the middle of "${h.file}" hits a BUTTON`)
     }
     if (chipHits.length < 6) failures.push(`components hit-area: only ${chipHits.length} chip names found (expected 6+)`)
+
+    // The thread's non-negotiables, asserted by presence: streamed text must
+    // be announced (role=log), the caret must ride the streaming fixture,
+    // every unhappy ending must exist with its icon, and the version marker
+    // must be on the page at all.
+    const thread = await page.evaluate(() => ({
+      logs: document.querySelectorAll('.lucet-thread[role="log"]').length,
+      bareThreads: document.querySelectorAll('.lucet-thread:not([role])').length,
+      carets: document.querySelectorAll('.lucet-thread__caret').length,
+      endings: ['interrupted', 'failed', 'refused'].map(
+        (k) => document.querySelectorAll(`.lucet-thread__ended[data-status="${k}"]`).length,
+      ),
+      versions: document.querySelectorAll('.lucet-thread__version').length,
+    }))
+    checks += 4
+    if (thread.logs === 0 || thread.bareThreads > 0)
+      failures.push(`thread: ${thread.bareThreads} thread(s) missing role="log" -- streaming is silent to screen readers`)
+    if (thread.carets === 0) failures.push('thread: no streaming caret found on the streaming fixture')
+    if (thread.endings.some((n) => n === 0))
+      failures.push(`thread: an unhappy ending is missing from the stage (interrupted/failed/refused = ${thread.endings.join('/')})`)
+    if (thread.versions === 0) failures.push('thread: no version marker anywhere -- every prompt is a commit')
   } finally {
     await browser.close()
     dev?.kill()
