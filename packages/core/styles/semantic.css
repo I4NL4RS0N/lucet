@@ -134,6 +134,19 @@
   --lucet-default-hover: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), transparent);
   --lucet-default-hover-strong: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), transparent);
   /*
+   * HOVER IS INK; PRESS IS SHADOW.
+   *
+   * The first veil design made active "further along the ink" -- 13% where
+   * hover is 8%. In dark, ink is light, so a PRESS rendered BRIGHTER than its
+   * hover: the button lifted when pushed. Judged on the decision stage and
+   * rejected. A press goes into shadow in both themes, so its veil is black,
+   * not ink -- in light the two directions agree, in dark they finally differ.
+   * hover-strong stays ink: it is a STRONGER HOVER (Expressive uses it), not
+   * a press.
+   */
+  --lucet-press-mix: 10%;
+  --lucet-default-press: color-mix(in oklab, oklch(0 0 0) var(--lucet-press-mix), transparent);
+  /*
    * A SOLID HOVERS AWAY FROM ITS LABEL.
    *
    * The old hover was accent step 10, which had to be capped at the lightest
@@ -216,6 +229,7 @@
    */
   --lucet-hover: var(--lucet-default-hover);
   --lucet-hover-strong: var(--lucet-default-hover-strong);
+  --lucet-press: var(--lucet-default-press);
   --lucet-primary-hover: var(--lucet-default-primary-hover);
 
   /* Radius interop lives in primitives.css, in the three-tier chain. */

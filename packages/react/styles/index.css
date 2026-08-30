@@ -124,13 +124,13 @@
   color: var(--lucet-foreground);
 }
 
-/* System has no press treatment of its own, so the active state is a step
-   further along the same scale rather than a lighting change. */
+/* Hover is ink; press is shadow. More ink made a dark-theme press brighter
+   than its hover -- the button lifted when pushed. */
 .lucet-button[data-variant='secondary']:active:not(:disabled) {
-  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), var(--lucet-secondary));
+  background-color: color-mix(in oklab, oklch(0 0 0) var(--lucet-press-mix), var(--lucet-secondary));
 }
 .lucet-button[data-variant='ghost']:active:not(:disabled) {
-  background-color: var(--lucet-hover-strong);
+  background-color: var(--lucet-press);
 }
 
 .lucet-button:disabled {

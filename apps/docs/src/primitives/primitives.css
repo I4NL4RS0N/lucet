@@ -19,7 +19,7 @@
   --raised: var(--lucet-secondary);
   --field: var(--lucet-muted);
   --hover: var(--lucet-hover);
-  --active: var(--lucet-hover-strong);
+  --active: var(--lucet-press);
 
   --ink: var(--lucet-foreground);
   --ink-2: var(--lucet-subtle-foreground);
@@ -52,6 +52,11 @@
   --solid-hover: var(--lucet-primary-hover);
   --solid-fg: var(--lucet-primary-foreground);
   --ring-focus: var(--lucet-ring);
+
+  /* The NEUTRAL solid, for the one surface that must never take the accent:
+     an inverted tooltip is a label, not a choice. */
+  --inverse: var(--lucet-solid);
+  --inverse-fg: var(--lucet-solid-foreground);
 
   /* Status. The only colour on the page, because it is the only colour that
      carries information. */
@@ -234,7 +239,9 @@ body {
    */
   --btn-bg: var(--raised);
   --btn-bg-hover: color-mix(in oklab, var(--ink) var(--lucet-hover-mix), var(--btn-bg));
-  --btn-bg-active: color-mix(in oklab, var(--ink) var(--lucet-hover-mix-strong), var(--btn-bg));
+  /* Press is SHADOW, not more ink: in dark, more ink made a press brighter
+     than its hover -- the button lifted when pushed. Decided on the stage. */
+  --btn-bg-active: color-mix(in oklab, oklch(0 0 0) var(--lucet-press-mix), var(--btn-bg));
   --btn-fg: var(--ink);
 
   position: relative;
@@ -283,7 +290,7 @@ body {
   box-shadow: var(--lit-strong), var(--ring-3), var(--cast-2);
 }
 .btn--ghost:hover:not(:disabled),
-.btn--ghost.is-hover { box-shadow: none; }
+.btn--ghost.is-hover { box-shadow: var(--ring-1); }
 
 /*
  * 0.96, per the reference skill: below about 0.95 a press reads as the control
@@ -321,17 +328,22 @@ body {
   --btn-fg: var(--lucet-danger-solid-foreground);
 }
 
-/* A ghost has no material until you touch it. Its hover and active fall out
-   of the derivation above: ink mixed over transparent is the bare veil. */
+/*
+ * A ghost is CONTAINED but not raised: a hairline, no fill, no material.
+ * The naked version read as a caption whenever it sat in a row of real
+ * buttons -- "Skip" between Cancel and Delete looked like a label, not a
+ * control. Decided on the stage: hairline, no fill.
+ * States keep the same hairline; the veil fills it, the material never comes.
+ */
 .btn--ghost {
   --btn-bg: transparent;
   --btn-fg: var(--ink-2);
-  box-shadow: none;
+  box-shadow: var(--ring-1);
 }
 .btn--ghost:hover:not(:disabled),
 .btn--ghost.is-hover { color: var(--ink); }
 .btn--ghost:active:not(:disabled),
-.btn--ghost.is-active { box-shadow: none; }
+.btn--ghost.is-active { box-shadow: var(--ring-1); }
 
 .btn--sm { block-size: 26px; padding-inline: 10px; font-size: 12px; border-radius: 7px; }
 .btn--lg { block-size: 40px; padding-inline: 18px; font-size: 14px; border-radius: 11px; }
@@ -404,14 +416,18 @@ body {
 }
 
 /*
- * A field's hover is its RING, not its fill. The old rule moved the fill to
- * the stage colour, so hovering an empty input made it dissolve into the
- * surface behind it -- measured: the hovered background landed within 0.005
- * of the well in both themes. A recess should not change depth under a
- * pointer anyway; it firms its edge instead.
+ * A field's hover is its RING FIRST, plus half a step of fill. The original
+ * rule moved the fill to the stage colour, so hovering an empty input made it
+ * dissolve into the surface behind it. Ring-only was the fix, and on the
+ * stage it judged too quiet on its own -- so the ring firms and the fill
+ * takes half the standard hover step. Half, because a recess that shifts as
+ * much as a raised control reads as the depth changing.
  */
 .field:hover:not(:disabled),
-.field.is-hover { box-shadow: 0 0 0 1px var(--line-strong), var(--inset-deep); }
+.field.is-hover {
+  box-shadow: 0 0 0 1px var(--line-strong), var(--inset-deep);
+  background-color: color-mix(in oklab, var(--ink) calc(var(--lucet-hover-mix) / 2), var(--field));
+}
 .field:focus,
 .field.is-focus { outline: var(--focus-w) solid var(--ring-focus); outline-offset: var(--focus-offset); }
 .field:disabled,
@@ -555,7 +571,7 @@ textarea.field {
 /* Pressed. A control that labels an Active state and then renders it
    identically to Default is worse than one that never claimed to have it. */
 .check:active .check__box,
-.check.is-active .check__box { background-color: color-mix(in oklab, var(--ink) var(--lucet-hover-mix-strong), var(--field)); scale: 0.92; }
+.check.is-active .check__box { background-color: color-mix(in oklab, oklch(0 0 0) var(--lucet-press-mix), var(--field)); scale: 0.92; }
 
 .check:active input:checked + .check__box,
 .check.is-active input:checked + .check__box { background-color: var(--solid); scale: 0.92; }
@@ -825,11 +841,17 @@ textarea.field {
   margin-block-end: 4px;
   padding: 5px 9px;
   border-radius: 7px;
-  background-color: var(--raised);
-  box-shadow: var(--ring-3), var(--cast-2);
+  /*
+   * INVERTED, the one deliberately theme-crossing surface. A raised grey chip
+   * read as just another control floating nearby; the inverse chip reads as an
+   * annotation ABOUT the interface rather than part of it. Neutral solid, not
+   * primary: a tooltip is a label, and labels never take the accent.
+   */
+  background-color: var(--inverse);
+  color: var(--inverse-fg);
+  box-shadow: var(--cast-2);
   font-size: 12px;
   line-height: 1.4;
-  color: var(--ink);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -867,13 +889,15 @@ textarea.field {
 .menu__item:hover,
 .menu__item.is-hover { background-color: var(--hover); color: var(--ink); }
 /*
- * A destructive item is inked as one BEFORE it is hovered. Reading "Delete"
- * in the same grey as "Duplicate" and only learning its weight from position
- * is the menu equivalent of a grey danger button.
+ * A destructive item reveals its ink on HOVER. At rest it sits in the same
+ * grey as its neighbours -- red-at-rest made Delete the loudest thing in an
+ * otherwise greyscale surface, which promotes exactly the action that should
+ * be the least inviting. Decided on the stage. The separator above it and
+ * its glyph still mark it apart at rest; when a real menu is promoted, the
+ * pattern needs that placement affordance kept.
  */
-.menu__item--danger { color: var(--bad); }
 .menu__item--danger:hover,
-.menu__item--danger.is-hover { color: var(--bad); }
+.menu__item--danger.is-hover { color: var(--bad); background-color: var(--hover); }
 .menu__item[aria-checked='true'] { color: var(--ink); }
 .menu__item kbd {
   margin-inline-start: auto;

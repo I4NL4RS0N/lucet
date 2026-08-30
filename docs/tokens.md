@@ -53,6 +53,7 @@ setting the bare shadcn name works without knowing Lucet exists.
 - `--lucet-border`, `--lucet-input`, `--lucet-ring`
 - `--lucet-hover`, `--lucet-hover-strong` — translucent ink veils, not opaque colours. Paint one AS the background of anything that rests transparent (menu items, rows, ghost buttons); a control that owns an opaque background mixes the step over its resting colour with `color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), <rest>)`. One step, every surface, both themes.
 - `--lucet-hover-mix`, `--lucet-hover-mix-strong` — the percentages behind the veils, for the mix-over-rest form.
+- `--lucet-press`, `--lucet-press-mix` — the ACTIVE veil, and it is shadow (black), not ink: in dark, more ink renders a press brighter than its hover. Same two forms as hover: paint the veil on a transparent rest, mix the percentage over an opaque one.
 - `--lucet-accent-hover` — where the accent solid goes under the pointer: away from its label, so contrast improves as you reach it. `--lucet-primary-hover` already resolves to this under an accent; reach for this one only when styling a custom accent-filled control.
 - `--lucet-accent-ink` — accent as TEXT. Step 12, because that is the step that clears 4.5:1 for every accent in both themes.
 

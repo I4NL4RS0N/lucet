@@ -104,6 +104,7 @@ async function main() {
   const DISTINCT = [
     ['--lucet-secondary', '--lucet-hover', 0.02, '--lucet-secondary'],
     ['--lucet-hover', '--lucet-hover-strong', 0.015, '--lucet-secondary'],
+    ['--lucet-hover', '--lucet-press', 0.015, '--lucet-secondary'],
     ['--lucet-muted', '--lucet-secondary', 0.015, null],
     ['--lucet-card', '--lucet-subtle', 0.01, null],
     ['--lucet-border', '--lucet-input', 0.02, '--lucet-card'],
