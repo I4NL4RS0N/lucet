@@ -59,6 +59,11 @@
    * border box, so the 1px transparent border shows a mismatched band: the
    * pale halo that made Expressive buttons look badly outlined.
    */
+  /*
+   * NOTE: every variant below must use background-color, not the background
+   * shorthand. The shorthand resets background-origin to padding-box, which
+   * silently undoes this and brings back the mismatched 1px band.
+   */
   background-origin: border-box;
   cursor: pointer;
   white-space: nowrap;
@@ -69,18 +74,18 @@
 }
 
 .lucet-button[data-variant='primary'] {
-  background: var(--lucet-primary);
+  background-color: var(--lucet-primary);
   color: var(--lucet-primary-foreground);
 }
 
 .lucet-button[data-variant='secondary'] {
-  background: var(--lucet-secondary);
+  background-color: var(--lucet-secondary);
   color: var(--lucet-secondary-foreground);
   border-color: var(--lucet-border);
 }
 
 .lucet-button[data-variant='ghost'] {
-  background: transparent;
+  background-color: transparent;
   color: var(--lucet-muted-foreground);
 }
 
@@ -477,8 +482,19 @@
   box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
 }
 
+/*
+ * The focus ring, and it has to be a box-shadow here.
+ *
+ * The rule above sets border-color at higher specificity than
+ * .lucet-composer:focus-within, so the border-based focus indicator never
+ * appeared in Expressive at all. Focusing the field changed nothing visible,
+ * which is a 2.4.7 Focus Visible failure at Level A.
+ */
 :root[data-expression='expressive'] .lucet-composer:focus-within {
-  box-shadow: var(--lucet-elevation-3), var(--lucet-highlight);
+  box-shadow:
+    0 0 0 var(--lucet-focus-width) var(--lucet-ring),
+    var(--lucet-elevation-3),
+    var(--lucet-highlight);
 }
 
 /* ============================================================

@@ -40,7 +40,9 @@
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
-  --lucet-default-ring: var(--lucet-accent-8);
+  /* Step 9, not 8. On a light surface accent-8 is about 2.3:1 against
+     white, under the 3:1 that 1.4.11 requires of a focus indicator. */
+  --lucet-default-ring: var(--lucet-accent-9);
   --lucet-default-hover: var(--lucet-neutral-100);
   --lucet-default-hover-strong: var(--lucet-neutral-200);
   --lucet-default-primary-hover: var(--lucet-accent-10);

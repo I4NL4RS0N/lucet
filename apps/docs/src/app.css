@@ -67,8 +67,6 @@ header p {
 
 
 
-
-
 /* ---------- panes ---------- */
 
 main {
@@ -154,12 +152,6 @@ p { line-height: var(--lucet-leading-prose); }
   box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
 }
 
-:root[data-expression='expressive'] fieldset {
-  border-color: transparent;
-  background: var(--lucet-card);
-  border-radius: var(--lucet-radius-container);
-  box-shadow: var(--lucet-elevation-2), var(--lucet-highlight);
-}
 
 /* ---------- drawer ---------- */
 
@@ -208,8 +200,6 @@ button {
 
 button:hover:not(:disabled) { background: var(--lucet-hover-strong); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-
 
 
 
@@ -323,8 +313,14 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   appearance: none;
   width: 100%;
   min-block-size: 2rem;
+  /* Same trap as the buttons: without this the gradient is sized to the
+     padding box and painted to the border box, so a transparent border shows a
+     mismatched band. */
+  background-origin: border-box;
   padding: var(--lucet-space-2) var(--lucet-space-7) var(--lucet-space-2) var(--lucet-space-3);
-  background: var(--lucet-card);
+  /* background-color, not the shorthand: the shorthand would reset
+     background-origin above and reinstate the mismatched band. */
+  background-color: var(--lucet-card);
   color: inherit;
   border: 1px solid var(--lucet-border);
   /* Deliberately not the pill. A field with a chevron reads as a rounded
@@ -337,7 +333,8 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 .control__field select:hover { background-color: var(--lucet-hover); }
 
 :root[data-expression='expressive'] .control__field select {
-  border-color: transparent;
+  /* The ring is a shadow here, so the border is dead weight. */
+  border-width: 0;
   background-image: linear-gradient(
     180deg,
     oklch(from var(--lucet-card) calc(l + 0.012) c h),
