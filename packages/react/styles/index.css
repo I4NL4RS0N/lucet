@@ -607,7 +607,7 @@
  *
  * One surface, and it is the FIELD: the container itself is the inset
  * material, with the textarea, attachments, and toolbar living inside it.
- * The old .lucet-composer stays until the Konfabulator is rebuilt against
+ * The old .lucet-composer stays until the Configurator is rebuilt against
  * this component.
  *
  * Every state rule here mirrors something the core contract can be in;
@@ -685,7 +685,9 @@
   flex: none;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  /* 2.25, not 2: the badge precedent -- a 13px icon beside 12px text needs
+     more stroke than a 14px one beside 13px to hold the same optical weight. */
+  stroke-width: 2.25;
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--lucet-muted-foreground);
@@ -752,6 +754,9 @@
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
+/* 24px, DELIBERATELY not larger: chips sit a few pixels apart, and a wider
+   pseudo would reach over the neighbouring chip's name -- the misclick this
+   library already shipped once. 24 clears 2.5.8 without trespassing. */
 .lucet-prompt__att-remove::before {
   content: '';
   position: absolute;
@@ -762,8 +767,8 @@
   block-size: 24px;
 }
 .lucet-prompt__att-remove svg {
-  inline-size: 10px;
-  block-size: 10px;
+  inline-size: 11px;
+  block-size: 11px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;

@@ -288,6 +288,7 @@ export function PromptInput({
     <form
       className="lucet-prompt"
       data-blocked={blocker ?? undefined}
+      aria-busy={streaming || undefined}
       onSubmit={(event) => {
         event.preventDefault()
         trySend()
