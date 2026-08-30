@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet'
 import type { LucetEvent, ThreadState } from 'lucet'
-import { PromptInput } from 'lucet-react'
+import { PromptInput, Thread } from 'lucet-react'
 
 /**
  * The components stage. Private, never deployed — the primitives page's
@@ -41,6 +41,103 @@ const settle = (id: string, status: 'ready' | 'failed', reason: string | null = 
 })
 
 type Fixture = { label: string; note: string; state: ThreadState; streaming?: boolean }
+
+/* Build a full turn: prompt in, response streamed, settled however told. */
+function turn(
+  n: number,
+  prompt: string,
+  opts: {
+    author?: string
+    attachmentIds?: readonly string[]
+    reply?: string
+    tool?: { name: string; status: 'running' | 'succeeded' | 'failed' | 'partial'; detail?: string }
+    reasoning?: boolean
+    settle?: 'complete' | 'interrupted' | 'failed' | 'refused' | 'streaming'
+    reason?: string
+  } = {},
+): LucetEvent[] {
+  const t = `t${n}`, pm = `pm${n}`, rm = `rm${n}`
+  const events: LucetEvent[] = [
+    { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [] },
+    { type: 'response/started', turnId: t, messageId: rm },
+  ]
+  if (opts.reasoning) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: 'thinking' } })
+  if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null } })
+  if (opts.reply !== undefined) {
+    events.push({ type: 'part/added', messageId: rm, part: { kind: 'text', id: `${rm}_x`, text: '' } })
+    events.push({ type: 'part/delta', messageId: rm, partId: `${rm}_x`, delta: opts.reply })
+  }
+  const settle = opts.settle ?? 'complete'
+  if (settle !== 'streaming') {
+    events.push({ type: 'response/settled', messageId: rm, status: settle, reason: opts.reason ?? null })
+    events.push({ type: 'composer/unlocked' })
+  }
+  return events
+}
+
+const THREAD_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'A finished turn, attachments and all',
+    note: 'The prompt keeps a surface and shows what went with it; the answer is a document — no bubble, full measure.',
+    state: play([
+      add('f1', 'quarterly-summary.pdf'), settle('f1', 'ready'),
+      ...turn(1, 'What changed between these two revisions?', {
+        attachmentIds: ['f1'],
+        tool: { name: 'Searched the document', status: 'succeeded', detail: '12 passages' },
+        reply: 'Only the schedule moved. The review step now runs after approval, and anything filed before Tuesday follows the previous order.',
+      }),
+    ]),
+  },
+  {
+    label: 'Streaming',
+    note: 'The caret rides the live edge of the text — the eye tracks one thing.',
+    state: play(
+      turn(1, 'Summarise the meeting notes.', {
+        reply: 'Three decisions were made. The first covers the',
+        settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'Stopped early',
+    note: 'What arrived stays, and the ending says so plainly.',
+    state: play(
+      turn(1, 'List every open question.', {
+        reply: 'There are four. The first two concern the budget',
+        settle: 'interrupted',
+        reason: 'Stopped by you. What arrived is kept.',
+      }),
+    ),
+  },
+  {
+    label: 'Failed',
+    note: 'A failure is an ending with words, never a spinner that never resolves.',
+    state: play(
+      turn(1, 'Compare the proposals.', {
+        settle: 'failed',
+        reason: 'The service dropped the connection. Nothing was charged.',
+      }),
+    ),
+  },
+  {
+    label: 'Declined',
+    note: 'A refusal is not an error, so it does not wear red. It says why, calmly.',
+    state: play(
+      turn(1, 'Write it in her voice exactly.', {
+        settle: 'refused',
+        reason: 'That would imitate a real person. Happy to draft it in a neutral voice instead.',
+      }),
+    ),
+  },
+  {
+    label: 'Multiplayer — two people, one thread',
+    note: 'Turns are author-labelled, not aligned by self: alignment stops meaning anything with three people in the room.',
+    state: play([
+      ...turn(1, 'Pull the numbers for the northern site.', { author: 'Ada', reply: 'Done — the totals are in the table above, and the outlier is flagged.' }),
+      ...turn(2, 'And the same for the southern one?', { author: 'you', reply: 'Same shape, one difference: the southern site peaks a month later.' }),
+    ]),
+  },
+]
 
 /* The single-player state matrix. */
 const CORE_FIXTURES: readonly Fixture[] = [
@@ -124,7 +221,9 @@ function Live() {
   useEffect(() => lucet.subscribe(() => setState(lucet.getState())), [lucet])
 
   return (
-    <PromptInput
+    <div style={{ display: 'grid', gap: 20 }}>
+      <Thread state={state} selfId="you" />
+      <PromptInput
       composer={state.composer}
       model={state.model}
       service={state.service}
@@ -155,7 +254,8 @@ function Live() {
           )
         }, 1200)
       }}
-    />
+      />
+    </div>
   )
 }
 
@@ -201,7 +301,7 @@ export function ComponentsStage() {
           state, not a picture of one. Private page.
         </p>
 
-        <Section n="01" name="Prompt input" note="try it — type, attach, send">
+        <Section n="01" name="The app, live" note="try it — type, attach, send, watch it answer">
           <div style={{ maxInlineSize: 620, paddingBlock: 8 }}>
             <Live />
           </div>
@@ -264,7 +364,21 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="04" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
+        <Section n="04" name="Thread — every ending" note="a response is never simply loading or done">
+          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+            {THREAD_FIXTURES.map((f) => (
+              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
+                <span className="spec__label">{f.label}</span>
+                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
+                  <Thread state={f.state} selfId="you" />
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section n="05" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
           <div className="stage">
             <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
               <PromptInput

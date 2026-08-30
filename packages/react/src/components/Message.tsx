@@ -74,6 +74,10 @@ export function Message({ message, version, actions }: MessageProps) {
               />
             )
           }
+          /* Attachment parts are the NEW thread component's job; this
+             old-era renderer retires at the Configurator rebuild and its
+             scenarios never produce them. */
+          if (part.kind === 'attachment') return null
           return (
             <p key={part.id} className="lucet-message__text">
               {part.text}

@@ -54,9 +54,9 @@ const ACCENTS = ['slate', 'blue', 'indigo', 'violet', 'magenta', 'rose', 'green'
  * sweep stays on the primitives page, which already proves the accent axis.
  */
 const COMPONENT_PROBES = [
-  { sec: 'Prompt input', hover: '.lucet-prompt__tool', part: 'attach tool', bg: true },
-  { sec: 'Prompt input', hover: '.lucet-prompt__model select', part: 'model select', bg: true },
-  { sec: 'Prompt input', hover: '[aria-label="Send"][disabled]', part: 'send disabled', expect: 'none' },
+  { sec: 'The app, live', hover: '.lucet-prompt__tool', part: 'attach tool', bg: true },
+  { sec: 'The app, live', hover: '.lucet-prompt__model select', part: 'model select', bg: true },
+  { sec: 'The app, live', hover: '[aria-label="Send"][disabled]', part: 'send disabled', expect: 'none' },
   { sec: 'Prompt input — every state', hover: '[aria-label="Send"]:not([disabled])', part: 'send enabled' },
   { sec: 'Prompt input — every state', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
   { sec: 'Prompt input — every state', hover: '.lucet-prompt__att [aria-label^="Remove"]', part: 'chip remove', bg: true },

@@ -665,7 +665,8 @@
   margin-block-end: var(--lucet-space-2);
 }
 
-.lucet-prompt__att {
+.lucet-prompt__att,
+.lucet-att {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -679,7 +680,8 @@
   max-inline-size: 260px;
 }
 
-.lucet-prompt__att-icon {
+.lucet-prompt__att-icon,
+.lucet-att__icon {
   inline-size: 13px;
   block-size: 13px;
   flex: none;
@@ -693,12 +695,15 @@
   color: var(--lucet-muted-foreground);
 }
 
-.lucet-prompt__att-name {
+.lucet-prompt__att-name,
+.lucet-att__name {
   display: flex;
   align-items: baseline;
   min-inline-size: 0;
   white-space: nowrap;
 }
+.lucet-att__name { display: inline; overflow: hidden; text-overflow: ellipsis; }
+.lucet-att--readonly { padding-inline: 8px; }
 /* The base gives way; the extension survives any squeeze. */
 .lucet-prompt__att-base {
   min-inline-size: 0;
@@ -714,14 +719,16 @@
   background-color: var(--lucet-tone-danger-surface);
   box-shadow: var(--lucet-hairline);
 }
-.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-icon { color: inherit; }
+.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-icon,
+.lucet-att__icon { color: inherit; }
 .lucet-prompt__att-reason {
   flex: none;
   font-size: 11px;
   opacity: 0.85;
 }
 
-.lucet-prompt__att[data-status='uploading'] .lucet-prompt__att-name {
+.lucet-prompt__att[data-status='uploading'] .lucet-prompt__att-name,
+.lucet-att__name {
   color: var(--lucet-muted-foreground);
 }
 
@@ -1137,4 +1144,136 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lucet-tip { transition: opacity 90ms ease-out; translate: -50% 0; }
+}
+
+/* ============================================================
+ * Thread — turns rendered from the contract. The response is a DOCUMENT at
+ * full measure; the prompt keeps a surface because it is an utterance you
+ * need to find again while scrolling. Authors are labelled, not aligned:
+ * alignment-by-self stops meaning anything with three people in the room.
+ * ============================================================ */
+
+.lucet-thread {
+  display: grid;
+  gap: var(--lucet-space-5);
+}
+
+.lucet-thread__pair {
+  display: grid;
+  gap: var(--lucet-space-4);
+}
+
+.lucet-thread__turn { min-inline-size: 0; }
+
+.lucet-thread__head {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-1);
+  margin-block-end: var(--lucet-space-1);
+}
+
+.lucet-thread__author {
+  font-size: var(--lucet-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--lucet-muted-foreground);
+}
+
+/* The prompt: a raised surface, narrower than the response. What you said is
+   the smaller thing on the page; what came back is the artefact. */
+.lucet-thread__prompt {
+  display: grid;
+  gap: var(--lucet-space-2);
+  max-inline-size: 46ch;
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-secondary);
+  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
+}
+.lucet-thread__prompt .lucet-thread__text {
+  margin: 0;
+  font-size: var(--lucet-text-sm);
+  line-height: 1.55;
+  color: var(--lucet-secondary-foreground);
+}
+
+/* The response: no container, full measure, prose rhythm. */
+.lucet-thread__doc {
+  display: grid;
+  gap: var(--lucet-space-2);
+  max-inline-size: 68ch;
+}
+.lucet-thread__doc .lucet-thread__text {
+  margin: 0;
+  font-size: var(--lucet-text-base);
+  line-height: var(--lucet-leading-prose);
+  color: var(--lucet-foreground);
+  text-wrap: pretty;
+}
+
+/* The live edge of the stream, on the text itself so the eye tracks one thing. */
+.lucet-thread__caret {
+  display: inline-block;
+  inline-size: 2px;
+  block-size: 1em;
+  vertical-align: -0.15em;
+  margin-inline-start: 2px;
+  border-radius: 1px;
+  background: var(--lucet-subtle-foreground);
+  animation: lucet-thread-blink 1s steps(1) infinite;
+}
+@keyframes lucet-thread-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+/* Reasoning and tool rows: quiet asides in the document flow. Each becomes
+   its own baseline component later; this is the honest minimum meanwhile. */
+.lucet-thread__aside {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  min-block-size: 30px;
+  padding-inline: var(--lucet-space-2);
+  border-radius: var(--lucet-radius-control);
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-subtle-foreground);
+  inline-size: fit-content;
+}
+.lucet-thread__aside-caret {
+  inline-size: 6px;
+  block-size: 6px;
+  flex: none;
+  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
+  border-block-end: 1.5px solid var(--lucet-muted-foreground);
+  rotate: -45deg;
+}
+.lucet-thread__aside-meta {
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+}
+
+.lucet-thread__atts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lucet-space-1);
+}
+
+/* How a message ENDED, when it did not simply finish. Words, not a spinner
+   that never resolves: stopped, failed, and declined are different endings
+   and each says what survives. */
+.lucet-thread__ended {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  margin: var(--lucet-space-1) 0 0;
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-subtle-foreground);
+  text-wrap: pretty;
+}
+.lucet-thread__ended strong { font-weight: 600; color: var(--lucet-foreground); }
+.lucet-thread__ended[data-status='failed'] strong { color: var(--lucet-tone-danger-foreground); }
+.lucet-thread__ended[data-status='refused'] strong { color: var(--lucet-foreground); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-thread__caret { animation: none; }
 }

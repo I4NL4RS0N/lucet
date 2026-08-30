@@ -171,11 +171,30 @@ export function reduce(
         : state
 
     case 'turn/submitted': {
+      /*
+       * The prompt carries its attachments as PARTS, looked up from the
+       * composer by the ids the event names. The event log stays the truth
+       * (attachmentIds says exactly what went); the parts are that truth
+       * made visible in the thread.
+       */
+      const sent = event.attachmentIds
+        .map((id) => state.composer.attachments.find((a) => a.id === id))
+        .filter((a): a is NonNullable<typeof a> => a !== undefined)
+        .map((a) => ({
+          kind: 'attachment' as const,
+          id: a.id,
+          name: a.name,
+          fileKind: a.fileKind,
+          sizeBytes: a.sizeBytes,
+        }))
       const prompt: Message = {
         id: event.messageId,
         role: 'user',
         authorId: event.authorId,
-        parts: [{ kind: 'text', id: `${event.messageId}_p1`, text: event.text }],
+        parts: [
+          ...(event.text.trim() ? [{ kind: 'text' as const, id: `${event.messageId}_p1`, text: event.text }] : []),
+          ...sent,
+        ],
         status: 'complete',
         reason: null,
         createdAt: ctx.now,

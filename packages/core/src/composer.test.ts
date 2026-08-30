@@ -74,6 +74,20 @@ describe('composer attachments', () => {
     // Silently discarding a failed or in-flight attachment on submit would
     // send less than the person thinks they sent.
     expect(s.composer.attachments.map((a) => a.id)).toEqual(['slow', 'bad'])
+    // And what went is VISIBLE on the prompt as parts, not just logged.
+    expect(s.turns[0]!.prompt.parts).toMatchObject([
+      { kind: 'text', text: 'go' },
+      { kind: 'attachment', id: 'ok', name: 'ok.pdf' },
+    ])
+  })
+
+  it('an attachment-only prompt carries no empty text part', () => {
+    const s = play([
+      add('a1'),
+      settle('a1', 'ready'),
+      { type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: '', authorId: 'you', attachmentIds: ['a1'] },
+    ])
+    expect(s.turns[0]!.prompt.parts).toMatchObject([{ kind: 'attachment', id: 'a1' }])
   })
 })
 

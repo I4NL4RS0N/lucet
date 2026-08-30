@@ -50,7 +50,20 @@ export interface ToolPart {
   readonly detail: string | null
 }
 
-export type MessagePart = TextPart | ReasoningPart | ToolPart
+/**
+ * An attachment that WENT WITH a message. Deferred when the composer landed,
+ * due now that messages render: the composer's chips move here on submit, so
+ * what you sent stays visible in the thread, not just in the event log.
+ */
+export interface AttachmentPart {
+  readonly kind: 'attachment'
+  readonly id: string
+  readonly name: string
+  readonly fileKind: AttachmentKind
+  readonly sizeBytes: number
+}
+
+export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart
 
 export interface Message {
   readonly id: string
