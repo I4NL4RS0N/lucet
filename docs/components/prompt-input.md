@@ -64,6 +64,18 @@ words add nothing. Queue, Queued, and Stop keep their words, because they
 carry semantics most tools do not have, and a differentiator explains itself
 on first contact.
 
+## Three tiers inside one composer
+
+The send arrow is **solid** — the thing you came to press. The attachment
+chips are **white and raised** — content you made, objects in the composer,
+and in light mode white means exactly that. Attach and the model picker are
+**ghosts with hairlines** — ambient controls that inhabit the recess rather
+than sit on it: the whole composer is one inset object, and raised things do
+not get stacked inside a well you type into. The hairline keeps them
+pressable-looking (the same decision that gave ghost buttons theirs); hover
+gives them the veil. The quiet bar is load-bearing — it is what lets the
+chips read as content and the arrow land as the action.
+
 ## The bar stays small, and here is the overflow plan
 
 The toolbar holds the send button plus, at most, attach, the model picker,
