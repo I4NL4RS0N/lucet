@@ -874,3 +874,169 @@
 @media (prefers-reduced-motion: reduce) {
   .lucet-prompt__att-spin { animation: none; }
 }
+
+/* ============================================================
+ * Activity orb — promoted from the primitives lab (which keeps a local copy
+ * for its specimens; THIS is the canonical one). Concentric rings in the
+ * hairline vocabulary; what each state's motion means is documented per rule.
+ * ============================================================ */
+
+.lucet-orb {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--lucet-orb-size, 22px);
+  block-size: var(--lucet-orb-size, 22px);
+  flex: none;
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-orb--sm { --lucet-orb-size: 16px; }
+.lucet-orb--lg { --lucet-orb-size: 34px; }
+
+.lucet-orb svg { inline-size: 100%; block-size: 100%; overflow: visible; }
+
+/* Written at `circle.<class>` on purpose: the lab shipped a version where
+   `.orb circle` outranked `.orb__track` and every state drew two identical
+   rings. Specificity is part of the recipe. */
+.lucet-orb circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.lucet-orb circle.lucet-orb__track {
+  stroke: color-mix(in oklab, currentColor 20%, transparent);
+  stroke-width: 1.5;
+}
+
+.lucet-orb circle.lucet-orb__arc { stroke-linecap: round; }
+.lucet-orb circle.lucet-orb__core { stroke: none; fill: currentColor; }
+
+/* The WORKING states take the accent: the agent working on your request is
+   the most brand-forward moment the interface has, and under monochrome this
+   resolves to the neutral solid, so the default stays greyscale. */
+.lucet-orb[data-state='thinking'],
+.lucet-orb[data-state='searching'],
+.lucet-orb[data-state='composing'] { color: var(--lucet-primary); }
+
+/* THINKING: inward. Two arcs counter-rotating — turning over, not fetching. */
+.lucet-orb[data-state='thinking'] circle.lucet-orb__arc {
+  stroke-dasharray: 14 42;
+  animation: lucet-orb-spin 2.4s linear infinite;
+}
+.lucet-orb[data-state='thinking'] circle.lucet-orb__arc2 {
+  stroke-dasharray: 6 50;
+  animation: lucet-orb-spin 1.6s linear infinite reverse;
+}
+.lucet-orb[data-state='thinking'] circle.lucet-orb__core { animation: lucet-orb-pulse 2.4s ease-in-out infinite; }
+
+/* SEARCHING: outward. One long arc at a steady rate — a scan. */
+.lucet-orb[data-state='searching'] circle.lucet-orb__arc {
+  stroke-dasharray: 30 26;
+  animation: lucet-orb-spin 1.1s linear infinite;
+}
+
+/* COMPOSING: accumulating. Grows and resets — it does not know how much is left. */
+.lucet-orb[data-state='composing'] circle.lucet-orb__arc {
+  animation: lucet-orb-grow 2s ease-in-out infinite;
+  rotate: -90deg;
+}
+
+/* BLOCKED ON YOU: nothing rotates, on purpose. A spinning mark next to
+   "waiting for your answer" says the machine is busy when the person is the
+   bottleneck. It breathes and holds still. */
+.lucet-orb[data-state='blocked'] circle.lucet-orb__arc { display: none; }
+.lucet-orb[data-state='blocked'] circle.lucet-orb__track {
+  stroke: color-mix(in oklab, currentColor 34%, transparent);
+}
+.lucet-orb[data-state='blocked'] circle.lucet-orb__core { animation: lucet-orb-pulse 2.6s ease-in-out infinite; }
+
+/* QUEUED: a position in a line, not progress. One point creeps far too
+   slowly to read as work. Info-toned: expected, not wrong. */
+.lucet-orb[data-state='queued'] { color: var(--lucet-tone-info-foreground); }
+.lucet-orb[data-state='queued'] circle.lucet-orb__arc {
+  stroke-dasharray: 1.5 999;
+  animation: lucet-orb-spin 4s linear infinite;
+}
+
+/* DEGRADED: running, but not properly. The sweep stutters. */
+.lucet-orb[data-state='degraded'] { color: var(--lucet-tone-caution-foreground); }
+.lucet-orb[data-state='degraded'] circle.lucet-orb__arc {
+  stroke-dasharray: 30 26;
+  animation: lucet-orb-spin 1.6s steps(8) infinite;
+}
+
+/* DOWN: unreachable. A ring with a piece missing, and NO animation — nothing
+   moves because nothing is happening. The one state whose stillness is the
+   message, which is also why reduced motion changes nothing here. */
+.lucet-orb[data-state='down'] { color: var(--lucet-tone-danger-foreground); }
+.lucet-orb[data-state='down'] circle.lucet-orb__arc {
+  stroke-dasharray: 42 14;
+  rotate: 32deg;
+}
+
+@keyframes lucet-orb-spin { to { rotate: 360deg; } }
+@keyframes lucet-orb-pulse {
+  0%, 100% { opacity: 0.4; scale: 0.8; }
+  50%      { opacity: 1;   scale: 1.1; }
+}
+@keyframes lucet-orb-grow {
+  0%   { stroke-dasharray: 0 56; }
+  70%  { stroke-dasharray: 52 4; }
+  100% { stroke-dasharray: 0 56; }
+}
+
+.lucet-orb-row { display: inline-flex; align-items: center; gap: 9px; font-size: var(--lucet-text-sm); }
+/* Inherits, unlike the lab copy: the surface the row sits on (a tone strip,
+   a table cell) owns the text colour. */
+.lucet-orb-row__label { color: inherit; min-inline-size: 0; }
+.lucet-orb-row__time {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Each state keeps a DISTINCT static form; collapsing them to one dot
+     would delete exactly the information the set carries. */
+  .lucet-orb circle { animation: none !important; }
+  .lucet-orb[data-state='thinking'] circle.lucet-orb__arc { stroke-dasharray: 14 42; }
+  .lucet-orb[data-state='thinking'] circle.lucet-orb__arc2 { stroke-dasharray: 6 50; rotate: 140deg; }
+  .lucet-orb[data-state='searching'] circle.lucet-orb__arc { stroke-dasharray: 30 26; }
+  .lucet-orb[data-state='composing'] circle.lucet-orb__arc { stroke-dasharray: 40 16; rotate: -90deg; }
+  .lucet-orb[data-state='queued'] circle.lucet-orb__arc { stroke-dasharray: 1.5 999; }
+  .lucet-orb[data-state='degraded'] circle.lucet-orb__arc { stroke-dasharray: 4 6; }
+}
+
+/* ============================================================
+ * Prompt input status strip — the composer wearing its own condition.
+ *
+ * Locked, queued, and down were a 12px grey line beside the send button:
+ * technically present, honestly invisible — the exact treatment this library
+ * exists to argue against. The strip sits at the TOP of the surface, bleeds
+ * to its edges, and carries an orb, because these are precisely the waits
+ * the orb set was designed to name. Severity is honest: neutral for a turn
+ * in flight, info for queued, danger for down.
+ * ============================================================ */
+
+.lucet-prompt__status {
+  display: flex;
+  align-items: center;
+  margin: calc(-1 * var(--lucet-space-2)) calc(-1 * var(--lucet-space-2)) var(--lucet-space-2) calc(-1 * var(--lucet-space-3));
+  padding: 7px var(--lucet-space-3);
+  border-radius: var(--lucet-radius-surface) var(--lucet-radius-surface) 0 0;
+  font-size: var(--lucet-text-sm);
+  background-color: var(--lucet-secondary);
+  color: var(--lucet-foreground);
+}
+.lucet-prompt__status .lucet-orb { --lucet-orb-size: 16px; }
+
+.lucet-prompt__status[data-tone='info'] {
+  background-color: var(--lucet-tone-info-surface);
+  color: var(--lucet-tone-info-foreground);
+}
+.lucet-prompt__status[data-tone='danger'] {
+  background-color: var(--lucet-tone-danger-surface);
+  color: var(--lucet-tone-danger-foreground);
+}

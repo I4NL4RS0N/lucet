@@ -75,7 +75,7 @@ const FIXTURES: readonly { label: string; note: string; state: ThreadState; stre
   {
     label: 'Service down',
     note: 'Down blocks with words. Degraded deliberately does not block at all.',
-    state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'outage' }]),
+    state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'The model provider is having an outage. Nothing you have written is lost.' }]),
   },
 ]
 

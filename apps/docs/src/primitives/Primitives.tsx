@@ -173,7 +173,7 @@ function Orb({
   time,
   size,
 }: {
-  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded'
+  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded' | 'down'
   label: string
   time?: string
   size?: 'sm' | 'lg'
@@ -818,6 +818,7 @@ export function Primitives() {
               <Orb state="blocked" label="Waiting for your answer" />
               <Orb state="queued" label="Queued behind 2 runs" time="~40s" />
               <Orb state="degraded" label="Running on the fallback model" />
+              <Orb state="down" label="Service unreachable" />
             </div>
           </Spec>
 

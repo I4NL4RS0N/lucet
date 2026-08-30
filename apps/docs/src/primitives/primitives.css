@@ -1505,6 +1505,18 @@ code, .code {
   animation: orb-spin 1.6s steps(8) infinite;
 }
 
+/*
+ * DOWN. Unreachable. A ring with a piece missing and NO animation: nothing
+ * moves because nothing is happening -- the one state whose stillness is the
+ * message. Joined the set when the prompt input's status strip needed it.
+ * (The canonical orb now lives in lucet-react; this lab copy mirrors it.)
+ */
+.orb[data-state='down'] { color: var(--bad); }
+.orb[data-state='down'] circle.orb__arc {
+  stroke-dasharray: 42 14;
+  rotate: 32deg;
+}
+
 @keyframes orb-spin { to { rotate: 360deg; } }
 @keyframes orb-pulse {
   0%, 100% { opacity: 0.4; scale: 0.8; }

@@ -6,6 +6,7 @@ import type {
   ServiceState,
 } from 'lucet'
 import { describeSubmitBlocker, submitBlocker } from 'lucet'
+import { ActivityOrb } from './ActivityOrb.js'
 
 /**
  * The prompt input, rendered FROM the contract.
@@ -100,6 +101,37 @@ export function PromptInput({
   const queued = composer.queued !== null
   const canQueue = blocker === 'locked' && onQueue !== undefined && !queued
 
+  /*
+   * The strip: locked, queued, and down get the top of the surface, a tone,
+   * and an orb -- these are exactly the waits the orb set names, and as a
+   * grey line beside the button they were honestly invisible. One strip at a
+   * time, most severe first. Attachment blockers stay by the button, where
+   * the chips are.
+   */
+  const strip =
+    service.status === 'down'
+      ? {
+          tone: 'danger' as const,
+          orb: 'down' as const,
+          text: service.message ?? describeSubmitBlocker('service-down'),
+        }
+      : queued
+        ? {
+            tone: 'info' as const,
+            orb: 'queued' as const,
+            text: 'Queued — sends when the current response finishes',
+          }
+        : composer.locked
+          ? {
+              tone: 'neutral' as const,
+              orb: 'thinking' as const,
+              text:
+                composer.lockedBy && composer.lockedBy !== 'you'
+                  ? `${composer.lockedBy} is running a turn — your prompt will queue`
+                  : 'A response is in progress — your prompt will queue',
+            }
+          : null
+
   const trySend = () => {
     if (blocker === null) onSubmit()
     else if (canQueue && composer.text.trim()) onQueue(composer.text)
@@ -114,6 +146,12 @@ export function PromptInput({
         trySend()
       }}
     >
+      {strip ? (
+        <div className="lucet-prompt__status" data-tone={strip.tone} role="status">
+          <ActivityOrb state={strip.orb} label={strip.text} />
+        </div>
+      ) : null}
+
       {composer.attachments.length > 0 ? (
         <div className="lucet-prompt__atts">
           {composer.attachments.map((att) => (
@@ -169,16 +207,15 @@ export function PromptInput({
         </label>
 
         {/*
-         * The words, for every blocker except `empty`. An empty composer with
-         * a quiet disabled button explains itself; the other four do not.
-         * aria-live so the reason is announced when it appears.
+         * The words by the button cover only the ATTACHMENT blockers now --
+         * their chips are in reach of the same glance. Locked, queued, and
+         * down moved up into the strip; empty stays wordless because an empty
+         * composer explains itself.
          */}
         <p className="lucet-prompt__why" role="status">
-          {queued
-            ? 'Queued — sends when the current response finishes'
-            : blocker !== null && blocker !== 'empty'
-              ? describeSubmitBlocker(blocker)
-              : ''}
+          {blocker === 'attachment-uploading' || blocker === 'attachment-failed'
+            ? describeSubmitBlocker(blocker)
+            : ''}
         </p>
 
         {streaming && onStop ? (
