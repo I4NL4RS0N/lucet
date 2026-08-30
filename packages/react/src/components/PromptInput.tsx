@@ -230,11 +230,13 @@ export function PromptInput({
             }
           : streaming
             ? {
-                // The strip is Stop's context: what is running, and what
-                // stopping costs (nothing that already arrived).
+                // Plain words only: "Stop keeps what has already arrived"
+                // read as a riddle. That stopping preserves the partial
+                // response is a convention every AI tool has taught, and
+                // conventions do not need explaining -- novelties do.
                 tone: 'neutral' as const,
                 orb: 'composing' as const,
-                text: 'Responding to your prompt — Stop keeps what has already arrived',
+                text: 'Writing a response…',
               }
             : composer.locked
               ? {
