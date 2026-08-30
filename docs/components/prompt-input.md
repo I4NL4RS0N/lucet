@@ -1,0 +1,60 @@
+# Prompt input
+
+The composer: where a person writes, attaches, picks a model, and sends. First
+component built, because everything else in an AI interface is downstream of a
+prompt existing.
+
+## What it is made of
+
+State first. The component renders `ComposerState` + `ModelState` and never
+owns state of its own:
+
+- **Text**, with the turn lock and the queue. When anyone submits, the
+  composer locks for everyone until the response settles; what you type while
+  locked queues, and unlocking promotes it instead of making you retype.
+- **Attachments**, where *uploading is a state, not an instant*. Every
+  attachment is `uploading → ready | failed`, and a failure carries its
+  reason. Most composers pretend attaching is synchronous, which leaves the
+  failure nowhere to live except a toast.
+- **Model choice**, on the thread rather than the composer: it applies to the
+  next turn, drives projected cost, and is the extension point the Budget
+  Meter grows out of. Options are capability-named (`Balanced`, `Fast`,
+  `Deep reasoning`) — a library that ships one vendor's model names reads as
+  built for that vendor.
+
+## The position: a send button that says why
+
+`submitBlocker(state)` returns one reason or null — `locked`,
+`service-down`, `attachment-uploading`, `attachment-failed`, `empty` — ordered
+by actionability, with default copy in `describeSubmitBlocker`. "Why can't I
+send this" is one of the questions AI interfaces answer worst; a greyed-out
+button teaches nothing.
+
+Two of these encode deliberate calls:
+
+- **A failed attachment blocks sending.** Submitting around it would silently
+  send less than the person thinks they sent. Remove it or fix it; the
+  interface does not guess.
+- **Degraded does not block; down does.** They are different problems and get
+  different treatment throughout the library.
+
+On submit, ready attachments go with the turn (the event log records exactly
+which); anything still uploading or failed stays behind, visible.
+
+## What is deliberately not here yet
+
+- Attachment parts on the submitted *message* — that representation belongs
+  to the Message component and will be added with it.
+- Token estimation for the draft — the context meter reads real usage; a
+  projection belongs to the Budget Meter extension.
+- Voice input — its own baseline component.
+
+## Overlap, named
+
+Vercel's AI Elements ships a `PromptInput` with attachments and a model
+select. The overlap is real and worth naming. The difference is the layer
+underneath: Lucet's composer is a framework-free state contract — the lock,
+the queue, attachment failure states, and submit blockers with reasons are
+all in `lucet` core, testable without a DOM, and every transition is an
+event in a log. The component is a rendering of that contract, not the
+place where the behaviour lives.

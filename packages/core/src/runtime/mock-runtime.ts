@@ -161,6 +161,10 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         messageId: promptId,
         text: scenario.prompt ?? '',
         authorId,
+        attachmentIds: store
+          .getState()
+          .composer.attachments.filter((a) => a.status === 'ready')
+          .map((a) => a.id),
       })
       // Single writer at a time. The composer closes for everyone, not just the
       // person who submitted.

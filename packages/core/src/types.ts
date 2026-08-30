@@ -87,12 +87,63 @@ export type RuntimeStatus = 'idle' | 'submitting' | 'streaming'
  * being locked out from feeling dead. You can write your next prompt, you just
  * cannot send it yet.
  */
+/**
+ * Uploading is a STATE, not an instant. Most composers pretend attaching is
+ * synchronous and then have nowhere to put the failure; this contract gives
+ * the failure a home, which is what lets the interface be honest about it.
+ */
+export type AttachmentStatus = 'uploading' | 'ready' | 'failed'
+
+export type AttachmentKind = 'image' | 'audio' | 'document' | 'other'
+
+export interface ComposerAttachment {
+  readonly id: string
+  readonly name: string
+  readonly fileKind: AttachmentKind
+  readonly sizeBytes: number
+  readonly status: AttachmentStatus
+  /** Why it failed, when it did. Null otherwise. */
+  readonly reason: string | null
+}
+
 export interface ComposerState {
   readonly text: string
   readonly locked: boolean
   readonly lockedBy: string | null
   readonly queued: string | null
+  readonly attachments: readonly ComposerAttachment[]
 }
+
+/**
+ * The model choice lives on the THREAD, not the composer: it applies to the
+ * next turn and drives the projected cost, and it is the extension point the
+ * Budget Meter grows out of.
+ */
+export interface ModelOption {
+  readonly id: string
+  readonly label: string
+  /** One-line qualifier ("fastest", "best for long documents"). */
+  readonly note: string | null
+}
+
+export interface ModelState {
+  readonly selectedId: string
+  readonly options: readonly ModelOption[]
+}
+
+/**
+ * Why the composer cannot submit right now. Null means it can.
+ *
+ * A reason, not a boolean: a send button that merely greys out teaches
+ * nothing, and "why can't I send this" is one of the questions AI interfaces
+ * answer worst. One blocker at a time, most actionable first.
+ */
+export type SubmitBlocker =
+  | 'locked'
+  | 'service-down'
+  | 'attachment-uploading'
+  | 'attachment-failed'
+  | 'empty'
 
 export type ServiceStatus = 'operational' | 'degraded' | 'down'
 
@@ -120,6 +171,7 @@ export interface ThreadState {
   readonly turns: readonly Turn[]
   readonly status: RuntimeStatus
   readonly composer: ComposerState
+  readonly model: ModelState
   readonly service: ServiceState
   readonly usage: UsageState
   /** Turn id currently being viewed as a restored state, if any. */

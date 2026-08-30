@@ -8,6 +8,7 @@
  */
 
 import type {
+  AttachmentKind,
   MessagePart,
   MessageStatus,
   ServiceStatus,
@@ -22,12 +23,24 @@ export type LucetEvent =
   | { type: 'composer/locked'; by: string }
   | { type: 'composer/unlocked' }
   | {
+      type: 'attachment/added'
+      id: string
+      name: string
+      fileKind: AttachmentKind
+      sizeBytes: number
+    }
+  | { type: 'attachment/settled'; id: string; status: 'ready' | 'failed'; reason: string | null }
+  | { type: 'attachment/removed'; id: string }
+  | { type: 'model/changed'; modelId: string }
+  | {
       type: 'turn/submitted'
       turnId: string
       versionId: string
       messageId: string
       text: string
       authorId: string
+      /** What actually went with the turn. The log stays truthful. */
+      attachmentIds: readonly string[]
     }
   | { type: 'response/started'; turnId: string; messageId: string }
   | { type: 'part/added'; messageId: string; part: MessagePart }
@@ -76,6 +89,14 @@ export function describeEvent(event: LucetEvent): string {
       return `Composer locked by ${event.by}`
     case 'composer/unlocked':
       return 'Composer unlocked'
+    case 'attachment/added':
+      return `Attaching ${event.name}`
+    case 'attachment/settled':
+      return event.status === 'ready' ? 'Attachment ready' : 'Attachment failed'
+    case 'attachment/removed':
+      return 'Attachment removed'
+    case 'model/changed':
+      return `Model set to ${event.modelId}`
     case 'turn/submitted':
       return `Turn submitted by ${event.authorId}`
     case 'response/started':

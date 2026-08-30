@@ -3,18 +3,33 @@
  */
 
 import type { LucetEvent } from './events.js'
-import type { Message, MessagePart, ThreadState, Turn } from './types.js'
+import type { Message, MessagePart, ModelOption, ThreadState, Turn } from './types.js'
 
 export interface ReducerContext {
   readonly now: number
 }
 
-export function createInitialState(id: string, contextLimit = 200_000): ThreadState {
+/**
+ * Deliberately capability-shaped, never vendor-named. A library that ships one
+ * vendor's model names reads as built for that vendor.
+ */
+export const defaultModels: readonly ModelOption[] = [
+  { id: 'balanced', label: 'Balanced', note: 'Good at most things' },
+  { id: 'fast', label: 'Fast', note: 'Quick answers, lighter reasoning' },
+  { id: 'deep', label: 'Deep reasoning', note: 'Slower, best for hard problems' },
+]
+
+export function createInitialState(
+  id: string,
+  contextLimit = 200_000,
+  models: readonly ModelOption[] = defaultModels,
+): ThreadState {
   return {
     id,
     turns: [],
     status: 'idle',
-    composer: { text: '', locked: false, lockedBy: null, queued: null },
+    composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [] },
+    model: { selectedId: models[0]?.id ?? 'balanced', options: models },
     service: { status: 'operational', message: null, dismissed: false },
     usage: {
       threadTokens: 0,
@@ -57,7 +72,7 @@ export function reduce(
 ): ThreadState {
   switch (event.type) {
     case 'thread/reset':
-      return createInitialState(state.id, state.usage.contextLimit)
+      return createInitialState(state.id, state.usage.contextLimit, state.model.options)
 
     case 'composer/changed':
       return { ...state, composer: { ...state.composer, text: event.text } }
@@ -78,6 +93,7 @@ export function reduce(
       return {
         ...state,
         composer: {
+          ...state.composer,
           text: queued ?? state.composer.text,
           locked: false,
           lockedBy: null,
@@ -85,6 +101,53 @@ export function reduce(
         },
       }
     }
+
+    case 'attachment/added':
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          attachments: [
+            ...state.composer.attachments,
+            {
+              id: event.id,
+              name: event.name,
+              fileKind: event.fileKind,
+              sizeBytes: event.sizeBytes,
+              status: 'uploading',
+              reason: null,
+            },
+          ],
+        },
+      }
+
+    case 'attachment/settled':
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          attachments: state.composer.attachments.map((a) =>
+            a.id === event.id ? { ...a, status: event.status, reason: event.reason } : a,
+          ),
+        },
+      }
+
+    case 'attachment/removed':
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          attachments: state.composer.attachments.filter((a) => a.id !== event.id),
+        },
+      }
+
+    // Unknown ids are ignored rather than trusted: the reducer is total over
+    // arbitrary event streams, and a picker can never select a model the
+    // thread does not offer.
+    case 'model/changed':
+      return state.model.options.some((option) => option.id === event.modelId)
+        ? { ...state, model: { ...state.model, selectedId: event.modelId } }
+        : state
 
     case 'turn/submitted': {
       const prompt: Message = {
@@ -107,7 +170,14 @@ export function reduce(
         ...state,
         turns: [...state.turns, turn],
         status: 'submitting',
-        composer: { ...state.composer, text: '' },
+        composer: {
+          ...state.composer,
+          text: '',
+          // Ready attachments went with the turn. Anything still uploading or
+          // failed stays behind, visibly -- silently discarding it would send
+          // less than the person thinks they sent.
+          attachments: state.composer.attachments.filter((a) => a.status !== 'ready'),
+        },
       }
     }
 
