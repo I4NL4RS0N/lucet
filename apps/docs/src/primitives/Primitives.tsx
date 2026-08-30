@@ -188,67 +188,6 @@ function Orb({
 }
 
 
-/*
- * The pixel orb. Same six states as the ring orb, a different medium.
- *
- * Each cell carries its coordinates as custom properties and the CSS derives
- * the animation delay from them, so a state is one delay function rather than
- * twenty-five hand-written keyframes. Adding a state is a line of CSS.
- */
-const PIX = Array.from({ length: 25 }, (_, i) => {
-  const x = i % 5
-  const y = Math.floor(i / 5)
-  const edge = x === 0 || y === 0 || x === 4 || y === 4
-  // Distance from centre, for the pattern that fills outward.
-  const d = Math.max(Math.abs(x - 2), Math.abs(y - 2))
-  // Clockwise position around the perimeter, for the queue crawl.
-  const e = edge ? (y === 0 ? x : x === 4 ? 4 + y : y === 4 ? 8 + (4 - x) : 12 + (4 - y)) : 0
-  // A fixed hash, so "arrhythmic" is stable rather than random per render.
-  const h = (i * 7) % 5
-  return { i, x, y, d, e, h, edge }
-})
-
-function PixelOrb({
-  state,
-  label,
-  time,
-  size,
-}: {
-  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded'
-  label: string
-  time?: string
-  size?: 'sm' | 'lg'
-}) {
-  return (
-    <span className="orb-row">
-      <span
-        className={`pix${size ? ` pix--${size}` : ''}`}
-        data-state={state}
-        role="img"
-        aria-label={label}
-      >
-        {PIX.map((c) => (
-          <i
-            key={c.i}
-            {...(c.edge ? { 'data-edge': '' } : {})}
-            style={
-              {
-                '--x': c.x,
-                '--y': c.y,
-                '--d': c.d,
-                '--e': c.e,
-                '--h': c.h,
-              } as React.CSSProperties
-            }
-          />
-        ))}
-      </span>
-      <span className="orb-row__label">{label}</span>
-      {time ? <span className="orb-row__time">{time}</span> : null}
-    </span>
-  )
-}
-
 export function Primitives() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
@@ -814,29 +753,6 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="25" name="Pixel orbs" note="same six states, a lower-resolution voice">
-          <Spec label="Working">
-            <div style={{ display: 'grid', gap: 12 }}>
-              <PixelOrb state="thinking" label="Thinking" time="4.2s" />
-              <PixelOrb state="searching" label="Searching documents" time="1.1s" />
-              <PixelOrb state="composing" label="Composing an answer" time="8s" />
-            </div>
-          </Spec>
-          <Spec label="Not working">
-            <div style={{ display: 'grid', gap: 12 }}>
-              <PixelOrb state="blocked" label="Waiting for your answer" />
-              <PixelOrb state="queued" label="Queued behind 2 runs" time="~40s" />
-              <PixelOrb state="degraded" label="Running on the fallback model" />
-            </div>
-          </Spec>
-          <Spec label="Sizes">
-            <div className="row">
-              <PixelOrb state="thinking" label="Small" size="sm" />
-              <PixelOrb state="thinking" label="Default" />
-              <PixelOrb state="thinking" label="Large" size="lg" />
-            </div>
-          </Spec>
-        </Section>
       </main>
     </div>
   )
