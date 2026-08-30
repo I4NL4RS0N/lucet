@@ -1,6 +1,9 @@
+import { useEffect, useRef, useState } from 'react'
+import { announcementPlan } from 'lucet'
 import type { Message, MessagePart, ThreadState } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
+import { Markdown } from './Markdown.js'
 import { StateIcon } from './StateIcon.js'
 
 /**
@@ -42,10 +45,28 @@ const TERMINAL: Record<string, { icon: 'interrupted' | 'failed' | 'refused'; wor
   refused: { icon: 'refused', word: 'Declined' },
 }
 
-function Part({ part, streaming, last }: { part: MessagePart; streaming: boolean; last: boolean }) {
+function Part({
+  part,
+  streaming,
+  last,
+  doc,
+}: {
+  part: MessagePart
+  streaming: boolean
+  last: boolean
+  doc: boolean
+}) {
   switch (part.kind) {
     case 'text':
-      return (
+      /*
+       * The assistant's text is a DOCUMENT and renders as one: markdown,
+       * through the core's streaming-safe parser. The prompt stays verbatim
+       * plain text on purpose — it is a quotation of what you typed, and
+       * dressing it up would misquote you.
+       */
+      return doc ? (
+        <Markdown text={part.text} streaming={streaming} caret={streaming && last} />
+      ) : (
         <p className="lucet-thread__text">
           {part.text}
           {streaming && last ? <span className="lucet-thread__caret" aria-hidden /> : null}
@@ -119,12 +140,13 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
             part={part}
             streaming={message.status === 'streaming'}
             last={part.id === lastTextId}
+            doc={!isUser}
           />
         ))}
         {attachments.length > 0 ? (
           <div className="lucet-thread__atts">
             {attachments.map((part) => (
-              <Part key={part.id} part={part} streaming={false} last={false} />
+              <Part key={part.id} part={part} streaming={false} last={false} doc={false} />
             ))}
           </div>
         ) : null}
@@ -145,21 +167,77 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
   )
 }
 
+/**
+ * What a screen reader hears while the answer streams. The visible document
+ * is NOT a live region — mirroring raw chunks announces word fragments, and
+ * mirroring markdown announces its syntax. Instead this hidden log receives
+ * the core's announcement UNITS: finished sentences, structure described
+ * rather than spelled ("Code, ts, 8 lines"). The plan's prefix invariant
+ * (see packages/core/src/announce.ts) is what lets this be a counter and a
+ * slice, with no timers: units only ever append.
+ */
+function ResponseAnnouncer({ state }: { state: ThreadState }) {
+  const [units, setUnits] = useState<readonly string[]>([])
+  const seen = useRef({ messageId: '', count: 0 })
+
+  useEffect(() => {
+    const response = state.turns[state.turns.length - 1]?.response
+    if (!response) {
+      if (state.turns.length === 0 && seen.current.messageId !== '') {
+        seen.current = { messageId: '', count: 0 }
+        setUnits([])
+      }
+      return
+    }
+    const settled = response.status !== 'streaming' && response.status !== 'pending'
+    const textParts = response.parts.filter((p) => p.kind === 'text')
+    const plan = textParts.flatMap((part, i) =>
+      announcementPlan(part.text, settled || i < textParts.length - 1),
+    )
+    if (response.id !== seen.current.messageId) {
+      /*
+       * A response that was ALREADY settled when we first saw it is history,
+       * not news: announcing its whole backlog on mount would read a page of
+       * old answers at whoever loads the thread. Start the counter at the
+       * end and say nothing. (Joining mid-stream announces from the top --
+       * you just arrived; the recent context is the point.)
+       */
+      seen.current = { messageId: response.id, count: settled ? plan.length : 0 }
+      setUnits([])
+    }
+    if (plan.length > seen.current.count) {
+      const fresh = plan.slice(seen.current.count)
+      seen.current.count = plan.length
+      setUnits((prev) => [...prev, ...fresh])
+    }
+  }, [state])
+
+  return (
+    <div className="lucet-visually-hidden" role="log" aria-label="The response, as it arrives">
+      {units.map((unit, i) => (
+        <p key={i}>{unit}</p>
+      ))}
+    </div>
+  )
+}
+
 export function Thread({ state, selfId }: ThreadProps) {
   return (
     /*
-     * role="log": streamed text must reach people who are not looking at it.
-     * Additions announce politely; a real-world host may want to throttle
-     * announcements per sentence rather than per chunk, which is noted in the
-     * rationale doc as the streaming component's future concern.
+     * The visible thread is a named region for FINDING; the hidden announcer
+     * below is the live log for HEARING. They are deliberately not the same
+     * element: a live region over the visible document would announce every
+     * raw chunk and every piece of markdown syntax, which is the streaming
+     * mess this component exists to clean up.
      */
-    <div className="lucet-thread" role="log" aria-label="Conversation">
+    <section className="lucet-thread" aria-label="Conversation">
       {state.turns.map((turn) => (
         <article className="lucet-thread__pair" key={turn.id}>
           <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
           {turn.response ? <MessageView message={turn.response} self={false} /> : null}
         </article>
       ))}
-    </div>
+      <ResponseAnnouncer state={state} />
+    </section>
   )
 }

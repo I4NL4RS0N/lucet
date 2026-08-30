@@ -34,6 +34,58 @@ export const happyPath = defineScenario({
   ],
 })
 
+/*
+ * The response as a DOCUMENT: heading, list, table, code, quote, all
+ * streamed. Watch the live edge — bold never flashes its asterisks, the
+ * table forms the moment its delimiter row starts, the code block appears
+ * as a block before it closes. That behaviour is the component.
+ */
+export const formatted = defineScenario({
+  id: 'formatted-response',
+  label: 'Formatted response',
+  group: 'Baseline',
+  description:
+    'A response with structure — headings, lists, a table, code — rendered as it streams, never after.',
+  prompt: 'Turn my notes into a short plan for the release.',
+  steps: [
+    { type: 'wait', ms: 400 },
+    {
+      type: 'say',
+      chunkMs: 20,
+      text: [
+        '## The plan',
+        '',
+        'Three steps, smallest risk first. The dates follow the [revised timeline](https://example.com/timeline), not the draft.',
+        '',
+        '1. **Freeze the template** — nothing merges after Tuesday.',
+        '2. **Move the review** to Thursday, where the open items already point.',
+        '3. **File the summary** — one page, written for someone who was not in the room.',
+        '',
+        '| Workstream | Owner | Due |',
+        '| --- | --- | --- |',
+        '| Template | Ada | Tuesday |',
+        '| Review | Sam | Thursday |',
+        '| Summary | you | Friday |',
+        '',
+        'The folder layout stays flat:',
+        '',
+        '```text',
+        'plan/',
+        '  brief.md',
+        '  checklist.md',
+        '  decisions.md',
+        '```',
+        '',
+        'Anything still undecided lands in `decisions.md` with a date next to it.',
+        '',
+        '> One rule while this runs: if a step slips, say so in the thread the day it slips — not in the summary on Friday.',
+      ].join('\n'),
+    },
+    { type: 'usage', tokens: 1460, costUsd: 0.0219 },
+    { type: 'complete' },
+  ],
+})
+
 export const reasoning = defineScenario({
   id: 'reasoning',
   label: 'Thinking disclosure',
@@ -199,6 +251,7 @@ export const staleData = defineScenario({
 
 export const builtInScenarios: readonly Scenario[] = [
   happyPath,
+  formatted,
   reasoning,
   toolSuccess,
   toolPartialFailure,

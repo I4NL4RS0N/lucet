@@ -328,24 +328,79 @@ async function main() {
     }
     if (chipHits.length < 6) failures.push(`components hit-area: only ${chipHits.length} chip names found (expected 6+)`)
 
-    // The thread's non-negotiables, asserted by presence: streamed text must
-    // be announced (role=log), the caret must ride the streaming fixture,
-    // every unhappy ending must exist with its icon, and the version marker
-    // must be on the page at all.
+    // The thread's non-negotiables, asserted by presence: every thread must
+    // CONTAIN its announcer (the hidden role=log that speaks the stream --
+    // the visible document is deliberately not live), the caret must ride
+    // the streaming fixture, and every unhappy ending must exist with its
+    // icon.
     const thread = await page.evaluate(() => ({
-      logs: document.querySelectorAll('.lucet-thread[role="log"]').length,
-      bareThreads: document.querySelectorAll('.lucet-thread:not([role])').length,
+      threads: document.querySelectorAll('.lucet-thread').length,
+      announced: document.querySelectorAll('.lucet-thread :is([role="log"])').length,
       carets: document.querySelectorAll('.lucet-thread__caret').length,
       endings: ['interrupted', 'failed', 'refused'].map(
         (k) => document.querySelectorAll(`.lucet-thread__ended[data-status="${k}"]`).length,
       ),
     }))
     checks += 3
-    if (thread.logs === 0 || thread.bareThreads > 0)
-      failures.push(`thread: ${thread.bareThreads} thread(s) missing role="log" -- streaming is silent to screen readers`)
+    if (thread.threads === 0 || thread.announced < thread.threads)
+      failures.push(
+        `thread: ${thread.threads - thread.announced} of ${thread.threads} thread(s) missing the role="log" announcer -- streaming is silent to screen readers`,
+      )
     if (thread.carets === 0) failures.push('thread: no streaming caret found on the streaming fixture')
     if (thread.endings.some((n) => n === 0))
       failures.push(`thread: an unhappy ending is missing from the stage (interrupted/failed/refused = ${thread.endings.join('/')})`)
+
+    /*
+     * Markdown non-negotiables, on the fixtures that exist to prove them.
+     * The live-edge laws are unit-tested in core; what is asserted HERE is
+     * that the rendered page keeps the contract: syntax never leaks, copy
+     * waits for the fence, the caret rides inside the open block, links are
+     * underlined and leave safely, wide tables stay keyboard-reachable.
+     */
+    const md = await page.evaluate(() => {
+      const openBlock = document.querySelector('.lucet-codeblock[data-open]')
+      const link = document.querySelector('a.lucet-md__link')
+      const wrap = document.querySelector('.lucet-md__tablewrap')
+      return {
+        syntaxLeaks: [...document.querySelectorAll('.lucet-md')].filter((d) => {
+          const prose = d.cloneNode(true)
+          // ** inside a code block is content, not leaked syntax.
+          for (const c of prose.querySelectorAll('pre, code')) c.remove()
+          return /\*\*|^#{1,6} /m.test(prose.textContent)
+        }).length,
+        closedCopies: document.querySelectorAll(
+          '.lucet-codeblock:not([data-open]) .lucet-codeblock__copy',
+        ).length,
+        openHasCopy: openBlock ? openBlock.querySelectorAll('.lucet-codeblock__copy').length : -1,
+        openWriting: openBlock ? openBlock.querySelectorAll('.lucet-codeblock__writing').length : -1,
+        openCaretInside: openBlock
+          ? openBlock.querySelectorAll('code .lucet-thread__caret').length
+          : -1,
+        tables: document.querySelectorAll('.lucet-md__table').length,
+        tableReachable: wrap ? wrap.tabIndex === 0 : false,
+        linkUnderlined: link ? getComputedStyle(link).textDecorationLine === 'underline' : false,
+        linkLeavesSafely: link
+          ? link.target === '_blank' && /noopener/.test(link.rel) && /^https:/.test(link.href)
+          : false,
+      }
+    })
+    checks += 7
+    if (md.syntaxLeaks > 0)
+      failures.push(`markdown: raw ** or # visible in ${md.syntaxLeaks} rendered document(s)`)
+    if (md.closedCopies < 2)
+      failures.push(`markdown: only ${md.closedCopies} copy button(s) on closed code blocks (expected 2+)`)
+    if (md.openHasCopy !== 0 || md.openWriting !== 1)
+      failures.push(
+        `markdown: the open code block must say writing… and hide copy (copy=${md.openHasCopy}, writing=${md.openWriting})`,
+      )
+    if (md.openCaretInside !== 1)
+      failures.push('markdown: the caret is not riding inside the open code block')
+    if (md.tables === 0 || !md.tableReachable)
+      failures.push('markdown: no table, or its scroll region is not keyboard-reachable')
+    if (!md.linkUnderlined)
+      failures.push('markdown: links must be underlined -- colour alone is no signal (1.4.1)')
+    if (!md.linkLeavesSafely)
+      failures.push('markdown: the external link must open in a new tab with rel=noopener')
   } finally {
     await browser.close()
     dev?.kill()

@@ -23,6 +23,8 @@ import type { ModelOption, ThreadState } from './types.js'
 
 export * from './types.js'
 export * from './events.js'
+export * from './markdown.js'
+export * from './announce.js'
 export * from './clock.js'
 export * from './store.js'
 export * from './reducer.js'

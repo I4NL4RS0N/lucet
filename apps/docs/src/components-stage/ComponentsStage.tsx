@@ -99,6 +99,58 @@ const THREAD_FIXTURES: readonly Fixture[] = [
     ),
   },
   {
+    label: 'A formatted answer',
+    note: 'The response is a document, and markdown is the dress documents arrive in: headings demoted below the page’s own, links that earn the click, a table in a hairline grid, code with honest copy.',
+    state: play(
+      turn(1, 'Turn my notes into a short plan.', {
+        reply: [
+          '## The plan',
+          '',
+          'Three steps, smallest risk first — dates from the [revised timeline](https://example.com/timeline).',
+          '',
+          '1. **Freeze the template** — nothing merges after Tuesday.',
+          '2. **Move the review** to Thursday.',
+          '',
+          '| Workstream | Owner | Due |',
+          '| --- | --- | --- |',
+          '| Template | Ada | Tuesday |',
+          '| Review | Sam | Thursday |',
+          '',
+          '```text',
+          'plan/',
+          '  brief.md',
+          '  decisions.md',
+          '```',
+          '',
+          'Anything undecided lands in `decisions.md` with a date next to it.',
+          '',
+          '> If a step slips, say so the day it slips — *that* day, not Friday.',
+        ].join('\n'),
+      }),
+    ),
+  },
+  {
+    label: 'Streaming into a code block',
+    note: 'At the live edge, markers are promises: the open fence is already a code surface, the caret rides inside it, and copy waits — offering half a snippet would hand you broken code.',
+    state: play(
+      turn(1, 'Show the folder layout.', {
+        reply: 'Flat, three files:\n\n```text\nplan/\n  brief.md',
+        settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'Stopped inside a code block',
+    note: 'The fence never closed, but at settle the grace is withdrawn and what arrived is kept — rendered as code, copyable, with the ending saying so in words.',
+    state: play(
+      turn(1, 'Show the folder layout.', {
+        reply: 'Flat, three files:\n\n```text\nplan/\n  brief.md',
+        settle: 'interrupted',
+        reason: 'Stopped by you. What arrived is kept.',
+      }),
+    ),
+  },
+  {
     label: 'Stopped early',
     note: 'What arrived stays, and the ending says so plainly.',
     state: play(

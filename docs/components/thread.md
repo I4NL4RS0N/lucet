@@ -32,17 +32,18 @@ including the ways it came back wrong.
   returns with Version Marker + Restore, where a restore affordance gives it
   meaning beyond a label.
 
-## Streamed text is announced
+## Streamed text is announced — by the announcer, not the document
 
-The thread is `role="log"`, so arriving text reaches people who are not
-looking at it. A production host may want to throttle announcements to
-sentence boundaries rather than raw chunks; that refinement belongs to the
-streaming-response component when it lands.
+The visible thread is a named region for *finding*; a visually-hidden
+`role="log"` inside it is the live log for *hearing*. They are deliberately
+not the same element: a live region over the visible document would announce
+every raw chunk and every piece of markdown syntax. The hidden log receives
+sentence-level units from the core's announcement plan — the refinement this
+section once promised to the streaming-response component, delivered there.
+See [streaming-response.md](streaming-response.md).
 
 ## What is deliberately not here yet
 
-- **Markdown.** Text parts render as plain text; rich rendering is the
-  Streaming Response component's whole job, next in the ledger.
 - **Reasoning and tool displays.** Both render as quiet single-row asides
   here; each is its own baseline component and will take over.
 - **Message actions** (copy, retry, feedback) — the Feedback Controls item.

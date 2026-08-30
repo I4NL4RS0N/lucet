@@ -1293,3 +1293,209 @@
 @media (prefers-reduced-motion: reduce) {
   .lucet-thread__caret { animation: none; }
 }
+
+/* ============================================================
+ * Markdown — the response document's dress. Same type ground as
+ * .lucet-thread__text; structure added with the lightest ink that still
+ * reads: hairlines and tints, never loud chrome inside someone's answer.
+ * ============================================================ */
+
+.lucet-md {
+  display: grid;
+  gap: var(--lucet-space-3);
+  min-inline-size: 0;
+  font-size: var(--lucet-text-base);
+  line-height: var(--lucet-leading-prose);
+  color: var(--lucet-foreground);
+}
+.lucet-md__p { margin: 0; text-wrap: pretty; }
+
+/* Headings scale from the MARKDOWN level (the author's intent), not the
+   demoted tag. A response heading is a landmark inside prose, not a page
+   title: one step up, weight over size. */
+.lucet-md__h { margin: var(--lucet-space-2) 0 0; line-height: 1.3; letter-spacing: -0.01em; }
+.lucet-md__h[data-mdlevel='1'] { font-size: 1.18em; font-weight: 600; }
+.lucet-md__h[data-mdlevel='2'] { font-size: 1.08em; font-weight: 600; }
+.lucet-md__h[data-mdlevel='3'] { font-size: 1em; font-weight: 600; }
+.lucet-md > .lucet-md__h:first-child { margin-block-start: 0; }
+
+.lucet-md__list {
+  margin: 0;
+  padding-inline-start: var(--lucet-space-5);
+  display: grid;
+  gap: var(--lucet-space-1);
+}
+.lucet-md__list li { min-inline-size: 0; }
+.lucet-md__list li::marker { color: var(--lucet-muted-foreground); }
+/* A nested list breathes inside its item without doubling the outer gap. */
+.lucet-md__list .lucet-md__list { margin-block-start: var(--lucet-space-1); }
+
+.lucet-md__quote {
+  margin: 0;
+  padding-inline-start: var(--lucet-space-3);
+  border-inline-start: 2px solid var(--lucet-border);
+  color: var(--lucet-muted-foreground);
+  display: grid;
+  gap: var(--lucet-space-2);
+}
+
+.lucet-md__code {
+  font-family: var(--lucet-font-mono);
+  font-size: 0.865em;
+  padding: 1px 5px;
+  border-radius: calc(var(--lucet-radius-control) - 2px);
+  background-color: var(--lucet-hover);
+}
+
+/* Links earn the click: always underlined (colour alone is no signal at
+   all in the monochrome accent), quiet decoration that firms on hover, and
+   a leaving-glyph on anything that opens a new tab. */
+.lucet-md__link {
+  color: var(--lucet-accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+  text-underline-offset: 3px;
+  border-radius: 2px;
+  transition: text-decoration-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-md__link:hover { text-decoration-color: currentColor; }
+.lucet-md__link:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-md__link[data-arriving] { text-decoration-style: dotted; cursor: default; }
+.lucet-md__leaving {
+  display: inline-block;
+  inline-size: 0.7em;
+  block-size: 0.7em;
+  margin-inline-start: 1px;
+  vertical-align: 0.08em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+}
+
+.lucet-md__rule { margin: var(--lucet-space-1) 0; border: 0; border-block-start: 1px solid var(--lucet-border); }
+
+/* Tables: hairline grid, header on the muted step. Wide tables scroll
+   inside their own keyboard-reachable region — the document never scrolls
+   sideways because one table is wide. */
+.lucet-md__tablewrap {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  border-radius: var(--lucet-radius-surface);
+  box-shadow: var(--lucet-hairline);
+}
+.lucet-md__tablewrap:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-md__table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-size: var(--lucet-text-sm);
+}
+.lucet-md__table th,
+.lucet-md__table td {
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  text-align: start;
+  vertical-align: top;
+}
+.lucet-md__table th {
+  font-weight: 500;
+  background-color: var(--lucet-muted);
+  color: var(--lucet-foreground);
+}
+.lucet-md__table td { border-block-start: 1px solid var(--lucet-border); }
+.lucet-md__table [data-align='right'] { text-align: end; }
+.lucet-md__table [data-align='center'] { text-align: center; }
+
+/* ============================================================
+ * Code block — the chrome, done properly: surface, language label, honest
+ * copy. No syntax colouring by design (the rationale doc says why).
+ * ============================================================ */
+
+.lucet-codeblock {
+  margin: 0;
+  min-inline-size: 0;
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-muted);
+  box-shadow: var(--lucet-hairline);
+  overflow: hidden;
+}
+.lucet-codeblock__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lucet-space-2);
+  padding: var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-3);
+  border-block-end: 1px solid var(--lucet-border);
+}
+.lucet-codeblock__lang {
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-xs);
+  letter-spacing: 0.02em;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-codeblock__writing {
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+  padding-inline-end: var(--lucet-space-2);
+}
+.lucet-codeblock__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 26px;
+  padding-inline: var(--lucet-space-2);
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  font-size: var(--lucet-text-xs);
+  font-weight: 500;
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-codeblock__copy svg {
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-codeblock__copy:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-codeblock__copy:active { background-color: var(--lucet-press); }
+.lucet-codeblock__copy:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-codeblock__copy[data-state='copied'] { color: var(--lucet-foreground); }
+.lucet-codeblock__copy[data-state='failed'] { color: var(--lucet-tone-danger-foreground); }
+
+.lucet-codeblock__pre {
+  margin: 0;
+  padding: var(--lucet-space-3);
+  overflow-x: auto;
+  font-family: var(--lucet-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--lucet-foreground);
+}
+.lucet-codeblock__pre:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: calc(-1 * var(--lucet-focus-width));
+}
+.lucet-codeblock__pre code { font: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-md__link { transition: none; }
+  .lucet-codeblock__copy { transition: none; }
+}

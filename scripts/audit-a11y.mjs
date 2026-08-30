@@ -71,8 +71,20 @@ function collect() {
     'log summary': '.cfg__log summary',
     'thread author': '.lucet-thread__author',
     'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
-    'thread document text': '.lucet-thread__doc .lucet-thread__text',
-    'thread aside': '.lucet-thread__aside',
+    /* The formatted seed replaces the plain document with markdown: every
+       distinct ink the document can wear is sampled, because several of
+       them (the accent-ink link above all) vary with the accent axis. */
+    'md paragraph': '.lucet-md__p',
+    'md heading': '.lucet-md__h',
+    'md link': 'a.lucet-md__link',
+    'md inline code': '.lucet-md__code',
+    'md quote': '.lucet-md__quote',
+    'md list item': '.lucet-md__list li',
+    'md table header': '.lucet-md__table th',
+    'md table cell': '.lucet-md__table td',
+    'code block language': '.lucet-codeblock__lang',
+    'code block copy': '.lucet-codeblock__copy',
+    'code block body': '.lucet-codeblock__pre',
     'composer field': '.lucet-prompt__field',
     'composer select': '.lucet-prompt__model select',
   })) {
@@ -104,7 +116,7 @@ function collect() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.cfg__trigger, .cfg__reset, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled])',
+    '.cfg__trigger, .cfg__reset, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
@@ -391,6 +403,18 @@ function collectComponents() {
     'thread ending': '.lucet-thread__ended',
     'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
+    /* The markdown fixtures, on THIS page's stage background. */
+    'md paragraph': '.lucet-md__p',
+    'md heading': '.lucet-md__h',
+    'md link': 'a.lucet-md__link',
+    'md inline code': '.lucet-md__code',
+    'md quote': '.lucet-md__quote',
+    'md table header': '.lucet-md__table th',
+    'md table cell': '.lucet-md__table td',
+    'code block language': '.lucet-codeblock__lang',
+    'code block copy': '.lucet-codeblock__copy',
+    'code block writing': '.lucet-codeblock__writing',
+    'code block body': '.lucet-codeblock__pre',
   })) {
     const el = document.querySelector(sel)
     if (el) text.push({ label, fg: getComputedStyle(el).color, bg: bgOf(el) })
@@ -409,7 +433,7 @@ function collectComponents() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled])',
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
@@ -453,19 +477,49 @@ async function main() {
      * thread then has a prompt, a tool aside, and a document in every one of
      * the 44 combos, instead of being measured empty.
      */
+    /*
+     * Seeded with the FORMATTED response: links wear --lucet-accent-ink,
+     * which varies with the accent, so the markdown surfaces (link, table,
+     * code chrome) must ride the full 44-combo sweep here. The tool aside
+     * keeps its coverage on the components pass.
+     */
     for (let i = 0; i < 40; i++) {
       try {
-        await page.goto(`${URL}?state=tool-partial-failure`, { timeout: 2000 })
+        await page.goto(`${URL}?state=formatted-response`, { timeout: 2000 })
         break
       } catch {
         await new Promise((r) => setTimeout(r, 500))
       }
     }
     await page.waitForSelector('.lucet-thread__pair', { timeout: 15000 })
+    /*
+     * Wait for the SETTLED document, not merely for no caret: the pair
+     * exists from the moment the prompt submits, when no caret has been
+     * born yet -- "no caret" alone let the audit start measuring mid-
+     * stream. The document plus no caret is only true after settle.
+     */
     await page.waitForFunction(
-      () => !document.querySelector('.lucet-thread__caret'),
+      () => document.querySelector('.lucet-md') && !document.querySelector('.lucet-thread__caret'),
       { timeout: 15000 },
     )
+
+    /*
+     * The stream just ran for real, so the announcer must have SPOKEN it:
+     * the hidden role=log fills with sentence units while text arrives.
+     * This is the end-to-end guard on the announcement pipeline -- the unit
+     * tests prove the plan, this proves a live page actually feeds it.
+     */
+    const announced = await page.evaluate(() => {
+      const log = document.querySelector('.lucet-thread [role="log"]')
+      return { units: log ? log.children.length : -1, first: log?.firstChild?.textContent ?? '' }
+    })
+    checks++
+    if (announced.units < 8 || !announced.first.startsWith('Heading:')) {
+      failures.push(
+        `announcer: the hidden log holds ${announced.units} unit(s) after a live stream ` +
+          `(first: "${announced.first}") -- expected 8+ starting with the heading`,
+      )
+    }
 
     // Belt and braces. emulateMedia alone relies on the page honouring the
     // preference; this guarantees it, because getComputedStyle returns the
@@ -667,7 +721,11 @@ async function main() {
     // A pass that measures nothing must never report success.
     /* ~15 text pairs x 44 combos, calibrated after the group-chat change
        removed the author line from self-only home threads. */
-    if (mainChecks < 600) {
+    /* ~24 text samples + targets per combo with the formatted-response seed
+       (recalibrated 2026-08-31 when the markdown surfaces joined the sweep);
+       the floor sits low enough to forgive a removed element or two and high
+       enough that a vanished document or dead seed cannot pass. */
+    if (mainChecks < 900) {
       throw new Error(
         `the Configurator pass collected only ${mainChecks} elements across 44 combos -- ` +
           'its selectors and the page have drifted apart',
