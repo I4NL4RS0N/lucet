@@ -151,6 +151,42 @@ const StatusGlyph = {
   ),
 }
 
+
+/*
+ * The orb never ships without its label. Motion distinguishes the states for
+ * people who can see the difference; the word does it for everyone else, and
+ * under reduced motion the word is doing most of the work. Making the label a
+ * required prop is the enforcement -- documenting it would not be.
+ */
+function Orb({
+  state,
+  label,
+  time,
+  size,
+}: {
+  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded'
+  label: string
+  time?: string
+  size?: 'sm' | 'lg'
+}) {
+  return (
+    <span className="orb-row">
+      <span className={`orb${size ? ` orb--${size}` : ''}`} data-state={state} role="img" aria-label={label}>
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <circle className="orb__track" cx="12" cy="12" r="9" />
+          <circle className="orb__arc" cx="12" cy="12" r="9" />
+          {state === 'thinking' && <circle className="orb__arc orb__arc2" cx="12" cy="12" r="9" />}
+          {(state === 'thinking' || state === 'blocked') && (
+            <circle className="orb__core" cx="12" cy="12" r="2.5" />
+          )}
+        </svg>
+      </span>
+      <span className="orb-row__label">{label}</span>
+      {time ? <span className="orb-row__time">{time}</span> : null}
+    </span>
+  )
+}
+
 export function Primitives() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
@@ -686,6 +722,32 @@ export function Primitives() {
                 <i data-state="done" /><i data-state="done" /><i data-state="now" /><i /><i />
               </span>
               <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>Step 3 of 5</span>
+            </div>
+          </Spec>
+        </Section>
+
+        <Section n="24" name="Activity orbs" note="the mark says what kind of wait it is">
+          <Spec label="Working — every library ships these">
+            <div style={{ display: 'grid', gap: 12 }}>
+              <Orb state="thinking" label="Thinking" time="4.2s" />
+              <Orb state="searching" label="Searching documents" time="1.1s" />
+              <Orb state="composing" label="Composing an answer" time="8s" />
+            </div>
+          </Spec>
+
+          <Spec label="Not working — the half nobody builds">
+            <div style={{ display: 'grid', gap: 12 }}>
+              <Orb state="blocked" label="Waiting for your answer" />
+              <Orb state="queued" label="Queued behind 2 runs" time="~40s" />
+              <Orb state="degraded" label="Running on the fallback model" />
+            </div>
+          </Spec>
+
+          <Spec label="Sizes">
+            <div className="row">
+              <Orb state="thinking" label="Small" size="sm" />
+              <Orb state="thinking" label="Default" />
+              <Orb state="thinking" label="Large" size="lg" />
             </div>
           </Spec>
         </Section>

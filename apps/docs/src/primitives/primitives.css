@@ -1201,3 +1201,177 @@ code, .code {
     color: var(--ink-2);
   }
 }
+
+/* ==========================================================================
+ * ACTIVITY ORBS
+ *
+ * A named wait, with a mark that differs by WHAT KIND of wait it is.
+ *
+ * The set is deliberately split in half. Three states are the agent working --
+ * every library that ships an activity indicator covers these. Three are the
+ * agent NOT working: blocked on you, queued for capacity, running degraded.
+ * Nobody ships those, and they are the ones a user most needs distinguished,
+ * because "thinking" and "stuck behind a quota" look identical in every product
+ * that owns one spinner.
+ *
+ * FORM. Concentric rings, drawn with the same hairline vocabulary the materials
+ * use, so the mark is made of the same stuff as the components around it. The
+ * name means "it shines"; a ring of light is the literal reading and it happens
+ * to be the right one.
+ *
+ * WHAT IT IS NOT. It is not a dotted sphere. That belongs to another designer,
+ * it is already installable, and reproducing it would undercut the one thing
+ * this library claims -- that its decisions are its own and are written down.
+ *
+ * ACCESSIBILITY. Motion is never the only channel, so an orb ALWAYS ships with
+ * its label; the mark distinguishes states for people who can see the
+ * difference, and the word does it for everyone else. Under reduced motion each
+ * state keeps a distinct static form rather than collapsing to one dot.
+ * ========================================================================== */
+
+.orb {
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--orb-size, 22px);
+  block-size: var(--orb-size, 22px);
+  flex: none;
+  color: var(--ink-2);
+}
+.orb--sm { --orb-size: 16px; }
+.orb--lg { --orb-size: 34px; }
+
+.orb svg { inline-size: 100%; block-size: 100%; overflow: visible; }
+
+/*
+ * Every rule below is written at `.orb circle.<class>`, not `.<class>`.
+ *
+ * The first version put the shared stroke on `.orb circle` and the track colour
+ * on `.orb__track`. Specificity 0,1,1 beats 0,1,0, so the track silently kept
+ * currentColor and every state drew two identical rings -- which is why the six
+ * states looked nearly the same no matter how the arcs animated. Measuring
+ * caught it: arcColor and trackColor came back identical on all six.
+ */
+.orb circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* The track is the ring the light travels: always present, always quiet, and
+   derived from the state's own colour so a tinted state tints its track too. */
+.orb circle.orb__track {
+  stroke: color-mix(in oklab, currentColor 20%, transparent);
+  stroke-width: 1.5;
+}
+
+.orb circle.orb__arc { stroke-linecap: round; }
+.orb circle.orb__core { stroke: none; fill: currentColor; }
+
+/* Blocked draws no arc at all -- see the note on that state. */
+.orb[data-state='blocked'] circle.orb__arc { display: none; }
+
+/* ---- working: the agent is doing something ---- */
+
+/*
+ * THINKING. Inward. Two arcs counter-rotating at different speeds, so the
+ * motion reads as convergence rather than as travel -- nothing is being
+ * fetched, it is turning over.
+ */
+.orb[data-state='thinking'] circle.orb__arc {
+  stroke-dasharray: 14 42;
+  animation: orb-spin 2.4s linear infinite;
+}
+.orb[data-state='thinking'] circle.orb__arc2 {
+  stroke-dasharray: 6 50;
+  animation: orb-spin 1.6s linear infinite reverse;
+}
+.orb[data-state='thinking'] circle.orb__core { animation: orb-pulse 2.4s ease-in-out infinite; }
+
+/*
+ * SEARCHING. Outward. One long arc sweeping the full circle at a steady rate:
+ * this is the state that IS travelling, so it reads as a scan.
+ */
+.orb[data-state='searching'] circle.orb__arc {
+  stroke-dasharray: 30 26;
+  animation: orb-spin 1.1s linear infinite;
+}
+
+/*
+ * COMPOSING. Accumulating. The arc grows rather than travels, because output is
+ * being built up, and it resets rather than completing -- it does not know how
+ * much is left.
+ */
+.orb[data-state='composing'] circle.orb__arc {
+  animation: orb-grow 2s ease-in-out infinite;
+  rotate: -90deg;
+}
+
+/* ---- not working: the half nobody builds ---- */
+
+/*
+ * BLOCKED ON YOU. Nothing rotates, on purpose. A spinning mark next to "waiting
+ * for your answer" is a lie: it says the machine is busy when the machine is
+ * idle and the person is the bottleneck. It breathes and holds still.
+ */
+.orb[data-state='blocked'] circle.orb__track {
+  stroke: color-mix(in oklab, currentColor 34%, transparent);
+}
+.orb[data-state='blocked'] circle.orb__core { animation: orb-pulse 2.6s ease-in-out infinite; }
+
+/*
+ * QUEUED. Held in line. The ring is static and one point creeps around it far
+ * too slowly to read as work in progress -- because it is not progress, it is
+ * a position in a queue. Info-toned: expected, not wrong.
+ */
+.orb[data-state='queued'] { color: var(--info); }
+.orb[data-state='queued'] circle.orb__arc {
+  stroke-dasharray: 1.5 999;
+  stroke-linecap: round;
+  animation: orb-spin 4s linear infinite;
+}
+
+/*
+ * DEGRADED. Running, but not properly. Same sweep as searching, stepped instead
+ * of linear, so it stutters. The motion itself reports the fallback -- which is
+ * the moment a user most deserves to be told and every tool stays quiet.
+ */
+.orb[data-state='degraded'] { color: var(--warn); }
+.orb[data-state='degraded'] circle.orb__arc {
+  stroke-dasharray: 30 26;
+  animation: orb-spin 1.6s steps(8) infinite;
+}
+
+@keyframes orb-spin { to { rotate: 360deg; } }
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.4; scale: 0.8; }
+  50%      { opacity: 1;   scale: 1.1; }
+}
+@keyframes orb-grow {
+  0%   { stroke-dasharray: 0 56; }
+  70%  { stroke-dasharray: 52 4; }
+  100% { stroke-dasharray: 0 56; }
+}
+
+.orb-row { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; }
+.orb-row__label { color: var(--ink-2); }
+.orb-row__time {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * Each state keeps a DISTINCT static form. Collapsing all six to one dot
+   * would remove exactly the information the set exists to carry.
+   */
+  .orb circle { animation: none !important; }
+  .orb[data-state='thinking'] circle.orb__arc { stroke-dasharray: 14 42; }
+  .orb[data-state='thinking'] circle.orb__arc2 { stroke-dasharray: 6 50; rotate: 140deg; }
+  .orb[data-state='searching'] circle.orb__arc { stroke-dasharray: 30 26; }
+  .orb[data-state='composing'] circle.orb__arc { stroke-dasharray: 40 16; rotate: -90deg; }
+  .orb[data-state='queued'] circle.orb__arc { stroke-dasharray: 1.5 999; }
+  .orb[data-state='degraded'] circle.orb__arc { stroke-dasharray: 4 6; }
+}
