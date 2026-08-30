@@ -1,7 +1,7 @@
 /**
  * Executes a scenario against the store.
  *
- * This is the "Konfabulator": a runtime that confidently makes things up, on
+ * The mock runtime: it confidently makes things up, on
  * purpose and repeatably. Swapping it for a real transport is a matter of
  * emitting the same events.
  */

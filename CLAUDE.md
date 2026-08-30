@@ -20,14 +20,14 @@ The specifics of the other projects are deliberately not in this file, because
 this file is public. See the local brief.
 
 Lucet is an open-source library of AI interface components, plus a hand-designed
-docs site (the "Konfabulator") that demonstrates them. The point is documented
+docs site (the "Configurator") that demonstrates them. The point is documented
 design judgment and complete state coverage, not component count.
 
 Shape of the repo:
 - `packages/core` → npm `lucet`. Framework-free headless state logic, zero
   framework imports.
 - `packages/react` → npm `lucet-react`. Thin React bindings. Ships first.
-- `apps/docs` → `@lucet/docs`. The Konfabulator: one persistent realistic
+- `apps/docs` → `@lucet/docs`. The Configurator: one persistent realistic
   interface with a state trigger rail, backed by a scripted deterministic mock
   runtime.
 

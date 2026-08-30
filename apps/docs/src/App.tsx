@@ -24,7 +24,7 @@ const MODES: readonly { value: Mode; label: string }[] = [
 ]
 
 /**
- * The Konfabulator.
+ * The Configurator.
  *
  * One persistent, realistic interface with a state trigger rail beside it,
  * driven by a scripted deterministic runtime. Explicitly not Storybook: states
@@ -69,7 +69,7 @@ export function App() {
     <LucetProvider lucet={lucet}>
       <header>
         <h1>Lucet</h1>
-        <p>The Konfabulator. Scripted runtime, real states, one running thread.</p>
+        <p>The Configurator. Scripted runtime, real states, one running thread.</p>
 
         <div className="controls">
           {/* A segmented control, not loose radios. Same information, and it

@@ -1,4 +1,4 @@
-# Lucet docs site (the Konfabulator).
+# Lucet docs site (the Configurator).
 # This repo has its own Netlify project. Confirm the target project before
 # deploying; the CLI uses whatever .netlify link is in the working directory.
 

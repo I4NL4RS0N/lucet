@@ -2,7 +2,7 @@
   "name": "@lucet/docs",
   "version": "0.0.0",
   "private": true,
-  "description": "The Konfabulator: Lucet docs site and mock-runtime demo harness.",
+  "description": "The Configurator: Lucet docs site and mock-runtime demo harness.",
   "type": "module",
   "scripts": {
     "dev": "vite",
