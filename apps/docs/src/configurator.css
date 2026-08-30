@@ -40,7 +40,8 @@ body {
   padding: 18px 32px 0;
 }
 
-.cfg__mark { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.cfg__mark { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.cfg__logo { inline-size: 22px; block-size: 22px; overflow: visible; }
 .cfg__mark span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
 
 .cfg__lede {

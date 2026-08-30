@@ -231,6 +231,17 @@ export function App() {
     <LucetProvider lucet={lucet}>
       <header className="cfg__bar">
         <span className="cfg__mark">
+          {/* The mark: an orb of light larger than its frame — the arcs leave
+              on three sides because the light continues past what you can
+              see. Drawn with the orb's own dasharray technique. Full
+              rationale in public/favicon.svg. */}
+          <svg className="cfg__logo" viewBox="0 0 96 96" aria-hidden>
+            <g fill="none" stroke="currentColor" strokeLinecap="round">
+              <circle cx="46" cy="50" r="23" strokeWidth="6" strokeDasharray="95 50" transform="rotate(105 46 50)" />
+              <circle cx="46" cy="50" r="52" strokeWidth="5" strokeDasharray="120 65 55 87" transform="rotate(-40 46 50)" />
+            </g>
+            <circle cx="46" cy="50" r="7" fill="currentColor" />
+          </svg>
           Lucet <span>· the Configurator</span>
         </span>
         <p className="cfg__lede">One running thread. The states on the right happen to it.</p>
