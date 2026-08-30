@@ -22,6 +22,13 @@ export { Reasoning } from './components/Reasoning.js'
 export type { ReasoningProps } from './components/Reasoning.js'
 export { StateNotice } from './components/StateNotice.js'
 export type { StateNoticeProps, NoticeState } from './components/StateNotice.js'
+export { Icons, useIconOverride } from './components/icon-context.js'
+export type {
+  IconProps,
+  IconComponent,
+  IconOverrides,
+  IconProviderProps,
+} from './components/icon-context.js'
 export { StateIcon } from './components/StateIcon.js'
 export type { StateIconProps, IconName } from './components/StateIcon.js'
 export { ToolCall } from './components/ToolCall.js'

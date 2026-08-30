@@ -306,12 +306,14 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 .control__field select {
   appearance: none;
   width: 100%;
-  min-block-size: 2rem;
+  /* Same height and radius as a button, so a row of controls lines up. */
+  min-block-size: var(--lucet-control-height);
   /* Same trap as the buttons: without this the gradient is sized to the
      padding box and painted to the border box, so a transparent border shows a
      mismatched band. */
   background-origin: border-box;
-  padding: var(--lucet-space-2) var(--lucet-space-7) var(--lucet-space-2) var(--lucet-space-3);
+  padding-block: 0;
+  padding-inline: var(--lucet-space-7) var(--lucet-control-pad-x);
   /* background-color, not the shorthand: the shorthand would reset
      background-origin above and reinstate the mismatched band. */
   background-color: var(--lucet-card);
@@ -319,9 +321,7 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   color: inherit;
   border: 0;
   box-shadow: var(--lucet-material-control);
-  /* Deliberately not the pill. A field with a chevron reads as a rounded
-     rectangle; a pill reads as a chip that happens to have an arrow in it. */
-  border-radius: var(--lucet-radius-lg);
+  border-radius: var(--lucet-radius-control);
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
@@ -350,11 +350,11 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   flex-wrap: wrap;
   width: fit-content;
   max-width: 100%;
-  padding: 2px;
-  gap: 2px;
+  padding: var(--lucet-control-inset);
+  gap: var(--lucet-control-inset);
   background: var(--lucet-muted);
-  border-radius: var(--lucet-radius-lg);
-  min-block-size: 2rem;
+  border-radius: var(--lucet-radius-control);
+  min-block-size: var(--lucet-control-height);
   box-sizing: border-box;
   box-shadow: var(--lucet-material-inset);
 }
@@ -373,8 +373,9 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
 .segment span {
   display: flex;
   align-items: center;
-  padding: 0 var(--lucet-space-3);
-  border-radius: calc(var(--lucet-radius-lg) - 2px);
+  padding: 0 var(--lucet-control-pad-x);
+  /* inner = outer - inset, so the thumb is concentric with its track. */
+  border-radius: var(--lucet-radius-control-inner);
   font-size: var(--lucet-text-sm);
   color: var(--lucet-muted-foreground);
   white-space: nowrap;
@@ -397,5 +398,5 @@ hr { border: 0; border-top: 1px solid var(--lucet-border); }
   outline-offset: var(--lucet-focus-offset);
 }
 
-:root[data-expression='expressive'] .segmented { border-radius: var(--lucet-radius-full); }
-:root[data-expression='expressive'] .segment span { border-radius: var(--lucet-radius-full); }
+/* No expression override needed: --lucet-radius-control already resolves to a
+   true pill in Expressive, and the nesting arithmetic follows it. */

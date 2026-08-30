@@ -10,9 +10,14 @@
  * Inline SVG rather than an icon dependency. A component library that drags in
  * an icon set makes the adoption decision for its host, and the set is small
  * enough that the tradeoff is not close.
+ *
+ * These are the FALLBACK. A host can replace any subset through Icons.Provider,
+ * so a product already running Lucide or Phosphor can make our states match the
+ * rest of its interface. See icon-context.tsx.
  */
 
 import type { ReactElement } from 'react'
+import { useIconOverride } from './icon-context'
 
 export type IconName =
   | 'operational'
@@ -124,6 +129,9 @@ export interface StateIconProps {
 }
 
 export function StateIcon({ name, size = 16 }: StateIconProps) {
+  const Override = useIconOverride(name)
+  if (Override) return <Override size={size} className="lucet-icon" />
+
   return (
     <svg
       className="lucet-icon"

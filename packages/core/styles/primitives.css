@@ -66,6 +66,7 @@
   --lucet-space-2: calc(var(--lucet-space-unit) * 2);
   --lucet-space-3: calc(var(--lucet-space-unit) * 3);
   --lucet-space-4: calc(var(--lucet-space-unit) * 4);
+  --lucet-space-5: calc(var(--lucet-space-unit) * 5);
   --lucet-space-6: calc(var(--lucet-space-unit) * 6);
   --lucet-space-7: calc(var(--lucet-space-unit) * 7);
   --lucet-space-8: calc(var(--lucet-space-unit) * 8);
@@ -132,6 +133,39 @@
   --lucet-duration-slow: 320ms;
   --lucet-ease-out: cubic-bezier(0.2, 0, 0, 1);
   --lucet-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /*
+   * CONTROL GEOMETRY.
+   *
+   * One height and one radius for everything you can press or type into, so a
+   * button, a select, and a segmented control standing in a row are the same
+   * object at different jobs. Before this they were 28px/6px, 32px/8px and
+   * 32px/8px respectively, which reads as three unrelated things.
+   *
+   * Heights scale with --lucet-scale so the density axis moves them together.
+   */
+  --lucet-control-height-sm: calc(1.75rem * var(--lucet-scale));
+  --lucet-control-height-md: calc(2rem * var(--lucet-scale));
+  --lucet-control-height-lg: calc(2.5rem * var(--lucet-scale));
+  --lucet-control-height: var(--lucet-control-height-md);
+  --lucet-control-pad-x: var(--lucet-space-3);
+
+  /* The gap between a track and the thumb inside it. */
+  --lucet-control-inset: 2px;
+
+  /*
+   * NESTED RADII. inner = outer - inset, always. Anything else leaves a
+   * visibly non-concentric corner, which is the detail that separates a
+   * considered control from an assembled one.
+   *
+   * When the outer radius is a true pill the arithmetic still holds: an inner
+   * element is 2*inset shorter, so its pill radius is outer - inset exactly.
+   */
+  --lucet-radius-control: var(--lucet-radius-lg);
+  --lucet-radius-control-inner: max(
+    0px,
+    calc(var(--lucet-radius-control) - var(--lucet-control-inset))
+  );
 
   --lucet-border-width: 1px;
   --lucet-focus-width: 2px;

@@ -45,6 +45,13 @@
   /* Containers go near-pill. Controls inside stay rectangular, or the whole
      thing turns into a bag of lozenges. */
   --lucet-radius-container-base: var(--lucet-radius-full);
+  /*
+   * A true pill, derived from the height rather than a magic 9999. Deriving it
+   * keeps the nesting arithmetic exact and means a thumb inside a track is
+   * still perfectly concentric.
+   */
+  --lucet-radius-control: calc(var(--lucet-control-height) / 2);
+  --lucet-control-height-md: calc(2.25rem * var(--lucet-scale));
 
   --lucet-leading-prose: 1.7;
 

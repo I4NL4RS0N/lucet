@@ -39,11 +39,18 @@
  * ============================================================ */
 
 .lucet-button {
-  /* WCAG 2.2 AA, 2.5.8 Target Size (Minimum). 24x24 is the floor, and small
-     ghost chips fall under it on padding alone. Enforced here so no variant
-     can opt out by accident. */
-  min-block-size: 1.75rem;
-  min-inline-size: 1.75rem;
+  /*
+   * One control height and one control radius, shared with selects and
+   * segmented controls so a row of them lines up exactly.
+   *
+   * Padding is inline only: the height comes from the token, not from padding
+   * plus line-height, which is what let three controls drift apart.
+   *
+   * This also satisfies WCAG 2.2 AA 2.5.8 Target Size, since the smallest
+   * control height is above the 24px floor.
+   */
+  min-block-size: var(--lucet-control-height);
+  min-inline-size: var(--lucet-control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -51,8 +58,9 @@
   font: inherit;
   font-size: var(--lucet-text-sm);
   line-height: 1;
-  padding: var(--lucet-space-2) var(--lucet-space-3);
-  border-radius: var(--lucet-radius-md);
+  padding-block: 0;
+  padding-inline: var(--lucet-control-pad-x);
+  border-radius: var(--lucet-radius-control);
   border: 1px solid transparent;
   /*
    * Without this the gradient is SIZED to the padding box and PAINTED to the
@@ -524,8 +532,7 @@
     oklch(from var(--lucet-primary) calc(l - 0.03) c h)
   );
   border-width: 0;
-  border-radius: var(--lucet-radius-container);
-  padding-inline: var(--lucet-space-4);
+  padding-inline: var(--lucet-space-5);
 }
 
 :root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
@@ -562,13 +569,6 @@
 :root[data-expression='expressive'] .lucet-button:disabled {
   box-shadow: var(--lucet-hairline);
   background-image: none;
-}
-
-/* Chips go pill in Expressive, the way the reference does. */
-:root[data-expression='expressive'] .lucet-button[data-variant='ghost'],
-:root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
-  border-radius: var(--lucet-radius-full);
-  padding-inline: var(--lucet-space-3);
 }
 
 @media (prefers-reduced-motion: reduce) {
