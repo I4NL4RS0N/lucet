@@ -34,7 +34,7 @@
   --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
   --lucet-default-secondary: var(--lucet-neutral-100);
   --lucet-default-secondary-foreground: var(--lucet-neutral-900);
-  --lucet-default-muted: var(--lucet-neutral-100);
+  --lucet-default-muted: var(--lucet-neutral-50);
   --lucet-default-muted-foreground: var(--lucet-neutral-550);
   --lucet-default-subtle: var(--lucet-neutral-50);
   --lucet-default-subtle-foreground: var(--lucet-neutral-700);
@@ -67,8 +67,25 @@
    * case 10.7:1, and is also what Radix calls high-contrast text.
    */
   --lucet-default-accent-ink: var(--lucet-accent-12);
-  --lucet-default-hover: var(--lucet-neutral-100);
-  --lucet-default-hover-strong: var(--lucet-neutral-200);
+  /*
+   * HOVER MUST NOT EQUAL THE THING IT HOVERS.
+   *
+   * --lucet-hover was the same token as --lucet-secondary, in both themes. Any
+   * control resting on secondary -- which is every secondary button -- had a
+   * hover state that computed to its own resting colour and therefore did
+   * nothing at all. The same collision put muted on secondary and subtle on
+   * card, so a field and a raised control were one value, and a quiet surface
+   * and a card were another.
+   *
+   * Four roles, four values, and enough travel between them to be seen. The
+   * neutral scale has no step between 0.269 and 0.371, so the dark hover pair
+   * is written against the greyscale axis directly rather than snapped to a
+   * step that is 0.1 away.
+   *
+   * scripts/audit-theme-parity.mjs asserts these stay distinct at runtime.
+   */
+  --lucet-default-hover: oklch(0.905 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-hover-strong: oklch(0.855 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-primary-hover: var(--lucet-accent-10);
   /*
    * SOLID: neutral emphasis, and deliberately NOT --lucet-primary.
@@ -141,15 +158,15 @@
     --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
     --lucet-default-secondary: var(--lucet-neutral-800);
     --lucet-default-secondary-foreground: var(--lucet-neutral-100);
-    --lucet-default-muted: var(--lucet-neutral-800);
+    --lucet-default-muted: oklch(0.185 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-muted-foreground: var(--lucet-neutral-400);
-    --lucet-default-subtle: var(--lucet-neutral-900);
+    --lucet-default-subtle: var(--lucet-neutral-950);
     --lucet-default-subtle-foreground: var(--lucet-neutral-200);
     --lucet-default-border: var(--lucet-line);
     --lucet-default-input: var(--lucet-line);
     --lucet-default-ring: var(--lucet-accent-11);
-    --lucet-default-hover: var(--lucet-neutral-800);
-    --lucet-default-hover-strong: var(--lucet-neutral-700);
+    --lucet-default-hover: oklch(0.335 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-default-hover-strong: oklch(0.395 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-primary-hover: var(--lucet-accent-10);
     --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));
@@ -168,15 +185,15 @@
   --lucet-default-primary-foreground: var(--lucet-accent-on-solid);
   --lucet-default-secondary: var(--lucet-neutral-800);
   --lucet-default-secondary-foreground: var(--lucet-neutral-100);
-  --lucet-default-muted: var(--lucet-neutral-800);
+  --lucet-default-muted: oklch(0.185 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-muted-foreground: var(--lucet-neutral-400);
-  --lucet-default-subtle: var(--lucet-neutral-900);
+  --lucet-default-subtle: var(--lucet-neutral-950);
   --lucet-default-subtle-foreground: var(--lucet-neutral-200);
   --lucet-default-border: var(--lucet-line);
   --lucet-default-input: var(--lucet-line);
   --lucet-default-ring: var(--lucet-accent-11);
-  --lucet-default-hover: var(--lucet-neutral-800);
-  --lucet-default-hover-strong: var(--lucet-neutral-700);
+  --lucet-default-hover: oklch(0.335 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-default-hover-strong: oklch(0.395 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-primary-hover: var(--lucet-accent-10);
   --lucet-default-solid: oklch(0.93 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-default-solid-hover: oklch(0.99 var(--lucet-neutral-c) var(--lucet-neutral-h));

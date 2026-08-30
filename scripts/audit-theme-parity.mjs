@@ -71,7 +71,49 @@ async function main() {
   )
   const browser = await chromium.launch()
   const failures = []
+  const roleFailures = []
   let compared = 0
+
+  /*
+   * ROLE DISTINCTNESS.
+   *
+   * Parity proves a theme is the same down both paths. It does not prove the
+   * theme is any good -- and it happily passed while --lucet-hover was the same
+   * value as --lucet-secondary in both themes, which made hover a no-op on
+   * every secondary control in the library. muted sat on secondary too, and
+   * subtle on card, so a field and a raised control were one colour and a quiet
+   * surface and a card were another.
+   *
+   * A role that resolves to another role's value is not a role. These pairs
+   * must differ, and by enough to see.
+   */
+  const DISTINCT = [
+    ['--lucet-secondary', '--lucet-hover', 0.02],
+    ['--lucet-hover', '--lucet-hover-strong', 0.02],
+    ['--lucet-muted', '--lucet-secondary', 0.015],
+    ['--lucet-card', '--lucet-subtle', 0.01],
+  ]
+
+  /*
+   * SURFACES ARE NOT ON THIS LIST, and that is deliberate.
+   *
+   * background, card and popover are all pure white in Light + System, and the
+   * first version of this check failed them. It was wrong to. That expression's
+   * stated position is that depth is a LINE -- a card is defined by its
+   * hairline, not by a fill -- and Light + Expressive already recedes the page
+   * so cards can come forward. An overlay above a white card cannot be lighter
+   * than white either; separating it is the overlay material's job.
+   *
+   * So the rule is scoped to what is universally true: an INTERACTION state
+   * must differ from the state it acts on. A hover that computes to its own
+   * resting colour is broken in every expression, at every elevation.
+   */
+
+  const lightnessOf = (v) => {
+    const m = String(v).match(/oklch\(\s*([\d.]+)/)
+    return m ? Number(m[1]) : null
+  }
+
 
   try {
     const page = await browser.newPage()
@@ -110,6 +152,19 @@ async function main() {
           await page.emulateMedia({ colorScheme: theme })
           await page.evaluate(() => document.documentElement.removeAttribute('data-theme'))
           const viaPreference = await page.evaluate(dumpTokens)
+
+          if (accent === ACCENTS[0] && expression === EXPRESSIONS[0]) {
+            for (const [a, b, min] of DISTINCT) {
+              const av = viaAttribute[a]
+              const bv = viaAttribute[b]
+              const la = lightnessOf(av)
+              const lb = lightnessOf(bv)
+              const delta = la !== null && lb !== null ? Math.abs(la - lb) : null
+              if (av === bv || (delta !== null && delta < min)) {
+                roleFailures.push({ theme, a, b, av, bv, delta: delta?.toFixed(3) ?? 'n/a', min })
+              }
+            }
+          }
 
           compared += 1
           for (const name of Object.keys(viaAttribute)) {
@@ -153,6 +208,21 @@ async function main() {
 
   console.log(
     `Theme parity passed: ${compared} combinations, both paths identical on every --lucet-* token.`,
+  )
+
+  if (roleFailures.length > 0) {
+    console.error(`\nRole distinctness FAILED: ${roleFailures.length} pair(s) collide.\n`)
+    for (const f of roleFailures) {
+      console.error(`  ${f.theme}  ${f.a} and ${f.b}`)
+      console.error(`    ${f.av}`)
+      console.error(`    ${f.bv}`)
+      console.error(`    lightness apart: ${f.delta} (needs ${f.min})\n`)
+    }
+    console.error('A role that resolves to another role\'s value is not a role.\n')
+    process.exit(1)
+  }
+  console.log(
+    `Role distinctness passed: ${DISTINCT.length} pairs stay apart in both themes.`,
   )
 }
 
