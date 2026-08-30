@@ -39,3 +39,13 @@ jobs:
 
       - name: WCAG 2.2 AA audit
         run: node scripts/audit-a11y.mjs
+
+      # Dark is declared twice throughout the stylesheets, once under
+      # prefers-color-scheme and once under [data-theme], because CSS cannot
+      # share a declaration body across the two. Those copies drift: the
+      # contact shadow that gives Expressive its thickness once lived only in
+      # the media-query copy, so the toggle path rendered flat. Neither the
+      # contrast audit nor the eye can see that -- the paths are identical in
+      # colour and never render side by side.
+      - name: Theme parity audit
+        run: node scripts/audit-theme-parity.mjs

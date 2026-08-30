@@ -50,6 +50,23 @@
    * surface, well under the 3:1 that 1.4.11 requires.
    */
   --lucet-default-ring: var(--lucet-accent-11);
+  /*
+   * ACCENT AS TEXT, as its own named role.
+   *
+   * Consumers should not have to remember "step 9 to fill, step 11 to ring,
+   * step N to write with". The scale stays, but the three jobs that have a
+   * right answer get names. Declared once: step 12 already inverts with the
+   * theme on its own, so the dark blocks below do not restate it.
+   *
+   * Step 12, and the step was measured rather than chosen. Step 11 is the
+   * obvious guess, since it is already the ring and its job is readable
+   * contrast -- but 1.4.11 asks 3:1 of a ring and 1.4.3 asks 4.5:1 of text,
+   * and step 11 does not clear the higher bar everywhere: teal on a light card
+   * measured 4.41:1. Step 10 fails the other way, blue on a dark card at
+   * 4.47:1. Step 12 clears 4.5:1 across every accent in both themes, nearest
+   * case 10.7:1, and is also what Radix calls high-contrast text.
+   */
+  --lucet-default-accent-ink: var(--lucet-accent-12);
   --lucet-default-hover: var(--lucet-neutral-100);
   --lucet-default-hover-strong: var(--lucet-neutral-200);
   --lucet-default-primary-hover: var(--lucet-accent-10);
@@ -78,6 +95,7 @@
   --lucet-border: var(--border, var(--lucet-default-border));
   --lucet-input: var(--input, var(--lucet-default-input));
   --lucet-ring: var(--ring, var(--lucet-default-ring));
+  --lucet-accent-ink: var(--accent-ink, var(--lucet-default-accent-ink));
 
   /*
    * Interaction surfaces. A hover has to be a colour change, not a filter.

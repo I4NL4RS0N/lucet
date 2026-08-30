@@ -24,6 +24,26 @@
  * Shadows are layered rather than single blurs because real light falls off in
  * stages, and a single large blur reads as a smudge.
  *
+ * ---------------------------------------------------------------------------
+ * ON THE DUPLICATED DARK BLOCKS
+ *
+ * Dark is declared twice: once under prefers-color-scheme for people who never
+ * touch a toggle, once under [data-theme='dark'] for people who do. CSS gives
+ * no way to share one declaration body across a media query and an attribute
+ * selector, so the values are written out twice.
+ *
+ * They are allowed to drift, and they did. The contact shadow -- the half-pixel
+ * first stop that makes a surface read as sitting ON the page rather than
+ * hovering over it -- lived only in the media-query copy. Expressive dark had
+ * thickness by OS preference and none by toggle, and the toggle is the path the
+ * Konfabulator uses. Neither the eye nor the contrast audit could see it: the
+ * two paths are identical in colour and never render side by side.
+ *
+ * So the pairs are fenced, and scripts/materials.test.mjs asserts each pair
+ * declares byte-identical values. Edit one half and the test fails until you
+ * edit the other. Do not remove the markers.
+ * ---------------------------------------------------------------------------
+ *
  * All four theme x expression combinations are written out. Verbose, but a
  * reader can see every depth decision without resolving a cascade in their head.
  */
@@ -54,6 +74,7 @@
 }
 
 /* ---------- dark + system ---------- */
+/* @paired-begin dark-system-media */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-expression='expressive']) {
     --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
@@ -63,7 +84,9 @@
     --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.35), var(--lucet-hairline);
   }
 }
+/* @paired-end dark-system-media */
 
+/* @paired-begin dark-system-attr */
 :root[data-theme='dark']:not([data-expression='expressive']) {
   --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
   --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.3);
@@ -71,6 +94,7 @@
   --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.5), var(--lucet-hairline);
   --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.35), var(--lucet-hairline);
 }
+/* @paired-end dark-system-attr */
 
 /* ============================================================
  * EXPRESSIVE. Light comes from above and surfaces have thickness.
@@ -129,6 +153,7 @@
 }
 
 /* ---------- dark + expressive ---------- */
+/* @paired-begin dark-expressive-media */
 @media (prefers-color-scheme: dark) {
   :root[data-expression='expressive']:not([data-theme='light']) {
     --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
@@ -157,24 +182,33 @@
     --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
   }
 }
+/* @paired-end dark-expressive-media */
 
+/* @paired-begin dark-expressive-attr */
 :root[data-theme='dark'][data-expression='expressive'] {
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
+  /* Lighter than the fill, not darker. That is how a lit edge works. */
   --lucet-hairline: 0 0 0 1px oklch(1 0 0 / 0.09);
 
-  --lucet-shade-1: 0 1px 1.5px oklch(0 0 0 / 0.4), 0 1px 3px oklch(0 0 0 / 0.3);
+  --lucet-shade-1:
+    0 0.5px 0 oklch(0 0 0 / 0.5),
+    0 1px 2px oklch(0 0 0 / 0.45),
+    0 2px 5px oklch(0 0 0 / 0.35);
   --lucet-shade-2:
-    0 1px 2px oklch(0 0 0 / 0.4),
-    0 4px 8px oklch(0 0 0 / 0.35),
-    0 12px 24px oklch(0 0 0 / 0.4);
+    0 0.5px 0 oklch(0 0 0 / 0.45),
+    0 1px 2px oklch(0 0 0 / 0.45),
+    0 5px 10px oklch(0 0 0 / 0.4),
+    0 14px 28px oklch(0 0 0 / 0.45);
   --lucet-shade-3:
-    0 2px 4px oklch(0 0 0 / 0.45),
-    0 8px 20px oklch(0 0 0 / 0.5),
-    0 24px 48px oklch(0 0 0 / 0.55);
+    0 0.5px 0 oklch(0 0 0 / 0.5),
+    0 2px 5px oklch(0 0 0 / 0.5),
+    0 10px 24px oklch(0 0 0 / 0.55),
+    0 28px 56px oklch(0 0 0 / 0.6);
 
   --lucet-material-pressed:
     inset 0 1px 3px oklch(0 0 0 / 0.55), inset 0 -1px 0 oklch(1 0 0 / 0.06), var(--lucet-hairline);
   --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.4), var(--lucet-hairline);
   --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
 }
+/* @paired-end dark-expressive-attr */

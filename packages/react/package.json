@@ -1,6 +1,6 @@
 {
   "name": "lucet-react",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "React bindings for Lucet. A thin wrapper over the lucet core.",
   "license": "MIT",
   "author": "Ian Larson",
@@ -23,7 +23,9 @@
   "files": [
     "dist",
     "styles",
-    "NOTICE"
+    "NOTICE",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
@@ -34,7 +36,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lucet": "^0.0.0"
+    "lucet": "0.0.1"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -47,5 +49,14 @@
     "react-dom": "^19.0.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianlarson1337/lucet.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/ianlarson1337/lucet",
+  "bugs": {
+    "url": "https://github.com/ianlarson1337/lucet/issues"
   }
 }

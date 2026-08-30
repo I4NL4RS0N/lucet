@@ -1,6 +1,6 @@
 {
   "name": "lucet",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Framework-free headless core for Lucet. State logic only: streaming, aborts, tool lifecycle, versioning/restore, scope resolution. Zero framework imports.",
   "license": "MIT",
   "author": "Ian Larson",
@@ -22,7 +22,9 @@
   },
   "files": [
     "dist",
-    "styles"
+    "styles",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
@@ -35,5 +37,14 @@
   "devDependencies": {
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianlarson1337/lucet.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/ianlarson1337/lucet",
+  "bugs": {
+    "url": "https://github.com/ianlarson1337/lucet/issues"
   }
 }
