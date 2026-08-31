@@ -599,7 +599,9 @@ body {
    taking the floor room as ::after instead. */
 .cfg__empty::before {
   content: '';
-  flex: 1 1 0;
+  /* Eased from 1 so the words ride AT the light's peak in the floor-
+     composer containers too — the home's fix, transposed. */
+  flex: 0.7 1 0;
 }
 .cfg__empty-gap {
   display: block;
@@ -773,6 +775,9 @@ body {
 /* The menu is its own stratum, not the composer's shadow: real air
    between the input and the ways in (Ian — "too close"). */
 .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 26px; }
+/* Pinned menus breathe off the composer's border instead of sitting on
+   it — the same "too close" fix, at the floor. */
+.cfg__empty:not(:has(.cfg__composer--center)) .lucet-chips { margin-block-end: 12px; }
 /* The room lights, then three beats — greeting, invitation, ways in —
    then stillness. Only the atmosphere keeps moving, slower than
    attention. */
