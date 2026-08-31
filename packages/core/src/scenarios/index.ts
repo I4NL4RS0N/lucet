@@ -277,6 +277,30 @@ export const staleData = defineScenario({
   ],
 })
 
+/*
+ * FEATURES: the other half of the thesis. States show how a response can
+ * go; these show what other libraries do not have at all.
+ */
+export const multiplayer = defineScenario({
+  id: 'multiplayer',
+  label: 'Another person’s turn',
+  group: 'Multiplayer',
+  kind: 'feature',
+  author: 'Ada',
+  description:
+    'A Lucet thread is shared: several people, one thread, a single writer at a time. Ada asks — the composer locks for everyone until her answer lands, and her turn arrives wearing her face. While hers runs, write your own and Queue it: it sends itself the moment the thread frees.',
+  prompt: 'Pull the totals for the northern site.',
+  steps: [
+    { type: 'wait', ms: 600 },
+    {
+      type: 'say',
+      text: 'Gathered. The northern site peaks in March, and the one number that moved since last week — the survey figure — is flagged for review.',
+    },
+    { type: 'usage', tokens: 610, costUsd: 0.0092 },
+    { type: 'complete' },
+  ],
+})
+
 export const builtInScenarios: readonly Scenario[] = [
   happyPath,
   formatted,
@@ -290,4 +314,5 @@ export const builtInScenarios: readonly Scenario[] = [
   degradedModel,
   serviceDown,
   staleData,
+  multiplayer,
 ]

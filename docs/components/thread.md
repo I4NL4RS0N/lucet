@@ -19,9 +19,13 @@ including the ways it came back wrong.
   presence, the no-bubble position taken to its conclusion.
 - **A response is never simply "loading" or "done".** Streaming shows a caret
   riding the live edge of the text. The three unhappy endings are designed
-  states with words: *Stopped early* (what arrived is kept), *Failed* (what
-  went wrong, what it cost), and *Declined* — which deliberately does not
-  wear red, because a refusal is a considered answer, not an error.
+  states, each triple-coded — silhouette, colour, word — with the colour
+  mapped to a universal meaning: *Failed* wears danger red (it broke),
+  *Stopped early* wears caution amber (cut short, nothing broken), and
+  *Declined* wears info blue — still deliberately not red, because a
+  refusal is a considered answer, but no longer neutral either: an earlier
+  round left it uncoloured on principle, and in practice it read as
+  unstyled rather than calm. A boundary is information, and dresses as it.
 - **What you sent stays visible.** Attachments travel onto the prompt as
   parts and render as read-only chips — the composer's chips minus the
   verbs, same CSS, second name. The event log records exactly which went;

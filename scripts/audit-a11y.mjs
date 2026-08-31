@@ -407,6 +407,8 @@ function collectComponents() {
     'tool receipt body': '.lucet-tool__io-pre',
     'thread ending': '.lucet-thread__ended',
     'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
+    'thread ending word (interrupted)': '.lucet-thread__ended[data-status="interrupted"] strong',
+    'thread ending word (refused)': '.lucet-thread__ended[data-status="refused"] strong',
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
     /* A suggestion chip: the content tier carrying a whole prompt. */
     'suggestion chip': '.lucet-chips__chip:not(:disabled)',

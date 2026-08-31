@@ -12,8 +12,9 @@ import {
   useThread,
   useTriggerGroups,
 } from 'lucet-react'
-import { useApplyTheme } from './components/ThemeControls'
+import { NEUTRALS, RADII, SCALES, TYPEFACES, useApplyTheme } from './components/ThemeControls'
 import type { ThemeState } from './components/ThemeControls'
+import { loadAppearance, saveAppearance } from './lib/appearance'
 import { readStateParam, writeStateParam } from './lib/deep-link'
 
 /**
@@ -67,9 +68,22 @@ function TriggerRail({
   const thread = useThread()
   const busy = thread.status !== 'idle'
 
+  /*
+   * The thesis has two halves, and the rail shows both: STATES are the
+   * ways a response can go (the coverage argument), FEATURES are what
+   * other libraries do not have at all (the differentiator argument).
+   */
+  const bands = [
+    { title: 'States', groups: groups.filter((g) => (g.scenarios[0]?.kind ?? 'state') === 'state') },
+    { title: 'Features', groups: groups.filter((g) => g.scenarios[0]?.kind === 'feature') },
+  ].filter((band) => band.groups.length > 0)
+
   return (
     <nav aria-label="State triggers">
-      {groups.map((group) => (
+      {bands.map((band) => (
+        <div className="cfg__band" key={band.title}>
+          <p className="cfg__band-title">{band.title}</p>
+          {band.groups.map((group) => (
         <section className="cfg__group" key={group.group}>
           <h3 className="cfg__group-name">{group.group}</h3>
           {group.scenarios.map((scenario) => (
@@ -93,6 +107,8 @@ function TriggerRail({
             </button>
           ))}
         </section>
+          ))}
+        </div>
       ))}
     </nav>
   )
@@ -136,6 +152,10 @@ function AppCore({
   return (
     <>
       <div className="cfg__frame-bar">
+        {/* Set dressing, honestly generic: a window is a window. */}
+        <span className="cfg__dots" aria-hidden>
+          <i /><i /><i />
+        </span>
         <span className="cfg__frame-title">Thread</span>
         <button
           type="button"
@@ -236,6 +256,16 @@ function AppCore({
 function MockDocument() {
   return (
     <div className="cfg__mock-doc" aria-hidden>
+      {/* The breadcrumb is set dressing today and a scope ladder tomorrow:
+          the app's own navigation is the context hierarchy Scope Control
+          will read (brief §8.1). */}
+      <div className="cfg__mock-nav">
+        <span>Workspace</span>
+        <span className="cfg__mock-sep">/</span>
+        <span>Plans</span>
+        <span className="cfg__mock-sep">/</span>
+        <span className="cfg__mock-here">Quarterly planning</span>
+      </div>
       <h2>Quarterly planning notes</h2>
       <p>
         Three of the five workstreams are on schedule. The remaining two are
@@ -258,22 +288,30 @@ function MockDocument() {
 export function App() {
   const lucet = useMemo(() => createLucet({ suggestions: SUGGESTIONS }), [])
   const [view, setView] = useState<View>('full')
-  /* The site's resting look: dark, violet. System and monochrome remain a
-     click away; the default is a point of view. */
-  const [themeState, setThemeState] = useState<ThemeState>({
-    theme: 'dark',
-    accent: 'violet',
+  /* The site's resting look: dark, violet — but a choice made ANYWHERE on
+     the site wins over it, so moving between pages never resets you. */
+  const [themeState, setThemeState] = useState<ThemeState>(() => {
+    const stored = loadAppearance()
+    return {
+    theme: (stored.theme as ThemeState['theme']) ?? 'dark',
+    accent: (stored.accent as ThemeState['accent']) ?? 'violet',
     neutral: 'subtle',
-    expression: 'system',
-    radius: 'default',
-    scale: '100',
-    typeface: 'inter',
+    expression: (stored.expression as ThemeState['expression']) ?? 'system',
+    radius: (stored.radius as ThemeState['radius']) ?? 'default',
+    scale: (stored.scale as ThemeState['scale']) ?? '100',
+    typeface: (stored.typeface as ThemeState['typeface']) ?? 'inter',
+    }
   })
   const booted = useRef(false)
   const [active, setActive] = useState<string | null>(null)
   const [firing, setFiring] = useState<string | null>(null)
 
   useApplyTheme(themeState)
+
+  useEffect(() => {
+    const { theme, accent, expression, radius, scale, typeface } = themeState
+    saveAppearance({ theme, accent, expression, radius, scale, typeface })
+  }, [themeState])
 
   const fire = (id: string) => {
     setActive(id)
@@ -425,6 +463,42 @@ export function App() {
                   ))}
                 </select>
               </span>
+              {/*
+               * The rest of the appearance axes — expression, radius, scale,
+               * typeface, neutral — are real and audited, but four more
+               * pickers on the bar would bury the two that carry the pitch.
+               * They wait behind one word.
+               */}
+              <details className="cfg__more">
+                <summary>More</summary>
+                <div className="cfg__more-panel">
+                  {(
+                    [
+                      ['Expression', 'expression', ['system', 'expressive']],
+                      ['Neutral', 'neutral', NEUTRALS],
+                      ['Radius', 'radius', RADII],
+                      ['Scale', 'scale', SCALES],
+                      ['Typeface', 'typeface', TYPEFACES],
+                    ] as const
+                  ).map(([label, key, options]) => (
+                    <label className="cfg__more-row" key={key}>
+                      <span>{label}</span>
+                      <select
+                        value={themeState[key]}
+                        onChange={(e) =>
+                          setThemeState((prev) => ({ ...prev, [key]: e.target.value }))
+                        }
+                      >
+                        {options.map((o) => (
+                          <option key={o} value={o}>
+                            {o}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+              </details>
             </div>
           </div>
 
@@ -454,6 +528,12 @@ export function App() {
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">
               <div className="cfg__phone">
+                <div className="cfg__phone-status" aria-hidden>
+                  <span>9:41</span>
+                  <span className="cfg__phone-pills">
+                    <i /><i />
+                  </span>
+                </div>
                 <AppCore
                 onReset={() => setActive(null)}
                 onSuggest={(s) => {
@@ -461,6 +541,7 @@ export function App() {
                   fire(s.id)
                 }}
               />
+                <div className="cfg__phone-home" aria-hidden />
               </div>
             </section>
           )}

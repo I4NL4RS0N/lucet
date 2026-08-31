@@ -80,18 +80,21 @@
    * THE STATE MAP. Each line is a design decision, not a colour choice.
    */
 
-  /* A refusal is a boundary held on purpose, not a malfunction. Colouring it
-     red teaches people that the assistant broke, and they stop reading the
-     sentence that tells them what it can do instead. Neutral, with weight. */
-  --lucet-state-refused-surface: var(--lucet-tone-neutral-surface);
-  --lucet-state-refused-foreground: var(--lucet-tone-neutral-foreground);
-  --lucet-state-refused-border: var(--lucet-tone-neutral-border);
+  /* A refusal is a boundary held on purpose, not a malfunction. Red would
+     teach people the assistant broke — but NEUTRAL taught them nothing at
+     all: in practice the uncoloured ending read as unstyled, not as calm
+     (found by Ian, 2026-09-01). A boundary is INFORMATION, so it wears the
+     info tone: marked, unalarmed, unmistakably deliberate. */
+  --lucet-state-refused-surface: var(--lucet-tone-info-surface);
+  --lucet-state-refused-foreground: var(--lucet-tone-info-foreground);
+  --lucet-state-refused-border: var(--lucet-tone-info-border);
 
-  /* Interrupted is not failed. The user usually did it on purpose, and what
-     already arrived is still good. Alarm here would be a lie. */
-  --lucet-state-interrupted-surface: var(--lucet-tone-neutral-surface);
-  --lucet-state-interrupted-foreground: var(--lucet-tone-neutral-foreground);
-  --lucet-state-interrupted-border: var(--lucet-tone-neutral-border);
+  /* Interrupted is not failed — but it IS cut short, and what arrived is
+     incomplete. Caution says exactly that: attention, nothing broken. The
+     earlier neutral had the same illegibility as the refused one. */
+  --lucet-state-interrupted-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-interrupted-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-interrupted-border: var(--lucet-tone-caution-border);
 
   /* Partial earns caution, not danger. Something came back, and the answer is
      real but incomplete. Danger would push people to discard usable work. */
@@ -154,7 +157,8 @@
     --lucet-tone-caution-border: oklch(0.35 calc(var(--lucet-tone-caution-c) * 0.7) var(--lucet-tone-caution-h));
 
     --lucet-tone-danger-surface: oklch(0.28 calc(var(--lucet-tone-danger-c) * 0.95) var(--lucet-tone-danger-h));
-    --lucet-tone-danger-foreground: oklch(0.86 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+    /* Redder than the other tones are brighter — see the [data-theme] twin. */
+    --lucet-tone-danger-foreground: oklch(0.78 0.16 var(--lucet-tone-danger-h));
     --lucet-tone-danger-border: oklch(0.44 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
 
     --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));
@@ -180,8 +184,12 @@
   --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
   --lucet-tone-caution-border: oklch(0.35 calc(var(--lucet-tone-caution-c) * 0.7) var(--lucet-tone-caution-h));
 
+  /* Danger ink runs REDDER in dark than the other tones run brighter: at
+     L 0.86 the red compressed to salmon and read as "some accent colour"
+     instead of as danger. Lower lightness, more chroma — unmistakably red,
+     still AA on every dark surface it sits on (audited). */
   --lucet-tone-danger-surface: oklch(0.28 calc(var(--lucet-tone-danger-c) * 0.95) var(--lucet-tone-danger-h));
-  --lucet-tone-danger-foreground: oklch(0.86 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
+  --lucet-tone-danger-foreground: oklch(0.78 0.16 var(--lucet-tone-danger-h));
   --lucet-tone-danger-border: oklch(0.44 var(--lucet-tone-danger-c) var(--lucet-tone-danger-h));
 
   --lucet-tone-unknown-surface: oklch(0.27 calc(var(--lucet-tone-unknown-c) * 0.9) var(--lucet-tone-unknown-h));

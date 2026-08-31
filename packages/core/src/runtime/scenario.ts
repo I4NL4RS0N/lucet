@@ -38,10 +38,20 @@ export interface Scenario {
   readonly label: string
   /** Groups the trigger rail. Keeps the happy path away from the failures. */
   readonly group: string
+  /**
+   * The thesis has two halves and the rail shows both: STATES are the ways
+   * a response can go (the coverage argument), FEATURES are the things
+   * other libraries do not have at all (the differentiator argument).
+   * Defaults to 'state'.
+   */
+  readonly kind?: 'state' | 'feature'
   /** Shown in the rail and in the docs. Say what this proves. */
   readonly description: string
   /** The prompt to put in the thread, if this scenario starts a turn. */
   readonly prompt: string | null
+  /** Who submits the prompt. Defaults to the local participant — another
+      name makes the turn arrive from someone else in the shared thread. */
+  readonly author?: string
   readonly steps: readonly Step[]
 }
 

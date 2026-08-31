@@ -12,9 +12,12 @@
     />
     <title>Lucet · Components</title>
     <script>
-      // Pre-paint, same as primitives.html, same reason: no theme flash.
-      document.documentElement.setAttribute('data-theme', 'dark')
-      document.documentElement.setAttribute('data-accent', 'monochrome')
+      // Before first paint: the STORED appearance wins (one choice carries
+      // across all three pages); the lab's own fallback stays monochrome so
+      // primitives are judged without accent seduction.
+      try { var a = JSON.parse(localStorage.getItem('lucet-docs-appearance') || '{}') } catch (e) { a = {} }
+      document.documentElement.setAttribute('data-theme', a.theme || 'dark')
+      document.documentElement.setAttribute('data-accent', a.accent || 'monochrome')
     </script>
   </head>
   <body>

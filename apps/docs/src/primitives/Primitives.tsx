@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { loadAppearance, saveAppearance } from '../lib/appearance'
 
 /**
  * The primitives page. Private, never deployed.
@@ -234,8 +235,15 @@ const FileGlyph = {
 }
 
 export function Primitives() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const [accent, setAccent] = useState('monochrome')
+  /* The stored appearance wins; monochrome is only the lab's fallback. */
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const t = loadAppearance().theme
+    return t === 'light' || t === 'dark' ? t : 'dark'
+  })
+  const [accent, setAccent] = useState(() => loadAppearance().accent ?? 'monochrome')
+  useEffect(() => {
+    saveAppearance({ theme, accent })
+  }, [theme, accent])
 
   /*
    * On the ROOT, not on this div. The library declares its tokens against

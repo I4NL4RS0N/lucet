@@ -127,6 +127,71 @@ body {
   outline-offset: var(--lucet-focus-offset);
 }
 
+/* The rest of the appearance axes, behind one word. */
+.cfg__more { position: relative; }
+.cfg__more summary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 26px;
+  padding-inline: 9px;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  color: var(--lucet-subtle-foreground);
+  font-size: 12.5px;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__more summary::-webkit-details-marker { display: none; }
+.cfg__more summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__more[open] summary { background-color: var(--lucet-subtle); color: var(--lucet-foreground); }
+.cfg__more summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__more-panel {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 6px);
+  z-index: 30;
+  display: grid;
+  gap: 8px;
+  min-inline-size: 220px;
+  padding: 12px;
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+.cfg__more-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__more-row select {
+  appearance: auto;
+  min-block-size: 26px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background-color: transparent;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 12px;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.cfg__more-row select:hover { background-color: var(--lucet-hover); }
+.cfg__more-row select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
 /* Navigation is LINKS, not controls: no box, no fill — quiet ink that inks
    up and underlines on hover, the same underline grammar as links in the
    document. The padding keeps the target honest without drawing a button. */
@@ -220,6 +285,57 @@ body {
 }
 
 .cfg__frame-title { font-weight: 500; color: var(--lucet-subtle-foreground); }
+
+/* Window dots: honestly generic set dressing — a window is a window. They
+   belong to the desktop containers only; the phone hides them. */
+.cfg__dots { display: inline-flex; gap: 6px; margin-inline-end: 4px; }
+.cfg__dots i {
+  inline-size: 9px;
+  block-size: 9px;
+  border-radius: 50%;
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+}
+.cfg__phone .cfg__dots { display: none; }
+
+/* Phone dressing: a status strip and a home indicator, neutral. */
+.cfg__phone-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 22px 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--lucet-subtle-foreground);
+}
+.cfg__phone-pills { display: inline-flex; gap: 5px; }
+.cfg__phone-pills i {
+  inline-size: 17px;
+  block-size: 10px;
+  border-radius: 3.5px;
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+}
+.cfg__phone-pills i:first-child { inline-size: 12px; }
+.cfg__phone-home {
+  block-size: 4px;
+  inline-size: 118px;
+  margin: 6px auto 8px;
+  border-radius: 999px;
+  background-color: var(--lucet-input);
+}
+
+/* The mock document's breadcrumb: set dressing today, a scope ladder
+   tomorrow — the navigation IS the context hierarchy Scope Control reads. */
+.cfg__mock-nav {
+  display: flex;
+  gap: 8px;
+  margin-block-end: 22px;
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__mock-sep { opacity: 0.5; }
+.cfg__mock-here { color: var(--lucet-subtle-foreground); font-weight: 500; }
 
 .cfg__reset {
   position: relative;
@@ -334,16 +450,28 @@ body {
   padding-inline: 24px;
   color: var(--lucet-muted-foreground);
   font-size: 13px;
+  /* The vibe: a quiet pool of the accent behind the moment. It follows
+     whatever accent is chosen, so the welcome is always in the site's own
+     light — and in monochrome it is simply a soft lamp. */
+  background: radial-gradient(
+    420px 300px at 50% 40%,
+    color-mix(in oklab, var(--lucet-primary) 8%, transparent),
+    transparent 72%
+  );
 }
 .cfg__empty .lucet-orb-row {
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
-.cfg__empty .lucet-orb { --lucet-orb-size: 52px; }
+.cfg__empty .lucet-orb { --lucet-orb-size: 60px; }
+/* The orb blooms: light behaves like light. */
+.cfg__empty .lucet-orb svg {
+  filter: drop-shadow(0 0 16px color-mix(in oklab, var(--lucet-primary) 50%, transparent));
+}
 .cfg__empty .lucet-orb-row__label {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 500;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.014em;
   color: var(--lucet-foreground);
 }
 .cfg__empty-sub { max-inline-size: 40ch; }
@@ -404,8 +532,25 @@ body {
 }
 .cfg__rail::-webkit-scrollbar-track { background: transparent; }
 
-/* No column title: it doubled the first group label, and the divider
-   already says where the states begin. The groups carry the naming. */
+/* Two bands, the thesis's two halves: STATES (how a response can go) and
+   FEATURES (what others don't have). The band titles earned their way back
+   once there were two of them — a single title over a single first group
+   was a doubled label; two titles over two sets is a table of contents. */
+.cfg__band + .cfg__band {
+  margin-block-start: 18px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--lucet-border);
+}
+.cfg__band-title {
+  margin: 0 0 8px;
+  padding-inline: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lucet-foreground);
+}
+.cfg__band .cfg__group:first-of-type { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
 
 .cfg__group { display: grid; }
 .cfg__group + .cfg__group {

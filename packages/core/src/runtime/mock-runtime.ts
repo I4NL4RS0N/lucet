@@ -169,16 +169,16 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         versionId: nextId('v'),
         messageId: promptId,
         text: scenario.prompt ?? '',
-        authorId,
+        authorId: scenario.author ?? authorId,
         attachmentIds: store
           .getState()
           .composer.attachments.filter((a) => a.status === 'ready')
           .map((a) => a.id),
         retryOf: meta?.retryOf ?? null,
       })
-      // Single writer at a time. The composer closes for everyone, not just the
-      // person who submitted.
-      store.dispatch({ type: 'composer/locked', by: authorId })
+      // Single writer at a time. The composer closes for everyone, not just
+      // the person who submitted — and it is held BY whoever that was.
+      store.dispatch({ type: 'composer/locked', by: scenario.author ?? authorId })
       store.dispatch({ type: 'response/started', turnId, messageId })
 
       let settled = false

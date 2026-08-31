@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet'
 import type { LucetEvent, ThreadState } from 'lucet'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
+import { loadAppearance, saveAppearance } from '../lib/appearance'
 
 /**
  * The components stage. Private, never deployed — the primitives page's
@@ -398,8 +399,15 @@ function Live() {
 }
 
 export function ComponentsStage() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const [accent, setAccent] = useState('monochrome')
+  /* The stored appearance wins; monochrome is only the lab's fallback. */
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const t = loadAppearance().theme
+    return t === 'light' || t === 'dark' ? t : 'dark'
+  })
+  const [accent, setAccent] = useState(() => loadAppearance().accent ?? 'monochrome')
+  useEffect(() => {
+    saveAppearance({ theme, accent })
+  }, [theme, accent])
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])

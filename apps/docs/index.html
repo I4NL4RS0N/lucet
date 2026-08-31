@@ -16,11 +16,11 @@
     />
     <title>Lucet</title>
     <script>
-      // Before first paint, same reason as the stage pages: the site's
-      // resting look is dark/violet, and arriving light-then-flipping is a
-      // smear, not a theme.
-      document.documentElement.setAttribute('data-theme', 'dark')
-      document.documentElement.setAttribute('data-accent', 'violet')
+      // Before first paint: the STORED appearance wins; dark/violet is only
+      // the site's resting fallback. One choice, three pages, no flash.
+      try { var a = JSON.parse(localStorage.getItem('lucet-docs-appearance') || '{}') } catch (e) { a = {} }
+      document.documentElement.setAttribute('data-theme', a.theme || 'dark')
+      document.documentElement.setAttribute('data-accent', a.accent || 'violet')
     </script>
   </head>
   <body>

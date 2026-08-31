@@ -1378,9 +1378,23 @@
   flex: none;
   margin-block-start: 3px;
 }
+/* Every ending is TRIPLE-CODED — silhouette, colour, word — and the colour
+   maps to a universal meaning: red broke, amber cut short, blue declined
+   on purpose. The word and its mark wear the same ink; a mark in one
+   colour beside a word in another is two signals fighting. */
 .lucet-thread__ended strong { font-weight: 600; color: var(--lucet-foreground); }
-.lucet-thread__ended[data-status='failed'] strong { color: var(--lucet-tone-danger-foreground); }
-.lucet-thread__ended[data-status='refused'] strong { color: var(--lucet-foreground); }
+.lucet-thread__ended[data-status='failed'] strong,
+.lucet-thread__ended[data-status='failed'] .lucet-icon {
+  color: var(--lucet-state-failed-foreground);
+}
+.lucet-thread__ended[data-status='interrupted'] strong,
+.lucet-thread__ended[data-status='interrupted'] .lucet-icon {
+  color: var(--lucet-state-interrupted-foreground);
+}
+.lucet-thread__ended[data-status='refused'] strong,
+.lucet-thread__ended[data-status='refused'] .lucet-icon {
+  color: var(--lucet-state-refused-foreground);
+}
 
 /*
  * ARRIVAL. Things enter the thread; they do not pop into it. When every
