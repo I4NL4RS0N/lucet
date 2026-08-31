@@ -21,7 +21,7 @@
       try { var a = JSON.parse(localStorage.getItem('lucet-docs-appearance') || '{}') } catch (e) { a = {} }
       document.documentElement.setAttribute('data-theme', a.theme || 'dark')
       document.documentElement.setAttribute('data-accent', a.accent || 'violet')
-      document.documentElement.setAttribute('data-neutral', a.neutral || 'subtle')
+      document.documentElement.setAttribute('data-neutral', a.neutral || 'accent')
       if (a.expression === 'expressive') document.documentElement.setAttribute('data-expression', a.expression)
       if (a.radius && a.radius !== 'default') document.documentElement.setAttribute('data-radius', a.radius)
       document.documentElement.setAttribute('data-scale', a.scale || '100')

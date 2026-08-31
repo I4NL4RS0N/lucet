@@ -1767,7 +1767,9 @@
 
 .lucet-chips__chip {
   display: flex;
-  align-items: center;
+  /* Multi-line prompts: the glyph holds the FIRST line (optical), the
+     chevron keeps the row's centre. */
+  align-items: flex-start;
   gap: 9px;
   min-block-size: 38px;
   max-inline-size: 100%;
@@ -1792,11 +1794,12 @@
    colour-conveys-meaning law, pointed back at us). */
 .lucet-chips__glyph {
   flex: none;
+  margin-block-start: 2px;
   inline-size: 15px;
   block-size: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--lucet-muted-foreground);
@@ -1812,11 +1815,12 @@
 /* The chevron leans in when the row is considered. */
 .lucet-chips__chev {
   flex: none;
+  align-self: center;
   inline-size: 11px;
   block-size: 11px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--lucet-muted-foreground);

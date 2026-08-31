@@ -170,7 +170,7 @@ body {
   block-size: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.6;
+  stroke-width: 2;
   stroke-linejoin: round;
 }
 /* The identity row: the same B2 tile as the drawer's host — one fake
@@ -226,7 +226,7 @@ body {
   block-size: 14px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 2;
   stroke-linecap: round;
 }
 .cfg__side-user {
@@ -652,6 +652,7 @@ body {
 /* The greeting is the face now — a headline over lit air. */
 .cfg__empty-hello {
   margin: 0;
+  text-wrap: balance;
   color: var(--lucet-foreground);
   font-size: 22px;
   font-weight: 600;
@@ -1094,7 +1095,7 @@ body {
   block-size: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2;
   stroke-linecap: round;
 }
 .cfg__dmenu-panel {
@@ -1124,6 +1125,9 @@ body {
   font-size: 13px;
   text-align: start;
   cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 .cfg__dmenu-row:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__dmenu-row:focus-visible {
@@ -1137,7 +1141,7 @@ body {
   block-size: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1186,7 +1190,7 @@ body {
   block-size: 13px;
   fill: none;
   stroke: var(--lucet-muted-foreground);
-  stroke-width: 1.7;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.7;
@@ -1279,6 +1283,7 @@ body {
 }
 
 .cfg__log-body {
+  font-variant-numeric: tabular-nums;
   margin-block-start: 6px;
   max-block-size: 260px;
   overflow-y: auto;

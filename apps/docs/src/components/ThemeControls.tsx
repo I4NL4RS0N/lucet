@@ -216,7 +216,7 @@ export function useAppearance(fallback: {
     return {
       theme: (stored.theme as Theme) ?? fallback.theme,
       accent: (stored.accent as Accent) ?? fallback.accent,
-      neutral: (stored.neutral as Neutral) ?? 'subtle',
+      neutral: (stored.neutral as Neutral) ?? 'accent',
       expression: (stored.expression as Expression) ?? 'system',
       radius: (stored.radius as Radius) ?? 'default',
       scale: (stored.scale as Scale) ?? '100',

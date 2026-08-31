@@ -5,8 +5,8 @@
  * script applies it before first paint so navigation never flashes.
  *
  * The stored choice always wins; each page keeps its own FALLBACK (the
- * site rests dark/violet, the labs rest monochrome so primitives are
- * judged without accent seduction).
+ * site rests dark/violet with the greys following the accent, the labs
+ * rest monochrome so primitives are judged without accent seduction).
  */
 
 const KEY = 'lucet-docs-appearance'
