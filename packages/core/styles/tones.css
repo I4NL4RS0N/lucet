@@ -6,6 +6,23 @@
  * coverage needs names for degraded, stale, partial, refused, and uncertain,
  * and the absence of those names everywhere else is part of the argument.
  *
+ * THE QUARTET IS A STANDARD, NOT A TASTE. danger/caution/info/success
+ * maps onto ANSI Z535 / ISO 3864 safety colours — red danger, amber
+ * caution, BLUE MANDATORY INSTRUCTION, green safe — the same lineage the
+ * traffic light carries, propagated into UI by Bootstrap's quartet and
+ * every system since (Material, HIG, Ant, Radix). An uptime palette
+ * (operational/degraded/maintenance/down) is a domain DIALECT of it —
+ * this file once leaned that way, and its states now sit downstream of
+ * the quartet where they belong; statuspage blue-as-maintenance is the
+ * dialect's non-universal oddball and gets no token here.
+ *
+ * The ruling that lineage settles: REFUSED IS INFO, NOT DANGER. ISO
+ * blue is a rule stated plus an instruction — which is what a refusal
+ * is: the system working as designed, declining with a reason and a
+ * path. Red would claim the system failed when it did not, and would
+ * dilute red for the true stops (failed, rate-limited). Raised twice,
+ * settled here (Ian + the standard, 2026-08-31).
+ *
  * Five tones, then an explicit map from state to tone. The map is where the
  * design opinions live, so they are written down rather than implied by a hex
  * value someone picked once.
