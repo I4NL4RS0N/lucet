@@ -8,6 +8,7 @@ import {
   createInitialState,
   describeEvent,
   submitBlocker,
+  projectNextTurn,
 } from './index.js'
 
 /**
@@ -288,5 +289,76 @@ describe('citations and sources', () => {
       .map((entry) => describeEvent(entry.event))
       .filter((line) => line.includes('source'))
     expect(described).toContain('A cited source is no longer available')
+  })
+})
+
+describe('budget meter', () => {
+  it('a turn pays twice: the thread tally and the month move together', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.submit('Hello.')
+    const { usage } = lucet.getState()
+    expect(usage.threadCostUsd).toBeCloseTo(0.0048, 6)
+    expect(usage.monthlySpentUsd).toBeCloseTo(0.0048, 6)
+    /* No budget configured: spend accrues, nothing ever blocks. */
+    expect(usage.monthlyBudgetUsd).toBeNull()
+    expect(submitBlocker({ ...lucet.getState(), usage })).toBe('empty')
+  })
+
+  it('the projection prices the NEXT turn from context, draft, and the rate — derived, never stored', () => {
+    const state = createInitialState('t', 200_000)
+    const heavy = {
+      ...state,
+      usage: { ...state.usage, contextTokens: 48_400 },
+      composer: { ...state.composer, text: 'x'.repeat(400) },
+    }
+    const p = projectNextTurn(heavy)
+    /* 900 overhead + 48,400 window + 100 draft + 600 reply, at $3/MTok. */
+    expect(p?.tokens).toBe(50_000)
+    expect(p?.costUsd).toBeCloseTo(0.15, 4)
+    /* Same state, cheaper model: repricing is a parameter, not a mutation. */
+    expect(projectNextTurn(heavy, 'fast')?.costUsd).toBeCloseTo(0.03, 4)
+    /* A model the host does not price projects nothing. */
+    const unpriced = {
+      ...heavy,
+      model: { selectedId: 'x', options: [{ id: 'x', label: 'X', note: null, usdPerMTok: null }] },
+    }
+    expect(projectNextTurn(unpriced)).toBeNull()
+  })
+
+  it('the low month: what remains no longer covers the projection, and a cheaper model does', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('budget-low')
+    const state = lucet.getState()
+    expect(state.usage.monthlySpentUsd).toBeCloseTo(9.91, 4)
+    const remaining = state.usage.monthlyBudgetUsd! - state.usage.monthlySpentUsd
+    const onSelected = projectNextTurn(state)!
+    expect(onSelected.costUsd).toBeGreaterThan(remaining)
+    expect(projectNextTurn(state, 'fast')!.costUsd).toBeLessThanOrEqual(remaining)
+    /* Low is a warning, not a wall: the composer still sends. */
+    expect(submitBlocker({ ...state, usage: state.usage })).toBe('empty')
+  })
+
+  it('the month runs out mid-conversation: the crossing turn lands, then the composer stops with words', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('budget-spent')
+    const state = lucet.getState()
+    /* The turn that crossed the line still completed — the block is for
+       the NEXT spend, never a punishment for the last one. */
+    expect(state.turns[0]!.response?.status).toBe('complete')
+    expect(state.usage.monthlySpentUsd).toBeCloseTo(10.02, 4)
+    expect(submitBlocker({ ...state, usage: state.usage })).toBe('budget')
+    expect(describeEvent({ type: 'usage/changed', patch: {} })).toBeTypeOf('string')
+  })
+
+  it('a new thread empties the window, never the month', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('budget-low')
+    lucet.store.dispatch({ type: 'thread/reset' })
+    const { usage } = lucet.getState()
+    expect(usage.threadTokens).toBe(0)
+    expect(usage.contextTokens).toBe(0)
+    expect(usage.threadCostUsd).toBe(0)
+    expect(usage.monthlyBudgetUsd).toBe(10)
+    expect(usage.monthlySpentUsd).toBeCloseTo(9.91, 4)
   })
 })

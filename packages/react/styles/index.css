@@ -926,50 +926,6 @@
   outline-offset: var(--lucet-focus-offset);
 }
 
-/* Ghost select: inside the composer a raised control would be the loudest
-   thing in the field. The picker whispers until touched, like every other
-   transparent-resting control. */
-.lucet-prompt__model {
-  position: relative;
-  display: inline-block;
-}
-.lucet-prompt__model select {
-  appearance: none;
-  border: 0;
-  background-color: transparent;
-  /* The D1 ghost decision, applied consistently: a hairline at rest, no
-     fill. Fully naked, the chevron floated in the ether until hover drew
-     the container around it. */
-  box-shadow: var(--lucet-hairline);
-  padding: 5px 20px 5px 9px;
-  border-radius: var(--lucet-radius-control);
-  font: inherit;
-  font-size: var(--lucet-text-sm);
-  font-weight: 500;
-  color: var(--lucet-muted-foreground);
-  cursor: pointer;
-  transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
-}
-.lucet-prompt__model::after {
-  content: '';
-  position: absolute;
-  inset-inline-end: 8px;
-  inset-block-start: 50%;
-  inline-size: 5px;
-  block-size: 5px;
-  margin-block-start: -3.5px;
-  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
-  border-block-end: 1.5px solid var(--lucet-muted-foreground);
-  rotate: 45deg;
-  pointer-events: none;
-}
-.lucet-prompt__model select:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.lucet-prompt__model select:focus-visible {
-  outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: var(--lucet-focus-offset);
-}
 
 /* No text lives in the bar. Words go in the strip above -- at narrow widths
    a sentence between the picker and the send button wrapped the whole bar.
@@ -1968,6 +1924,164 @@
   order: 10;
   font-size: var(--lucet-text-xs);
   color: var(--lucet-tone-info-foreground);
+}
+
+/* ============================================================
+ * BUDGET METER. The model picker grown into the meter: the trigger keeps
+ * the ghost-picker grammar (hairline at rest, D1) and adds the projected
+ * price of the next turn; the panel prices every model, then shows the
+ * ledger. Caution and spent change the SILHOUETTE (a drawn triangle),
+ * never the colour alone. Figures are tabular so a repricing never
+ * shuffles the bar.
+ * ============================================================ */
+
+.lucet-budget { position: relative; }
+.lucet-budget__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 30px;
+  padding: 5px 9px;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  color: var(--lucet-muted-foreground);
+  font-size: var(--lucet-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-budget__button::-webkit-details-marker { display: none; }
+.lucet-budget__button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-budget__button:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-budget__button[data-disabled] { opacity: 0.55; pointer-events: none; }
+.lucet-budget__button[data-state='caution'],
+.lucet-budget__button[data-state='spent'] { color: var(--lucet-tone-caution-foreground); }
+.lucet-budget__mark {
+  flex: none;
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-budget__price {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-budget__button[data-state] .lucet-budget__price { color: inherit; }
+.lucet-budget__chev {
+  inline-size: 5px;
+  block-size: 5px;
+  margin-block-start: -2px;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  rotate: 45deg;
+}
+.lucet-budget__panel {
+  position: absolute;
+  inset-block-end: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 30;
+  display: grid;
+  gap: 2px;
+  min-inline-size: 264px;
+  padding: 6px;
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+.lucet-budget__next {
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px 8px;
+  /* The head of the receipt, parted from the rows it prices. */
+  border-block-end: 1px solid var(--lucet-border);
+  margin-block-end: 4px;
+}
+.lucet-budget__next-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  justify-content: space-between;
+  color: var(--lucet-foreground);
+  font-size: var(--lucet-text-sm);
+  font-weight: 500;
+}
+.lucet-budget__why {
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-budget__note {
+  margin: 0 0 4px;
+  padding: 6px 9px;
+  border-radius: var(--lucet-radius-control);
+  background-color: var(--lucet-tone-caution-surface);
+  color: var(--lucet-tone-caution-foreground);
+  font-size: var(--lucet-text-xs);
+}
+.lucet-budget__row {
+  display: grid;
+  gap: 1px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: var(--lucet-text-sm);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-budget__row:hover { background-color: var(--lucet-hover); }
+.lucet-budget__row:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -2px;
+}
+.lucet-budget__row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lucet-budget__row-label { color: var(--lucet-foreground); font-weight: 500; }
+.lucet-budget__check {
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: var(--lucet-foreground);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-budget__fig {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--lucet-subtle-foreground);
+  font-size: var(--lucet-text-xs);
+}
+.lucet-budget__row-note { font-size: var(--lucet-text-xs); }
+.lucet-budget__ledger {
+  display: grid;
+  gap: 4px;
+  margin-block-start: 4px;
+  padding: 8px 9px 6px;
+  border-block-start: 1px solid var(--lucet-border);
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-budget__ledger-row {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
 }
 
 /* ============================================================

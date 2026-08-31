@@ -197,10 +197,19 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             threadTokens: usage.threadTokens + s.tokens,
             contextTokens: usage.contextTokens + s.tokens,
             threadCostUsd: Number((usage.threadCostUsd + s.costUsd).toFixed(4)),
+            /* Every turn the thread pays for, the month pays for too. */
+            monthlySpentUsd: Number((usage.monthlySpentUsd + s.costUsd).toFixed(4)),
           },
         })
         return null
       }
+
+      case 'budget':
+        store.dispatch({
+          type: 'usage/changed',
+          patch: { monthlyBudgetUsd: s.budgetUsd, monthlySpentUsd: s.spentUsd },
+        })
+        return null
 
       case 'service':
         store.dispatch({ type: 'service/changed', status: s.status, message: s.message })

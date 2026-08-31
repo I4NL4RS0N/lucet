@@ -632,6 +632,66 @@ export const multiplayer = defineScenario({
   ],
 })
 
+
+/*
+ * BUDGET — the price before you spend it.
+ *
+ * Every tool can tell you what you spent. The meter's job is the other
+ * direction: the projected price of the NEXT turn, on each model, beside
+ * the picker — so the cheaper model is the exit, one click from the
+ * warning. The numbers here are chosen so the states actually derive:
+ * caution means the remaining month no longer covers the projection, and
+ * spent means a real turn crossed the line — nothing is flagged.
+ */
+
+export const budgetLow = defineScenario({
+  id: 'budget-low',
+  label: 'The next turn may not fit',
+  group: 'Budget',
+  kind: 'feature',
+  description:
+    'The month is nearly spent and the thread is heavy, so the projected price of the next turn on the current model no longer fits what remains. The meter says so \u2014 and prices the model that still fits, one click away.',
+  prompt: 'Compare the two proposals and recommend one.',
+  steps: [
+    /* A heavy thread: the window re-sends every turn, so context is what
+       makes the next turn expensive. */
+    { type: 'usage', tokens: 46_000, costUsd: 0.41 },
+    /* The month, nearly gone. Seeded after the context so the ledger is
+       exact: $9.80 spent of $10. */
+    { type: 'budget', budgetUsd: 10, spentUsd: 9.8 },
+    { type: 'wait', ms: 500 },
+    {
+      type: 'say',
+      text: 'The second proposal. Both land in the same quarter, but the second front-loads its dependencies and names an owner for each \u2014 the first defers exactly the decisions that made last quarter slip.',
+    },
+    { type: 'usage', tokens: 2_400, costUsd: 0.11 },
+    { type: 'complete' },
+  ],
+})
+
+export const budgetSpent = defineScenario({
+  id: 'budget-spent',
+  label: 'The month runs out',
+  group: 'Budget',
+  kind: 'feature',
+  description:
+    'This turn itself crosses the line: its cost lands on the ledger and the composer stops with words, not a grey button. The block is derived from the numbers \u2014 nothing was flagged.',
+  prompt: 'Summarise where the project stands.',
+  steps: [
+    { type: 'usage', tokens: 30_000, costUsd: 0.9 },
+    { type: 'budget', budgetUsd: 10, spentUsd: 9.97 },
+    { type: 'wait', ms: 500 },
+    {
+      type: 'say',
+      text: 'Three of the four workstreams are on schedule. The venue hold is the open risk \u2014 it expires Friday, and everything in the June column assumes it holds.',
+    },
+    /* The crossing: $9.97 + $0.05 \u2014 the month ends mid-conversation,
+       the way it actually does. */
+    { type: 'usage', tokens: 2_600, costUsd: 0.05 },
+    { type: 'complete' },
+  ],
+})
+
 export const builtInScenarios: readonly Scenario[] = [
   happyPath,
   formatted,
@@ -653,4 +713,6 @@ export const builtInScenarios: readonly Scenario[] = [
   versionHistory,
   restoreVersion,
   multiplayer,
+  budgetLow,
+  budgetSpent,
 ]

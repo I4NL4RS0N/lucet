@@ -230,6 +230,14 @@ export interface ModelOption {
   readonly label: string
   /** One-line qualifier ("fastest", "best for long documents"). */
   readonly note: string | null
+  /**
+   * Blended demo rate per million tokens, or null when the host does not
+   * price this model. One number on purpose: real pricing splits input and
+   * output, but a projection is an estimate either way, and the UI marks
+   * every figure with ≈. The rate exists so the price can be shown BEFORE
+   * the spend — the one thing no tool does.
+   */
+  readonly usdPerMTok: number | null
 }
 
 export interface ModelState {
@@ -248,6 +256,7 @@ export type SubmitBlocker =
   | 'restored'
   | 'locked'
   | 'service-down'
+  | 'budget'
   | 'attachment-uploading'
   | 'attachment-failed'
   | 'empty'
@@ -269,8 +278,13 @@ export interface UsageState {
   readonly contextTokens: number
   readonly contextLimit: number
   readonly threadCostUsd: number
-  /** Projected cost of the next turn on the selected model, before committing. */
-  readonly projectedCostUsd: number | null
+  /**
+   * Null when the host has no monthly budget concept — the meter then
+   * shows the thread only. The month OUTLIVES the thread: thread/reset
+   * does not refund it.
+   */
+  readonly monthlyBudgetUsd: number | null
+  readonly monthlySpentUsd: number
 }
 
 /**

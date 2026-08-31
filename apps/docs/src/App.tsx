@@ -90,6 +90,8 @@ const MOCK_PAGES = [
   },
 ] as const
 
+const MONTH_SEED = { monthlyBudgetUsd: 10, monthlySpentUsd: 6.24 } as const
+
 const VIEWS: readonly { value: View; label: string }[] = [
   { value: 'full', label: 'Full page' },
   { value: 'drawer', label: 'Drawer' },
@@ -279,6 +281,7 @@ function AppCore({
               onScopeChange={(levelId) => lucet.store.dispatch({ type: 'scope/changed', levelId })}
               model={state.model}
               service={state.service}
+              usage={state.usage}
               selfId="you"
               streaming={state.status === 'streaming'}
               onStop={() => lucet.abort()}
@@ -637,7 +640,16 @@ function MockDocument({ page = 0 }: { page?: number }) {
 }
 
 export function App() {
-  const lucet = useMemo(() => createLucet({ suggestions: SUGGESTIONS }), [])
+  /* The host's account, seeded so the meter has a month to spend: $10,
+     some of it already lived in. A new thread PRESERVES the month (the
+     reducer's law — a conversation is not a refund); the stage reset
+     re-seeds it, because that button means "fresh demo", not "new
+     thread". */
+  const lucet = useMemo(() => {
+    const instance = createLucet({ suggestions: SUGGESTIONS })
+    instance.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
+    return instance
+  }, [])
   const [view, setView] = useState<View>('full')
   /* The site's resting look: dark, violet — but a choice made ANYWHERE on
      the site wins over it, so moving between pages never resets you. */
@@ -1197,6 +1209,7 @@ export function App() {
               onFire={fire}
               onReset={() => {
                 lucet.reset()
+                lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
                 setActive(null)
               }}
             />

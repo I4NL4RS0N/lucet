@@ -4,10 +4,12 @@ import type {
   ComposerState,
   ModelState,
   ServiceState,
+  UsageState,
 } from 'lucet'
 import { describeSubmitBlocker, submitBlocker } from 'lucet'
 import type { ScopeState } from 'lucet'
 import { ScopeControl } from './ScopeControl.js'
+import { BudgetMeter } from './BudgetMeter.js'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { StateIcon } from './StateIcon.js'
@@ -44,6 +46,9 @@ export interface PromptInputProps {
   composer: ComposerState
   model: ModelState
   service: ServiceState
+  /** Prices the picker and arms the budget blocker. Omit it and the model
+      control is a plain priced picker with no ledger. */
+  usage?: UsageState | undefined
   onChange: (text: string) => void
   onSubmit: () => void
   /** Called instead of onSubmit while locked. Omit it and locking simply disables send. */
@@ -206,6 +211,7 @@ export function PromptInput({
   composer,
   model,
   service,
+  usage,
   onChange,
   onSubmit,
   onQueue,
@@ -220,7 +226,7 @@ export function PromptInput({
   placeholder = 'Ask anything',
 }: PromptInputProps) {
   const id = useId()
-  const blocker = submitBlocker({ composer, service, restoredFrom })
+  const blocker = submitBlocker({ composer, service, restoredFrom, usage })
   const queued = composer.queued !== null
   const canQueue = blocker === 'locked' && onQueue !== undefined && !queued
 
@@ -254,6 +260,15 @@ export function PromptInput({
           tone: 'danger' as const,
           orb: 'down' as const,
           text: service.message ?? describeSubmitBlocker('service-down'),
+        }
+      : blocker === 'budget'
+      ? {
+          /* Caution, not danger: nothing failed. A limit arrived, the way
+             limits do -- mid-conversation -- and the strip says what it
+             means for the send button. */
+          tone: 'caution' as const,
+          icon: 'rate-limited' as const,
+          text: describeSubmitBlocker('budget'),
         }
       : queued
         ? {
@@ -386,19 +401,16 @@ export function PromptInput({
           <ScopeControl scope={scope} onChange={onScopeChange} disabled={composer.locked} />
         ) : null}
 
-        <label className="lucet-prompt__model">
-          <select
-            value={model.selectedId}
-            onChange={(event) => onModelChange(event.target.value)}
-            aria-label="Model"
-          >
-            {model.options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        {/* The picker grew into the meter (the extension point core reserved):
+            one control owns the spending decision — model, projected price,
+            and the month it lands in. */}
+        <BudgetMeter
+          model={model}
+          onChange={onModelChange}
+          usage={usage}
+          composerText={composer.text}
+          disabled={composer.locked}
+        />
 
         {tools}
 

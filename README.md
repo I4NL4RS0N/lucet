@@ -31,11 +31,12 @@ restore (every prompt is a commit, so the thread *is* the history); a
 single-writer turn lock, and a thread that switches to collaborative
 grammar the moment a second human speaks. None of these are bolt-ons:
 the core is an event log, so history, versions, provenance and presence
-are reads, not features glued on top. Versioning and multiplayer are two
-of the four surfaces the thesis names; the other two — **Scope Control**
-(the breadcrumb is a scope ladder) and the **Budget Meter** (the price
-before you spend it) — are next, and the Konfabulator's host application
-was built with the navigation Scope Control will read.
+are reads, not features glued on top. All four of the surfaces the
+thesis names are running: versioning, multiplayer, **Scope Control**
+(the breadcrumb is a scope ladder, reading the host's own navigation)
+and the **Budget Meter** (the price before you spend it — the model
+picker grown into a meter that projects the next turn's cost, per
+model, before you commit).
 
 **A written rationale for every component.** Each one ships with its
 positions, the alternatives that were tried and cut, and what is
@@ -77,8 +78,8 @@ reasoning disclosure, tool calls with receipts, suggestion chips with the
 ask/do split, feedback controls, citations & sources with aging, and
 version marker + restore — demonstrated in one persistent interface
 across three honest containers (a full-page app, a drawer over a host
-application, a phone). Two of the thesis's four surfaces are running;
-Scope Control and the Budget Meter are the next builds, in that order.
+application, a phone). All four of the thesis's surfaces are running:
+scope, versions, multiplayer, and budget.
 Nothing is on npm yet, deliberately: the bar for
 publishing is the same as the bar for everything else here.
 

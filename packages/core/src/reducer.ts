@@ -19,9 +19,9 @@ export interface ReducerContext {
  * describes the machine, "Auto" describes what happens to your prompt.
  */
 export const defaultModels: readonly ModelOption[] = [
-  { id: 'auto', label: 'Auto', note: 'Fits the model to each prompt' },
-  { id: 'fast', label: 'Fast', note: 'Quick answers, lighter reasoning' },
-  { id: 'deep', label: 'Deep reasoning', note: 'Slower, best for hard problems' },
+  { id: 'auto', label: 'Auto', note: 'Fits the model to each prompt', usdPerMTok: 3 },
+  { id: 'fast', label: 'Fast', note: 'Quick answers, lighter reasoning', usdPerMTok: 0.6 },
+  { id: 'deep', label: 'Deep reasoning', note: 'Slower, best for hard problems', usdPerMTok: 15 },
 ]
 
 export function createInitialState(
@@ -43,7 +43,8 @@ export function createInitialState(
       contextTokens: 0,
       contextLimit,
       threadCostUsd: 0,
-      projectedCostUsd: null,
+      monthlyBudgetUsd: null,
+      monthlySpentUsd: 0,
     },
     restoredFrom: null,
     scope: { levels: [], selectedId: null, movedNote: null },
@@ -92,6 +93,13 @@ export function reduce(
           state.suggestions,
         ),
         scope: { ...state.scope, movedNote: null },
+        /* The month outlives the thread. A new conversation empties the
+           window and the thread's tally, never the account's. */
+        usage: {
+          ...createInitialState(state.id, state.usage.contextLimit).usage,
+          monthlyBudgetUsd: state.usage.monthlyBudgetUsd,
+          monthlySpentUsd: state.usage.monthlySpentUsd,
+        },
       }
 
     case 'composer/changed':

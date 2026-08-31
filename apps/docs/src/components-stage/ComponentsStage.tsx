@@ -582,6 +582,39 @@ const SCOPE_FIXTURES: readonly Fixture[] = [
   },
 ]
 
+const BUDGET_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Priced — the trigger is the projection',
+    note: 'The picker grew into the meter: the next turn’s ≈price sits on the trigger, and every model row reprices in place. Open it for the ledger — thread, then month.',
+    events: [
+      {
+        type: 'usage/changed' as const,
+        patch: { monthlyBudgetUsd: 10, monthlySpentUsd: 6.24, threadTokens: 4_200, contextTokens: 4_200, threadCostUsd: 0.05 },
+      },
+    ],
+  },
+  {
+    label: 'Running low — the warning arrives with an exit',
+    note: 'What remains no longer covers the next turn on the selected model, and the trigger changes silhouette, not just colour. The note names the model that still fits — already a priced row in the same panel, one click away.',
+    events: [
+      {
+        type: 'usage/changed' as const,
+        patch: { monthlyBudgetUsd: 10, monthlySpentUsd: 9.91, threadTokens: 48_400, contextTokens: 48_400, threadCostUsd: 0.52 },
+      },
+    ],
+  },
+  {
+    label: 'Spent — a wall with words',
+    note: 'The month ran out mid-conversation, the way months do. The composer stops and says why. Nothing failed, so the strip wears caution, not danger — and the crossing turn itself was allowed to finish.',
+    events: [
+      {
+        type: 'usage/changed' as const,
+        patch: { monthlyBudgetUsd: 10, monthlySpentUsd: 10.02, threadTokens: 32_600, contextTokens: 32_600, threadCostUsd: 0.95 },
+      },
+    ],
+  },
+]
+
 const MULTI_FIXTURES: readonly Fixture[] = [
   {
     label: 'Locked — another person’s turn',
@@ -726,6 +759,32 @@ export function ComponentsStage() {
                     service={stateOf(f).service}
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
+                    selfId="you"
+                    onChange={noop}
+                    onSubmit={noop}
+                    onQueue={noop}
+                    onModelChange={noop}
+                    onRemoveAttachment={noop}
+                    onRetryAttachment={noop}
+                    onAttach={noop}
+                  />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          name="Budget meter — the price before you spend it"
+          note="the projected price of the next turn, on every model, before you commit — and the month it lands in"
+        >
+          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+            {BUDGET_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
+                  <PromptInput
+                    composer={stateOf(f).composer}
+                    model={stateOf(f).model}
+                    service={stateOf(f).service}
+                    usage={stateOf(f).usage}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}

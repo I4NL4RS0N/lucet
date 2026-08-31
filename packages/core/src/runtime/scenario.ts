@@ -64,6 +64,8 @@ export type Step =
   | { type: 'fail'; reason: string }
   | { type: 'interrupt'; reason: string }
   | { type: 'usage'; tokens: number; costUsd: number }
+  /** Seed or move the monthly ledger — the account's month, not the thread's tally. */
+  | { type: 'budget'; budgetUsd: number; spentUsd: number }
   | { type: 'service'; status: ServiceStatus; message: string | null }
   | { type: 'complete' }
 

@@ -55,7 +55,7 @@ const ACCENTS = ['slate', 'blue', 'indigo', 'violet', 'magenta', 'rose', 'green'
  */
 const COMPONENT_PROBES = [
   { sec: 'The app, live', hover: '.lucet-prompt__tool', part: 'attach tool', bg: true },
-  { sec: 'The app, live', hover: '.lucet-prompt__model select', part: 'model select', bg: true },
+  { sec: 'The app, live', hover: '.lucet-budget__button', part: 'budget meter trigger', bg: true },
   { sec: 'The app, live', hover: '[aria-label="Send"][disabled]', part: 'send disabled', expect: 'none' },
   { sec: 'Prompt input — every state', hover: '[aria-label="Send"]:not([disabled])', part: 'send enabled' },
   { sec: 'Prompt input — every state', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
@@ -70,6 +70,7 @@ const COMPONENT_PROBES = [
   { sec: 'Thread — every ending', hover: 'details.lucet-tool .lucet-tool__row--summary', part: 'tool summary', bg: true },
   { sec: 'Citations & sources', hover: '.lucet-sources__row--summary', part: 'source summary', bg: true },
   { sec: 'Scope control — the breadcrumb is the ladder', hover: '.lucet-scope__button', part: 'scope button', bg: true },
+  { sec: 'Budget meter — the price before you spend it', hover: '.lucet-budget__button', part: 'budget trigger', bg: true },
   { sec: 'Suggestion chips — the cold start', hover: '.lucet-chips__chip:not(:disabled)', part: 'suggestion chip' },
   { sec: 'Suggestion chips — the cold start', hover: '.lucet-chips__chip:disabled', part: 'suggestion chip disabled', expect: 'none' },
   { sec: 'Thread — every ending', hover: '[data-latest] .lucet-actions__btn', part: 'message action', bg: true },
