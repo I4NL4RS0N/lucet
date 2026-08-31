@@ -203,6 +203,7 @@ function AppCore({
   aside,
   chrome = 'window',
   home,
+  compact,
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
@@ -216,6 +217,12 @@ function AppCore({
      Le Chat): brand over the greeting, and the composer sits IN the page
      until the first turn exists, then moves to the floor. */
   home?: boolean
+  /* A tight container offers FEWER ways in — one per kind, so the Ask/Do
+     split never collapses while the room breathes. Neither prompt list
+     was cut and no preview grew taller: the host tunes suggestion count
+     per surface, which is the contract's toggle-is-the-config law doing
+     its job. */
+  compact?: boolean
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -349,7 +356,14 @@ function AppCore({
                 ) : null}
                 {suggestionsVisible(state) ? (
                   <SuggestionChips
-                    suggestions={state.suggestions}
+                    suggestions={
+                      compact
+                        ? (['ask', 'do'] as const).flatMap((k) => {
+                            const first = state.suggestions.find((s) => s.kind === k)
+                            return first ? [first] : []
+                          })
+                        : state.suggestions
+                    }
                     disabled={state.composer.locked}
                     onPick={(s) => onSuggest?.(s)}
                   />
@@ -914,6 +928,7 @@ export function App() {
                     {drawerPane === 'thread' ? (
                       <AppCore
                         chrome="bare"
+                        compact
                                 onSuggest={(s) => {
                           writeStateParam(s.id)
                           fire(s.id)
@@ -983,6 +998,7 @@ export function App() {
                 </div>
                 <AppCore
                   chrome="phone"
+                  compact
                   onSuggest={(s) => {
                     writeStateParam(s.id)
                     fire(s.id)
