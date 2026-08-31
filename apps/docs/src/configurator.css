@@ -613,10 +613,18 @@ body {
  */
 .cfg__atmo {
   position: absolute;
-  inset: 0;
+  /* FULL BLEED through the scroll area's padding to the container's own
+     edges — top, left, right (Ian). An atmosphere with margins is a
+     poster, not weather; the falloff below ends it before the floor. */
+  inset: -24px -24px 0;
   z-index: -1;
   overflow: clip;
   pointer-events: none;
+  /* The light pools at the TOP and falls away — light from above, the
+     system's own material story, and the reference's. The greeting lives
+     in the lit zone; the menu and composer sit on calm ground below,
+     where texture would only fight their hairlines (Ian). */
+  mask-image: linear-gradient(to bottom, black 45%, transparent 82%);
   /* The room fades up before the words arrive — light first. */
   animation: cfg-atmo-in 1400ms var(--lucet-ease-out) backwards;
   /* Silk intensity is a THEME decision: over white a whisper is plenty,
@@ -651,7 +659,7 @@ body {
 }
 .cfg__atmo i:nth-child(1) {
   inset-inline-start: -15%;
-  inset-block-start: 30%;
+  inset-block-start: 12%;
   inline-size: 130%;
   block-size: 110px;
   /* Two layers: the band, and the band's own bright heart (dark only —
@@ -675,7 +683,7 @@ body {
 }
 .cfg__atmo i:nth-child(2) {
   inset-inline-start: 2%;
-  inset-block-start: 13%;
+  inset-block-start: 2%;
   inline-size: 72%;
   block-size: 70px;
   background: radial-gradient(
@@ -687,7 +695,7 @@ body {
 }
 .cfg__atmo i:nth-child(3) {
   inset-inline-end: -8%;
-  inset-block-start: 50%;
+  inset-block-start: 28%;
   inline-size: 60%;
   block-size: 90px;
   background: radial-gradient(
@@ -707,7 +715,7 @@ body {
   background-image: radial-gradient(circle, var(--lucet-foreground) 1px, transparent 1.5px);
   background-size: 18px 18px;
   opacity: 0.055;
-  mask-image: radial-gradient(ellipse 72% 56% at 50% 38%, black, transparent 78%);
+  mask-image: radial-gradient(ellipse 72% 56% at 50% 22%, black, transparent 78%);
 }
 @keyframes cfg-atmo-in {
   from { opacity: 0; }
