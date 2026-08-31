@@ -1477,6 +1477,20 @@
 }
 .lucet-actions__btn[data-state='failed'] { color: var(--lucet-tone-danger-foreground); }
 
+/* The verdict pops: one quick over-scale with a thumb's-worth of tilt,
+   then stillness. Fires on recording only — retracting is housekeeping. */
+@keyframes lucet-thumb-pop {
+  0% { scale: 1; rotate: 0deg; }
+  35% { scale: 1.35; rotate: var(--lucet-pop-tilt, -12deg); }
+  70% { scale: 0.94; }
+  100% { scale: 1; rotate: 0deg; }
+}
+.lucet-actions__btn[aria-label='Not helpful'] { --lucet-pop-tilt: 12deg; }
+.lucet-actions__btn[data-pop] svg {
+  animation: lucet-thumb-pop 400ms var(--lucet-ease-out);
+  transform-origin: 45% 60%;
+}
+
 .lucet-thread__pair:not([data-latest]) .lucet-actions {
   opacity: 0;
   transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
@@ -1500,6 +1514,7 @@
   .lucet-tool__row--summary { transition: none; }
   .lucet-tool__row--summary::before { transition: none; }
   .lucet-actions__btn { transition: none; }
+  .lucet-actions__btn[data-pop] svg { animation: none; }
   .lucet-thread__pair:not([data-latest]) .lucet-actions { transition: none; }
 }
 

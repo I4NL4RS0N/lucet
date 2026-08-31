@@ -46,6 +46,9 @@ const COPY_WORDS: Record<CopyState, string> = {
 
 export function MessageActions({ message, onRetry, onFeedback }: MessageActionsProps) {
   const [copy, setCopy] = useState<CopyState>('idle')
+  /* The pop fires on RECORDING a verdict, never on retracting one: giving
+     feedback is a small moment; taking it back is quiet housekeeping. */
+  const [pop, setPop] = useState<'up' | 'down' | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(
     () => () => {
@@ -109,7 +112,13 @@ export function MessageActions({ message, onRetry, onFeedback }: MessageActionsP
             className="lucet-actions__btn lucet-actions__btn--icon"
             aria-label="Helpful"
             aria-pressed={message.feedback === 'up'}
-            onClick={() => onFeedback(message.feedback === 'up' ? null : 'up')}
+            data-pop={pop === 'up' || undefined}
+            onAnimationEnd={() => setPop(null)}
+            onClick={() => {
+              const next = message.feedback === 'up' ? null : 'up'
+              onFeedback(next)
+              if (next) setPop('up')
+            }}
           >
             <svg viewBox="0 0 24 24" aria-hidden>
               <path d="M7 10v11M7 11l4.2-7.3a2 2 0 0 1 3.7 1.4L14 10h4.6a2 2 0 0 1 2 2.4l-1.4 6.5a2.5 2.5 0 0 1-2.4 2.1H7" />
@@ -120,7 +129,13 @@ export function MessageActions({ message, onRetry, onFeedback }: MessageActionsP
             className="lucet-actions__btn lucet-actions__btn--icon"
             aria-label="Not helpful"
             aria-pressed={message.feedback === 'down'}
-            onClick={() => onFeedback(message.feedback === 'down' ? null : 'down')}
+            data-pop={pop === 'down' || undefined}
+            onAnimationEnd={() => setPop(null)}
+            onClick={() => {
+              const next = message.feedback === 'down' ? null : 'down'
+              onFeedback(next)
+              if (next) setPop('down')
+            }}
           >
             <svg viewBox="0 0 24 24" aria-hidden>
               <path d="M17 14V3M17 13l-4.2 7.3a2 2 0 0 1-3.7-1.4L10 14H5.4a2 2 0 0 1-2-2.4l1.4-6.5A2.5 2.5 0 0 1 7.2 3H17" />

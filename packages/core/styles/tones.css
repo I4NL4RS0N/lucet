@@ -116,11 +116,14 @@
   --lucet-state-failed-foreground: var(--lucet-tone-danger-foreground);
   --lucet-state-failed-border: var(--lucet-tone-danger-border);
 
-  /* A quota wall is temporary and expected. Caution, and the copy carries the
-     only fact that matters, which is when it lifts. */
-  --lucet-state-rate-limited-surface: var(--lucet-tone-caution-surface);
-  --lucet-state-rate-limited-foreground: var(--lucet-tone-caution-foreground);
-  --lucet-state-rate-limited-border: var(--lucet-tone-caution-border);
+  /* A quota wall is a HARD STOP: nothing sends until it lifts, and amber
+     undersold that (Ian's call, 2026-09-01 — the earlier caution mapping
+     read "expected and temporary", which is true and beside the point).
+     Red for the stop; the copy still carries the fact that matters, which
+     is when it lifts. */
+  --lucet-state-rate-limited-surface: var(--lucet-tone-danger-surface);
+  --lucet-state-rate-limited-foreground: var(--lucet-tone-danger-foreground);
+  --lucet-state-rate-limited-border: var(--lucet-tone-danger-border);
 
   /* Freshness is information about the answer, not a warning about it. */
   --lucet-state-stale-surface: var(--lucet-tone-info-surface);
