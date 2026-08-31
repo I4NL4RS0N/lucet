@@ -525,8 +525,14 @@ body {
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
+  /* A thread never scrolls sideways: anything that pokes past the
+     gutters is a bug to clip, not a scrollbar to grow. (The atmosphere's
+     bleed once overflowed by 6px on the phone and drew a scrollbar that
+     read as a mystery gradient.) */
+  overflow-x: hidden;
   overscroll-behavior: contain;
-  padding: 28px 24px 12px;
+  --cfg-gutter: 24px;
+  padding: 28px var(--cfg-gutter) 12px;
   --fade: 20px;
   mask-image: linear-gradient(
     to bottom,
@@ -575,6 +581,7 @@ body {
    is the face, its label is the greeting, the chips are ways in. It ENTERS
    in three quiet beats — orb, words, ways in — which is all the splash
    screen this page will ever need. */
+.cfg__phone .cfg__empty { padding-inline: 18px; }
 .cfg__empty {
   position: relative;
   /* The atmosphere child sits at z -1; isolate so it can never slip
@@ -629,8 +636,10 @@ body {
   position: absolute;
   /* FULL BLEED through the scroll area's padding to the container's own
      edges — top, left, right (Ian). An atmosphere with margins is a
-     poster, not weather; the falloff below ends it before the floor. */
-  inset: -24px -24px 0;
+     poster, not weather; the falloff below ends it before the floor.
+     The bleed reads the container's OWN gutter, so a narrower phone
+     cannot overflow into a scrollbar again. */
+  inset: calc(var(--cfg-gutter, 24px) * -1) calc(var(--cfg-gutter, 24px) * -1) 0;
   z-index: -1;
   overflow: clip;
   pointer-events: none;
@@ -1350,7 +1359,14 @@ body {
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
   overflow: hidden;
 }
-.cfg__phone .cfg__scroll { block-size: auto; flex: 1; }
+.cfg__phone .cfg__scroll {
+  block-size: auto;
+  flex: 1;
+  /* A phone's gutters are a phone's: the desktop's 24px ate 12% of the
+     screen. 18px is the mobile norm's edge of generous. */
+  --cfg-gutter: 18px;
+  padding-inline: var(--cfg-gutter);
+}
 
 /* ---- tucked: appearance, then the event log ---- */
 
