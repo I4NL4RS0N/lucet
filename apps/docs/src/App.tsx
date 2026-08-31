@@ -499,7 +499,7 @@ export function App() {
     if (drawerMode !== 'floating') return
     if (e.target instanceof Element && e.target.closest('button, details')) return
     const drawer = drawerEl.current
-    const mock = drawer?.closest('.cfg__mock')
+    const mock = drawer?.closest('.cfg__mock-region')
     if (!drawer || !mock) return
     e.preventDefault()
     const start = { x: e.clientX, y: e.clientY }
@@ -752,11 +752,21 @@ export function App() {
                   nobody's — the B2 orb-ring tile Lucet itself tried on and
                   set aside — and the words say what they are: a name-shaped
                   hole and three page-shaped holes. One control is live. */}
-              <div className="cfg__mock-app">
-              <div className="cfg__mock-bar">
+              {/* TWO layers, not one: the OS's window (traffic lights and
+                  the DOCUMENT'S title — this window holds the plan) above
+                  the application's own header. Conflating them made the
+                  app own the OS's lights (Ian). The drawer overlays the
+                  app below; the OS strip stays out of reach, which is the
+                  layering the demo is teaching. */}
+              <div className="cfg__frame-bar">
                 <span className="cfg__dots" aria-hidden>
                   <i /><i /><i />
                 </span>
+                <span className="cfg__frame-title">Quarterly planning</span>
+              </div>
+              <div className="cfg__mock-region">
+              <div className="cfg__mock-app">
+              <div className="cfg__mock-bar">
                 <span className="cfg__mock-brand" aria-hidden>
                   <MockBrandMark />
                   Application Name
@@ -959,6 +969,7 @@ export function App() {
                     )}
                   </div>
                 ) : null}
+              </div>
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">

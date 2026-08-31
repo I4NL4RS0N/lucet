@@ -990,6 +990,8 @@ body {
 /* Drawer view: the same app, sliding over someone's application. */
 .cfg__mock {
   position: relative;
+  display: flex;
+  flex-direction: column;
   min-block-size: 620px;
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
@@ -1084,21 +1086,28 @@ body {
   fill: currentColor;
 }
 
-/* The drawer spans the WHOLE product, host header included — a panel
-   that stops short of the header reads as part of the page; one that
-   covers it reads as an overlay with its own standing (Ian, and the
-   reference). `push` therefore squeezes the entire app column — bar,
-   document and all — beside a full-height static drawer. */
+/* The drawer spans the APPLICATION — header included — but never the
+   OS strip above it: an overlay with standing inside the app, still a
+   window's tenant. The region is that boundary; `push` squeezes the
+   whole app column beside a full-height static drawer within it. */
+.cfg__mock-region {
+  position: relative;
+  flex: 1;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+}
 .cfg__mock-app {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-inline-size: 0;
+  min-block-size: 0;
 }
-.cfg__mock[data-drawer-mode='push'] {
-  display: flex;
+.cfg__mock[data-drawer-mode='push'] .cfg__mock-region {
+  flex-direction: row;
   align-items: stretch;
 }
-.cfg__mock[data-drawer-mode='push'] .cfg__mock-app { flex: 1; }
 .cfg__mock[data-drawer-mode='push'] .cfg__mock-doc {
   flex: 1;
   min-inline-size: 0;
