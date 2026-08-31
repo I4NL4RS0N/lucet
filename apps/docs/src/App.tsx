@@ -180,7 +180,6 @@ function AppCore({
   aside,
   chrome = 'window',
   home,
-  barStart,
 }: {
   onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
@@ -193,8 +192,6 @@ function AppCore({
      Le Chat): brand over the greeting, and the composer sits IN the page
      until the first turn exists, then moves to the floor. */
   home?: boolean
-  /* A control the container wants at the bar's start (the rail toggle). */
-  barStart?: React.ReactNode
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -261,7 +258,6 @@ function AppCore({
           <span className="cfg__dots" aria-hidden>
             <i /><i /><i />
           </span>
-          {barStart}
           {/* The window title is the DOCUMENT'S title, and the document is
              the thread: its own first words, or the honest “New thread”.
              A title that never changes is what makes a mock feel mock. */}
@@ -596,34 +592,6 @@ export function App() {
                   writeStateParam(s.id)
                   fire(s.id)
                 }}
-                barStart={
-                  /* The rail's control lives ON the rail while it is open;
-                     only when the rail is gone does the bar offer the way
-                     back, in the spot the rail vacated. One control, always
-                     where the eyes already are — it was a bar-only icon
-                     first, and Ian could not find it. */
-                  sideOpen ? null : (
-                    <button
-                      type="button"
-                      className="cfg__reset cfg__side-toggle"
-                      aria-label="Show the sidebar"
-                      aria-expanded={false}
-                      onClick={() => {
-                        setSideOpen(true)
-                        setTimeout(() => {
-                          document
-                            .querySelector<HTMLButtonElement>('.cfg__side .cfg__side-toggle')
-                            ?.focus()
-                        }, 0)
-                      }}
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden>
-                        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
-                        <path d="M9.5 4.5v15" />
-                      </svg>
-                    </button>
-                  )
-                }
                 aside={
                   /*
                    * What makes a full page an APPLICATION instead of a chat
@@ -633,6 +601,14 @@ export function App() {
                    * decorative so it cannot lie to a screen reader about
                    * conversations that do not exist.
                    */
+                  <>
+                  {/* Claude's grammar: collapsed is not gone. A strip of edge
+                      brings the rail back OVER the page while the pointer
+                      stays; the rail's own control pins it. The bar toggle
+                      stays the keyboard door — hover is a shortcut, never the
+                      only way in (1.4.13: persists while hovered, dismissed
+                      by leaving). */}
+                  {sideOpen ? null : <div className="cfg__side-hot" aria-hidden />}
                   <aside className="cfg__side" data-closed={sideOpen ? undefined : ''}>
                     <span className="cfg__side-brand">
                       <span className="cfg__side-brand-id" aria-hidden>
@@ -642,15 +618,18 @@ export function App() {
                       <button
                         type="button"
                         className="cfg__reset cfg__side-toggle"
-                        aria-label="Hide the sidebar"
-                        aria-expanded
+                        aria-label={sideOpen ? 'Hide the sidebar' : 'Pin the sidebar open'}
+                        aria-expanded={sideOpen}
                         onClick={() => {
-                          setSideOpen(false)
-                          setTimeout(() => {
-                            document
-                              .querySelector<HTMLButtonElement>('.cfg__frame-bar .cfg__side-toggle')
-                              ?.focus()
-                          }, 0)
+                          const next = !sideOpen
+                          setSideOpen(next)
+                          if (!next) {
+                            setTimeout(() => {
+                              document
+                                .querySelector<HTMLButtonElement>('.cfg__side-float')
+                                ?.focus()
+                            }, 0)
+                          }
                         }}
                       >
                         <svg viewBox="0 0 24 24" aria-hidden>
@@ -701,6 +680,33 @@ export function App() {
                       </div>
                     </div>
                   </aside>
+                  {/* Collapsed, the control floats at the page's top-left —
+                      claude.ai's placement, and the exact spot the rail's own
+                      control occupies when the rail is present. The control
+                      never moves; the rail arrives around it. It sits UNDER
+                      the peeked rail (z), so the two never show at once. */}
+                  {sideOpen ? null : (
+                    <button
+                      type="button"
+                      className="cfg__reset cfg__side-toggle cfg__side-float"
+                      aria-label="Show the sidebar"
+                      aria-expanded={false}
+                      onClick={() => {
+                        setSideOpen(true)
+                        setTimeout(() => {
+                          document
+                            .querySelector<HTMLButtonElement>('.cfg__side .cfg__side-toggle')
+                            ?.focus()
+                        }, 0)
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden>
+                        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+                        <path d="M9.5 4.5v15" />
+                      </svg>
+                    </button>
+                  )}
+                  </>
                 }
               />
             </section>

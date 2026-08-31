@@ -95,6 +95,7 @@ body {
    even when there is no sidebar — so the fixed-height flex chain is the
    same chain everywhere and the window never learns to breathe again. */
 .cfg__app-body {
+  position: relative;
   display: flex;
   flex: 1;
   min-block-size: 0;
@@ -118,18 +119,50 @@ body {
   padding: 12px 10px;
   border-inline-end: 1px solid var(--lucet-border);
   background: var(--lucet-surface-sunken);
-  transition:
-    margin-inline-start var(--lucet-duration-normal) var(--lucet-ease-out),
-    visibility 0s;
 }
-/* Collapsed: slid out under the frame's clip, and INVISIBLE to keyboard
-   and AT the moment the slide ends — the eyes and the tab order agree. */
+/* Collapsed, the claude.ai way: the rail leaves the flow and waits just
+   off the left edge as a FLOATING panel. The hot strip slides it over
+   the page while the pointer stays; leaving lets it go. Visibility rides
+   the slide so tab order and AT agree with the eyes. */
 .cfg__side[data-closed] {
-  margin-inline-start: -209px;
+  position: absolute;
+  z-index: 20;
+  inset-block: 10px;
+  inset-inline-start: 10px;
+  border-radius: var(--lucet-radius-panel);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  border-inline-end: 0;
+  translate: calc(-100% - 26px) 0;
   visibility: hidden;
   transition:
-    margin-inline-start var(--lucet-duration-normal) var(--lucet-ease-out),
+    translate var(--lucet-duration-normal) var(--lucet-ease-out),
     visibility 0s var(--lucet-duration-normal);
+}
+.cfg__side-hot {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 14px;
+  z-index: 21;
+}
+/* The floating control: the page's top-left corner, under the peeked
+   rail so the rail's own control takes over the same spot. */
+.cfg__side-float {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  z-index: 19;
+}
+.cfg__side-hot:hover ~ .cfg__side[data-closed],
+.cfg__side[data-closed]:hover {
+  translate: 0 0;
+  visibility: visible;
+  transition:
+    translate var(--lucet-duration-normal) var(--lucet-ease-out),
+    visibility 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfg__side[data-closed] { transition: none; }
 }
 .cfg__side-toggle { margin-inline-start: 0; }
 .cfg__side-toggle svg {
