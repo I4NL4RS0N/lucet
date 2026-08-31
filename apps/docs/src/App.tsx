@@ -368,6 +368,52 @@ export function App() {
      drawer product ends up offering. */
   const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
+  /* The floating panel DRAGS — by its bar, the way every floating panel
+     has ever dragged. Position is a preference, not a function: nothing
+     is reachable only by dragging, which is what keeps a pointer-only
+     gesture honest (2.5.7). Offset lives outside React and is written
+     straight to the element; leaving floating mode puts it home. */
+  const drawerEl = useRef<HTMLDivElement | null>(null)
+  const dragOffset = useRef({ dx: 0, dy: 0 })
+
+  useEffect(() => {
+    if (drawerMode !== 'floating' || !drawerOpen) {
+      dragOffset.current = { dx: 0, dy: 0 }
+      if (drawerEl.current) drawerEl.current.style.translate = ''
+    }
+  }, [drawerMode, drawerOpen])
+
+  const dragDrawer = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (drawerMode !== 'floating') return
+    if (e.target instanceof Element && e.target.closest('button, details')) return
+    const drawer = drawerEl.current
+    const mock = drawer?.closest('.cfg__mock')
+    if (!drawer || !mock) return
+    e.preventDefault()
+    const start = { x: e.clientX, y: e.clientY }
+    const base = { ...dragOffset.current }
+    const m = mock.getBoundingClientRect()
+    const d = drawer.getBoundingClientRect()
+    /* Clamp against the UNTRANSLATED rect, so the panel can never be
+       dragged out of the stage and lost. */
+    const minX = m.left - (d.left - base.dx)
+    const maxX = m.right - (d.right - base.dx)
+    const minY = m.top - (d.top - base.dy)
+    const maxY = m.bottom - (d.bottom - base.dy)
+    const move = (ev: PointerEvent) => {
+      const dx = Math.min(Math.max(base.dx + ev.clientX - start.x, minX), maxX)
+      const dy = Math.min(Math.max(base.dy + ev.clientY - start.y, minY), maxY)
+      dragOffset.current = { dx, dy }
+      drawer.style.translate = `${dx}px ${dy}px`
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      document.body.style.cursor = ''
+    }
+    document.body.style.cursor = 'grabbing'
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up, { once: true })
+  }
 
   const fire = (id: string) => {
     /* A state fired at a closed drawer opens it first — and lands on the
@@ -512,6 +558,7 @@ export function App() {
                   nobody's — the B2 orb-ring tile Lucet itself tried on and
                   set aside — and the words say what they are: a name-shaped
                   hole and three page-shaped holes. One control is live. */}
+              <div className="cfg__mock-app">
               <div className="cfg__mock-bar">
                 <span className="cfg__mock-brand" aria-hidden>
                   <svg className="cfg__mock-logo" viewBox="0 0 96 96">
@@ -566,6 +613,7 @@ export function App() {
                 <button
                   type="button"
                   className="cfg__askai"
+                  aria-pressed={drawerOpen}
                   onClick={() => {
                     drawerViaButton.current = true
                     setDrawerOpen(true)
@@ -577,15 +625,15 @@ export function App() {
                   Ask AI
                 </button>
               </div>
-              <div className="cfg__mock-body">
                 <MockDocument />
-                {drawerOpen ? (
-                  <div className="cfg__drawer">
+              </div>
+              {drawerOpen ? (
+                  <div className="cfg__drawer" ref={drawerEl}>
                     {/* The drawer's own head. Left, a menu that organises what
                         a small head cannot hold: the panes, the three ways the
                         drawer can sit on the page, and settings. Right, the
                         two verbs used constantly: new thread, and out. */}
-                    <div className="cfg__frame-bar cfg__drawer-bar">
+                    <div className="cfg__frame-bar cfg__drawer-bar" onPointerDown={dragDrawer}>
                       <details className="cfg__dmenu">
                         <summary aria-label="Panel menu">
                           <svg viewBox="0 0 24 24" aria-hidden>
@@ -756,7 +804,6 @@ export function App() {
                     )}
                   </div>
                 ) : null}
-              </div>
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">

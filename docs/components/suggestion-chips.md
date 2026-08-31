@@ -22,8 +22,9 @@ Prompts made visible, on the cold start.
   works. Both still only send their words (the chip itself never touches a
   system; the agent does the doing), but flattening the two trains people
   to tap without reading, so each kind gets its own labelled group and its
-  own glyph: a bubble asks, a bolt does — shape first, the accent on `do`
-  only as reinforcement, never colour alone (1.4.1). An earlier draft of
+  own glyph: a speech square asks, the little agent does — shape alone,
+  one ink for both (an accent on `do` was tried and cut: two colours in
+  one list read as inconsistency, not meaning). An earlier draft of
   this position banished `do` to a future Action Surface entirely; the
   revision is that the *split* was the law, not the banishment — chips
   that merely commission work belong here, and controls that execute

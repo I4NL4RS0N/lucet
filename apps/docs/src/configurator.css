@@ -753,11 +753,14 @@ body {
    navigation goes nowhere; the one real control is Ask AI. */
 .cfg__mock-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 20px;
+  gap: 8px 20px;
   padding: 10px 16px;
   border-block-end: 1px solid var(--lucet-border);
 }
+.cfg__mock-brand { white-space: nowrap; }
+.cfg__mock-tabs span { white-space: nowrap; }
 .cfg__mock-brand {
   display: flex;
   align-items: center;
@@ -809,6 +812,12 @@ body {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
+/* While its panel is open the button STAYS lit — same grammar as an
+   open More: the control and the thing it summoned agree. */
+.cfg__askai[aria-pressed='true'] {
+  background-color: var(--lucet-subtle);
+  color: var(--lucet-foreground);
+}
 
 /* The genre's glyph: a four-point spark, filled with the current ink. */
 .cfg__spark {
@@ -817,17 +826,21 @@ body {
   fill: currentColor;
 }
 
-/* The room the drawer works in: everything below the host's header.
-   Relative, so `over` and `floating` position against it; flexed by the
-   `push` mode so the document squeezes instead of being covered. */
-.cfg__mock-body {
-  position: relative;
-  min-block-size: 578px;
+/* The drawer spans the WHOLE product, host header included — a panel
+   that stops short of the header reads as part of the page; one that
+   covers it reads as an overlay with its own standing (Ian, and the
+   reference). `push` therefore squeezes the entire app column — bar,
+   document and all — beside a full-height static drawer. */
+.cfg__mock-app {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
 }
-.cfg__mock[data-drawer-mode='push'] .cfg__mock-body {
+.cfg__mock[data-drawer-mode='push'] {
   display: flex;
   align-items: stretch;
 }
+.cfg__mock[data-drawer-mode='push'] .cfg__mock-app { flex: 1; }
 .cfg__mock[data-drawer-mode='push'] .cfg__mock-doc {
   flex: 1;
   min-inline-size: 0;
@@ -843,6 +856,12 @@ body {
   border-inline-start: 0;
   border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+/* Floating drags by its bar: the hand says so, and touch-action clears
+   the gesture for the pointer (the bar's buttons still tap fine). */
+.cfg__mock[data-drawer-mode='floating'] .cfg__drawer-bar {
+  cursor: grab;
+  touch-action: none;
 }
 
 .cfg__drawer {
@@ -876,7 +895,13 @@ body {
   gap: 8px;
 }
 .cfg__drawer-title .cfg__spark { color: var(--lucet-primary); }
-.cfg__drawer-new { margin-inline-start: auto; }
+/* New thread is an ACTION — it commits a reset — so it wears the page's
+   action box; the X is dismissal and stays bare, like every drawer's.
+   Boxed action between quiet bookends (menu left, close right). */
+.cfg__drawer-new {
+  margin-inline-start: auto;
+  box-shadow: var(--lucet-hairline);
+}
 .cfg__drawer-close { margin-inline-start: 0; }
 
 /* The panel menu: a small head cannot hold five controls, so they live

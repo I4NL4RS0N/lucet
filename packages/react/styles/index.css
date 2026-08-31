@@ -1786,8 +1786,10 @@
     background-color var(--lucet-duration-fast) var(--lucet-ease-out),
     box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-/* The kind's glyph: SHAPE carries the split (a bubble asks, a bolt does);
-   the accent on `do` is reinforcement, never the only signal (1.4.1). */
+/* The kind's glyph: SHAPE carries the split — a speech square asks, the
+   little agent does — in ONE ink. An accent on `do` was tried and cut:
+   two colours in one list read as inconsistency, not meaning (Ian's own
+   colour-conveys-meaning law, pointed back at us). */
 .lucet-chips__glyph {
   flex: none;
   inline-size: 15px;
@@ -1799,7 +1801,6 @@
   stroke-linejoin: round;
   color: var(--lucet-muted-foreground);
 }
-.lucet-chips__chip[data-kind='do'] .lucet-chips__glyph { color: var(--lucet-primary); }
 .lucet-chips__glyph-eye {
   fill: currentColor;
   stroke: none;
