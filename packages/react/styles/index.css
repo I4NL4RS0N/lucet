@@ -1759,15 +1759,45 @@
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 2px;
 }
+/* Dividers between sources, none at the edges: the rows open now, and a
+   list of disclosures reads as one object only when lines say where each
+   row ends — the history pane's grammar. */
+.lucet-sources__list > li + li { border-block-start: 1px solid var(--lucet-border); }
 .lucet-sources__row {
   display: flex;
   align-items: center;
   gap: 9px;
-  min-block-size: 30px;
-  padding: 3px 2px;
+  min-block-size: 34px;
+  padding: 5px 4px;
   font-size: var(--lucet-text-sm);
+}
+/* The disclosure grammar, verbatim from the tool call: chevron first,
+   turning on open; hover veil; no marker. One grammar for all receipts. */
+.lucet-sources__row--summary {
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--lucet-radius-control);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-sources__row--summary::-webkit-details-marker { display: none; }
+.lucet-sources__row--summary::before {
+  content: '';
+  flex: none;
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  margin-inline-start: 2px;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-source[open] > .lucet-sources__row--summary::before { transform: rotate(45deg); }
+.lucet-sources__row--summary:hover { background-color: var(--lucet-hover); }
+.lucet-sources__row--summary:active { background-color: var(--lucet-press); }
+.lucet-sources__row--summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
 .lucet-sources__glyph {
   flex: none;
@@ -1785,6 +1815,12 @@
   align-items: baseline;
   gap: 8px;
   min-inline-size: 0;
+}
+/* The locator: pages, rows returned — the words of the receipt below. */
+.lucet-sources__where {
+  font-size: var(--lucet-text-xs, 11.5px);
+  color: var(--lucet-subtle-foreground);
+  white-space: nowrap;
 }
 .lucet-sources__title { color: var(--lucet-subtle-foreground); }
 .lucet-sources__loc {
@@ -1813,13 +1849,46 @@
   stroke-linejoin: round;
 }
 /* Stale: the citation aged. Caution ink, clock turned back. */
-.lucet-sources__row[data-status='stale'] .lucet-sources__flag { color: var(--lucet-tone-caution-foreground); }
+.lucet-sources__row[data-status='stale'] .lucet-sources__flag,
+.lucet-source[data-status='stale'] .lucet-sources__flag { color: var(--lucet-tone-caution-foreground); }
 /* Gone: struck through and said so, in the danger ink. */
-.lucet-sources__row[data-status='gone'] .lucet-sources__flag { color: var(--lucet-tone-danger-foreground); }
-.lucet-sources__row[data-status='gone'] .lucet-sources__title {
+.lucet-sources__row[data-status='gone'] .lucet-sources__flag,
+.lucet-source[data-status='gone'] .lucet-sources__flag { color: var(--lucet-tone-danger-foreground); }
+.lucet-sources__row[data-status='gone'] .lucet-sources__title,
+.lucet-source[data-status='gone'] .lucet-sources__title {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
   color: var(--lucet-muted-foreground);
+}
+
+/* The receipt block: the tool call's io recipe, one look for every
+   receipt on the page. */
+.lucet-sources__io {
+  display: grid;
+  gap: 5px;
+  min-inline-size: 0;
+  padding: 2px 4px 8px 22px;
+}
+.lucet-sources__io-label {
+  font-size: var(--lucet-text-xs);
+  letter-spacing: 0.02em;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-sources__io-pre {
+  margin: 0;
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: calc(var(--lucet-radius-control) - 2px);
+  background-color: var(--lucet-muted);
+  box-shadow: var(--lucet-hairline);
+  overflow-x: auto;
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-xs);
+  line-height: 1.6;
+  color: var(--lucet-foreground);
+}
+.lucet-sources__io-pre:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
 
 /* ============================================================

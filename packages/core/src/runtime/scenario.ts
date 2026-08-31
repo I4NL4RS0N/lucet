@@ -34,6 +34,9 @@ export type Step =
         title: string
         location: string
         sourceKind: 'document' | 'web' | 'data'
+        /** Locator in words ("Pages 4–6"); trace is the exact receipt. */
+        detail?: string
+        trace?: string
       }[]
     }
   /** Age one cited source after the fact — the states nobody designs. */

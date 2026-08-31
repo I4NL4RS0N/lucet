@@ -19,6 +19,11 @@ The response's bibliography, and what time does to it.
   `sourceChange` steps run *after* a response settles — because that is
   when sources actually rot. The event log narrates it in words: "A
   cited source is no longer available."
+- **The row is the words, the trace is the receipt.** Which pages of
+  the document ("Pages 4–6"), the query as it ran, what was retrieved —
+  full traceability behind the tool call's own disclosure grammar, under
+  the same law: no trace shared, no chevron drawn, nothing dead to
+  expand. Dividers hold the rows apart now that rows open.
 - **Triple-coded condition.** Word, silhouette, and tone together:
   stale wears the caution ink and a turned-back clock; gone strikes the
   title through and wears danger. Never colour alone (1.4.1). The tone
@@ -29,7 +34,7 @@ The response's bibliography, and what time does to it.
 
 ## What is deliberately not here yet
 
-- **Interactive inline markers** — `[n]` is plain text on purpose.
+- **Marker-to-row linking** — `[n]` is plain text on purpose.
   Linking markers to rows needs citation tokens at the parser level,
   which is the same live-edge-versus-settle question tables raised;
   it will be answered there, not improvised here.

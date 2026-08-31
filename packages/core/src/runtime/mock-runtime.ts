@@ -114,7 +114,13 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           part: {
             kind: 'sources',
             id: partId,
-            sources: s.sources.map((source) => ({ ...source, status: 'ok', note: null })),
+            sources: s.sources.map((source) => ({
+              ...source,
+              status: 'ok',
+              note: null,
+              detail: source.detail ?? null,
+              trace: source.trace ?? null,
+            })),
           },
         })
         return null

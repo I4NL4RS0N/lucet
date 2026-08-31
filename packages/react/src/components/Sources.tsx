@@ -11,17 +11,27 @@ import type { Source } from 'lucet'
  *    response settles: `stale` means updated behind the citation, `gone`
  *    means removed outright. A bibliography that can only say "fine" is
  *    not reporting, and the aging states are the half nobody designs.
- * 3. TRIPLE-CODED CONDITION. Word, silhouette, and tone together: stale
+ * 3. THE ROW IS THE WORDS, THE TRACE IS THE RECEIPT. Which pages of the
+ *    document, the query as it ran — full traceability, behind the same
+ *    disclosure grammar as the tool call, under the same law: no trace,
+ *    no chevron, nothing dead to expand.
+ * 4. TRIPLE-CODED CONDITION. Word, silhouette, and tone together: stale
  *    wears the caution ink and a turned-clock glyph; gone strikes the
  *    title through and wears danger. Never colour alone (1.4.1).
- * 4. WORDS, NOT URLS. The demo cites documents in collections, so no row
- *    pretends to be a link. Click-through, hover previews, and inline
- *    marker interaction are deferred to the host's document model — the
- *    marker text is plain text on purpose until then.
+ * 5. WORDS, NOT URLS. The demo cites documents in collections, so no row
+ *    pretends to be a link; click-through belongs to the host's document
+ *    model and attaches at `location`.
  */
 
 export interface SourcesProps {
   sources: readonly Source[]
+}
+
+/** What the receipt is called, per kind of source. */
+const TRACE_LABEL: Record<Source['sourceKind'], string> = {
+  document: 'Where in the document',
+  data: 'The query it ran',
+  web: 'What was retrieved',
 }
 
 function KindGlyph({ kind }: { kind: Source['sourceKind'] }) {
@@ -49,6 +59,34 @@ function KindGlyph({ kind }: { kind: Source['sourceKind'] }) {
   )
 }
 
+function Row({ source }: { source: Source }) {
+  return (
+    <>
+      <KindGlyph kind={source.sourceKind} />
+      <span className="lucet-sources__body">
+        <span className="lucet-sources__title">{source.title}</span>
+        <span className="lucet-sources__loc">{source.location}</span>
+        {source.detail ? <span className="lucet-sources__where">{source.detail}</span> : null}
+      </span>
+      {source.status !== 'ok' ? (
+        <span className="lucet-sources__flag">
+          {source.status === 'stale' ? (
+            <svg className="lucet-sources__flag-glyph" viewBox="0 0 24 24" aria-hidden>
+              <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
+            </svg>
+          ) : (
+            <svg className="lucet-sources__flag-glyph" viewBox="0 0 24 24" aria-hidden>
+              <path d="M9 6l-3.2 3.2a4.5 4.5 0 0 0 0 6.4l2.6 2.6a4.5 4.5 0 0 0 6.4 0L18 15M7 3l14 18" />
+            </svg>
+          )}
+          {source.note ??
+            (source.status === 'stale' ? 'Updated since cited' : 'No longer available')}
+        </span>
+      ) : null}
+    </>
+  )
+}
+
 export function Sources({ sources }: SourcesProps) {
   if (sources.length === 0) return null
   return (
@@ -56,27 +94,32 @@ export function Sources({ sources }: SourcesProps) {
       <span className="lucet-sources__label">Sources</span>
       <ol className="lucet-sources__list">
         {sources.map((source) => (
-          <li key={source.id} className="lucet-sources__row" data-status={source.status}>
-            <KindGlyph kind={source.sourceKind} />
-            <span className="lucet-sources__body">
-              <span className="lucet-sources__title">{source.title}</span>
-              <span className="lucet-sources__loc">{source.location}</span>
-            </span>
-            {source.status !== 'ok' ? (
-              <span className="lucet-sources__flag">
-                {source.status === 'stale' ? (
-                  <svg className="lucet-sources__flag-glyph" viewBox="0 0 24 24" aria-hidden>
-                    <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
-                  </svg>
-                ) : (
-                  <svg className="lucet-sources__flag-glyph" viewBox="0 0 24 24" aria-hidden>
-                    <path d="M9 6l-3.2 3.2a4.5 4.5 0 0 0 0 6.4l2.6 2.6a4.5 4.5 0 0 0 6.4 0L18 15M7 3l14 18" />
-                  </svg>
-                )}
-                {source.note ??
-                  (source.status === 'stale' ? 'Updated since cited' : 'No longer available')}
+          <li key={source.id}>
+            {source.trace ? (
+              <details className="lucet-source" data-status={source.status}>
+                <summary className="lucet-sources__row lucet-sources__row--summary">
+                  <Row source={source} />
+                </summary>
+                <div className="lucet-sources__io">
+                  <span className="lucet-sources__io-label">
+                    {TRACE_LABEL[source.sourceKind]}
+                  </span>
+                  <pre
+                    className="lucet-sources__io-pre"
+                    tabIndex={0}
+                    role="region"
+                    aria-label={TRACE_LABEL[source.sourceKind]}
+                  >
+                    <code>{source.trace}</code>
+                  </pre>
+                </div>
+              </details>
+            ) : (
+              /* No trace, no disclosure: a plain row that promises nothing. */
+              <span className="lucet-sources__row" data-status={source.status}>
+                <Row source={source} />
               </span>
-            ) : null}
+            )}
           </li>
         ))}
       </ol>

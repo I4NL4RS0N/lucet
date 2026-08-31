@@ -91,6 +91,15 @@ export interface Source {
   readonly status: SourceStatus
   /** The condition in words, once status is not 'ok'. */
   readonly note: string | null
+  /**
+   * The locator, in words on the row: which pages of a document, how
+   * many rows a query returned. `trace` underneath is the receipt — the
+   * exact pages and passage, the query as it ran — serialized by the
+   * host. The same legible-on-top, exact-underneath split as the tool
+   * call, and the same law: no trace, no disclosure.
+   */
+  readonly detail: string | null
+  readonly trace: string | null
 }
 
 /** The bibliography of a response, as a part — in the message, in the

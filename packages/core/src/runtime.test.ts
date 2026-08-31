@@ -204,6 +204,10 @@ describe('citations and sources', () => {
     if (sources?.kind !== 'sources') return
     expect(sources.sources).toHaveLength(3)
     expect(sources.sources.every((s) => s.status === 'ok' && s.note === null)).toBe(true)
+    /* Traceability: the locator in words, the receipt underneath. */
+    expect(sources.sources[0]?.detail).toBe('Pages 4\u20136')
+    expect(sources.sources[0]?.trace).toContain('passage')
+    expect(sources.sources[2]?.trace).toContain('query')
   })
 
   it('a source ages AFTER the response settles — status and note land, neighbours untouched', async () => {
