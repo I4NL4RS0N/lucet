@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible } from 'lucet'
 import type { Suggestion } from 'lucet'
 import {
-  ActivityOrb,
   LucetProvider,
   PromptInput,
   SuggestionChips,
@@ -215,7 +214,16 @@ function AppCore({
            * the unhappy-states list, living where every visitor lands.
            */
           <div className="cfg__empty">
-            <ActivityOrb state="ready" label="Ready when you are." size="lg" />
+            {/* The hero orb: the library's orb grammar at greeting scale.
+                Deliberately NOT the ActivityOrb — that stays a status
+                primitive — this is the page's own object, drawn entirely
+                from tokens so every accent casts its own orb. Decorative;
+                the words below carry the meaning. */}
+            <div className="cfg__hero-orb" aria-hidden="true">
+              <span className="cfg__hero-orb-aurora" />
+              <span className="cfg__hero-orb-core" />
+            </div>
+            <p className="cfg__empty-hello">Ready when you are.</p>
             <span className="cfg__empty-sub">
               Ask anything below, or start from one of these.
             </span>
