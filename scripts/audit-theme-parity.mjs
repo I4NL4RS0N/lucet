@@ -9,7 +9,7 @@
  *
  * Hand-duplicated blocks drift. materials.css already did: the contact shadow
  * that gives Expressive its thickness lived only in the media-query copy, so
- * the toggle path -- the one the Configurator actually uses -- rendered flat.
+ * the toggle path -- the one the Konfabulator actually uses -- rendered flat.
  *
  * Nothing else catches this class of bug. The contrast audit measures colour,
  * and the two paths are identical in colour. The eye cannot either, because the

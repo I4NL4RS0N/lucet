@@ -42,7 +42,7 @@ Once the message settles, the grace is withdrawn: a document that truly ends
 with a stray `**` contains a stray `**`, and pretending otherwise would
 misquote it. One deliberate exception — a fence that never closed still
 renders as code at settle, because an interrupted stream keeps what arrived,
-and what arrived was code. (The Configurator's *Stopped inside a code block*
+and what arrived was code. (The Konfabulator's *Stopped inside a code block*
 fixture is exactly this.)
 
 The parser re-parses the full accumulated text on every chunk. The laws

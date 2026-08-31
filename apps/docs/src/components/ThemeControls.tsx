@@ -204,7 +204,7 @@ export function ThemeControls({
  * passes only its resting fallback), applied to the root, persisted on
  * every change. Three pages had three copies of this wiring, and two of
  * them only knew about theme and accent — a typeface or grey chosen on
- * the Configurator silently did not follow you to the labs. One hook,
+ * the Konfabulator silently did not follow you to the labs. One hook,
  * no drift.
  */
 export function useAppearance(fallback: {

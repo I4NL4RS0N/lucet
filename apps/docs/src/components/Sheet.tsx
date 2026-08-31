@@ -11,7 +11,7 @@ import type { Message as MessageType, MessagePart, ToolStatus } from 'lucet'
  * point is the opposite of isolation. You cannot see that the tool-call radius
  * disagrees with the composer radius when they live on different screens.
  *
- * The Configurator proves behaviour. This proves consistency.
+ * The Konfabulator proves behaviour. This proves consistency.
  */
 
 let seq = 0

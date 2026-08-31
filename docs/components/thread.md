@@ -69,5 +69,5 @@ sit and when they are live; the components decide everything else.
 they sit and when they are live.)
 - **Message actions** (copy, retry, feedback) — the Feedback Controls item.
 - **The empty thread.** What an app shows before the first turn is a real
-  design question, owned by the Configurator home where it is the first
+  design question, owned by the Konfabulator home where it is the first
   thing every visitor sees.

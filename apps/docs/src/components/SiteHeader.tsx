@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 /**
- * One header, three pages. The Configurator, the components stage, and the
+ * One header, three pages. The Konfabulator, the components stage, and the
  * primitives lab all wear the same identity and the same navigation
  * grammar, so moving between them feels like one site rather than three
  * rooms decorated by different people. Identity left (the tile links
@@ -11,7 +11,7 @@ import type { ReactNode } from 'react'
  */
 
 const PAGES = [
-  { id: 'configurator', label: 'Configurator', href: '/', dev: false },
+  { id: 'konfabulator', label: 'Konfabulator', href: '/', dev: false },
   { id: 'components', label: 'Components', href: '/components.html', dev: true },
   { id: 'primitives', label: 'Primitives', href: '/primitives.html', dev: true },
 ] as const

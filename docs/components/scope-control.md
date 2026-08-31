@@ -21,7 +21,7 @@ User-controlled context: the breadcrumb is the ladder.
   under the composer bar until the person acts on scope — because a
   scope that silently tracks a moving page is a guess again. The note
   is `role="status"`: the reader hears the ground shift too. In the
-  Configurator the host's page tabs are real navigation, so the whole
+  Konfabulator the host's page tabs are real navigation, so the whole
   loop is live: click Page 2, watch the breadcrumb, the ladder, and the
   note all move together.
 - **The toggle is the config.** No levels, no control. The full page

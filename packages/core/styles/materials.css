@@ -48,7 +48,7 @@
  * first stop that makes a surface read as sitting ON the page rather than
  * hovering over it -- lived only in the media-query copy. Expressive dark had
  * thickness by OS preference and none by toggle, and the toggle is the path the
- * Configurator uses. Neither the eye nor the contrast audit could see it: the
+ * Konfabulator uses. Neither the eye nor the contrast audit could see it: the
  * two paths are identical in colour and never render side by side.
  *
  * So the pairs are fenced, and scripts/materials.test.mjs asserts each pair

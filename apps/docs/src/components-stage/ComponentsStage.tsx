@@ -673,7 +673,7 @@ export function ComponentsStage() {
 
       <main className="prim__main">
         {/* Viewing controls live with the stage they change, not in the
-            site header — same law as the Configurator's stage bar. */}
+            site header — same law as the Konfabulator's stage bar. */}
         <div className="prim__controls">
             <AppearancePrefs state={appearance} onChange={setAppearance} />
         </div>

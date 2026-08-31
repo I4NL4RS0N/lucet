@@ -690,7 +690,7 @@
  *
  * One surface, and it is the FIELD: the container itself is the inset
  * material, with the textarea, attachments, and toolbar living inside it.
- * The old .lucet-composer stays until the Configurator is rebuilt against
+ * The old .lucet-composer stays until the Konfabulator is rebuilt against
  * this component.
  *
  * Every state rule here mirrors something the core contract can be in;

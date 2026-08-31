@@ -36,7 +36,7 @@ const URL = process.env.AUDIT_URL ?? `http://localhost:${PORT}/`
 /** Collects raw colour strings and geometry. No maths happens in here. */
 function collect() {
   /*
-   * The Configurator home, seeded via deep link (?state=...) before this runs
+   * The Konfabulator home, seeded via deep link (?state=...) before this runs
    * so the thread has real content in every combo. A chain, composited node-
    * side -- see flattenBackground.
    */
@@ -544,7 +544,7 @@ async function main() {
       content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
     })
 
-    /* The old shell's Sheet mode is gone with the Configurator rebuild; the
+    /* The old shell's Sheet mode is gone with the Konfabulator rebuild; the
        every-component-every-state surface is now the components stage, which
        has its own pass below. This loop measures the HOME as a visitor lands
        on it, deep-linked into a real state. */
@@ -749,7 +749,7 @@ async function main() {
        enough that a vanished document or dead seed cannot pass. */
     if (mainChecks < 900) {
       throw new Error(
-        `the Configurator pass collected only ${mainChecks} elements across 44 combos -- ` +
+        `the Konfabulator pass collected only ${mainChecks} elements across 44 combos -- ` +
           'its selectors and the page have drifted apart',
       )
     }

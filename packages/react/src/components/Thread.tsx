@@ -12,7 +12,7 @@ import { ToolCall } from './ToolCall.js'
 
 /**
  * The thread: turns, rendered from the contract. New-era counterpart to the
- * old Message/Sheet pair, which retires at the Configurator rebuild.
+ * old Message/Sheet pair, which retires at the Konfabulator rebuild.
  *
  * The positions this encodes:
  *

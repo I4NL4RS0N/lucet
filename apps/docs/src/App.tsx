@@ -16,7 +16,7 @@ import { SiteHeader } from './components/SiteHeader'
 import { readStateParam, writeStateParam } from './lib/deep-link'
 
 /**
- * The Configurator: the app IS the page.
+ * The Konfabulator: the app IS the page.
  *
  * A running product beside a plain list of event triggers — the SuperFriendly
  * philly.com configurator crossed with Josh Puckett's state-machine tools.
@@ -790,7 +790,7 @@ export function App() {
 
   return (
     <LucetProvider lucet={lucet}>
-      <SiteHeader page="configurator" />
+      <SiteHeader page="konfabulator" />
 
       <div className="cfg__layout">
         <div className="cfg__main">

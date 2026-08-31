@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest'
  * first stop that materials.css itself calls the difference between "has a
  * shadow" and "has thickness" -- lived only in the media-query copy. Expressive
  * dark had thickness by OS preference and none by toggle, and the toggle is the
- * path the Configurator uses.
+ * path the Konfabulator uses.
  *
  * Nothing else could catch it. The contrast audit measures colour, and the two
  * paths are identical in colour. The eye cannot catch it either, because the

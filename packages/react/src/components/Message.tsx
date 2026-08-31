@@ -75,7 +75,7 @@ export function Message({ message, version, actions }: MessageProps) {
             )
           }
           /* Attachment parts are the NEW thread component's job; this
-             old-era renderer retires at the Configurator rebuild and its
+             old-era renderer retires at the Konfabulator rebuild and its
              scenarios never produce them. */
           if (part.kind === 'attachment') return null
           if (part.kind === 'sources') return null

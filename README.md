@@ -34,7 +34,7 @@ the core is an event log, so history, versions, provenance and presence
 are reads, not features glued on top. Versioning and multiplayer are two
 of the four surfaces the thesis names; the other two — **Scope Control**
 (the breadcrumb is a scope ladder) and the **Budget Meter** (the price
-before you spend it) — are next, and the Configurator's host application
+before you spend it) — are next, and the Konfabulator's host application
 was built with the navigation Scope Control will read.
 
 **A written rationale for every component.** Each one ships with its

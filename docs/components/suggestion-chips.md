@@ -9,7 +9,7 @@ Prompts made visible, on the cold start.
   it lands in the thread as your own words. A chip whose label differs from
   what it sends is a small lie at the exact moment trust is being
   established — so the type makes the lie inexpressible. (In the
-  Configurator the chips are built *from* the scenarios they fire, so
+  Konfabulator the chips are built *from* the scenarios they fire, so
   honesty is by construction, not discipline.)
 - **A way in, not furniture.** The core's `suggestionsVisible` owns the
   rule: chips show on an empty, idle thread — the cold start — and leave
@@ -56,7 +56,7 @@ Prompts made visible, on the cold start.
 ## The cold start it serves
 
 "Empty & cold start" sits on the unhappy-states list because nobody
-designs it. The Configurator's arrival is now that state, designed: an
+designs it. The Konfabulator's arrival is now that state, designed: an
 atmosphere of the accent's own light (silk ribbons and grain, drawn
 entirely from tokens), a greeting that asks the genre's honest question
 ("How can I help?"), one line that names the split ("Ask a question, or

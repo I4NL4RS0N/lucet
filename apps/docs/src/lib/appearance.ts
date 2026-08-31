@@ -1,6 +1,6 @@
 /**
  * One appearance, three pages. Theme and accent chosen anywhere carry
- * everywhere: the Configurator, the primitives lab, and the components
+ * everywhere: the Konfabulator, the primitives lab, and the components
  * stage read and write the same stored choice, and each page's pre-paint
  * script applies it before first paint so navigation never flashes.
  *
