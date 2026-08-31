@@ -93,13 +93,15 @@ export const reasoning = defineScenario({
   description: 'Reasoning streams into a disclosure, separate from the answer.',
   prompt: 'Which of these two plans is more likely to slip?',
   steps: [
-    { type: 'wait', ms: 300 },
+    /* Slow enough to SEE: the thinking row is a designed state, and pacing
+       that makes it subliminal would un-design it. */
+    { type: 'wait', ms: 500 },
     {
       type: 'think',
       text: 'Both end on the same date, so comparing end dates says nothing. The second front-loads its dependencies, which shortens the critical path but leaves no slack if any single one moves.',
-      chunkMs: 14,
+      chunkMs: 26,
     },
-    { type: 'wait', ms: 250 },
+    { type: 'wait', ms: 350 },
     {
       type: 'say',
       text: 'The second, though not for the reason the timeline suggests. It finishes sooner on paper, but every task depends on the one before it, so a single delay moves the end date by the same amount.',

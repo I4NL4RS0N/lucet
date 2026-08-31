@@ -4,6 +4,7 @@ import type { Message, MessagePart, ThreadState } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
+import { Reasoning } from './Reasoning.js'
 import { StateIcon } from './StateIcon.js'
 
 /**
@@ -73,13 +74,9 @@ function Part({
         </p>
       )
     case 'reasoning':
-      return (
-        <div className="lucet-thread__aside">
-          <span className="lucet-thread__aside-caret" aria-hidden />
-          <span>Thought about it</span>
-          <span className="lucet-thread__aside-meta">{part.text.length > 0 ? 'expand' : ''}</span>
-        </div>
-      )
+      /* Live only while it is the newest thing in the message: the moment
+         the answer starts, the thinking row settles into a plain fact. */
+      return <Reasoning text={part.text} streaming={streaming && last} />
     case 'tool':
       return (
         <div className="lucet-thread__aside" data-status={part.status}>
@@ -112,7 +109,10 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
   const terminal = TERMINAL[message.status]
   const attachments = message.parts.filter((p) => p.kind === 'attachment')
   const rest = message.parts.filter((p) => p.kind !== 'attachment')
-  const lastTextId = [...rest].reverse().find((p) => p.kind === 'text')?.id
+  /* The LAST part is where content is arriving, so it is where liveness
+     lives: the caret if it is text, the thinking orb if it is reasoning.
+     Everything before it has already settled into history. */
+  const lastPartId = rest[rest.length - 1]?.id
 
   return (
     <div className="lucet-thread__turn" data-role={message.role} data-self={self || undefined}>
@@ -139,7 +139,7 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
             key={part.id}
             part={part}
             streaming={message.status === 'streaming'}
-            last={part.id === lastTextId}
+            last={part.id === lastPartId}
             doc={!isUser}
           />
         ))}

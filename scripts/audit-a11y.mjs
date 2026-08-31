@@ -403,6 +403,10 @@ function collectComponents() {
     'thread ending': '.lucet-thread__ended',
     'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
+    /* The reasoning disclosure: the row in both dresses, and the working. */
+    'reasoning summary': 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary',
+    'reasoning thinking word': 'details.lucet-reasoning[data-streaming] .lucet-reasoning__summary',
+    'reasoning body text': '.lucet-reasoning__body .lucet-md__p',
     /* The markdown fixtures, on THIS page's stage background. */
     'md paragraph': '.lucet-md__p',
     'md heading': '.lucet-md__h',
@@ -433,7 +437,7 @@ function collectComponents() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
@@ -678,6 +682,11 @@ async function main() {
       await page.addStyleTag({
         content:
           '*, *::before, *::after { transition: none !important; animation: none !important; }',
+      })
+      // The reasoning bodies hide behind their disclosures; open them all so
+      // the working's ink is measured like any other text on the page.
+      await page.evaluate(() => {
+        for (const d of document.querySelectorAll('details.lucet-reasoning')) d.open = true
       })
       for (const theme of THEMES) {
         for (const accent of ACCENTS) {

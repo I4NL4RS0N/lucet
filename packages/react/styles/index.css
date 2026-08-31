@@ -243,52 +243,71 @@
 }
 
 /* ============================================================
- * Reasoning disclosure
+ * Reasoning disclosure — the quote's grammar, because that is what it is:
+ * the machine quoting its own working. The rail marks it as NOT the answer;
+ * the summary row is a real control with the standard states.
  * ============================================================ */
 
 .lucet-reasoning {
-  margin: 0 0 var(--lucet-space-3);
-  border-left: 2px solid var(--lucet-border);
-  padding-left: var(--lucet-space-3);
+  margin: 0;
+  border-inline-start: 2px solid var(--lucet-border);
+  padding-inline-start: var(--lucet-space-3);
+  max-inline-size: 62ch;
 }
 
 .lucet-reasoning__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  inline-size: fit-content;
+  min-block-size: 28px;
+  /* The veil needs shoulders; the rail alignment must not move. */
+  padding-inline: var(--lucet-space-2);
+  margin-inline-start: calc(-1 * var(--lucet-space-2));
+  border-radius: var(--lucet-radius-control);
   cursor: pointer;
+  list-style: none;
   font-size: var(--lucet-text-sm);
   color: var(--lucet-muted-foreground);
-  list-style: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-
 .lucet-reasoning__summary::-webkit-details-marker { display: none; }
 
 .lucet-reasoning__summary::before {
   content: '';
-  display: inline-block;
-  width: 0.35em;
-  height: 0.35em;
-  margin-right: 0.6em;
-  vertical-align: middle;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
+  flex: none;
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
   transform: rotate(-45deg);
   transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
 }
+.lucet-reasoning[open] > .lucet-reasoning__summary::before { transform: rotate(45deg); }
 
-.lucet-reasoning[open] .lucet-reasoning__summary::before {
-  transform: rotate(45deg);
+.lucet-reasoning__summary:hover {
+  background-color: var(--lucet-hover);
+  color: var(--lucet-foreground);
 }
-
+.lucet-reasoning__summary:active { background-color: var(--lucet-press); }
 .lucet-reasoning__summary:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
 
 .lucet-reasoning__body {
-  margin-top: var(--lucet-space-2);
+  padding-block: var(--lucet-space-1) var(--lucet-space-1);
   font-size: var(--lucet-text-sm);
-  line-height: var(--lucet-leading-prose);
   color: var(--lucet-muted-foreground);
-  max-width: 62ch;
+}
+/* Thinking is a document too, but a quoted one: it keeps the muted ink and
+   the smaller size whatever the markdown inside it does. */
+.lucet-reasoning__body .lucet-md {
+  font-size: inherit;
+  color: inherit;
+  gap: var(--lucet-space-2);
 }
 
 /* ============================================================
@@ -1255,14 +1274,6 @@
   color: var(--lucet-subtle-foreground);
   inline-size: fit-content;
 }
-.lucet-thread__aside-caret {
-  inline-size: 6px;
-  block-size: 6px;
-  flex: none;
-  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
-  border-block-end: 1.5px solid var(--lucet-muted-foreground);
-  rotate: -45deg;
-}
 .lucet-thread__aside-meta {
   font-size: var(--lucet-text-xs);
   color: var(--lucet-muted-foreground);
@@ -1290,8 +1301,36 @@
 .lucet-thread__ended[data-status='failed'] strong { color: var(--lucet-tone-danger-foreground); }
 .lucet-thread__ended[data-status='refused'] strong { color: var(--lucet-foreground); }
 
+/*
+ * ARRIVAL. Things enter the thread; they do not pop into it. When every
+ * appearance is instant the eye cannot follow what changed — so each new
+ * arrival (a prompt, the response, an aside, an ending) makes one quiet
+ * rise, and is still. One motion, one duration, applied at the mount:
+ * choreography, not decoration. Streaming text needs none of this — the
+ * caret's crawl is its own continuity.
+ */
+@keyframes lucet-thread-arrive {
+  from { opacity: 0; translate: 0 5px; }
+}
+.lucet-thread__turn,
+.lucet-thread__ended,
+.lucet-thread__aside,
+.lucet-reasoning,
+.lucet-thread__doc .lucet-md {
+  animation: lucet-thread-arrive 220ms var(--lucet-ease-out) backwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lucet-thread__caret { animation: none; }
+  .lucet-thread__turn,
+  .lucet-thread__ended,
+  .lucet-thread__aside,
+  .lucet-reasoning,
+  .lucet-thread__doc .lucet-md {
+    animation: none;
+  }
+  .lucet-reasoning__summary { transition: none; }
+  .lucet-reasoning__summary::before { transition: none; }
 }
 
 /* ============================================================

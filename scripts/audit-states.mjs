@@ -64,6 +64,9 @@ const COMPONENT_PROBES = [
   { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap button', part: 'stop button' },
   /* The tooltip must ARRIVE: hover the wrap, watch the tip's opacity. */
   { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap', probe: '.lucet-tip', part: 'stop tooltip appears' },
+  /* The reasoning row is a real control now; its veil must land like any
+     other. (Its predecessor was a dead div that said "expand".) */
+  { sec: 'Thread — every ending', hover: 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary', part: 'reasoning summary', bg: true },
 ]
 
 const PROBES = [
@@ -401,6 +404,36 @@ async function main() {
       failures.push('markdown: links must be underlined -- colour alone is no signal (1.4.1)')
     if (!md.linkLeavesSafely)
       failures.push('markdown: the external link must open in a new tab with rel=noopener')
+
+    /*
+     * The reasoning disclosure must actually DISCLOSE: a real click on the
+     * settled row opens it and the working becomes readable. This assertion
+     * exists because its predecessor was a div that said "expand" and did
+     * nothing -- found by eye, guarded by pointer forever after.
+     */
+    const summary = page
+      .locator('details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary')
+      .first()
+    await summary.scrollIntoViewIfNeeded()
+    const closedWord = (await summary.textContent())?.trim()
+    await summary.click()
+    const reasoningOpen = await page.evaluate(() => {
+      const d = document.querySelector('details.lucet-reasoning:not([data-streaming])')
+      const body = d?.querySelector('.lucet-reasoning__body')
+      return {
+        open: d?.open === true,
+        bodyVisible: body ? body.getBoundingClientRect().height > 0 : false,
+        bodyWords: body?.textContent?.length ?? 0,
+      }
+    })
+    await summary.click() // leave the stage as it was found
+    checks += 2
+    if (closedWord !== 'Thought about it')
+      failures.push(`reasoning: settled row says "${closedWord}", expected "Thought about it"`)
+    if (!reasoningOpen.open || !reasoningOpen.bodyVisible || reasoningOpen.bodyWords < 40)
+      failures.push(
+        `reasoning: clicking the row must open the working (open=${reasoningOpen.open}, visible=${reasoningOpen.bodyVisible}, ${reasoningOpen.bodyWords} chars)`,
+      )
   } finally {
     await browser.close()
     dev?.kill()

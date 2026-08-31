@@ -51,7 +51,8 @@ function turn(
     attachmentIds?: readonly string[]
     reply?: string
     tool?: { name: string; status: 'running' | 'succeeded' | 'failed' | 'partial'; detail?: string }
-    reasoning?: boolean
+    /** Reasoning text streamed before the reply. */
+    reasoning?: string
     settle?: 'complete' | 'interrupted' | 'failed' | 'refused' | 'streaming'
     reason?: string
   } = {},
@@ -61,7 +62,7 @@ function turn(
     { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [] },
     { type: 'response/started', turnId: t, messageId: rm },
   ]
-  if (opts.reasoning) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: 'thinking' } })
+  if (opts.reasoning !== undefined) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: opts.reasoning } })
   if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null } })
   if (opts.reply !== undefined) {
     events.push({ type: 'part/added', messageId: rm, part: { kind: 'text', id: `${rm}_x`, text: '' } })
@@ -95,6 +96,26 @@ const THREAD_FIXTURES: readonly Fixture[] = [
       turn(1, 'Summarise the meeting notes.', {
         reply: 'Three decisions were made. The first covers the',
         settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'Thinking, live',
+    note: 'While the model thinks, the row IS the loading state: the orb and its word, expandable mid-stream for anyone who wants to watch the working arrive.',
+    state: play(
+      turn(1, 'Which plan is more likely to slip?', {
+        reasoning: 'Both end on the same date, so comparing end dates says nothing. The second front-loads its',
+        settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'Thought about it',
+    note: 'Settled thinking is a quiet fact wearing the quote’s grammar — the machine quoting its own working, collapsed by default, never pushed at you. A real disclosure now: it opens.',
+    state: play(
+      turn(1, 'Which plan is more likely to slip?', {
+        reasoning: 'Both end on the same date, so comparing end dates says nothing. The second front-loads its dependencies, which shortens the critical path but leaves no slack if any single one moves.',
+        reply: 'The second, though not for the reason the timeline suggests. Every task depends on the one before it, so a single delay moves the end date by the same amount.',
       }),
     ),
   },

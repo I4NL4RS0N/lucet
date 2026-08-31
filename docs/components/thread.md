@@ -42,10 +42,20 @@ sentence-level units from the core's announcement plan — the refinement this
 section once promised to the streaming-response component, delivered there.
 See [streaming-response.md](streaming-response.md).
 
+## Arrival
+
+Things enter the thread; they do not pop into it. Each new arrival — a
+prompt, the response, an aside, an ending — makes one quiet rise (220 ms,
+a few pixels) and is still. One motion, one duration, applied at the mount:
+without it every appearance is instant and the eye cannot follow what
+changed. Streaming text needs none of this — the caret's crawl is its own
+continuity — and all of it yields to `prefers-reduced-motion`.
+
 ## What is deliberately not here yet
 
-- **Reasoning and tool displays.** Both render as quiet single-row asides
-  here; each is its own baseline component and will take over.
+- **The tool display.** It renders as a quiet single-row aside here; it is
+  its own baseline component, next in the ledger, and will take over.
+  (Reasoning already did: see [reasoning.md](reasoning.md).)
 - **Message actions** (copy, retry, feedback) — the Feedback Controls item.
 - **The empty thread.** What an app shows before the first turn is a real
   design question, owned by the Configurator home where it is the first
