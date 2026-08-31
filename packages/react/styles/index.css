@@ -1800,6 +1800,10 @@
   color: var(--lucet-muted-foreground);
 }
 .lucet-chips__chip[data-kind='do'] .lucet-chips__glyph { color: var(--lucet-primary); }
+.lucet-chips__glyph-eye {
+  fill: currentColor;
+  stroke: none;
+}
 .lucet-chips__text {
   flex: 1;
   min-inline-size: 0;

@@ -54,12 +54,19 @@ function Chip({
       onClick={() => onPick(suggestion)}
     >
       {suggestion.kind === 'ask' ? (
+        /* A conversation asks: the speech square, with its words. */
         <svg className="lucet-chips__glyph" viewBox="0 0 24 24" aria-hidden>
-          <path d="M21 12a8.5 8.5 0 0 1-8.5 8.5c-1.6 0-3.1-.4-4.4-1.2L3 21l1.7-5.1A8.5 8.5 0 1 1 21 12z" />
+          <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9.5L4 21z" />
+          <path d="M8 9.2h8M8 12.6h5" />
         </svg>
       ) : suggestion.kind === 'do' ? (
+        /* An AGENT does: the little worker itself, not an abstract bolt. */
         <svg className="lucet-chips__glyph" viewBox="0 0 24 24" aria-hidden>
-          <path d="M13 2 4.5 14H11l-1 8 8.5-12H12l1-8z" />
+          <circle cx="12" cy="3.2" r="1" />
+          <path d="M12 4.6V7M4.5 13.5H3m18 0h-1.5" />
+          <rect x="5.5" y="7" width="13" height="11" rx="3" />
+          <circle className="lucet-chips__glyph-eye" cx="9.6" cy="12" r="1.15" />
+          <circle className="lucet-chips__glyph-eye" cx="14.4" cy="12" r="1.15" />
         </svg>
       ) : null}
       <span className="lucet-chips__text">{suggestion.prompt}</span>

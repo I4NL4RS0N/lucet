@@ -179,15 +179,14 @@ function AppCore({
   onSuggest,
   aside,
   chrome = 'window',
-  onClose,
 }: {
   onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
-  /* Each container wears its own head: a window has dots and a title, a
-     drawer has its purpose and a way out. The thread never changes. */
-  chrome?: 'window' | 'drawer'
-  onClose?: (() => void) | undefined
+  /* Each container wears its own head — and a container that brings its
+     OWN chrome (the drawer) takes `bare`: no bar at all, the furniture
+     belongs to the room. The thread never changes either way. */
+  chrome?: 'window' | 'bare'
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -201,52 +200,29 @@ function AppCore({
 
   return (
     <>
-      <div className="cfg__frame-bar">
-        {chrome === 'drawer' ? (
-          /* A drawer names its purpose, not its widget: the head says what
-             the panel is for and offers the way out. */
-          <span className="cfg__drawer-head">
-            <svg className="cfg__spark" viewBox="0 0 24 24" aria-hidden>
-              <path d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5z" />
-            </svg>
-            <span className="cfg__frame-title">Ask AI</span>
+      {chrome === 'bare' ? null : (
+        <div className="cfg__frame-bar">
+          {/* Set dressing, honestly generic: a window is a window. */}
+          <span className="cfg__dots" aria-hidden>
+            <i /><i /><i />
           </span>
-        ) : (
-          <>
-            {/* Set dressing, honestly generic: a window is a window. */}
-            <span className="cfg__dots" aria-hidden>
-              <i /><i /><i />
-            </span>
-            <span className="cfg__frame-title">Thread</span>
-          </>
-        )}
-        <button
-          type="button"
-          className="cfg__reset"
-          aria-label="Reset the thread"
-          onClick={() => {
-            lucet.reset()
-            // A wiped thread has no current state; the rail must not claim one.
-            onReset?.()
-          }}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden>
-            <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
-          </svg>
-        </button>
-        {chrome === 'drawer' ? (
+          <span className="cfg__frame-title">Thread</span>
           <button
             type="button"
-            className="cfg__reset cfg__drawer-close"
-            aria-label="Close the Ask AI panel"
-            onClick={() => onClose?.()}
+            className="cfg__reset"
+            aria-label="Reset the thread"
+            onClick={() => {
+              lucet.reset()
+              // A wiped thread has no current state; the rail must not claim one.
+              onReset?.()
+            }}
           >
             <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M6 6l12 12M18 6L6 18" />
+              <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
             </svg>
           </button>
-        ) : null}
-      </div>
+        </div>
+      )}
 
       <div className="cfg__app-body">
         {aside}
@@ -347,9 +323,9 @@ function MockDocument() {
           the app's own navigation is the context hierarchy Scope Control
           will read (brief §8.1). */}
       <div className="cfg__mock-nav">
-        <span>Workspace</span>
+        <span>Application Name</span>
         <span className="cfg__mock-sep">/</span>
-        <span>Plans</span>
+        <span>Page 1</span>
         <span className="cfg__mock-sep">/</span>
         <span className="cfg__mock-here">Quarterly planning</span>
       </div>
@@ -386,11 +362,19 @@ export function App() {
      It rests open so arriving on the view shows the product, not a door. */
   const [drawerOpen, setDrawerOpen] = useState(true)
   const drawerViaButton = useRef(false)
+  /* What the drawer is showing (the thread, or the chat history pane) and
+     HOW it sits on the app: over the page, pushing the page aside, or
+     floating clear of the edges — the three presentations every real
+     drawer product ends up offering. */
+  const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
+  const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
 
   const fire = (id: string) => {
-    /* A state fired at a closed drawer opens it first: the rail's whole
-       job is to make things happen WHERE YOU CAN SEE THEM. */
+    /* A state fired at a closed drawer opens it first — and lands on the
+       thread pane: the rail's whole job is to make things happen WHERE
+       YOU CAN SEE THEM. */
     setDrawerOpen(true)
+    setDrawerPane('thread')
     setActive(id)
     setFiring(id)
     void lucet.trigger(id).finally(() => setFiring(null))
@@ -399,6 +383,27 @@ export function App() {
   /* Focus follows the drawer honestly: opening it by the button moves
      focus in; closing it hands focus back to the button. A view switch
      that happens to mount the drawer steals nothing. */
+  /* The drawer's menu closes like a popover — same manners as More. */
+  useEffect(() => {
+    const close = (e: PointerEvent) => {
+      const menu = document.querySelector('details.cfg__dmenu[open]')
+      if (menu && e.target instanceof Node && !menu.contains(e.target)) {
+        menu.removeAttribute('open')
+      }
+    }
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        document.querySelector('details.cfg__dmenu[open]')?.removeAttribute('open')
+      }
+    }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', esc)
+    return () => {
+      document.removeEventListener('pointerdown', close)
+      document.removeEventListener('keydown', esc)
+    }
+  }, [])
+
   useEffect(() => {
     if (drawerOpen && drawerViaButton.current) {
       drawerViaButton.current = false
@@ -498,20 +503,65 @@ export function App() {
               />
             </section>
           ) : view === 'drawer' ? (
-            <section className="cfg__mock" aria-label="The running app, as a drawer">
-              {/* The host application's own chrome: a brand that is nobody's
-                  (mark plus a generic name), navigation that goes nowhere on
-                  purpose, and ONE real control — the button every product
-                  with an AI drawer has. */}
+            <section
+              className="cfg__mock"
+              data-drawer-mode={drawerMode}
+              aria-label="The running app, as a drawer"
+            >
+              {/* The host application's own chrome. The brand is REAL but
+                  nobody's — the B2 orb-ring tile Lucet itself tried on and
+                  set aside — and the words say what they are: a name-shaped
+                  hole and three page-shaped holes. One control is live. */}
               <div className="cfg__mock-bar">
                 <span className="cfg__mock-brand" aria-hidden>
-                  <span className="cfg__mock-logo" />
-                  Workspace
+                  <svg className="cfg__mock-logo" viewBox="0 0 96 96">
+                    <defs>
+                      <linearGradient id="fbm-p" x1="0" y1="0" x2="0.45" y2="1">
+                        <stop offset="0" stopColor="#34343f" />
+                        <stop offset="0.52" stopColor="#191920" />
+                        <stop offset="1" stopColor="#0a0a0f" />
+                      </linearGradient>
+                      <linearGradient id="fbm-s" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
+                        <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
+                        <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
+                      </linearGradient>
+                      <radialGradient id="fbm-h">
+                        <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
+                        <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                      </radialGradient>
+                      <radialGradient id="fbm-c">
+                        <stop offset="0.6" stopColor="#fff" />
+                        <stop offset="1" stopColor="#DDE0EC" />
+                      </radialGradient>
+                      <clipPath id="fbm-k">
+                        <rect width="96" height="96" rx="27" />
+                      </clipPath>
+                    </defs>
+                    <rect width="96" height="96" rx="27" fill="url(#fbm-p)" />
+                    <g clipPath="url(#fbm-k)">
+                      <circle cx="48" cy="49" r="26" fill="url(#fbm-h)" />
+                      <circle
+                        cx="48"
+                        cy="49"
+                        r="24"
+                        fill="none"
+                        stroke="#F4F5FB"
+                        strokeWidth="7.6"
+                        strokeDasharray="112 39"
+                        strokeLinecap="round"
+                        transform="rotate(156 48 49)"
+                      />
+                      <circle cx="48" cy="49" r="9.5" fill="url(#fbm-c)" />
+                      <rect width="96" height="96" rx="27" fill="url(#fbm-s)" />
+                    </g>
+                  </svg>
+                  Application Name
                 </span>
                 <span className="cfg__mock-tabs" aria-hidden>
-                  <span data-active>Plans</span>
-                  <span>Reports</span>
-                  <span>Library</span>
+                  <span data-active>Page 1</span>
+                  <span>Page 2</span>
+                  <span>Page 3</span>
                 </span>
                 <button
                   type="button"
@@ -527,23 +577,186 @@ export function App() {
                   Ask AI
                 </button>
               </div>
-              <MockDocument />
-              {drawerOpen ? (
-                <div className="cfg__drawer">
-                  <AppCore
-                    chrome="drawer"
-                    onClose={() => {
-                      setDrawerOpen(false)
-                      document.querySelector<HTMLButtonElement>('.cfg__askai')?.focus()
-                    }}
-                    onReset={() => setActive(null)}
-                    onSuggest={(s) => {
-                      writeStateParam(s.id)
-                      fire(s.id)
-                    }}
-                  />
-                </div>
-              ) : null}
+              <div className="cfg__mock-body">
+                <MockDocument />
+                {drawerOpen ? (
+                  <div className="cfg__drawer">
+                    {/* The drawer's own head. Left, a menu that organises what
+                        a small head cannot hold: the panes, the three ways the
+                        drawer can sit on the page, and settings. Right, the
+                        two verbs used constantly: new thread, and out. */}
+                    <div className="cfg__frame-bar cfg__drawer-bar">
+                      <details className="cfg__dmenu">
+                        <summary aria-label="Panel menu">
+                          <svg viewBox="0 0 24 24" aria-hidden>
+                            <path d="M4 7h16M4 12h16M4 17h16" />
+                          </svg>
+                        </summary>
+                        <div className="cfg__dmenu-panel">
+                          {(
+                            [
+                              ['thread', 'Home', 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z'],
+                              ['history', 'Chat history', 'M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18'],
+                            ] as const
+                          ).map(([pane, label, d]) => (
+                            <button
+                              key={pane}
+                              type="button"
+                              className="cfg__dmenu-row"
+                              onClick={(e) => {
+                                setDrawerPane(pane)
+                                e.currentTarget.closest('details')?.removeAttribute('open')
+                              }}
+                            >
+                              <svg viewBox="0 0 24 24" aria-hidden>
+                                <path d={d} />
+                              </svg>
+                              {label}
+                              {drawerPane === pane ? (
+                                <svg className="cfg__dmenu-check" viewBox="0 0 24 24" aria-hidden>
+                                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                                </svg>
+                              ) : null}
+                            </button>
+                          ))}
+                          <div className="cfg__dmenu-sep" aria-hidden />
+                          {(
+                            [
+                              ['over', 'Over the page', 'M3.5 5.5h17v13h-17zM13 5.5h7.5v13H13z'],
+                              ['push', 'Pushes the page', 'M3.5 5.5h17v13h-17zM14 5.5v13'],
+                              ['floating', 'Floating', 'M3.5 5.5h17v13h-17zM12.5 9h5v6h-5z'],
+                            ] as const
+                          ).map(([mode, label, d]) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              className="cfg__dmenu-row"
+                              onClick={(e) => {
+                                setDrawerMode(mode)
+                                e.currentTarget.closest('details')?.removeAttribute('open')
+                              }}
+                            >
+                              <svg viewBox="0 0 24 24" aria-hidden>
+                                <path d={d} />
+                              </svg>
+                              {label}
+                              {drawerMode === mode ? (
+                                <svg className="cfg__dmenu-check" viewBox="0 0 24 24" aria-hidden>
+                                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                                </svg>
+                              ) : null}
+                            </button>
+                          ))}
+                          <div className="cfg__dmenu-sep" aria-hidden />
+                          <button
+                            type="button"
+                            className="cfg__dmenu-row"
+                            disabled
+                            title="Not in this demo"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden>
+                              <path d="M4 7h9M17 7h3M4 17h3M11 17h9M13 4.5v5M7 14.5v5" />
+                            </svg>
+                            Settings
+                          </button>
+                        </div>
+                      </details>
+                      <span className="cfg__frame-title cfg__drawer-title">
+                        {drawerPane === 'thread' ? (
+                          <svg className="cfg__spark" viewBox="0 0 24 24" aria-hidden>
+                            <path d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5z" />
+                          </svg>
+                        ) : null}
+                        {drawerPane === 'thread' ? 'Ask AI' : 'Chat history'}
+                      </span>
+                      <button
+                        type="button"
+                        className="cfg__reset cfg__drawer-new"
+                        aria-label="New thread"
+                        onClick={() => {
+                          lucet.reset()
+                          setActive(null)
+                          setDrawerPane('thread')
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden>
+                          <path d="M12 5v14M5 12h14" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="cfg__reset cfg__drawer-close"
+                        aria-label="Close the Ask AI panel"
+                        onClick={() => {
+                          setDrawerOpen(false)
+                          document.querySelector<HTMLButtonElement>('.cfg__askai')?.focus()
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden>
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    </div>
+                    {drawerPane === 'thread' ? (
+                      <AppCore
+                        chrome="bare"
+                        onReset={() => setActive(null)}
+                        onSuggest={(s) => {
+                          writeStateParam(s.id)
+                          fire(s.id)
+                        }}
+                      />
+                    ) : (
+                      /* The history pane: the same dressing law as the full
+                         page's sidebar — real words, marked decorative,
+                         because these conversations do not exist. */
+                      <div className="cfg__history" aria-hidden>
+                        <div className="cfg__history-group">Today</div>
+                        {(
+                          [
+                            ['Quarterly planning', 'Today · 9:41'],
+                            ['Draft the kickoff note', 'Today · 8:12'],
+                          ] as const
+                        ).map(([t, d]) => (
+                          <div className="cfg__history-row" key={t}>
+                            <span className="cfg__history-text">
+                              <span className="cfg__history-title">{t}</span>
+                              <span className="cfg__history-date">{d}</span>
+                            </span>
+                            <svg viewBox="0 0 24 24">
+                              <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
+                            </svg>
+                            <svg viewBox="0 0 24 24">
+                              <path d="M9 6l6 6-6 6" />
+                            </svg>
+                          </div>
+                        ))}
+                        <div className="cfg__history-group">Earlier</div>
+                        {(
+                          [
+                            ['Compare the two vendor quotes', 'Tue · 16:02'],
+                            ['Rename the workstreams', 'Mon · 11:30'],
+                            ['Last week\u2019s review notes', 'Fri · 15:45'],
+                          ] as const
+                        ).map(([t, d]) => (
+                          <div className="cfg__history-row" key={t}>
+                            <span className="cfg__history-text">
+                              <span className="cfg__history-title">{t}</span>
+                              <span className="cfg__history-date">{d}</span>
+                            </span>
+                            <svg viewBox="0 0 24 24">
+                              <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
+                            </svg>
+                            <svg viewBox="0 0 24 24">
+                              <path d="M9 6l6 6-6 6" />
+                            </svg>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">

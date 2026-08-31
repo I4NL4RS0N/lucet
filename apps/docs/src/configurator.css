@@ -245,11 +245,13 @@ body {
    tomorrow — the navigation IS the context hierarchy Scope Control reads. */
 .cfg__mock-nav {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   margin-block-end: 22px;
   font-size: 12px;
   color: var(--lucet-muted-foreground);
 }
+.cfg__mock-nav span { white-space: nowrap; }
 .cfg__mock-sep { opacity: 0.5; }
 .cfg__mock-here { color: var(--lucet-subtle-foreground); font-weight: 500; }
 
@@ -764,21 +766,16 @@ body {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+/* The B2 tile: the orb-ring mark Lucet tried on and set aside — real
+   enough to sell the host, and deliberately nobody's. */
 .cfg__mock-logo {
-  inline-size: 18px;
-  block-size: 18px;
-  border-radius: 5px;
-  background: var(--lucet-subtle);
-  box-shadow: var(--lucet-hairline);
-  position: relative;
-}
-.cfg__mock-logo::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 2px;
-  background: var(--lucet-subtle-foreground);
-  opacity: 0.7;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 1px 1px oklch(0 0 0 / 0.35),
+    0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
 .cfg__mock-tabs {
   display: flex;
@@ -820,6 +817,34 @@ body {
   fill: currentColor;
 }
 
+/* The room the drawer works in: everything below the host's header.
+   Relative, so `over` and `floating` position against it; flexed by the
+   `push` mode so the document squeezes instead of being covered. */
+.cfg__mock-body {
+  position: relative;
+  min-block-size: 578px;
+}
+.cfg__mock[data-drawer-mode='push'] .cfg__mock-body {
+  display: flex;
+  align-items: stretch;
+}
+.cfg__mock[data-drawer-mode='push'] .cfg__mock-doc {
+  flex: 1;
+  min-inline-size: 0;
+}
+.cfg__mock[data-drawer-mode='push'] .cfg__drawer {
+  position: static;
+  inline-size: min(400px, 58%);
+  animation: none;
+}
+.cfg__mock[data-drawer-mode='floating'] .cfg__drawer {
+  inset-block: 12px;
+  inset-inline-end: 12px;
+  border-inline-start: 0;
+  border-radius: var(--lucet-radius-panel);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+
 .cfg__drawer {
   position: absolute;
   inset-block: 0;
@@ -841,16 +866,143 @@ body {
   .cfg__drawer { animation: none; }
 }
 
-/* The drawer's head: purpose on the left, the way out on the right. */
-.cfg__drawer-head {
+/* The drawer's head: the menu, the purpose, then the two constant verbs
+   — new thread, and out. Only the FIRST right-side button takes the auto
+   margin; the close is last, where every drawer puts it. */
+.cfg__drawer-bar { padding-inline: 8px; }
+.cfg__drawer-title {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.cfg__drawer-head .cfg__spark { color: var(--lucet-primary); }
-/* The reset keeps its auto-margin job; the close sits after it, so the
-   way OUT is the last thing in the row — where every drawer puts it. */
+.cfg__drawer-title .cfg__spark { color: var(--lucet-primary); }
+.cfg__drawer-new { margin-inline-start: auto; }
 .cfg__drawer-close { margin-inline-start: 0; }
+
+/* The panel menu: a small head cannot hold five controls, so they live
+   behind the first one — the popover grammar the site already speaks. */
+.cfg__dmenu { position: relative; }
+.cfg__dmenu summary {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--lucet-radius-control);
+  color: var(--lucet-muted-foreground);
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__dmenu summary::-webkit-details-marker { display: none; }
+.cfg__dmenu summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__dmenu summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__dmenu summary svg {
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.cfg__dmenu-panel {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(100% + 6px);
+  z-index: 30;
+  display: grid;
+  gap: 1px;
+  min-inline-size: 195px;
+  padding: 5px;
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-overlay, var(--lucet-card));
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+.cfg__dmenu-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-block-size: 30px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+}
+.cfg__dmenu-row:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__dmenu-row:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -2px;
+}
+.cfg__dmenu-row:disabled { opacity: 0.45; cursor: default; }
+.cfg__dmenu-row svg {
+  flex: none;
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cfg__dmenu-check { margin-inline-start: auto; color: var(--lucet-foreground); }
+.cfg__dmenu-sep {
+  block-size: 1px;
+  margin-block: 4px;
+  background-color: var(--lucet-border);
+}
+
+/* The history pane: the sidebar's dressing law in list form. */
+.cfg__history {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: 10px 14px 16px;
+}
+.cfg__history-group {
+  margin-block: 14px 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__history-group:first-child { margin-block-start: 4px; }
+.cfg__history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 10px;
+  border-block-end: 1px solid var(--lucet-border);
+}
+.cfg__history-row:last-child { border-block-end: 0; }
+.cfg__history-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-inline-size: 0;
+}
+.cfg__history-title { font-size: 13px; color: var(--lucet-foreground); }
+.cfg__history-date { font-size: 11.5px; color: var(--lucet-muted-foreground); }
+.cfg__history-row svg {
+  flex: none;
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: var(--lucet-muted-foreground);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}
 .cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
 /* Mobile view: the same app, in a hand. */
