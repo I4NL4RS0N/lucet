@@ -405,28 +405,10 @@ body {
 .cfg__dots i:nth-child(3) { background-color: #28c840; }
 .cfg__phone .cfg__dots { display: none; }
 
-/* The phone's nav bar: fixed-width bookends, the title honestly live
-   and centred between them. */
-.cfg__phone-bar { padding-inline: 10px; }
-.cfg__phone-back,
-.cfg__phone-more {
-  display: grid;
-  place-items: center;
-  inline-size: 28px;
-  block-size: 28px;
-  color: var(--lucet-subtle-foreground);
-}
-.cfg__phone-back svg,
-.cfg__phone-more svg {
-  inline-size: 17px;
-  block-size: 17px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.cfg__phone-more svg circle { fill: currentColor; stroke: none; }
+/* The phone's nav bar: the menu and a working + as bookends, the title
+   honestly live and centred between them. */
+.cfg__phone-bar { padding-inline: 8px; }
+.cfg__phone-new { margin-inline-start: 0; }
 .cfg__phone-title {
   flex: 1;
   text-align: center;

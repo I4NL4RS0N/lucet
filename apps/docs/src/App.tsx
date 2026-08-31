@@ -208,11 +208,9 @@ function AppCore({
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
   /* Each container wears its own head — a window has dots and the app's
-     name, a phone has a nav bar with the THREAD'S name (the promise the
-     window chrome made when it gave the live title up), and a container
-     that brings its own chrome (the drawer) takes `bare`. The thread
-     never changes either way. */
-  chrome?: 'window' | 'bare' | 'phone'
+     name; a container that brings its OWN chrome (the drawer's head, the
+     phone's nav) takes `bare`. The thread never changes either way. */
+  chrome?: 'window' | 'bare'
   /* The full page is a HOME, and homes follow the genre (Claude, ChatGPT,
      Le Chat): brand over the greeting, and the composer sits IN the page
      until the first turn exists, then moves to the floor. */
@@ -284,30 +282,7 @@ function AppCore({
 
   return (
     <>
-      {chrome === 'bare' ? null : chrome === 'phone' ? (
-        /* The phone's nav bar: back, the conversation's own name, more.
-           Back and more are dressing (marked so); the title is REAL —
-           the thread's first words, or the honest New thread. */
-        <div className="cfg__frame-bar cfg__phone-bar">
-          <span className="cfg__phone-back" aria-hidden>
-            <svg viewBox="0 0 24 24">
-              <path d="M14.5 5.5 8 12l6.5 6.5" />
-            </svg>
-          </span>
-          <span className="cfg__frame-title cfg__phone-title">
-            {state.turns[0]?.prompt.parts
-              .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
-              .join(' ') || 'New thread'}
-          </span>
-          <span className="cfg__phone-more" aria-hidden>
-            <svg viewBox="0 0 24 24">
-              <circle cx="5.5" cy="12" r="1.4" />
-              <circle cx="12" cy="12" r="1.4" />
-              <circle cx="18.5" cy="12" r="1.4" />
-            </svg>
-          </span>
-        </div>
-      ) : (
+      {chrome === 'bare' ? null : (
         <div className="cfg__frame-bar">
           {/* Set dressing, honestly generic: a window is a window. Reset
              used to live here, disguised as app chrome — but Reset is the
@@ -442,6 +417,135 @@ function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
   )
 }
 
+/** The chat-history dressing, shared by the drawer's pane and the
+ * phone's: real words, marked decorative — the conversations do not
+ * exist, and the same list must not lie twice differently. */
+function MockHistory() {
+  return (
+    <div className="cfg__history" aria-hidden>
+      <div className="cfg__history-group">Today</div>
+      {(
+        [
+          ['Quarterly planning', 'Today · 9:41'],
+          ['Draft the kickoff note', 'Today · 8:12'],
+        ] as const
+      ).map(([t, d]) => (
+        <div className="cfg__history-row" key={t}>
+          <span className="cfg__history-text">
+            <span className="cfg__history-title">{t}</span>
+            <span className="cfg__history-date">{d}</span>
+          </span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
+          </svg>
+          <svg viewBox="0 0 24 24">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </div>
+      ))}
+      <div className="cfg__history-group">Earlier</div>
+      {(
+        [
+          ['Compare the two vendor quotes', 'Tue · 16:02'],
+          ['Rename the workstreams', 'Mon · 11:30'],
+          ['Last week\u2019s review notes', 'Fri · 15:45'],
+        ] as const
+      ).map(([t, d]) => (
+        <div className="cfg__history-row" key={t}>
+          <span className="cfg__history-text">
+            <span className="cfg__history-title">{t}</span>
+            <span className="cfg__history-date">{d}</span>
+          </span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
+          </svg>
+          <svg viewBox="0 0 24 24">
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * The phone's nav bar, real at both ends now: the hamburger opens the
+ * same menu grammar as the drawer (Home, Chat history, Settings honest
+ * about being dressing), the + is a working new thread, and the title
+ * stays the thread's own name. Its predecessors — a back chevron and an
+ * ellipsis that did nothing — were dressing shaped like controls, which
+ * is the one kind of dressing this page does not allow.
+ */
+function PhoneNav({
+  pane,
+  onPane,
+  onNew,
+}: {
+  pane: 'thread' | 'history'
+  onPane: (pane: 'thread' | 'history') => void
+  onNew: () => void
+}) {
+  const state = useThread()
+  const title =
+    pane === 'history'
+      ? 'Chat history'
+      : state.turns[0]?.prompt.parts
+          .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
+          .join(' ') || 'New thread'
+  return (
+    <div className="cfg__frame-bar cfg__phone-bar">
+      <details className="cfg__dmenu">
+        <summary aria-label="Menu">
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </summary>
+        <div className="cfg__dmenu-panel">
+          {(
+            [
+              ['thread', 'Home', 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z'],
+              ['history', 'Chat history', 'M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18'],
+            ] as const
+          ).map(([p, label, d]) => (
+            <button
+              key={p}
+              type="button"
+              className="cfg__dmenu-row"
+              onClick={(e) => {
+                onPane(p)
+                e.currentTarget.closest('details')?.removeAttribute('open')
+              }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d={d} />
+              </svg>
+              {label}
+              {pane === p ? (
+                <svg className="cfg__dmenu-check" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              ) : null}
+            </button>
+          ))}
+          <div className="cfg__dmenu-sep" aria-hidden />
+          <button type="button" className="cfg__dmenu-row" disabled title="Not in this demo">
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M4 7h9M17 7h3M4 17h3M11 17h9M13 4.5v5M7 14.5v5" />
+            </svg>
+            Settings
+          </button>
+        </div>
+      </details>
+      <span className="cfg__frame-title cfg__phone-title">{title}</span>
+      <button type="button" className="cfg__reset cfg__phone-new" aria-label="New thread" onClick={onNew}>
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 /** The neutral application the drawer slides over. Set dressing, real words. */
 function MockDocument() {
   return (
@@ -494,6 +598,7 @@ export function App() {
      floating clear of the edges — the three presentations every real
      drawer product ends up offering. */
   const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
+  const [phonePane, setPhonePane] = useState<'thread' | 'history'>('thread')
   /* The rail collapses, the way every home's rail does. */
   const [sideOpen, setSideOpen] = useState(true)
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
@@ -550,6 +655,7 @@ export function App() {
        YOU CAN SEE THEM. */
     setDrawerOpen(true)
     setDrawerPane('thread')
+    setPhonePane('thread')
     setActive(id)
     setFiring(id)
     void lucet.trigger(id).finally(() => setFiring(null))
@@ -941,49 +1047,7 @@ export function App() {
                       /* The history pane: the same dressing law as the full
                          page's sidebar — real words, marked decorative,
                          because these conversations do not exist. */
-                      <div className="cfg__history" aria-hidden>
-                        <div className="cfg__history-group">Today</div>
-                        {(
-                          [
-                            ['Quarterly planning', 'Today · 9:41'],
-                            ['Draft the kickoff note', 'Today · 8:12'],
-                          ] as const
-                        ).map(([t, d]) => (
-                          <div className="cfg__history-row" key={t}>
-                            <span className="cfg__history-text">
-                              <span className="cfg__history-title">{t}</span>
-                              <span className="cfg__history-date">{d}</span>
-                            </span>
-                            <svg viewBox="0 0 24 24">
-                              <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
-                            </svg>
-                            <svg viewBox="0 0 24 24">
-                              <path d="M9 6l6 6-6 6" />
-                            </svg>
-                          </div>
-                        ))}
-                        <div className="cfg__history-group">Earlier</div>
-                        {(
-                          [
-                            ['Compare the two vendor quotes', 'Tue · 16:02'],
-                            ['Rename the workstreams', 'Mon · 11:30'],
-                            ['Last week\u2019s review notes', 'Fri · 15:45'],
-                          ] as const
-                        ).map(([t, d]) => (
-                          <div className="cfg__history-row" key={t}>
-                            <span className="cfg__history-text">
-                              <span className="cfg__history-title">{t}</span>
-                              <span className="cfg__history-date">{d}</span>
-                            </span>
-                            <svg viewBox="0 0 24 24">
-                              <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
-                            </svg>
-                            <svg viewBox="0 0 24 24">
-                              <path d="M9 6l6 6-6 6" />
-                            </svg>
-                          </div>
-                        ))}
-                      </div>
+                      <MockHistory />
                     )}
                   </div>
                 ) : null}
@@ -999,14 +1063,27 @@ export function App() {
                     <i /><i />
                   </span>
                 </div>
-                <AppCore
-                  chrome="phone"
-                  compact
-                  onSuggest={(s) => {
-                    writeStateParam(s.id)
-                    fire(s.id)
+                <PhoneNav
+                  pane={phonePane}
+                  onPane={setPhonePane}
+                  onNew={() => {
+                    lucet.reset()
+                    setActive(null)
+                    setPhonePane('thread')
                   }}
                 />
+                {phonePane === 'thread' ? (
+                  <AppCore
+                    chrome="bare"
+                    compact
+                    onSuggest={(s) => {
+                      writeStateParam(s.id)
+                      fire(s.id)
+                    }}
+                  />
+                ) : (
+                  <MockHistory />
+                )}
                 <div className="cfg__phone-home" aria-hidden />
               </div>
             </section>
