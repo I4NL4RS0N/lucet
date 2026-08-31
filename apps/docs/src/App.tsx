@@ -65,12 +65,14 @@ function TriggerRail({
   active,
   firing,
   onFire,
+  onReset,
 }: {
   /** The state most recently made to happen — the rail's "you are here". */
   active: string | null
   /** The one running right now, wearing the spinner. */
   firing: string | null
   onFire: (id: string) => void
+  onReset: () => void
 }) {
   const groups = useTriggerGroups()
   const thread = useThread()
@@ -97,6 +99,10 @@ function TriggerRail({
 
   return (
     <nav aria-label="State triggers">
+      {/* Cause and its inverse, together: the rail makes things happen to
+         the thread, so the control that unhappens them lives here too —
+         not in the stage bar, which only decides how you are LOOKING. */}
+      <div className="cfg__rail-top">
       <div className="cfg__views cfg__views--rail" role="group" aria-label="Rail sections">
         {(
           [
@@ -113,6 +119,24 @@ function TriggerRail({
             {label}
           </button>
         ))}
+      </div>
+      {/* Armed only when there is something to wipe: a control that
+         would do nothing says so by being disabled, and it disarms
+         itself the moment it fires — that IS its feedback. No colour
+         escalation on purpose: danger belongs to real endings, accent
+         to primary actions; presence is enough. */}
+      <button
+        type="button"
+        className="cfg__stage-reset"
+        aria-label="Reset the thread"
+        disabled={thread.turns.length === 0}
+        onClick={onReset}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
+        </svg>
+        Reset
+      </button>
       </div>
       {shown.map((group) => (
         <section className="cfg__group" key={group.group}>
@@ -564,22 +588,6 @@ export function App() {
                 </button>
               ))}
             </div>
-            {/* The demo's own control, in the demo's own chrome: wipes the
-               running thread in WHICHEVER container is showing. */}
-            <button
-              type="button"
-              className="cfg__stage-reset"
-              aria-label="Reset the thread"
-              onClick={() => {
-                lucet.reset()
-                setActive(null)
-              }}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden>
-                <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
-              </svg>
-              Reset
-            </button>
             <AppearancePrefs state={themeState} onChange={setThemeState} />
           </div>
 
@@ -950,7 +958,15 @@ export function App() {
 
         <div className="cfg__railcol">
           <div className="cfg__rail">
-            <TriggerRail active={active} firing={firing} onFire={fire} />
+            <TriggerRail
+              active={active}
+              firing={firing}
+              onFire={fire}
+              onReset={() => {
+                lucet.reset()
+                setActive(null)
+              }}
+            />
             <div className="cfg__aside">
               <EventLog />
             </div>

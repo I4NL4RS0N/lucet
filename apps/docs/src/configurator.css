@@ -306,14 +306,20 @@ body {
   background: var(--lucet-subtle);
   color: var(--lucet-foreground);
 }
-/* The demo's reset, wearing the stage bar's control grammar — a word
-   and its glyph, not app chrome. */
+/* The demo's reset: the rail's inverse, beside the rail's tabs. */
+.cfg__rail-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-end: 12px;
+}
+.cfg__rail-top .cfg__views--rail { flex: 1; }
 .cfg__stage-reset {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  flex: none;
   min-block-size: 26px;
-  margin-inline-start: 10px;
   padding-inline: 9px;
   border: 0;
   border-radius: var(--lucet-radius-control);
@@ -327,7 +333,8 @@ body {
     background-color var(--lucet-duration-fast) var(--lucet-ease-out),
     color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-.cfg__stage-reset:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__stage-reset:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__stage-reset:disabled { opacity: 0.45; cursor: default; }
 .cfg__stage-reset:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
@@ -788,10 +795,9 @@ body {
 .cfg__views--rail {
   display: flex;
   inline-size: auto;
-  margin-block-end: 12px;
 }
 .cfg__views--rail button { flex: 1; }
-.cfg__views--rail + .cfg__group { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+.cfg__rail-top + .cfg__group { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
 
 .cfg__group { display: grid; }
 .cfg__group + .cfg__group {
