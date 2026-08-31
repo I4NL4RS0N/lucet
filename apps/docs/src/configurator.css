@@ -33,32 +33,43 @@ body {
 
 .cfg__bar {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   max-inline-size: 1240px;
   margin: 0 auto;
   padding: 18px 32px 0;
 }
 
-.cfg__mark { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+/* Identity: the tile, the name, and the thesis in one line under it. */
+.cfg__mark {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  align-items: center;
+}
 /* The tile floats: the lithos shadow grammar — hairline separator, contact,
    mid, ambient — in one stack, so the mark reads as an object on both page
    grounds. */
 .cfg__logo {
-  inline-size: 26px;
-  block-size: 26px;
-  border-radius: 7px;
+  grid-row: 1 / 3;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 8px;
   box-shadow:
     0 0 0 0.5px oklch(0 0 0 / 0.55),
     0 1px 1px oklch(0 0 0 / 0.35),
     0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
-.cfg__mark span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
-
-.cfg__lede {
-  margin: 0;
-  font-size: 13px;
+.cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+.cfg__name span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
+.cfg__tagline {
+  font-size: 12px;
+  line-height: 1.35;
   color: var(--lucet-muted-foreground);
+}
+@media (max-width: 680px) {
+  .cfg__tagline { display: none; }
+  .cfg__logo { grid-row: auto; }
 }
 
 /* Theme and accent, findable in one glance: the library's opinions about
@@ -87,6 +98,40 @@ body {
 }
 .cfg__prefs select:hover { background-color: var(--lucet-hover); }
 .cfg__prefs select:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* Repo (and, in dev, the private stages): the same hairline-ghost chip as
+   the selects beside it — one cluster, one containment. */
+.cfg__ghlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: 26px;
+  padding-inline: 9px;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  color: var(--lucet-subtle-foreground);
+  font-size: 12px;
+  text-decoration: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__ghlink svg {
+  inline-size: 11px;
+  block-size: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+}
+.cfg__ghlink:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__ghlink:active { background-color: var(--lucet-press); }
+.cfg__ghlink:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
@@ -254,11 +299,19 @@ body {
 }
 
 .cfg__rail-title {
-  margin: 0 0 2px;
+  margin: 0;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+
+/* The mechanic, stated where the mechanism is. */
+.cfg__rail-sub {
+  margin: 2px 0 8px;
+  font-size: 12px;
+  line-height: 1.4;
   color: var(--lucet-muted-foreground);
 }
 
@@ -304,6 +357,24 @@ body {
   outline-offset: -1px;
 }
 .cfg__trigger:disabled { opacity: 0.45; cursor: default; }
+
+/*
+ * "You are here": the state most recently made to happen. More than colour
+ * (1.4.1): the caret turns accent AND the label takes weight, on a resting
+ * tint one step quieter than hover. aria-current carries it to AT.
+ */
+.cfg__trigger[aria-current] {
+  background-color: var(--lucet-subtle);
+  color: var(--lucet-foreground);
+}
+.cfg__trigger[aria-current] .cfg__trigger-label { font-weight: 500; }
+.cfg__trigger[aria-current] .cfg__trigger-caret {
+  border-color: var(--lucet-accent-ink);
+}
+.cfg__trigger[aria-current]:hover:not(:disabled) { background-color: var(--lucet-hover); }
+/* While a scenario runs the rail dims under the turn lock — except the row
+   doing the work, which stays lit with its spinner. */
+.cfg__trigger[aria-current]:disabled { opacity: 1; }
 
 /* The caret says "this does something" before any hover; hover confirms by
    brightening it and sliding it a step. */

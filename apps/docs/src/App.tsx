@@ -39,16 +39,25 @@ const VIEWS: readonly { value: View; label: string }[] = [
   { value: 'mobile', label: 'Mobile' },
 ]
 
-function TriggerRail() {
-  const lucet = useLucet()
+function TriggerRail({
+  active,
+  firing,
+  onFire,
+}: {
+  /** The state most recently made to happen — the rail's "you are here". */
+  active: string | null
+  /** The one running right now, wearing the spinner. */
+  firing: string | null
+  onFire: (id: string) => void
+}) {
   const groups = useTriggerGroups()
   const thread = useThread()
   const busy = thread.status !== 'idle'
-  const [firing, setFiring] = useState<string | null>(null)
 
   return (
     <nav aria-label="State triggers">
-      <p className="cfg__rail-title">States — click one, it happens</p>
+      <p className="cfg__rail-title">States</p>
+      <p className="cfg__rail-sub">Click one — it happens to the running thread.</p>
       {groups.map((group) => (
         <section className="cfg__group" key={group.group}>
           <h3 className="cfg__group-name">{group.group}</h3>
@@ -59,10 +68,10 @@ function TriggerRail() {
               className="cfg__trigger"
               title={scenario.description}
               disabled={busy}
+              aria-current={active === scenario.id || undefined}
               onClick={() => {
                 writeStateParam(scenario.id)
-                setFiring(scenario.id)
-                void lucet.trigger(scenario.id).finally(() => setFiring(null))
+                onFire(scenario.id)
               }}
             >
               <span className="cfg__trigger-caret" aria-hidden />
@@ -96,7 +105,7 @@ function EventLog() {
 }
 
 /** The running app itself: thread above, composer below. Container-agnostic. */
-function AppCore() {
+function AppCore({ onReset }: { onReset?: (() => void) | undefined }) {
   const lucet = useLucet()
   const state = useThread()
   const attachCount = useRef(0)
@@ -115,7 +124,11 @@ function AppCore() {
           type="button"
           className="cfg__reset"
           aria-label="Reset the thread"
-          onClick={() => lucet.reset()}
+          onClick={() => {
+            lucet.reset()
+            // A wiped thread has no current state; the rail must not claim one.
+            onReset?.()
+          }}
         >
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
@@ -216,15 +229,35 @@ export function App() {
     typeface: 'inter',
   })
   const booted = useRef(false)
+  const [active, setActive] = useState<string | null>(null)
+  const [firing, setFiring] = useState<string | null>(null)
 
   useApplyTheme(themeState)
 
-  // Deep link: land someone straight in a state, in context.
+  const fire = (id: string) => {
+    setActive(id)
+    setFiring(id)
+    void lucet.trigger(id).finally(() => setFiring(null))
+  }
+
+  /*
+   * Deep link: land someone straight in a state, in context. And with no
+   * link at all, the FIRST state fires itself: the page must arrive alive —
+   * a prompt sending, a response streaming — because nothing orients a
+   * first visitor faster than watching the thing happen. The row it came
+   * from is marked in the rail, so the cause is findable. (A splash screen
+   * was considered and refused: a door in front of a working stage.)
+   */
   useEffect(() => {
     if (booted.current) return
     booted.current = true
-    const id = readStateParam()
-    if (id && lucet.triggers.get(id)) void lucet.trigger(id)
+    const linked = readStateParam()
+    if (linked && lucet.triggers.get(linked)) fire(linked)
+    else {
+      const first = lucet.triggers.list()[0]
+      if (first) fire(first.id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lucet])
 
   return (
@@ -237,18 +270,22 @@ export function App() {
           <svg className="cfg__logo" viewBox="0 0 96 96" aria-hidden>
             <defs>
               <linearGradient id="lgo-p" x1="0" y1="0" x2="0.45" y2="1">
-                <stop offset="0" stopColor="#2a2a33" />
-                <stop offset="0.52" stopColor="#18181f" />
-                <stop offset="1" stopColor="#0d0d12" />
+                <stop offset="0" stopColor="#34343f" />
+                <stop offset="0.52" stopColor="#191920" />
+                <stop offset="1" stopColor="#0a0a0f" />
               </linearGradient>
               <linearGradient id="lgo-s" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#fff" stopOpacity="0.13" />
+                <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
                 <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
                 <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
               </linearGradient>
               <radialGradient id="lgo-h">
-                <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
+                <stop offset="0" stopColor="#fff" stopOpacity="0.38" />
                 <stop offset="1" stopColor="#fff" stopOpacity="0" />
+              </radialGradient>
+              <radialGradient id="lgo-o">
+                <stop offset="0.6" stopColor="#fff" />
+                <stop offset="1" stopColor="#DDE0EC" />
               </radialGradient>
               <clipPath id="lgo-c">
                 <rect width="96" height="96" rx="27" />
@@ -256,25 +293,49 @@ export function App() {
             </defs>
             <rect width="96" height="96" rx="27" fill="url(#lgo-p)" />
             <g clipPath="url(#lgo-c)">
-              <circle cx="46" cy="50" r="17" fill="url(#lgo-h)" />
-              <g fill="none" strokeLinecap="round">
-                <circle cx="46" cy="50" r="23" stroke="#F2F3F9" strokeWidth="6" strokeDasharray="95 50" transform="rotate(105 46 50)" />
-                <circle cx="46" cy="50" r="52" stroke="#B9BCCB" strokeWidth="5" strokeDasharray="150 177" transform="rotate(28 46 50)" />
-              </g>
-              <circle cx="46" cy="50" r="7" fill="#FFFFFF" />
+              <circle cx="48" cy="49" r="26" fill="url(#lgo-h)" />
+              <circle cx="48" cy="49" r="24" fill="none" stroke="#F4F5FB" strokeWidth="7" strokeDasharray="102 49" strokeLinecap="round" transform="rotate(114 48 49)" />
+              <circle cx="48" cy="49" r="9" fill="url(#lgo-o)" />
               <rect width="96" height="96" rx="27" fill="url(#lgo-s)" />
             </g>
           </svg>
-          Lucet <span>· the Configurator</span>
+          <span className="cfg__name">
+            Lucet <span>· the Configurator</span>
+          </span>
+          {/* The thesis, in the one line every visitor reads. */}
+          <span className="cfg__tagline">
+            AI interface components, complete with their unhappy states.
+          </span>
         </span>
-        <p className="cfg__lede">One running thread. The states on the right happen to it.</p>
 
         {/*
          * Theme and accent live in the header, findable in one glance: how
          * opinionated the library is about appearance IS part of the pitch,
-         * so the controls that prove it are not buried.
+         * so the controls that prove it are not buried. The repo link sits
+         * with them: one cluster of "about this library", right-aligned.
          */}
         <div className="cfg__prefs">
+          <a
+            className="cfg__ghlink"
+            href="https://github.com/I4NL4RS0N/lucet"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M8 16L16 8M9.5 8H16v6.5" />
+            </svg>
+          </a>
+          {import.meta.env.DEV ? (
+            <>
+              <a className="cfg__ghlink" href="/components.html">
+                Components
+              </a>
+              <a className="cfg__ghlink" href="/primitives.html">
+                Primitives
+              </a>
+            </>
+          ) : null}
           <label htmlFor="cfg-theme">Theme</label>
           <select
             id="cfg-theme"
@@ -323,26 +384,26 @@ export function App() {
 
           {view === 'full' ? (
             <section className="cfg__frame" aria-label="The running app">
-              <AppCore />
+              <AppCore onReset={() => setActive(null)} />
             </section>
           ) : view === 'drawer' ? (
             <section className="cfg__mock" aria-label="The running app, as a drawer">
               <MockDocument />
               <div className="cfg__drawer">
-                <AppCore />
+                <AppCore onReset={() => setActive(null)} />
               </div>
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">
               <div className="cfg__phone">
-                <AppCore />
+                <AppCore onReset={() => setActive(null)} />
               </div>
             </section>
           )}
         </div>
 
         <div className="cfg__rail">
-          <TriggerRail />
+          <TriggerRail active={active} firing={firing} onFire={fire} />
           <div className="cfg__aside">
             <EventLog />
           </div>

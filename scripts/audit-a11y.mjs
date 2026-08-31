@@ -59,12 +59,16 @@ function collect() {
 
   for (const [label, sel] of Object.entries({
     body: 'body',
-    wordmark: '.cfg__mark',
-    lede: '.cfg__lede',
+    wordmark: '.cfg__name',
+    tagline: '.cfg__tagline',
+    'repo link': '.cfg__ghlink',
     'frame title': '.cfg__frame-title',
     'rail title': '.cfg__rail-title',
     'rail group name': '.cfg__group-name',
     'rail trigger': '.cfg__trigger:not(:disabled)',
+    'rail sub': '.cfg__rail-sub',
+    /* The "you are here" row: its resting tint and heavier label must read. */
+    'rail current row': '.cfg__trigger[aria-current]',
     'prefs label': '.cfg__prefs label',
     'prefs select': '.cfg__prefs select',
     'view switch': '.cfg__views button',
@@ -116,7 +120,7 @@ function collect() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.cfg__trigger, .cfg__reset, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
+    '.cfg__trigger, .cfg__reset, .cfg__ghlink, .cfg__prefs select, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
