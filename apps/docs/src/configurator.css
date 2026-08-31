@@ -480,30 +480,32 @@ body {
   color: var(--lucet-foreground);
 }
 .cfg__trigger[aria-current] .cfg__trigger-label { font-weight: 500; }
-.cfg__trigger[aria-current] .cfg__trigger-caret {
-  border-inline-start-color: var(--lucet-accent-ink);
+.cfg__trigger[aria-current] .cfg__trigger-play {
+  color: var(--lucet-accent-ink);
 }
 .cfg__trigger[aria-current]:hover:not(:disabled) { background-color: var(--lucet-hover); }
 /* While a scenario runs the rail dims under the turn lock — except the row
    doing the work, which stays lit with its spinner. */
 .cfg__trigger[aria-current]:disabled { opacity: 1; }
 
-/* A PLAY glyph, not a chevron: a chevron promises expansion, and these
-   rows RUN things. The filled triangle is the universal "this fires". It
-   brightens and slides a step on hover — the same confirmation as before,
-   on the right verb. */
-.cfg__trigger-caret {
-  inline-size: 0;
-  block-size: 0;
+/* CIRCLE-PLAY, round three of this glyph: the bare triangle still read as
+   caret-family, and a chevron before that promised expansion. The circle
+   contains the triangle so it can only mean "this runs". It inks up and
+   slides a step on hover — the same confirmation, on the right verb. */
+.cfg__trigger-play {
+  inline-size: 15px;
+  block-size: 15px;
   flex: none;
-  border-block: 4px solid transparent;
-  border-inline-start: 6px solid var(--lucet-muted-foreground);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  color: var(--lucet-muted-foreground);
   transition:
     translate var(--lucet-duration-fast) var(--lucet-ease-out),
-    border-color var(--lucet-duration-fast) var(--lucet-ease-out);
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-.cfg__trigger:hover:not(:disabled) .cfg__trigger-caret {
-  border-inline-start-color: var(--lucet-foreground);
+.cfg__trigger:hover:not(:disabled) .cfg__trigger-play {
+  color: var(--lucet-foreground);
   translate: 2px 0;
 }
 .cfg__trigger-label { min-inline-size: 0; }
