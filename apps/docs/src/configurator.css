@@ -1079,11 +1079,32 @@ body {
 }
 .cfg__mock-tabs {
   display: flex;
-  gap: 16px;
+  gap: 4px;
   font-size: 12.5px;
   color: var(--lucet-muted-foreground);
 }
-.cfg__mock-tabs [data-active] { color: var(--lucet-foreground); font-weight: 500; }
+/* Real navigation, quiet as links: ink on hover, weight where you are —
+   the site nav's grammar at the host's scale. */
+.cfg__mock-tabs button {
+  min-block-size: 26px;
+  padding-inline: 8px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-muted-foreground);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__mock-tabs button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__mock-tabs button:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__mock-tabs button[data-active] { color: var(--lucet-foreground); font-weight: 500; }
 .cfg__askai {
   display: flex;
   align-items: center;

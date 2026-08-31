@@ -875,6 +875,8 @@
 
 .lucet-prompt__bar {
   display: flex;
+  /* Wraps only for full-row children (the scope's moved note). */
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--lucet-space-1);
   margin-block-start: var(--lucet-space-1);
@@ -1839,6 +1841,133 @@
 .lucet-thread__return:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
+}
+
+/* ============================================================
+ * SCOPE CONTROL. The breadcrumb as a ladder, in the composer's bar:
+ * the button wears the D1 ghost grammar beside the model select; the
+ * panel opens UP (the composer sits low); every rung shows its label,
+ * its count, and what is actually inside. The moved note renders in
+ * the info ink until the person acts — the ground shifted, and the
+ * control says so.
+ * ============================================================ */
+
+/* display: contents — the button and the moved note become children of
+   whatever row holds the control, so the NOTE can take a full line of
+   its own beneath the bar instead of cramming beside the button (it
+   truncated mid-sentence at drawer width). */
+.lucet-scope { display: contents; }
+.lucet-scope__menu { position: relative; }
+.lucet-scope__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 30px;
+  padding: 5px 9px;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  color: var(--lucet-subtle-foreground);
+  font-size: var(--lucet-text-sm);
+  cursor: pointer;
+  list-style: none;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-scope__button::-webkit-details-marker { display: none; }
+.lucet-scope__button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-scope__button:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-scope__button[data-disabled] { opacity: 0.55; pointer-events: none; }
+.lucet-scope__glyph {
+  flex: none;
+  inline-size: 14px;
+  block-size: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-scope__chev {
+  inline-size: 5px;
+  block-size: 5px;
+  margin-block-start: -2px;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  rotate: 45deg;
+}
+.lucet-scope__panel {
+  position: absolute;
+  inset-block-end: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 30;
+  display: grid;
+  gap: 2px;
+  min-inline-size: 260px;
+  padding: 6px;
+  border-radius: var(--lucet-radius-surface);
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+}
+.lucet-scope__row {
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: var(--lucet-text-sm);
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-scope__row:hover { background-color: var(--lucet-hover); }
+.lucet-scope__row:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -2px;
+}
+.lucet-scope__row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lucet-scope__row-label { color: var(--lucet-foreground); font-weight: 500; }
+/* The count wears the version chip's grammar: a fact in a small pill. */
+.lucet-scope__count {
+  padding: 0 6px;
+  border-radius: 999px;
+  box-shadow: var(--lucet-hairline);
+  background-color: var(--lucet-muted);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-scope__check {
+  margin-inline-start: auto;
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: var(--lucet-foreground);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The trust half: what is actually inside the rung. */
+.lucet-scope__summary {
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+}
+/* The ground moved and the control says so — until the person acts. */
+.lucet-scope__moved {
+  flex-basis: 100%;
+  order: 10;
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-tone-info-foreground);
 }
 
 /* ============================================================

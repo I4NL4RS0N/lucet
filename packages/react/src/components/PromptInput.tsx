@@ -6,6 +6,8 @@ import type {
   ServiceState,
 } from 'lucet'
 import { describeSubmitBlocker, submitBlocker } from 'lucet'
+import type { ScopeState } from 'lucet'
+import { ScopeControl } from './ScopeControl.js'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { StateIcon } from './StateIcon.js'
@@ -35,6 +37,10 @@ export interface PromptInputProps {
   /** The restored-view flag: while set, submitting is blocked with words
       that say why (the past does not take new commits). */
   restoredFrom?: string | null | undefined
+  /** The scope ladder, when the host has one. Renders nothing without
+      levels — the toggle is the config. */
+  scope?: ScopeState | undefined
+  onScopeChange?: ((levelId: string) => void) | undefined
   composer: ComposerState
   model: ModelState
   service: ServiceState
@@ -195,6 +201,8 @@ function AttachmentChip({
 
 export function PromptInput({
   restoredFrom,
+  scope,
+  onScopeChange,
   composer,
   model,
   service,
@@ -372,6 +380,10 @@ export function PromptInput({
               <path d="M21 12.5l-8.2 8.2a5.5 5.5 0 0 1-7.8-7.8L13.5 4.4a3.67 3.67 0 0 1 5.2 5.2L10.5 17.8a1.83 1.83 0 0 1-2.6-2.6l7.8-7.8" />
             </svg>
           </button>
+        ) : null}
+
+        {scope && onScopeChange ? (
+          <ScopeControl scope={scope} onChange={onScopeChange} disabled={composer.locked} />
         ) : null}
 
         <label className="lucet-prompt__model">

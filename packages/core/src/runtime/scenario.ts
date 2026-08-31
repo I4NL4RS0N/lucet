@@ -46,6 +46,20 @@ export type Step =
   | { type: 'retryTurn'; say: string; chunkMs?: number }
   /** Enter the restored view at this scenario's first commit. */
   | { type: 'restore' }
+  /** Install the scope ladder, as the host would. */
+  | {
+      type: 'scope'
+      levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
+      selectedId: string | null
+    }
+  /** The page moves underneath — new ladder, selection follows, note
+      says so. Allowed after settle: navigation does not wait. */
+  | {
+      type: 'scopeMoved'
+      levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
+      selectedId: string | null
+      note: string
+    }
   | { type: 'refuse'; reason: string }
   | { type: 'fail'; reason: string }
   | { type: 'interrupt'; reason: string }

@@ -439,6 +439,131 @@ export const sourceGone = defineScenario({
  * FEATURES: the other half of the thesis. States show how a response can
  * go; these show what other libraries do not have at all.
  */
+/*
+ * SCOPE: the strongest idea in the set. The host's breadcrumb is the
+ * context ladder; the control shows what is actually inside each rung;
+ * and when the page moves underneath, the scope follows AND SAYS SO.
+ */
+
+export const scopeLadder = defineScenario({
+  id: 'scope-ladder',
+  label: 'Scope from the breadcrumb',
+  group: 'Scope',
+  kind: 'feature',
+  description:
+    'The app\u2019s own hierarchy is the context control: default to this page, widen deliberately, see what each rung holds.',
+  prompt: 'What is still open in this plan?',
+  steps: [
+    {
+      type: 'scope',
+      levels: [
+        {
+          id: 'page',
+          label: 'This page',
+          summary: 'Quarterly planning \u2014 the plan and its 4 linked notes',
+          itemCount: 5,
+        },
+        {
+          id: 'section',
+          label: 'Plans',
+          summary: 'Everything filed under Plans',
+          itemCount: 12,
+        },
+        {
+          id: 'all',
+          label: 'Everything',
+          summary: 'All of Application Name',
+          itemCount: 48,
+        },
+      ],
+      selectedId: 'page',
+    },
+    { type: 'wait', ms: 250 },
+    {
+      type: 'tool',
+      name: 'Read the scope',
+      ms: 700,
+      outcome: 'succeeded',
+      detail: 'This page \u2014 5 items',
+      args: '{ "scope": "page", "items": 5 }',
+      result: '{ "read": ["plan", "brief", "checklist", "decisions", "review-notes"] }',
+    },
+    {
+      type: 'say',
+      text: 'Within this page, two things are open: the venue hold, and closing out the two blocked workstreams once the review lands. Everything else on the plan is done or dated.',
+    },
+    { type: 'complete' },
+  ],
+})
+
+export const scopeMoved = defineScenario({
+  id: 'scope-moved',
+  label: 'The page moves underneath',
+  group: 'Scope',
+  kind: 'feature',
+  description:
+    'In a drawer the page keeps moving. The scope follows the navigation \u2014 and says so, instead of silently guessing.',
+  prompt: 'What is still open in this plan?',
+  steps: [
+    {
+      type: 'scope',
+      levels: [
+        {
+          id: 'page',
+          label: 'This page',
+          summary: 'Quarterly planning \u2014 the plan and its 4 linked notes',
+          itemCount: 5,
+        },
+        {
+          id: 'section',
+          label: 'Plans',
+          summary: 'Everything filed under Plans',
+          itemCount: 12,
+        },
+        {
+          id: 'all',
+          label: 'Everything',
+          summary: 'All of Application Name',
+          itemCount: 48,
+        },
+      ],
+      selectedId: 'page',
+    },
+    { type: 'wait', ms: 250 },
+    {
+      type: 'say',
+      text: 'Two things are open: the venue hold, and the two blocked workstreams. Both are waiting on Thursday\u2019s review.',
+    },
+    { type: 'complete' },
+    { type: 'wait', ms: 1400 },
+    {
+      type: 'scopeMoved',
+      levels: [
+        {
+          id: 'page',
+          label: 'This page',
+          summary: 'Reports review \u2014 the summary and its 2 appendices',
+          itemCount: 3,
+        },
+        {
+          id: 'section',
+          label: 'Reports',
+          summary: 'Everything filed under Reports',
+          itemCount: 9,
+        },
+        {
+          id: 'all',
+          label: 'Everything',
+          summary: 'All of Application Name',
+          itemCount: 48,
+        },
+      ],
+      selectedId: 'page',
+      note: 'The page changed \u2014 \u201cThis page\u201d now covers Reports review.',
+    },
+  ],
+})
+
 export const versionHistory = defineScenario({
   id: 'version-history',
   label: 'Version history',
@@ -523,6 +648,8 @@ export const builtInScenarios: readonly Scenario[] = [
   citedResponse,
   sourceUpdated,
   sourceGone,
+  scopeLadder,
+  scopeMoved,
   versionHistory,
   restoreVersion,
   multiplayer,

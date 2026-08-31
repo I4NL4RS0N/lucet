@@ -195,6 +195,33 @@ describe('feedback and retry', () => {
   })
 })
 
+describe('scope control', () => {
+  it('the ladder installs, the selection acts, and reset keeps the host config', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('scope-ladder')
+    const scope = () => lucet.getState().scope
+    expect(scope().levels).toHaveLength(3)
+    expect(scope().selectedId).toBe('page')
+    lucet.store.dispatch({ type: 'scope/changed', levelId: 'all' })
+    expect(scope().selectedId).toBe('all')
+    lucet.store.dispatch({ type: 'thread/reset' })
+    expect(scope().levels).toHaveLength(3)
+    expect(lucet.getState().turns).toHaveLength(0)
+  })
+
+  it('the page moves AFTER settle: the ladder follows and the note says so', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('scope-moved')
+    const { scope, turns } = lucet.getState()
+    expect(turns[0]!.response?.status).toBe('complete')
+    expect(scope.movedNote).toContain('Reports review')
+    expect(scope.levels[0]?.summary).toContain('Reports review')
+    /* Acting on scope settles the note. */
+    lucet.store.dispatch({ type: 'scope/changed', levelId: 'page' })
+    expect(lucet.getState().scope.movedNote).toBeNull()
+  })
+})
+
 describe('version marker and restore', () => {
   it('a retryTurn is a NEW commit of the same words, after settle', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })

@@ -108,6 +108,19 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         return null
       }
 
+      case 'scope':
+        store.dispatch({ type: 'scope/configured', levels: s.levels, selectedId: s.selectedId })
+        return null
+
+      case 'scopeMoved':
+        store.dispatch({
+          type: 'scope/moved',
+          levels: s.levels,
+          selectedId: s.selectedId,
+          note: s.note,
+        })
+        return null
+
       case 'retryTurn': {
         /* The whole commit ceremony again, deliberately: same words, new
            turn ids, retryOf pointing home. The log reads exactly like a
@@ -269,7 +282,8 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
               s.type === 'wait' ||
               s.type === 'sourceChange' ||
               s.type === 'retryTurn' ||
-              s.type === 'restore'
+              s.type === 'restore' ||
+              s.type === 'scopeMoved'
             ) {
               await step(s, messageId, signal)
             }

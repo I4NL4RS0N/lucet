@@ -46,6 +46,7 @@ export function createInitialState(
       projectedCostUsd: null,
     },
     restoredFrom: null,
+    scope: { levels: [], selectedId: null, movedNote: null },
   }
 }
 
@@ -79,12 +80,19 @@ export function reduce(
 ): ThreadState {
   switch (event.type) {
     case 'thread/reset':
-      return createInitialState(
-        state.id,
-        state.usage.contextLimit,
-        state.model.options,
-        state.suggestions,
-      )
+      /* Host configuration survives a new thread: the suggestions, and
+         the scope ladder — a fresh conversation on the same page still
+         has the same page under it. The moved note clears; a new thread
+         is an act on scope. */
+      return {
+        ...createInitialState(
+          state.id,
+          state.usage.contextLimit,
+          state.model.options,
+          state.suggestions,
+        ),
+        scope: { ...state.scope, movedNote: null },
+      }
 
     case 'composer/changed':
       return { ...state, composer: { ...state.composer, text: event.text } }
@@ -323,6 +331,24 @@ export function reduce(
           ...message,
           feedback: event.verdict,
         })),
+      }
+
+    case 'scope/configured':
+      return {
+        ...state,
+        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null },
+      }
+
+    case 'scope/changed':
+      return {
+        ...state,
+        scope: { ...state.scope, selectedId: event.levelId, movedNote: null },
+      }
+
+    case 'scope/moved':
+      return {
+        ...state,
+        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note },
       }
 
     case 'source/changed':

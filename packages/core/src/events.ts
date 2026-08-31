@@ -15,6 +15,7 @@ import type {
   ToolStatus,
   UsageState,
   SourceStatus,
+  ScopeLevel,
 } from './types.js'
 
 export type LucetEvent =
@@ -76,6 +77,30 @@ export type LucetEvent =
     }
   | { type: 'restore/entered'; turnId: string }
   | { type: 'restore/exited' }
+  | {
+      /** The host installs or replaces the scope ladder. */
+      type: 'scope/configured'
+      levels: readonly ScopeLevel[]
+      selectedId: string | null
+    }
+  | {
+      /** The person picked a rung. Clears any moved note: acting on
+          scope is what settles it. */
+      type: 'scope/changed'
+      levelId: string
+    }
+  | {
+      /**
+       * Navigation changed the ground under the scope: a new ladder for
+       * the new place, the selection following, and a NOTE that says so
+       * — in a drawer the page keeps moving, and a scope that follows
+       * silently is a guess again.
+       */
+      type: 'scope/moved'
+      levels: readonly ScopeLevel[]
+      selectedId: string | null
+      note: string
+    }
   | {
       /**
        * A cited source's condition changed AFTER the response settled —
@@ -158,6 +183,12 @@ export function describeEvent(event: LucetEvent): string {
       return 'Viewing a restored state'
     case 'restore/exited':
       return 'Returned to latest'
+    case 'scope/configured':
+      return 'Scope ladder configured'
+    case 'scope/changed':
+      return 'Scope changed'
+    case 'scope/moved':
+      return 'The page moved — scope followed, and said so'
     case 'source/changed':
       return event.status === 'gone'
         ? 'A cited source is no longer available'

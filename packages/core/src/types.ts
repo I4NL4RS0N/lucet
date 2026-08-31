@@ -112,6 +112,39 @@ export interface SourcesPart {
 
 export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart | SourcesPart
 
+/**
+ * One rung of the scope ladder. The host's information architecture
+ * already contains the context hierarchy — the breadcrumb IS the
+ * ladder — so a rung is the host's own words for a level of it, plus
+ * the trust half: what is actually inside, said in words and counted.
+ * A picker without contents is a guess wearing a control.
+ */
+export interface ScopeLevel {
+  readonly id: string
+  /** The host's word for the rung: "This page", "Plans", "Everything". */
+  readonly label: string
+  /** What is in it, in words: "The plan and its 4 linked notes". */
+  readonly summary: string
+  readonly itemCount: number
+}
+
+/**
+ * Scope state. Empty levels = the host has no scope feature and no
+ * control renders — the toggle is the config, as everywhere.
+ */
+export interface ScopeState {
+  /** Narrow to wide. */
+  readonly levels: readonly ScopeLevel[]
+  readonly selectedId: string | null
+  /**
+   * Set when navigation moved the ground under the scope: the page
+   * changed, the ladder was reconfigured, and the selection FOLLOWED —
+   * this note says so in words, until the person acts on scope again.
+   * A scope that silently tracks a moving page is a guess again.
+   */
+  readonly movedNote: string | null
+}
+
 export interface Message {
   readonly id: string
   readonly role: Role
@@ -274,4 +307,5 @@ export interface ThreadState {
   readonly usage: UsageState
   /** Turn id currently being viewed as a restored state, if any. */
   readonly restoredFrom: string | null
+  readonly scope: ScopeState
 }

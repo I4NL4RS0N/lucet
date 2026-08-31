@@ -55,6 +55,41 @@ const SUGGESTIONS: readonly Suggestion[] = (
 
 type View = 'full' | 'drawer' | 'mobile'
 
+/*
+ * The host application's pages, and the scope ladder each one implies.
+ * The breadcrumb IS the ladder: these are the host's own words for its
+ * hierarchy, with the trust half — what each rung actually holds.
+ */
+const MOCK_PAGES = [
+  {
+    tab: 'Page 1',
+    doc: 'Quarterly planning',
+    ladder: [
+      { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
+      { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
+      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+    ],
+  },
+  {
+    tab: 'Page 2',
+    doc: 'Reports review',
+    ladder: [
+      { id: 'page', label: 'This page', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 },
+      { id: 'section', label: 'Reports', summary: 'Everything filed under Reports', itemCount: 9 },
+      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+    ],
+  },
+  {
+    tab: 'Page 3',
+    doc: 'Library index',
+    ladder: [
+      { id: 'page', label: 'This page', summary: 'Library index — the catalogue itself', itemCount: 1 },
+      { id: 'section', label: 'Library', summary: 'Everything filed under Library', itemCount: 27 },
+      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+    ],
+  },
+] as const
+
 const VIEWS: readonly { value: View; label: string }[] = [
   { value: 'full', label: 'Full page' },
   { value: 'drawer', label: 'Drawer' },
@@ -240,6 +275,8 @@ function AppCore({
             <PromptInput
               composer={state.composer}
               restoredFrom={state.restoredFrom}
+              scope={state.scope}
+              onScopeChange={(levelId) => lucet.store.dispatch({ type: 'scope/changed', levelId })}
               model={state.model}
               service={state.service}
               selfId="you"
@@ -566,21 +603,21 @@ function PhoneNav({
   )
 }
 
-/** The neutral application the drawer slides over. Set dressing, real words. */
-function MockDocument() {
+/** The neutral application the drawer slides over. Set dressing, real
+ * words — and now a real address: the breadcrumb finally IS the scope
+ * ladder Scope Control reads (brief §8.1, the promise kept). */
+function MockDocument({ page = 0 }: { page?: number }) {
+  const p = MOCK_PAGES[page] ?? MOCK_PAGES[0]!
   return (
     <div className="cfg__mock-doc" aria-hidden>
-      {/* The breadcrumb is set dressing today and a scope ladder tomorrow:
-          the app's own navigation is the context hierarchy Scope Control
-          will read (brief §8.1). */}
       <div className="cfg__mock-nav">
         <span>Application Name</span>
         <span className="cfg__mock-sep">/</span>
-        <span>Page 1</span>
+        <span>{p.tab}</span>
         <span className="cfg__mock-sep">/</span>
-        <span className="cfg__mock-here">Quarterly planning</span>
+        <span className="cfg__mock-here">{p.doc}</span>
       </div>
-      <h2>Quarterly planning notes</h2>
+      <h2>{p.doc} notes</h2>
       <p>
         Three of the five workstreams are on schedule. The remaining two are
         blocked on the same review, which moved to Thursday.
@@ -619,6 +656,29 @@ export function App() {
      drawer product ends up offering. */
   const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
   const [phonePane, setPhonePane] = useState<'thread' | 'history'>('thread')
+  /* Which of the host's pages is open behind the drawer. */
+  const [mockPage, setMockPage] = useState(0)
+  /* Scope keeps whatever rung the person chose when the page moves;
+     only a missing selection defaults back to the page rung. */
+  const state0Scope = (i: number) => {
+    const current = lucet.getState().scope.selectedId
+    return MOCK_PAGES[i]!.ladder.some((l) => l.id === current) ? current : 'page'
+  }
+  /* The HOST owns the ladder: entering the drawer view installs it,
+     leaving uninstalls — a host without a scope feature renders no
+     control, and the full page and phone are that host today. */
+  useEffect(() => {
+    if (view === 'drawer') {
+      lucet.store.dispatch({
+        type: 'scope/configured',
+        levels: MOCK_PAGES[mockPage]!.ladder,
+        selectedId: 'page',
+      })
+    } else {
+      lucet.store.dispatch({ type: 'scope/configured', levels: [], selectedId: null })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view])
   /* The rail collapses, the way every home's rail does. */
   const [sideOpen, setSideOpen] = useState(true)
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
@@ -914,10 +974,29 @@ export function App() {
                   <MockBrandMark />
                   Application Name
                 </span>
-                <span className="cfg__mock-tabs" aria-hidden>
-                  <span data-active>Page 1</span>
-                  <span>Page 2</span>
-                  <span>Page 3</span>
+                {/* REAL navigation now: clicking a page moves the ground
+                    under the scope, and the scope follows — saying so.
+                    The one lie this bar had left, retired. */}
+                <span className="cfg__mock-tabs">
+                  {MOCK_PAGES.map((p, i) => (
+                    <button
+                      key={p.tab}
+                      type="button"
+                      data-active={i === mockPage || undefined}
+                      onClick={() => {
+                        if (i === mockPage) return
+                        setMockPage(i)
+                        lucet.store.dispatch({
+                          type: 'scope/moved',
+                          levels: MOCK_PAGES[i]!.ladder,
+                          selectedId: state0Scope(i),
+                          note: `The page changed — \u201cThis page\u201d now covers ${MOCK_PAGES[i]!.doc}.`,
+                        })
+                      }}
+                    >
+                      {p.tab}
+                    </button>
+                  ))}
                 </span>
                 <button
                   type="button"
@@ -934,7 +1013,7 @@ export function App() {
                   Ask AI
                 </button>
               </div>
-                <MockDocument />
+                <MockDocument page={mockPage} />
               </div>
               {drawerOpen ? (
                   <div className="cfg__drawer" ref={drawerEl}>

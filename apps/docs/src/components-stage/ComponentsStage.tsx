@@ -553,6 +553,35 @@ const CORE_FIXTURES: readonly Fixture[] = [
  * FACE and copy that names the shared thread -- the context has to be
  * unmistakable to someone arriving from a single-player world.
  */
+const SCOPE_LADDER = [
+  { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
+  { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
+  { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+]
+
+const SCOPE_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Scoped to this page',
+    note: 'The host installed its ladder; the control shows the rung and, opened, what every rung actually holds — the trust half.',
+    events: [{ type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' }],
+  },
+  {
+    label: 'The page moved underneath',
+    note: 'Navigation changed the ground; the scope followed and SAYS SO until the person acts on scope again.',
+    events: [
+      { type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' },
+      {
+        type: 'scope/moved' as const,
+        levels: SCOPE_LADDER.map((l) =>
+          l.id === 'page' ? { ...l, summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 } : l,
+        ),
+        selectedId: 'page',
+        note: 'The page changed — “This page” now covers Reports review.',
+      },
+    ],
+  },
+]
+
 const MULTI_FIXTURES: readonly Fixture[] = [
   {
     label: 'Locked — another person’s turn',
@@ -668,6 +697,8 @@ export function ComponentsStage() {
                     composer={stateOf(f).composer}
                     model={stateOf(f).model}
                     service={stateOf(f).service}
+                    scope={stateOf(f).scope}
+                    onScopeChange={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -677,6 +708,30 @@ export function ComponentsStage() {
                     onRetryAttachment={noop}
                     onAttach={noop}
                     {...(f.streaming ? { streaming: true, onStop: noop } : {})}
+                  />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
+        <Section n="02b" name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
+          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+            {SCOPE_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
+                  <PromptInput
+                    composer={stateOf(f).composer}
+                    model={stateOf(f).model}
+                    service={stateOf(f).service}
+                    scope={stateOf(f).scope}
+                    onScopeChange={noop}
+                    selfId="you"
+                    onChange={noop}
+                    onSubmit={noop}
+                    onQueue={noop}
+                    onModelChange={noop}
+                    onRemoveAttachment={noop}
+                    onRetryAttachment={noop}
+                    onAttach={noop}
                   />
               </Example>
             ))}
@@ -695,6 +750,8 @@ export function ComponentsStage() {
                     composer={stateOf(f).composer}
                     model={stateOf(f).model}
                     service={stateOf(f).service}
+                    scope={stateOf(f).scope}
+                    onScopeChange={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
