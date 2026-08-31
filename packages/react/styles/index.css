@@ -328,14 +328,22 @@
   color: var(--lucet-subtle-foreground);
 }
 
+/* Two lines, one register each: the head row (mark + name + word), then
+   the outcome under the name, quiet. The detail indents past the chevron
+   and mark so the text blocks left-align. */
 .lucet-tool__row {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--lucet-space-2);
-  min-block-size: 30px;
-  padding-inline: var(--lucet-space-2);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-control);
+}
+.lucet-tool__head {
+  display: flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  min-block-size: 20px;
 }
 
 /* Only a row with a receipt behind it is a control, and only it gets the
@@ -346,7 +354,7 @@
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 .lucet-tool__row--summary::-webkit-details-marker { display: none; }
-.lucet-tool__row--summary::before {
+.lucet-tool__row--summary .lucet-tool__head::before {
   content: '';
   flex: none;
   inline-size: 0.35em;
@@ -356,7 +364,11 @@
   transform: rotate(-45deg);
   transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-.lucet-tool[open] > .lucet-tool__row--summary::before { transform: rotate(45deg); }
+.lucet-tool[open] > .lucet-tool__row--summary .lucet-tool__head::before { transform: rotate(45deg); }
+/* The outcome aligns under the NAME: past the mark on plain rows, past the
+   chevron and the mark on disclosures. */
+.lucet-tool__row .lucet-tool__detail { margin-inline-start: 24px; }
+.lucet-tool__row--summary .lucet-tool__detail { margin-inline-start: 37px; }
 .lucet-tool__row--summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .lucet-tool__row--summary:active { background-color: var(--lucet-press); }
 .lucet-tool__row--summary:focus-visible {
@@ -364,11 +376,14 @@
   outline-offset: var(--lucet-focus-offset);
 }
 
+/* One weight step total: names and status words share 500; the ink alone
+   carries the unhappy status. */
 .lucet-tool__name { font-weight: 500; }
-.lucet-tool__word { font-weight: 600; }
+.lucet-tool__word { font-weight: 500; }
 .lucet-tool__detail {
   color: var(--lucet-muted-foreground);
   font-size: var(--lucet-text-xs);
+  line-height: 1.5;
 }
 
 /* The unhappy settlements carry their ink on the word and the silhouette. */
@@ -1244,23 +1259,28 @@
  * alignment-by-self stops meaning anything with three people in the room.
  * ============================================================ */
 
+/* The rhythm between turns is GENEROUS on purpose: a turn is an exchange,
+   and exchanges need air between them or the thread reads as one long
+   scroll of words. Within a pair the prompt and its answer sit closer —
+   they belong to each other. */
 .lucet-thread {
   display: grid;
-  gap: var(--lucet-space-5);
+  gap: var(--lucet-space-8);
 }
 
 .lucet-thread__pair {
   display: grid;
-  gap: var(--lucet-space-4);
+  gap: var(--lucet-space-5);
 }
 
 .lucet-thread__turn { min-inline-size: 0; display: grid; justify-items: start; }
 /* The group-chat grammar: your own turns sit right. */
 .lucet-thread__turn[data-self] { justify-items: end; }
 
-/* Quiet separators between pairs: the structure Ian asked the marker to be. */
+/* Quiet separators between pairs: the structure Ian asked the marker to be.
+   The hairline sits in the middle of real air, not instead of it. */
 .lucet-thread__pair + .lucet-thread__pair {
-  padding-block-start: var(--lucet-space-4);
+  padding-block-start: var(--lucet-space-8);
   border-block-start: 1px solid var(--lucet-border);
 }
 
@@ -1336,12 +1356,19 @@
    and each says what survives. */
 .lucet-thread__ended {
   display: flex;
-  align-items: center;
+  /* The mark anchors to the FIRST LINE of the words, not to the block's
+     vertical middle — centered against wrapped text it read as floating. */
+  align-items: flex-start;
   gap: var(--lucet-space-2);
   margin: var(--lucet-space-1) 0 0;
   font-size: var(--lucet-text-sm);
+  line-height: 1.55;
   color: var(--lucet-subtle-foreground);
   text-wrap: pretty;
+}
+.lucet-thread__ended .lucet-icon {
+  flex: none;
+  margin-block-start: 3px;
 }
 .lucet-thread__ended strong { font-weight: 600; color: var(--lucet-foreground); }
 .lucet-thread__ended[data-status='failed'] strong { color: var(--lucet-tone-danger-foreground); }

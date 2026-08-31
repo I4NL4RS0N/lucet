@@ -64,18 +64,26 @@ function Receipt({ label, text }: { label: string; text: string }) {
 }
 
 export function ToolCall({ name, status, detail, args, result, defaultOpen }: ToolCallProps) {
+  /*
+   * Two lines, one register each: the first says WHO (mark, name, and the
+   * status word when it must be spoken); the second says WHAT CAME OF IT,
+   * quietly. One crowded line carried five elements at three sizes — the
+   * make-interfaces-feel-better failure mode in miniature.
+   */
   const head = (
     <>
-      {status === 'running' ? (
-        <ActivityOrb state="searching" label={name} size="sm" />
-      ) : (
-        <>
-          <StateIcon name={ICON[status]} />
-          <span className="lucet-tool__name">{name}</span>
-          {WORD[status] ? <strong className="lucet-tool__word">{WORD[status]}</strong> : null}
-          {status === 'succeeded' ? <span className="lucet-visually-hidden">Done.</span> : null}
-        </>
-      )}
+      <span className="lucet-tool__head">
+        {status === 'running' ? (
+          <ActivityOrb state="searching" label={name} size="sm" />
+        ) : (
+          <>
+            <StateIcon name={ICON[status]} />
+            <span className="lucet-tool__name">{name}</span>
+            {WORD[status] ? <strong className="lucet-tool__word">{WORD[status]}</strong> : null}
+            {status === 'succeeded' ? <span className="lucet-visually-hidden">Done.</span> : null}
+          </>
+        )}
+      </span>
       {detail ? <span className="lucet-tool__detail">{detail}</span> : null}
     </>
   )
