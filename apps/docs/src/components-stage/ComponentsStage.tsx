@@ -679,8 +679,10 @@ export function ComponentsStage() {
         </div>
         <h1 className="prim__title">Components</h1>
         <p className="prim__lede">
-          The prompt box, in every state it can be in. Each specimen is a real
-          state, not a picture of one. Private page.
+          The components, in every state each one can be in — composed from
+          the primitives, built by replaying real events through the real
+          reducer. Each specimen is a state, not a picture of one. Private
+          page.
         </p>
 
         <Section n="01" name="The app, live" note="try it — type, attach, send, watch it answer">
@@ -714,7 +716,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="02b" name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
+        <Section n="03" name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             {SCOPE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
@@ -739,7 +741,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section
-          n="03"
+          n="04"
           name="Prompt input — multiplayer"
           note="one thread, several people, one turn at a time — most AI tools cannot do this"
         >
@@ -766,7 +768,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="04" name="Thread — every ending" note="a response is never simply loading or done">
+        <Section n="05" name="Thread — every ending" note="a response is never simply loading or done">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {THREAD_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
@@ -776,7 +778,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="04b" name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
+        <Section n="06" name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {SOURCES_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
@@ -786,7 +788,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="04c" name="Version marker + restore" note="every prompt is a commit; the thread is the version history">
+        <Section n="07" name="Version marker + restore" note="every prompt is a commit; the thread is the version history">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {VERSIONS_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
@@ -796,7 +798,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="05" name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
+        <Section n="08" name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             <div className="spec" style={{ inlineSize: '100%' }}>
               <span className="spec__label">Ways in</span>
@@ -836,7 +838,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="06" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
+        <Section n="09" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
           <div className="stage">
             <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
               <PromptInput
