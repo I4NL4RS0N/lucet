@@ -3,8 +3,11 @@
  *
  * The app IS the page (the philly.com configurator model): a running product
  * in a window frame — or a drawer, or a phone — and beside it a plain list
- * of event triggers (the Puckett model) that inject states into it. Theme
- * and accent sit in the header: the library's opinions are part of the pitch.
+ * of event triggers (the Puckett model) that inject states into it. The
+ * header holds the site (identity, navigation); the stage bar above the
+ * frame holds every control over how you are viewing the demo (container,
+ * theme, accent) — the library's opinions are part of the pitch, proven
+ * beside the thing they change.
  *
  * Everything here is page shell. The components inside the frame carry their
  * own styles from lucet-react; every value below is a token.
@@ -31,130 +34,174 @@ body {
 
 /* ---- shell ---- */
 
+/* Full-bleed header: the hairline runs edge to edge; the content inside
+   keeps the page measure. */
 .cfg__bar {
+  border-block-end: 1px solid var(--lucet-border);
+}
+.cfg__bar-in {
   display: flex;
   align-items: center;
   gap: 10px;
   max-inline-size: 1240px;
   margin: 0 auto;
-  padding: 18px 32px 0;
+  padding: 14px 32px;
 }
 
-/* Identity: the tile, the name, and the thesis in one line under it. */
+/* Identity: the tile and the name, nothing else. */
 .cfg__mark {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 10px;
+  display: flex;
   align-items: center;
+  gap: 9px;
 }
 /* The tile floats: the lithos shadow grammar — hairline separator, contact,
    mid, ambient — in one stack, so the mark reads as an object on both page
    grounds. */
 .cfg__logo {
-  grid-row: 1 / 3;
-  inline-size: 30px;
-  block-size: 30px;
-  border-radius: 8px;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 7px;
   box-shadow:
     0 0 0 0.5px oklch(0 0 0 / 0.55),
     0 1px 1px oklch(0 0 0 / 0.35),
     0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
-.cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
-.cfg__name span { color: var(--lucet-muted-foreground); font-weight: 450; font-size: 13px; }
-.cfg__tagline {
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--lucet-muted-foreground);
-}
-@media (max-width: 680px) {
-  .cfg__tagline { display: none; }
-  .cfg__logo { grid-row: auto; }
-}
+.cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
 
-/* Theme and accent, findable in one glance: the library's opinions about
-   appearance are part of the pitch, so their controls are not buried. */
-.cfg__prefs {
+/* Site navigation: the header's right half. */
+.cfg__nav {
   margin-inline-start: auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 18px;
+}
+
+/* Theme and accent live on the STAGE BAR, beside the container switch. No
+   labels — the values name themselves — but the D1 decision holds here as
+   everywhere: a bare select leaves its chevron floating in the ether
+   (worse here, since a select is cut to its LONGEST option), so a hairline
+   at rest ties the word to its chevron. field-sizing lets the box hug the
+   chosen value where the browser can. */
+.cfg__prefs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: var(--lucet-muted-foreground);
 }
+.cfg__pick { position: relative; display: inline-block; }
+.cfg__pick::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: 9px;
+  inset-block-start: 50%;
+  inline-size: 5px;
+  block-size: 5px;
+  margin-block-start: -3.5px;
+  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
+  border-block-end: 1.5px solid var(--lucet-muted-foreground);
+  rotate: 45deg;
+  pointer-events: none;
+}
 .cfg__prefs select {
   appearance: none;
+  field-sizing: content;
   min-block-size: 26px;
-  padding: 2px 20px 2px 8px;
+  padding: 2px 22px 2px 9px;
   border: 0;
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
   background-color: transparent;
   color: var(--lucet-subtle-foreground);
   font: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
+  text-transform: capitalize;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-.cfg__prefs select:hover { background-color: var(--lucet-hover); }
+.cfg__prefs select:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__prefs select:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
 
-/* Repo (and, in dev, the private stages): the same hairline-ghost chip as
-   the selects beside it — one cluster, one containment. */
-.cfg__ghlink {
+/* Navigation is LINKS, not controls: no box, no fill — quiet ink that inks
+   up and underlines on hover, the same underline grammar as links in the
+   document. The padding keeps the target honest without drawing a button. */
+.cfg__navlink {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 7px;
   min-block-size: 26px;
-  padding-inline: 9px;
-  border-radius: var(--lucet-radius-control);
-  box-shadow: var(--lucet-hairline);
   color: var(--lucet-subtle-foreground);
-  font-size: 12px;
+  font-size: 13px;
   text-decoration: none;
-  transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+  text-underline-offset: 4px;
+  transition: color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-.cfg__ghlink svg {
-  inline-size: 11px;
-  block-size: 11px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.6;
+.cfg__navlink-gh {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: currentColor;
+  opacity: 0.8;
 }
-.cfg__ghlink:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.cfg__ghlink:active { background-color: var(--lucet-press); }
-.cfg__ghlink:focus-visible {
+.cfg__navlink:hover {
+  color: var(--lucet-foreground);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+.cfg__navlink:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
+  border-radius: 2px;
 }
 
 .cfg__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 264px;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 36px;
   max-inline-size: 1240px;
   margin: 0 auto;
   padding: 24px 32px 80px;
   align-items: start;
 }
 
+/* The divider between the stage and the states spans the whole column —
+   it lives on the stretched column wrapper, not on the sticky rail inside,
+   whose height is only its own content. */
+.cfg__railcol {
+  align-self: stretch;
+  border-inline-start: 1px solid var(--lucet-border);
+  padding-inline-start: 36px;
+  /* The states start where the stage starts: stage bar (32px) plus the
+     main column's gap (12px). The bar is chrome; the frame and the rail
+     are the page's two objects, and they share a top line. */
+  padding-block-start: 44px;
+}
+
 @media (max-width: 900px) {
   .cfg__layout { grid-template-columns: minmax(0, 1fr); }
+  .cfg__railcol {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+    border-block-start: 1px solid var(--lucet-border);
+    padding-block-start: 20px;
+  }
 }
 
 /* ---- the app frame: a real product window ---- */
 
+/* THE WINDOW IS FIXED — at the frame, not at the scroll area. Anything
+   that grows inside (the composer's status strip while locked, a taller
+   ending) eats scroll space; the window itself never moves. The first fix
+   pinned only the scroll area, and the frame still breathed ~33px every
+   time the composer grew its strip mid-run. */
 .cfg__frame {
   display: flex;
   flex-direction: column;
+  block-size: min(72vh, 760px);
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
@@ -221,9 +268,11 @@ body {
  * content must never just stop.
  */
 .cfg__scroll {
+  /* Flexes INSIDE the fixed window above: it absorbs whatever its
+     neighbours (frame bar, composer, the composer's transient strip) do,
+     so the frame never has to. */
   flex: 1;
-  min-block-size: 340px;
-  max-block-size: min(58vh, 640px);
+  min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 24px 24px 12px;
@@ -238,7 +287,8 @@ body {
 }
 
 @supports (animation-timeline: scroll()) {
-  .cfg__scroll {
+  .cfg__scroll,
+  .cfg__rail {
     animation: cfg-scroll-fade linear both;
     animation-timeline: scroll(self block);
   }
@@ -278,7 +328,7 @@ body {
   justify-items: center;
   gap: 10px;
   text-align: center;
-  min-block-size: 300px;
+  min-block-size: 100%;
   padding-inline: 24px;
   color: var(--lucet-muted-foreground);
   font-size: 13px;
@@ -306,30 +356,46 @@ body {
 
 /* ---- the rail: plain words that do things ---- */
 
+/* The states scroll on their own: pinned beside the stage, capped to the
+   viewport, wearing the same fade and quiet scrollbar as the thread. A rail
+   taller than the screen must never hold the bottom of its own list
+   hostage to the page's scroll position. */
 .cfg__rail {
   position: sticky;
   top: 24px;
+  max-block-size: calc(100vh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline-end: 6px;
+  /* The bottom fade eats padding, never the last row: the event log must
+     read at full ink when the rail has nothing to hide. */
+  padding-block-end: 24px;
   display: grid;
   gap: 4px;
   font-size: 13px;
+  --fade: 18px;
+  /* At rest the top is CLEAR — the title must not sit under a fade it has
+     not earned. The scroll-driven animation adds the top fade exactly when
+     scrolling puts content under it; this static mask is also the honest
+     fallback where scroll timelines don't run. */
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0,
+    #000 calc(100% - var(--fade)),
+    transparent 100%
+  );
 }
+.cfg__rail::-webkit-scrollbar { inline-size: 10px; }
+.cfg__rail::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: var(--lucet-input);
+}
+.cfg__rail::-webkit-scrollbar-track { background: transparent; }
 
-.cfg__rail-title {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--lucet-muted-foreground);
-}
-
-/* The mechanic, stated where the mechanism is. */
-.cfg__rail-sub {
-  margin: 2px 0 8px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--lucet-muted-foreground);
-}
+/* No column title: it doubled the first group label, and the divider
+   already says where the states begin. The groups carry the naming. */
 
 .cfg__group { display: grid; }
 .cfg__group + .cfg__group {
@@ -422,9 +488,17 @@ body {
 }
 @keyframes cfg-spin { to { rotate: 360deg; } }
 
-/* ---- the container switch: same components, three places ---- */
+/* ---- the stage bar: every viewing control, above the stage ---- */
 
 .cfg__main { display: grid; gap: 12px; min-inline-size: 0; }
+
+.cfg__stagebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 
 .cfg__views {
   display: inline-flex;
@@ -490,7 +564,7 @@ body {
   border-inline-start: 1px solid var(--lucet-border);
   box-shadow: var(--lucet-shade-3);
 }
-.cfg__drawer .cfg__scroll { max-block-size: none; flex: 1; }
+.cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
 /* Mobile view: the same app, in a hand. */
 .cfg__phone-stage { display: grid; justify-content: center; padding-block: 8px; }
@@ -504,7 +578,7 @@ body {
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
   overflow: hidden;
 }
-.cfg__phone .cfg__scroll { max-block-size: none; flex: 1; }
+.cfg__phone .cfg__scroll { block-size: auto; flex: 1; }
 
 /* ---- tucked: appearance, then the event log ---- */
 
@@ -549,6 +623,7 @@ body {
   min-block-size: 28px;
   display: flex;
   align-items: center;
+  gap: 8px;
   padding-inline: 8px;
   border-radius: var(--lucet-radius-control);
   font-size: 12px;
@@ -558,6 +633,18 @@ body {
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 .cfg__log summary::-webkit-details-marker { display: none; }
+/* Two words and a caret: the standard disclosure grammar says the rest. */
+.cfg__log summary::before {
+  content: '';
+  flex: none;
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__log[open] summary::before { transform: rotate(45deg); }
 .cfg__log summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__log summary:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
@@ -582,4 +669,5 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .cfg__scroll { animation: none; }
+  .cfg__rail { animation: none; }
 }

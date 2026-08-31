@@ -15,6 +15,13 @@
       rel="stylesheet"
     />
     <title>Lucet</title>
+    <script>
+      // Before first paint, same reason as the stage pages: the site's
+      // resting look is dark/violet, and arriving light-then-flipping is a
+      // smear, not a theme.
+      document.documentElement.setAttribute('data-theme', 'dark')
+      document.documentElement.setAttribute('data-accent', 'violet')
+    </script>
   </head>
   <body>
     <div id="root"></div>
