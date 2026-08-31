@@ -2024,9 +2024,22 @@
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-/* The menu's lines: between rows only, edges bare — the sources' and
-   the history's own divider grammar. */
-.lucet-chips__chip + .lucet-chips__chip { border-block-start: 1px solid var(--lucet-border); }
+/* The menu's lines: under EVERY row, the last included. The sources and
+   the history rule lines between rows only — but those lists live inside
+   bounded panes, and this menu floats on the open page. The closing line
+   is what anchors it, and what lets the compact containers' single-row
+   groups still read as a LIST entry instead of a stray sentence (Ian's
+   drawer crit; the reference agrees). Drawn as a pseudo so the hover
+   veil's rounded corners cannot bend it. */
+.lucet-chips__chip { position: relative; }
+.lucet-chips__chip::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 1px;
+  background-color: var(--lucet-border);
+}
 .lucet-chips__text {
   flex: 1;
   min-inline-size: 0;
