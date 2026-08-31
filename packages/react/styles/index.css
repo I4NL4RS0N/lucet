@@ -1979,13 +1979,14 @@
 .lucet-chips {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: var(--lucet-space-3) var(--lucet-space-4);
+  gap: var(--lucet-space-2) var(--lucet-space-4);
   inline-size: 100%;
   text-align: start;
 }
+/* No internal gap: the dividers separate the rows, and a gap left them
+   floating mid-air between neighbours. */
 .lucet-chips__set {
   display: grid;
-  gap: var(--lucet-space-2);
   align-content: start;
 }
 /* Label and descriptor share ONE line: the caps-to-case shift is all
@@ -1996,7 +1997,6 @@
   align-items: baseline;
   gap: 7px;
   padding-inline: 2px;
-  margin-block-end: 2px;
 }
 .lucet-chips__label {
   font-size: 10.5px;
@@ -2006,7 +2006,7 @@
   color: var(--lucet-muted-foreground);
 }
 .lucet-chips__desc {
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: var(--lucet-muted-foreground);
 }
 
@@ -2014,9 +2014,9 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  min-block-size: 34px;
+  min-block-size: 30px;
   max-inline-size: 100%;
-  padding: 7px 6px;
+  padding: 5px 6px;
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;

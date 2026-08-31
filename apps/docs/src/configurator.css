@@ -610,6 +610,9 @@ body {
   content: '';
   flex: 1.7 1 0;
 }
+/* The home rides HIGHER still: its words start at the light's peak, not
+   below it, and the extra floor is what makes the page feel unhurried. */
+.cfg__empty:has(.cfg__composer--center)::before { flex: 0.6 1 0; }
 /*
  * The atmosphere. Round one put the vibe in a hero orb; it read as a
  * low-budget object (Ian). Round two follows the lithos studies — silk
@@ -767,7 +770,9 @@ body {
   margin-inline: auto;
   max-inline-size: min(100%, 560px);
 }
-.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 10px; }
+/* The menu is its own stratum, not the composer's shadow: real air
+   between the input and the ways in (Ian — "too close"). */
+.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 26px; }
 /* The room lights, then three beats — greeting, invitation, ways in —
    then stillness. Only the atmosphere keeps moving, slower than
    attention. */
@@ -799,7 +804,7 @@ body {
   border-block-start: 0;
   inline-size: 100%;
   max-inline-size: 620px;
-  margin-block-start: 6px;
+  margin-block-start: 14px;
 }
 
 /* ---- the rail: plain words that do things ---- */
