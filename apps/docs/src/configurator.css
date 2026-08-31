@@ -405,8 +405,52 @@ body {
 .cfg__dots i:nth-child(3) { background-color: #28c840; }
 .cfg__phone .cfg__dots { display: none; }
 
-/* Phone dressing: a status strip and a home indicator, neutral. */
+/* The phone's nav bar: fixed-width bookends, the title honestly live
+   and centred between them. */
+.cfg__phone-bar { padding-inline: 10px; }
+.cfg__phone-back,
+.cfg__phone-more {
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  color: var(--lucet-subtle-foreground);
+}
+.cfg__phone-back svg,
+.cfg__phone-more svg {
+  inline-size: 17px;
+  block-size: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cfg__phone-more svg circle { fill: currentColor; stroke: none; }
+.cfg__phone-title {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lucet-foreground);
+}
+
+/* Phone dressing: a status strip and a home indicator, neutral — plus
+   the one piece of hardware every current phone wears. */
+.cfg__phone-island {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 9px;
+  margin-inline: auto;
+  inline-size: 74px;
+  block-size: 20px;
+  border-radius: 999px;
+  /* Hardware, like the traffic lights: literal black, no theme. */
+  background: #000;
+  box-shadow: var(--lucet-hairline);
+}
 .cfg__phone-status {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;

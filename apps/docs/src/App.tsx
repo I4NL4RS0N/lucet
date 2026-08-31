@@ -206,10 +206,12 @@ function AppCore({
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
-  /* Each container wears its own head — and a container that brings its
-     OWN chrome (the drawer) takes `bare`: no bar at all, the furniture
-     belongs to the room. The thread never changes either way. */
-  chrome?: 'window' | 'bare'
+  /* Each container wears its own head — a window has dots and the app's
+     name, a phone has a nav bar with the THREAD'S name (the promise the
+     window chrome made when it gave the live title up), and a container
+     that brings its own chrome (the drawer) takes `bare`. The thread
+     never changes either way. */
+  chrome?: 'window' | 'bare' | 'phone'
   /* The full page is a HOME, and homes follow the genre (Claude, ChatGPT,
      Le Chat): brand over the greeting, and the composer sits IN the page
      until the first turn exists, then moves to the floor. */
@@ -274,7 +276,30 @@ function AppCore({
 
   return (
     <>
-      {chrome === 'bare' ? null : (
+      {chrome === 'bare' ? null : chrome === 'phone' ? (
+        /* The phone's nav bar: back, the conversation's own name, more.
+           Back and more are dressing (marked so); the title is REAL —
+           the thread's first words, or the honest New thread. */
+        <div className="cfg__frame-bar cfg__phone-bar">
+          <span className="cfg__phone-back" aria-hidden>
+            <svg viewBox="0 0 24 24">
+              <path d="M14.5 5.5 8 12l6.5 6.5" />
+            </svg>
+          </span>
+          <span className="cfg__frame-title cfg__phone-title">
+            {state.turns[0]?.prompt.parts
+              .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
+              .join(' ') || 'New thread'}
+          </span>
+          <span className="cfg__phone-more" aria-hidden>
+            <svg viewBox="0 0 24 24">
+              <circle cx="5.5" cy="12" r="1.4" />
+              <circle cx="12" cy="12" r="1.4" />
+              <circle cx="18.5" cy="12" r="1.4" />
+            </svg>
+          </span>
+        </div>
+      ) : (
         <div className="cfg__frame-bar">
           {/* Set dressing, honestly generic: a window is a window. Reset
              used to live here, disguised as app chrome — but Reset is the
@@ -940,16 +965,18 @@ export function App() {
               <div className="cfg__phone">
                 <div className="cfg__phone-status" aria-hidden>
                   <span>9:41</span>
+                  <span className="cfg__phone-island" />
                   <span className="cfg__phone-pills">
                     <i /><i />
                   </span>
                 </div>
                 <AppCore
-                onSuggest={(s) => {
-                  writeStateParam(s.id)
-                  fire(s.id)
-                }}
-              />
+                  chrome="phone"
+                  onSuggest={(s) => {
+                    writeStateParam(s.id)
+                    fire(s.id)
+                  }}
+                />
                 <div className="cfg__phone-home" aria-hidden />
               </div>
             </section>
