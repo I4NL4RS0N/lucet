@@ -597,18 +597,32 @@ export function App() {
                   fire(s.id)
                 }}
                 barStart={
-                  <button
-                    type="button"
-                    className="cfg__reset cfg__side-toggle"
-                    aria-label={sideOpen ? 'Hide the sidebar' : 'Show the sidebar'}
-                    aria-expanded={sideOpen}
-                    onClick={() => setSideOpen((o) => !o)}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden>
-                      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
-                      <path d="M9.5 4.5v15" />
-                    </svg>
-                  </button>
+                  /* The rail's control lives ON the rail while it is open;
+                     only when the rail is gone does the bar offer the way
+                     back, in the spot the rail vacated. One control, always
+                     where the eyes already are — it was a bar-only icon
+                     first, and Ian could not find it. */
+                  sideOpen ? null : (
+                    <button
+                      type="button"
+                      className="cfg__reset cfg__side-toggle"
+                      aria-label="Show the sidebar"
+                      aria-expanded={false}
+                      onClick={() => {
+                        setSideOpen(true)
+                        setTimeout(() => {
+                          document
+                            .querySelector<HTMLButtonElement>('.cfg__side .cfg__side-toggle')
+                            ?.focus()
+                        }, 0)
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden>
+                        <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+                        <path d="M9.5 4.5v15" />
+                      </svg>
+                    </button>
+                  )
                 }
                 aside={
                   /*
@@ -620,9 +634,30 @@ export function App() {
                    * conversations that do not exist.
                    */
                   <aside className="cfg__side" data-closed={sideOpen ? undefined : ''}>
-                    <span className="cfg__side-brand" aria-hidden>
-                      <MockBrandMark />
-                      Application Name
+                    <span className="cfg__side-brand">
+                      <span className="cfg__side-brand-id" aria-hidden>
+                        <MockBrandMark />
+                        Application Name
+                      </span>
+                      <button
+                        type="button"
+                        className="cfg__reset cfg__side-toggle"
+                        aria-label="Hide the sidebar"
+                        aria-expanded
+                        onClick={() => {
+                          setSideOpen(false)
+                          setTimeout(() => {
+                            document
+                              .querySelector<HTMLButtonElement>('.cfg__frame-bar .cfg__side-toggle')
+                              ?.focus()
+                          }, 0)
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden>
+                          <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+                          <path d="M9.5 4.5v15" />
+                        </svg>
+                      </button>
                     </span>
                     <button
                       type="button"
