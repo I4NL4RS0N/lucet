@@ -816,8 +816,8 @@
 }
 
 .lucet-prompt__att-spin {
-  inline-size: 12px;
-  block-size: 12px;
+  inline-size: 13px;
+  block-size: 13px;
   flex: none;
   border-radius: 50%;
   border: 1.5px solid var(--lucet-input);
@@ -857,8 +857,8 @@
   block-size: 24px;
 }
 .lucet-prompt__att-remove svg {
-  inline-size: 11px;
-  block-size: 11px;
+  inline-size: 12px;
+  block-size: 12px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -909,8 +909,8 @@
   block-size: 40px;
 }
 .lucet-prompt__tool svg {
-  inline-size: 15px;
-  block-size: 15px;
+  inline-size: 16px;
+  block-size: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -987,8 +987,8 @@
   padding-inline: 0;
 }
 .lucet-button[data-icon] svg {
-  inline-size: 15px;
-  block-size: 15px;
+  inline-size: 16px;
+  block-size: 16px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -1164,15 +1164,23 @@
 
 .lucet-prompt__status {
   display: flex;
-  align-items: center;
+  /* Marks anchor to the FIRST LINE of the words — strips wrap on narrow
+     screens, and a mark centered against a wrapped block floats. */
+  align-items: flex-start;
+  gap: var(--lucet-space-2);
   margin: calc(-1 * var(--lucet-space-2)) calc(-1 * var(--lucet-space-2)) var(--lucet-space-2) calc(-1 * var(--lucet-space-3));
-  padding: 7px var(--lucet-space-3);
+  padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-surface) var(--lucet-radius-surface) 0 0;
   font-size: var(--lucet-text-sm);
+  line-height: 1.5;
   background-color: var(--lucet-secondary);
   color: var(--lucet-foreground);
 }
 .lucet-prompt__status .lucet-orb { --lucet-orb-size: 16px; }
+.lucet-prompt__status > .lucet-icon,
+.lucet-prompt__status > .lucet-avatar { flex: none; margin-block-start: 2px; }
+.lucet-prompt__status .lucet-orb-row { align-items: flex-start; }
+.lucet-prompt__status .lucet-orb-row .lucet-orb { margin-block-start: 2px; }
 
 .lucet-prompt__status .lucet-orb-row__label { text-wrap: pretty; }
 .lucet-prompt__status[data-tone='info'] {
@@ -1540,11 +1548,15 @@
   box-shadow: var(--lucet-hairline);
   overflow: hidden;
 }
+/* The bar holds its height whether it says "writing…" or offers Copy: the
+   block must not jump the moment the fence closes. The no-bounce law, in
+   miniature. */
 .lucet-codeblock__bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--lucet-space-2);
+  min-block-size: 36px;
   padding: var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-3);
   border-block-end: 1px solid var(--lucet-border);
 }
