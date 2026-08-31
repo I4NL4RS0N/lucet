@@ -1972,8 +1972,10 @@
 
 /* Two labelled columns when the room allows, one when it does not —
    the drawer and the phone stack, the full page sits Ask beside Do.
-   Rows, not pills: a suggestion is a sentence, and a sentence deserves
-   a line with a glyph and a way-in chevron, not a lozenge squeezing it. */
+   QUIET rows: text, a divider, a way-in chevron. The boxed version was
+   tried and cut — on the home the composer must be the ONLY box, and
+   four raised cards above it competed with the one object that matters.
+   A suggestion is a menu entry, and menus are made of lines. */
 .lucet-chips {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -2006,47 +2008,25 @@
 
 .lucet-chips__chip {
   display: flex;
-  /* Multi-line prompts: the glyph holds the FIRST line (optical), the
-     chevron keeps the row's centre. */
   align-items: flex-start;
   gap: 9px;
-  min-block-size: 38px;
+  min-block-size: 40px;
   max-inline-size: 100%;
-  padding: 8px 11px;
+  padding: 9px 6px;
   border: 0;
   border-radius: var(--lucet-radius-control);
-  background-color: var(--lucet-secondary);
-  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
-  color: var(--lucet-secondary-foreground);
+  background: none;
+  color: var(--lucet-foreground);
   font: inherit;
   font-size: var(--lucet-text-sm);
   line-height: 1.35;
   text-align: start;
   cursor: pointer;
-  transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
-/* The kind's glyph: SHAPE carries the split — a speech square asks, the
-   little agent does — in ONE ink. An accent on `do` was tried and cut:
-   two colours in one list read as inconsistency, not meaning (Ian's own
-   colour-conveys-meaning law, pointed back at us). */
-.lucet-chips__glyph {
-  flex: none;
-  margin-block-start: 2px;
-  inline-size: 15px;
-  block-size: 15px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  color: var(--lucet-muted-foreground);
-}
-.lucet-chips__glyph-eye {
-  fill: currentColor;
-  stroke: none;
-}
+/* The menu's lines: between rows only, edges bare — the sources' and
+   the history's own divider grammar. */
+.lucet-chips__chip + .lucet-chips__chip { border-block-start: 1px solid var(--lucet-border); }
 .lucet-chips__text {
   flex: 1;
   min-inline-size: 0;
@@ -2068,12 +2048,8 @@
 }
 .lucet-chips__chip:hover:not(:disabled) .lucet-chips__chev { translate: 2px 0; }
 /* Opaque at rest, so hover MIXES the ink over the fill rather than veiling. */
-.lucet-chips__chip:hover:not(:disabled) {
-  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-secondary));
-}
-.lucet-chips__chip:active:not(:disabled) {
-  background-color: color-mix(in oklab, black var(--lucet-press-mix), var(--lucet-secondary));
-}
+.lucet-chips__chip:hover:not(:disabled) { background-color: var(--lucet-hover); }
+.lucet-chips__chip:active:not(:disabled) { background-color: var(--lucet-press); }
 .lucet-chips__chip:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);

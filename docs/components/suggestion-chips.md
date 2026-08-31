@@ -36,10 +36,15 @@ Prompts made visible, on the cold start.
   No boolean props to fall out of sync with the data — and suggestions
   without a `kind` still render as one unlabelled list, so the field is an
   upgrade, not a migration.
-- **The content tier.** Chips wear the composer's white raised chip — the
-  same dress as an attachment — because a suggestion is content in
-  waiting: not an ambient tool (hairline ghost), not the primary action
-  (solid). The three-tier grammar decides; the component obeys.
+- **The menu, not the object.** Chips wore the composer's raised
+  content tier for two rounds — then the home seated the composer IN
+  the page, and four raised cards above the one box that matters read
+  as competition, not hierarchy. Revised: suggestions are a quiet MENU
+  — text, a divider, a way-in chevron, the sources' and history's own
+  grammar — and the composer stays the only box on the home. The
+  per-row kind glyphs left in the same pass: once the group labels said
+  the split out loud, the icons were reinforcement that had outlived
+  its job.
 - **The lock reaches the chips.** While it is another person's turn, a way
   in that would fail is not offered as live: chips disable under the same
   single-writer rule as the composer.

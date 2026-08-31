@@ -16,8 +16,9 @@ import type { Suggestion } from 'lucet'
  *    and works. BOTH only send their words (the chip never touches a
  *    system itself; the agent does the doing), but flattening them trains
  *    people to tap without reading, so each kind gets its own labelled
- *    group and its own glyph — shape first, the accent on `do` only as
- *    reinforcement, never colour alone.
+ *    labelled, DESCRIBED group. Per-row kind glyphs were tried and cut:
+ *    once the labels said the difference out loud, the icons were
+ *    reinforcement that had outlived its job.
  * 4. THE TOGGLE IS THE CONFIG. A group exists only while it has
  *    suggestions: populate ask, do, both, or neither, and the layout
  *    follows. No boolean props to desynchronise from the data. Kindless
@@ -56,22 +57,6 @@ function Chip({
       disabled={disabled || undefined}
       onClick={() => onPick(suggestion)}
     >
-      {suggestion.kind === 'ask' ? (
-        /* A conversation asks: the speech square, with its words. */
-        <svg className="lucet-chips__glyph" viewBox="0 0 24 24" aria-hidden>
-          <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9.5L4 21z" />
-          <path d="M8 9.2h8M8 12.6h5" />
-        </svg>
-      ) : suggestion.kind === 'do' ? (
-        /* An AGENT does: the little worker itself, not an abstract bolt. */
-        <svg className="lucet-chips__glyph" viewBox="0 0 24 24" aria-hidden>
-          <circle cx="12" cy="3.2" r="1" />
-          <path d="M12 4.6V7M4.5 13.5H3m18 0h-1.5" />
-          <rect x="5.5" y="7" width="13" height="11" rx="3" />
-          <circle className="lucet-chips__glyph-eye" cx="9.6" cy="12" r="1.15" />
-          <circle className="lucet-chips__glyph-eye" cx="14.4" cy="12" r="1.15" />
-        </svg>
-      ) : null}
       <span className="lucet-chips__text">{suggestion.prompt}</span>
       <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
         <path d="M9 6l6 6-6 6" />
