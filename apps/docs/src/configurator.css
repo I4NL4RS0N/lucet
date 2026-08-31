@@ -325,6 +325,10 @@ body {
    in three quiet beats — orb, words, ways in — which is all the splash
    screen this page will ever need. */
 .cfg__empty {
+  position: relative;
+  /* The atmosphere child sits at z -1; isolate so it can never slip
+     beneath the page itself. */
+  isolation: isolate;
   display: grid;
   place-content: center;
   justify-items: center;
@@ -334,98 +338,128 @@ body {
   padding-inline: 24px;
   color: var(--lucet-muted-foreground);
   font-size: 13px;
-  /* The vibe: a quiet pool of the accent behind the moment. It follows
-     whatever accent is chosen, so the welcome is always in the site's own
-     light — and in monochrome it is simply a soft lamp. */
-  background: radial-gradient(
-    420px 300px at 50% 40%,
-    color-mix(in oklab, var(--lucet-primary) 8%, transparent),
-    transparent 72%
-  );
 }
 /*
- * The hero orb. The first cut used the ActivityOrb at 60px — a status
- * indicator pressed into hero duty, and it read as an icon, not a
- * presence ("boring", correctly). This is the same story at the right
- * material: a dimensional sphere of the accent's light, a slow aurora
- * crawling its rim, a bloom that breathes. Everything is drawn from
- * --lucet-primary, so violet casts a violet orb, monochrome a pearl —
- * the splash is the theming axis demonstrating itself.
+ * The atmosphere. Round one put the vibe in a hero orb; it read as a
+ * low-budget object (Ian). Round two follows the lithos studies — silk
+ * (006) and murmur (003): the vibe belongs to the ROOM, not to a thing
+ * in it. Ribbons of the accent's light lie in a soft horizon behind the
+ * greeting, drifting slower than attention; a breath of dot-grain keeps
+ * the wash from reading as vinyl. All of it is gradients and tokens —
+ * no image, no canvas — so every accent lights its own room, monochrome
+ * included (graphite mist on the light page, moonlight in the dark).
  */
-.cfg__hero-orb {
-  position: relative;
-  inline-size: 84px;
-  block-size: 84px;
-  margin-block-end: 8px;
-  /* Arrives by blooming — light turning on, not a thing sliding in. */
-  animation: cfg-orb-arrive 640ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-/* The breath: a pool of the accent's light behind the sphere, swelling
-   gently. Opacity and scale only — cheap to composite, calm to watch. */
-.cfg__hero-orb::before {
-  content: '';
-  position: absolute;
-  inset: -26px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in oklab, var(--lucet-primary) 38%, transparent),
-    transparent 68%
-  );
-  animation: cfg-orb-breathe 4.6s ease-in-out infinite;
-}
-/* The aurora: a conic sweep blurred into weather, turning once every
-   nine seconds BEHIND the sphere, so it reads as light moving around
-   the rim rather than a spinner. Slow enough to be alive, not busy. */
-.cfg__hero-orb-aurora {
-  position: absolute;
-  inset: -10px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    color-mix(in oklab, var(--lucet-primary) 80%, white) 80deg,
-    transparent 170deg,
-    color-mix(in oklab, var(--lucet-primary) 55%, white) 265deg,
-    transparent 330deg
-  );
-  filter: blur(7px);
-  opacity: 0.6;
-  animation: cfg-orb-orbit 9s linear infinite;
-}
-/* The sphere: lit from the upper left, deepening to the lower right,
-   with a foreground-mixed rim so it holds on ANY ground — a white
-   monochrome orb on the white light page included. */
-.cfg__hero-orb-core {
+.cfg__atmo {
   position: absolute;
   inset: 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+  /* The room fades up before the words arrive — light first. */
+  animation: cfg-atmo-in 1400ms var(--lucet-ease-out) backwards;
+  /* Silk intensity is a THEME decision: over white a whisper is plenty,
+     but over the dark ground the same mix is a smudge — 006's band is
+     luminous, with a near-white core. Light keeps the core off. */
+  --cfg-silk-1: 26%;
+  --cfg-silk-2: 16%;
+  --cfg-silk-3: 12%;
+  --cfg-silk-core: 0%;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cfg__atmo {
+    --cfg-silk-1: 38%;
+    --cfg-silk-2: 26%;
+    --cfg-silk-3: 18%;
+    --cfg-silk-core: 36%;
+  }
+}
+:root[data-theme='dark'] .cfg__atmo {
+  --cfg-silk-1: 38%;
+  --cfg-silk-2: 26%;
+  --cfg-silk-3: 18%;
+  --cfg-silk-core: 36%;
+}
+/* The silk: three blurred ellipses, one long horizon and two strays.
+   Transform-only drift, each on its own odd period so the composition
+   never repeats in a way an eye could catch. */
+.cfg__atmo i {
+  position: absolute;
   border-radius: 50%;
+  filter: blur(32px);
+}
+.cfg__atmo i:nth-child(1) {
+  inset-inline-start: -15%;
+  inset-block-start: 30%;
+  inline-size: 130%;
+  block-size: 110px;
+  /* Two layers: the band, and the band's own bright heart (dark only —
+     the core var is 0% in light). */
+  background:
+    radial-gradient(
+      36% 90% at 58% 50%,
+      color-mix(
+        in oklab,
+        color-mix(in oklab, white 55%, var(--lucet-primary)) var(--cfg-silk-core),
+        transparent
+      ),
+      transparent 72%
+    ),
+    radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-1), transparent),
+      transparent
+    );
+  animation: cfg-silk-drift 26s ease-in-out infinite alternate;
+}
+.cfg__atmo i:nth-child(2) {
+  inset-inline-start: 2%;
+  inset-block-start: 13%;
+  inline-size: 72%;
+  block-size: 70px;
   background: radial-gradient(
-    circle at 32% 27%,
-    color-mix(in oklab, var(--lucet-primary) 16%, white),
-    color-mix(in oklab, var(--lucet-primary) 74%, white) 36%,
-    var(--lucet-primary) 64%,
-    color-mix(in oklab, var(--lucet-primary) 70%, black)
+    closest-side,
+    color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-2), transparent),
+    transparent
   );
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--lucet-foreground) 14%, transparent),
-    inset 0 -12px 20px color-mix(in oklab, black 20%, transparent),
-    0 10px 30px -8px color-mix(in oklab, var(--lucet-primary) 45%, transparent);
+  animation: cfg-silk-drift 37s ease-in-out infinite alternate-reverse;
 }
-@keyframes cfg-orb-arrive {
-  from { opacity: 0; scale: 0.72; }
-  60% { scale: 1.03; }
-  to { opacity: 1; scale: 1; }
+.cfg__atmo i:nth-child(3) {
+  inset-inline-end: -8%;
+  inset-block-start: 50%;
+  inline-size: 60%;
+  block-size: 90px;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-3), transparent),
+    transparent
+  );
+  animation: cfg-silk-sway 44s ease-in-out infinite alternate;
 }
-@keyframes cfg-orb-breathe {
-  0%, 100% { opacity: 0.65; scale: 1; }
-  50% { opacity: 1; scale: 1.09; }
+/* The grain: a fine dot lattice in the page's own ink, masked to live
+   only where the light is. Near-subliminal on purpose — tooth, not
+   texture. */
+.cfg__atmo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--lucet-foreground) 1px, transparent 1.5px);
+  background-size: 18px 18px;
+  opacity: 0.055;
+  mask-image: radial-gradient(ellipse 72% 56% at 50% 38%, black, transparent 78%);
 }
-@keyframes cfg-orb-orbit {
-  to { rotate: 360deg; }
+@keyframes cfg-atmo-in {
+  from { opacity: 0; }
+}
+@keyframes cfg-silk-drift {
+  from { transform: translateX(-3.5%) rotate(-1.6deg) scaleY(0.92); }
+  to { transform: translateX(3.5%) rotate(1.2deg) scaleY(1.06); }
+}
+@keyframes cfg-silk-sway {
+  from { transform: translateY(-12px) rotate(2deg); }
+  to { transform: translateY(10px) rotate(-1.5deg); }
 }
 
-/* The greeting is a HEADLINE now, not an indicator's label. */
+/* The greeting is the face now — a headline over lit air. */
 .cfg__empty-hello {
   margin: 0;
   color: var(--lucet-foreground);
@@ -439,19 +473,19 @@ body {
   margin-block-start: 10px;
   max-inline-size: 440px;
 }
-/* Four beats — orb, greeting, invitation, ways in — then stillness.
-   The orb's beat is its own bloom above; the words rise. After the
-   arrival only the orb keeps moving, because only the orb is alive. */
-.cfg__empty > :not(.cfg__hero-orb) {
+/* The room lights, then three beats — greeting, invitation, ways in —
+   then stillness. Only the atmosphere keeps moving, slower than
+   attention. */
+.cfg__empty > :not(.cfg__atmo) {
   animation: lucet-thread-arrive 320ms var(--lucet-ease-out) backwards;
 }
-.cfg__empty > :nth-child(2) { animation-delay: 140ms; }
-.cfg__empty > :nth-child(3) { animation-delay: 220ms; }
-.cfg__empty > :nth-child(4) { animation-delay: 300ms; }
+.cfg__empty > :nth-child(2) { animation-delay: 80ms; }
+.cfg__empty > :nth-child(3) { animation-delay: 170ms; }
+.cfg__empty > :nth-child(4) { animation-delay: 260ms; }
 @media (prefers-reduced-motion: reduce) {
   .cfg__empty > *,
-  .cfg__hero-orb::before,
-  .cfg__hero-orb-aurora {
+  .cfg__atmo,
+  .cfg__atmo i {
     animation: none;
   }
 }

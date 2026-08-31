@@ -214,14 +214,12 @@ function AppCore({
            * the unhappy-states list, living where every visitor lands.
            */
           <div className="cfg__empty">
-            {/* The hero orb: the library's orb grammar at greeting scale.
-                Deliberately NOT the ActivityOrb — that stays a status
-                primitive — this is the page's own object, drawn entirely
-                from tokens so every accent casts its own orb. Decorative;
-                the words below carry the meaning. */}
-            <div className="cfg__hero-orb" aria-hidden="true">
-              <span className="cfg__hero-orb-aurora" />
-              <span className="cfg__hero-orb-core" />
+            {/* The atmosphere: the vibe lives in the BACKGROUND — silk
+                ribbons of the accent's light and a breath of grain, drawn
+                and animated entirely in CSS from tokens. No hero object;
+                the greeting is the face, and the room is lit. */}
+            <div className="cfg__atmo" aria-hidden="true">
+              <i /><i /><i />
             </div>
             <p className="cfg__empty-hello">Ready when you are.</p>
             <span className="cfg__empty-sub">
