@@ -91,17 +91,28 @@
      lift was subliminal and the whole light theme read flat. And they are
      tinted with the neutral hue rather than pure black — soot greys a
      light page; a hued shadow reads as depth. Dark overrides below with
-     its own, far heavier set. */
-  --lucet-shade-1: 0 1px 2px oklch(0.25 0.015 264 / 0.07);
-  --lucet-shade-2: 0 1px 3px oklch(0.25 0.015 264 / 0.08), 0 3px 8px oklch(0.25 0.015 264 / 0.07);
-  --lucet-shade-3: 0 2px 5px oklch(0.25 0.015 264 / 0.09), 0 10px 24px oklch(0.25 0.015 264 / 0.13);
+     its own, far heavier set.
+
+     The tint FOLLOWS the neutral axis (×3.75 ≡ the tuned 0.015 at the
+     default grey): a warm grey casts a warm shadow. Hardcoding hue 264
+     leaned every shadow cool no matter the greys — caught in the
+     pre-deploy consistency audit, invisible at these alphas but wrong by
+     construction. */
+  --lucet-shade-1: 0 1px 2px oklch(0.25 calc(var(--lucet-neutral-c) * 3.75) var(--lucet-neutral-h) / 0.07);
+  --lucet-shade-2: 0 1px 3px oklch(0.25 calc(var(--lucet-neutral-c) * 3.75) var(--lucet-neutral-h) / 0.08), 0 3px 8px oklch(0.25 calc(var(--lucet-neutral-c) * 3.75) var(--lucet-neutral-h) / 0.07);
+  --lucet-shade-3: 0 2px 5px oklch(0.25 calc(var(--lucet-neutral-c) * 3.75) var(--lucet-neutral-h) / 0.09), 0 10px 24px oklch(0.25 calc(var(--lucet-neutral-c) * 3.75) var(--lucet-neutral-h) / 0.13);
 
   --lucet-material-flat: var(--lucet-hairline);
   --lucet-material-control: var(--lucet-hairline), var(--lucet-shade-1);
   --lucet-material-raised: var(--lucet-hairline-raised), var(--lucet-shade-1);
   --lucet-material-overlay: var(--lucet-hairline-overlay), var(--lucet-shade-3);
   --lucet-material-pressed: inset 0 1px 2px oklch(0 0 0 / 0.1), var(--lucet-hairline);
-  --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.04), var(--lucet-hairline);
+  /* No cast recess in light: the well's darker FILL is the recess (the
+     ink-forward law). The 4% black inset this carried was neither depth
+     nor absence — it stacked under the top hairline as a faint dirty band
+     on an otherwise crisp box (Ian). Dark keeps a real inset below, where
+     a recess is read by shadow rather than value. */
+  --lucet-material-inset: var(--lucet-hairline);
 
   --lucet-gloss: none;
 }

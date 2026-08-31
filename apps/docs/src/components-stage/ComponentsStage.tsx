@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet'
 import type { LucetEvent, ThreadState } from 'lucet'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
-import { loadAppearance, saveAppearance } from '../lib/appearance'
+import { AppearancePrefs, useAppearance } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
 
 /**
@@ -14,11 +14,6 @@ import { SiteHeader } from '../components/SiteHeader'
  * drawing of a state; it is the state, which is the whole point of keeping
  * the logic in core.
  */
-
-const ACCENTS = [
-  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
-  'rose', 'green', 'teal', 'cyan', 'amber',
-] as const
 
 const noop = () => {}
 
@@ -400,21 +395,10 @@ function Live() {
 }
 
 export function ComponentsStage() {
-  /* The stored appearance wins; monochrome is only the lab's fallback. */
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const t = loadAppearance().theme
-    return t === 'light' || t === 'dark' ? t : 'dark'
-  })
-  const [accent, setAccent] = useState(() => loadAppearance().accent ?? 'monochrome')
-  useEffect(() => {
-    saveAppearance({ theme, accent })
-  }, [theme, accent])
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
-  useEffect(() => {
-    document.documentElement.setAttribute('data-accent', accent)
-  }, [accent])
+  /* The stored appearance wins; dark/monochrome is only the lab's resting
+     look, so components are judged without accent seduction until you
+     choose otherwise. */
+  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'monochrome' })
 
   return (
     <div className="prim">
@@ -424,27 +408,7 @@ export function ComponentsStage() {
         {/* Viewing controls live with the stage they change, not in the
             site header — same law as the Configurator's stage bar. */}
         <div className="prim__controls">
-            <div className="cfg__prefs">
-              <span className="cfg__pick">
-                <select
-                  aria-label="Theme"
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
-                >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </span>
-              <span className="cfg__pick">
-                <select value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent">
-                  {ACCENTS.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </span>
-            </div>
+            <AppearancePrefs state={appearance} onChange={setAppearance} />
         </div>
         <h1 className="prim__title">Components</h1>
         <p className="prim__lede">

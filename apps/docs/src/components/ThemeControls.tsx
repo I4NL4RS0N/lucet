@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { loadAppearance, saveAppearance } from '../lib/appearance'
 
 /**
  * Theme, accent, and expression, applied to <html> as data attributes.
@@ -196,5 +197,147 @@ export function ThemeControls({
         onSelect={(v) => onChange({ scale: v })}
       />
     </>
+  )
+}
+/**
+ * The appearance, owned ONCE: full state seeded from storage (each page
+ * passes only its resting fallback), applied to the root, persisted on
+ * every change. Three pages had three copies of this wiring, and two of
+ * them only knew about theme and accent — a typeface or grey chosen on
+ * the Configurator silently did not follow you to the labs. One hook,
+ * no drift.
+ */
+export function useAppearance(fallback: {
+  theme: Theme
+  accent: Accent
+}): [ThemeState, (patch: Partial<ThemeState>) => void] {
+  const [state, setState] = useState<ThemeState>(() => {
+    const stored = loadAppearance()
+    return {
+      theme: (stored.theme as Theme) ?? fallback.theme,
+      accent: (stored.accent as Accent) ?? fallback.accent,
+      neutral: (stored.neutral as Neutral) ?? 'subtle',
+      expression: (stored.expression as Expression) ?? 'system',
+      radius: (stored.radius as Radius) ?? 'default',
+      scale: (stored.scale as Scale) ?? '100',
+      typeface: (stored.typeface as Typeface) ?? 'inter',
+    }
+  })
+  useApplyTheme(state)
+  useEffect(() => {
+    saveAppearance(state)
+  }, [state])
+  const update = useCallback(
+    (patch: Partial<ThemeState>) => setState((prev) => ({ ...prev, ...patch })),
+    [],
+  )
+  return [state, update]
+}
+
+/**
+ * The pickers — theme, accent, and every other axis behind "More" — as one
+ * component, so each page offers ALL of the appearance, not the two pieces
+ * it remembered to wire.
+ *
+ * "Greys", not "Neutral": Neutral is the token word, and beside an Accent
+ * picker it read as a synonym answering a question nobody asked (Ian). The
+ * axis picks which grey family the interface is mixed from; its `accent`
+ * option leans the greys toward the current accent, Radix-style.
+ */
+export function AppearancePrefs({
+  state,
+  onChange,
+}: {
+  state: ThemeState
+  onChange: (patch: Partial<ThemeState>) => void
+}) {
+  /* The More popover closes like a popover: click anywhere else, or
+     Escape, and it goes. A details that only closes on its own summary
+     makes the reader do the tidying. */
+  useEffect(() => {
+    const closeIfOutside = (e: PointerEvent) => {
+      const more = document.querySelector('details.cfg__more[open]')
+      if (more && e.target instanceof Node && !more.contains(e.target)) {
+        more.removeAttribute('open')
+      }
+    }
+    const closeOnEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        document.querySelector('details.cfg__more[open]')?.removeAttribute('open')
+      }
+    }
+    document.addEventListener('pointerdown', closeIfOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeIfOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [])
+
+  return (
+    <div className="cfg__prefs">
+      <span className="cfg__pick">
+        <select
+          aria-label="Theme"
+          value={state.theme}
+          onChange={(e) => onChange({ theme: e.target.value as Theme })}
+        >
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </span>
+      <span className="cfg__pick">
+        <select
+          aria-label="Accent"
+          value={state.accent}
+          onChange={(e) => onChange({ accent: e.target.value as Accent })}
+        >
+          {ACCENTS.map((a) => (
+            <option key={a} value={a}>
+              {a}
+            </option>
+          ))}
+        </select>
+      </span>
+      {/*
+       * The rest of the appearance axes — expression, greys, radius, scale,
+       * typeface — are real and audited, but four more pickers on the bar
+       * would bury the two that carry the pitch. They wait behind one word.
+       */}
+      <details className="cfg__more">
+        <summary>More</summary>
+        <div className="cfg__more-panel">
+          {(
+            [
+              ['Expression', 'expression', ['system', 'expressive'], undefined],
+              [
+                'Greys',
+                'neutral',
+                NEUTRALS,
+                "Which grey family the interface is mixed from. 'accent' leans the greys toward the current accent.",
+              ],
+              ['Radius', 'radius', RADII, undefined],
+              ['Scale', 'scale', SCALES, undefined],
+              ['Typeface', 'typeface', TYPEFACES, undefined],
+            ] as const
+          ).map(([label, key, options, title]) => (
+            <label className="cfg__more-row" key={key} title={title}>
+              <span>{label}</span>
+              <select
+                value={state[key]}
+                onChange={(e) => onChange({ [key]: e.target.value } as Partial<ThemeState>)}
+              >
+                {options.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+      </details>
+    </div>
   )
 }

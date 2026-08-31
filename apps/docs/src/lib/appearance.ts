@@ -14,6 +14,7 @@ const KEY = 'lucet-docs-appearance'
 export interface StoredAppearance {
   theme?: string
   accent?: string
+  neutral?: string
   expression?: string
   radius?: string
   scale?: string

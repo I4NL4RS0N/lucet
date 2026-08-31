@@ -11,10 +11,8 @@ import {
   useThread,
   useTriggerGroups,
 } from 'lucet-react'
-import { NEUTRALS, RADII, SCALES, TYPEFACES, useApplyTheme } from './components/ThemeControls'
-import type { ThemeState } from './components/ThemeControls'
+import { AppearancePrefs, useAppearance } from './components/ThemeControls'
 import { SiteHeader } from './components/SiteHeader'
-import { loadAppearance, saveAppearance } from './lib/appearance'
 import { readStateParam, writeStateParam } from './lib/deep-link'
 
 /**
@@ -329,51 +327,10 @@ export function App() {
   const [view, setView] = useState<View>('full')
   /* The site's resting look: dark, violet — but a choice made ANYWHERE on
      the site wins over it, so moving between pages never resets you. */
-  const [themeState, setThemeState] = useState<ThemeState>(() => {
-    const stored = loadAppearance()
-    return {
-    theme: (stored.theme as ThemeState['theme']) ?? 'dark',
-    accent: (stored.accent as ThemeState['accent']) ?? 'violet',
-    neutral: 'subtle',
-    expression: (stored.expression as ThemeState['expression']) ?? 'system',
-    radius: (stored.radius as ThemeState['radius']) ?? 'default',
-    scale: (stored.scale as ThemeState['scale']) ?? '100',
-    typeface: (stored.typeface as ThemeState['typeface']) ?? 'inter',
-    }
-  })
+  const [themeState, setThemeState] = useAppearance({ theme: 'dark', accent: 'violet' })
   const booted = useRef(false)
   const [active, setActive] = useState<string | null>(null)
   const [firing, setFiring] = useState<string | null>(null)
-
-  useApplyTheme(themeState)
-
-  useEffect(() => {
-    const { theme, accent, expression, radius, scale, typeface } = themeState
-    saveAppearance({ theme, accent, expression, radius, scale, typeface })
-  }, [themeState])
-
-  /* The More popover closes like a popover: click anywhere else, or
-     Escape, and it goes. A details that only closes on its own summary
-     makes the reader do the tidying. */
-  useEffect(() => {
-    const closeIfOutside = (e: PointerEvent) => {
-      const more = document.querySelector('details.cfg__more[open]')
-      if (more && e.target instanceof Node && !more.contains(e.target)) {
-        more.removeAttribute('open')
-      }
-    }
-    const closeOnEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        document.querySelector('details.cfg__more[open]')?.removeAttribute('open')
-      }
-    }
-    document.addEventListener('pointerdown', closeIfOutside)
-    document.addEventListener('keydown', closeOnEscape)
-    return () => {
-      document.removeEventListener('pointerdown', closeIfOutside)
-      document.removeEventListener('keydown', closeOnEscape)
-    }
-  }, [])
 
   const fire = (id: string) => {
     setActive(id)
@@ -425,74 +382,7 @@ export function App() {
                 </button>
               ))}
             </div>
-            {/* No labels, no boxes: the values name themselves, and the
-                page is too quiet for four pieces of chrome per picker. */}
-            <div className="cfg__prefs">
-              <span className="cfg__pick">
-                <select
-                  aria-label="Theme"
-                  value={themeState.theme}
-                  onChange={(e) =>
-                    setThemeState((prev) => ({ ...prev, theme: e.target.value as ThemeState['theme'] }))
-                  }
-                >
-                  <option value="system">System</option>
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                </select>
-              </span>
-              <span className="cfg__pick">
-                <select
-                  aria-label="Accent"
-                  value={themeState.accent}
-                  onChange={(e) =>
-                    setThemeState((prev) => ({ ...prev, accent: e.target.value as ThemeState['accent'] }))
-                  }
-                >
-                  {ACCENTS.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </span>
-              {/*
-               * The rest of the appearance axes — expression, radius, scale,
-               * typeface, neutral — are real and audited, but four more
-               * pickers on the bar would bury the two that carry the pitch.
-               * They wait behind one word.
-               */}
-              <details className="cfg__more">
-                <summary>More</summary>
-                <div className="cfg__more-panel">
-                  {(
-                    [
-                      ['Expression', 'expression', ['system', 'expressive']],
-                      ['Neutral', 'neutral', NEUTRALS],
-                      ['Radius', 'radius', RADII],
-                      ['Scale', 'scale', SCALES],
-                      ['Typeface', 'typeface', TYPEFACES],
-                    ] as const
-                  ).map(([label, key, options]) => (
-                    <label className="cfg__more-row" key={key}>
-                      <span>{label}</span>
-                      <select
-                        value={themeState[key]}
-                        onChange={(e) =>
-                          setThemeState((prev) => ({ ...prev, [key]: e.target.value }))
-                        }
-                      >
-                        {options.map((o) => (
-                          <option key={o} value={o}>
-                            {o}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ))}
-                </div>
-              </details>
-            </div>
+            <AppearancePrefs state={themeState} onChange={setThemeState} />
           </div>
 
           {view === 'full' ? (

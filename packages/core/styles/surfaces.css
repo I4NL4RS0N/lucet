@@ -34,8 +34,10 @@
   /* Half a step past neutral-200, with the neutral hue leaning in a touch
      harder: light's hairlines at 0.922 were nearly subliminal, and a page
      whose every line whispers reads sterile rather than calm (Ian's crit,
-     2026-09-01 — the cursor.com comparison). Presence, not weight. */
-  --lucet-line: oklch(0.9 calc(var(--lucet-neutral-c) * 1.5) var(--lucet-neutral-h));
+     2026-09-01 — the cursor.com comparison). Presence, not weight. The hue
+     lean is capped at 0.007, same reasoning as the wells: the non-default
+     greys tripled it into a visible colourwash on white. */
+  --lucet-line: oklch(0.9 min(calc(var(--lucet-neutral-c) * 1.5), 0.007) var(--lucet-neutral-h));
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.06;
 }

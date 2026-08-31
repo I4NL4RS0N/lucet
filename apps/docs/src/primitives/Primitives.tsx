@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { loadAppearance, saveAppearance } from '../lib/appearance'
+import { useState } from 'react'
+import { AppearancePrefs, useAppearance } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
 
 /**
@@ -59,10 +59,6 @@ function Spec({ label, children }: { label: string; children: React.ReactNode })
  * The accent axis. Monochrome is the default and hands primary to the neutral
  * solid, so the page is greyscale until an accent is deliberately chosen.
  */
-const ACCENTS = [
-  'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
-  'rose', 'green', 'teal', 'cyan', 'amber',
-] as const
 
 /** The five states every interactive control has to answer for. */
 const STATES = [
@@ -236,30 +232,10 @@ const FileGlyph = {
 }
 
 export function Primitives() {
-  /* The stored appearance wins; monochrome is only the lab's fallback. */
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const t = loadAppearance().theme
-    return t === 'light' || t === 'dark' ? t : 'dark'
-  })
-  const [accent, setAccent] = useState(() => loadAppearance().accent ?? 'monochrome')
-  useEffect(() => {
-    saveAppearance({ theme, accent })
-  }, [theme, accent])
-
-  /*
-   * On the ROOT, not on this div. The library declares its tokens against
-   * :root[data-theme], so setting the attribute on a wrapper matches nothing
-   * and the page silently keeps whatever the OS preference was.
-   */
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    return () => document.documentElement.removeAttribute('data-theme')
-  }, [theme])
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-accent', accent)
-    return () => document.documentElement.removeAttribute('data-accent')
-  }, [accent])
+  /* The stored appearance wins; dark/monochrome is only the lab's resting
+     look, so primitives are judged without accent seduction until you
+     choose otherwise. */
+  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'monochrome' })
   const [checks, setChecks] = useState({ a: true, b: false })
   const [radio, setRadio] = useState('one')
   const [sw, setSw] = useState({ a: true, b: false })
@@ -273,27 +249,7 @@ export function Primitives() {
         {/* Viewing controls live with the stage they change, not in the
             site header — same law as the Configurator's stage bar. */}
         <div className="prim__controls">
-            <div className="cfg__prefs">
-              <span className="cfg__pick">
-                <select
-                  aria-label="Theme"
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
-                >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </span>
-              <span className="cfg__pick">
-                <select value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent">
-                  {ACCENTS.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </span>
-            </div>
+            <AppearancePrefs state={appearance} onChange={setAppearance} />
         </div>
         <h1 className="prim__title">Primitives</h1>
         <p className="prim__lede">
