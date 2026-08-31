@@ -1287,6 +1287,15 @@
 .lucet-thread__turn { min-inline-size: 0; display: grid; justify-items: start; }
 /* The group-chat grammar: your own turns sit right. */
 .lucet-thread__turn[data-self] { justify-items: end; }
+/* In a SHARED thread everyone stands on the same side: alignment stops
+   meaning "mine" the moment a third voice exists, and the faces take
+   over that job (the collaborative grammar — Slack, Figma). The tail
+   follows the face. */
+.lucet-thread[data-shared] .lucet-thread__turn[data-self] { justify-items: start; }
+.lucet-thread[data-shared] .lucet-thread__turn[data-self] .lucet-thread__prompt {
+  border-end-end-radius: var(--lucet-radius-surface);
+  border-end-start-radius: 4px;
+}
 
 /* Quiet separators between pairs: the structure Ian asked the marker to be.
    The hairline sits in the middle of real air, not instead of it. */

@@ -117,10 +117,15 @@ function Part({
 function MessageView({
   message,
   self,
+  shared,
   actions,
 }: {
   message: Message
   self: boolean
+  /** More than one human has spoken: the collaborative grammar applies
+      to EVERYONE — face, name, left — you included. Solo threads keep
+      the messaging grammar, where position says yours. */
+  shared?: boolean
   actions?: React.ReactNode
 }) {
   const isUser = message.role === 'user'
@@ -145,7 +150,7 @@ function MessageView({
        */}
       {!isUser ? <span className="lucet-visually-hidden">Assistant</span> : null}
 
-      {isUser && !self ? (
+      {isUser && (!self || shared) ? (
         /* Another person's turn: the face sits OUTSIDE the bubble,
            bottom-aligned to it — meeting the bubble's anchored tail
            corner, so the corner and the face point at each other. The
@@ -265,6 +270,9 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
   const restoredIndex = state.restoredFrom
     ? state.turns.findIndex((t) => t.id === state.restoredFrom)
     : -1
+  /* Shared the moment a second human speaks — derived from the turns,
+     never a flag a host could forget to set. */
+  const shared = new Set(state.turns.map((t) => t.prompt.authorId)).size > 1
   const setAside = state.turns.length - 1 - restoredIndex
   return (
     /*
@@ -274,7 +282,7 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
      * raw chunk and every piece of markdown syntax, which is the streaming
      * mess this component exists to clean up.
      */
-    <section className="lucet-thread" aria-label="Conversation">
+    <section className="lucet-thread" aria-label="Conversation" data-shared={shared || undefined}>
       {state.turns.map((turn) => {
         const response = turn.response
         /* Actions appear once a response has SETTLED — there is nothing to
@@ -310,7 +318,11 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
                 </span>
               </div>
             ) : null}
-            <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
+            <MessageView
+              message={turn.prompt}
+              self={turn.prompt.authorId === (selfId ?? null)}
+              shared={shared}
+            />
             {response ? (
               <MessageView
                 message={response}
