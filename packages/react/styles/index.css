@@ -1295,12 +1295,22 @@
   border-block-start: 1px solid var(--lucet-border);
 }
 
-.lucet-thread__head {
+/* Another person's turn: the face OUTSIDE the bubble, bottom-aligned —
+   the avatar and the anchored tail corner meet, so the corner points at
+   the speaker (the Figma Make composition). The name rides above the
+   bubble in the same column. */
+.lucet-thread__withface {
   display: flex;
-  align-items: center;
-  gap: var(--lucet-space-1);
-  margin-block-end: var(--lucet-space-1);
+  align-items: flex-end;
+  gap: var(--lucet-space-2);
 }
+.lucet-thread__spoke {
+  display: grid;
+  gap: var(--lucet-space-1);
+  justify-items: start;
+  min-inline-size: 0;
+}
+.lucet-thread__spoke .lucet-thread__author { padding-inline-start: 2px; }
 
 .lucet-thread__author {
   font-size: var(--lucet-text-xs);
@@ -1324,6 +1334,16 @@
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-secondary);
+}
+/* The TAIL CORNER: the speech bubble's tail, reduced to one anchored
+   corner — squared toward the speaker, so the bubble points at whoever
+   said it. Yours anchors bottom-right (where you are); another
+   person's anchors bottom-left, meeting their avatar. */
+.lucet-thread__turn[data-self] .lucet-thread__prompt {
+  border-end-end-radius: 4px;
+}
+.lucet-thread__turn[data-role='user']:not([data-self]) .lucet-thread__prompt {
+  border-end-start-radius: 4px;
   box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
 }
 .lucet-thread__prompt .lucet-thread__text {

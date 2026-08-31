@@ -143,14 +143,37 @@ function MessageView({
        * it returns with the Version Marker + Restore pattern, where a
        * restore affordance gives it meaning beyond jargon.)
        */}
-      {isUser && !self ? (
-        <div className="lucet-thread__head">
-          <Avatar name={message.authorId} />
-          <span className="lucet-thread__author">{message.authorId}</span>
-        </div>
-      ) : null}
       {!isUser ? <span className="lucet-visually-hidden">Assistant</span> : null}
 
+      {isUser && !self ? (
+        /* Another person's turn: the face sits OUTSIDE the bubble,
+           bottom-aligned to it — meeting the bubble's anchored tail
+           corner, so the corner and the face point at each other. The
+           name rides above the bubble in the same column. */
+        <div className="lucet-thread__withface">
+          <Avatar name={message.authorId} />
+          <div className="lucet-thread__spoke">
+            <span className="lucet-thread__author">{message.authorId}</span>
+            <PromptBody />
+          </div>
+        </div>
+      ) : (
+        <PromptBody />
+      )}
+      {terminal ? (
+        <p className="lucet-thread__ended" data-status={message.status} role="status">
+          <StateIcon name={terminal.icon} />
+          <span>
+            <strong>{terminal.word}.</strong> {message.reason ?? ''}
+          </span>
+        </p>
+      ) : null}
+      {actions}
+    </div>
+  )
+
+  function PromptBody() {
+    return (
       <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
         {rest.map((part) => (
           <Part
@@ -172,18 +195,8 @@ function MessageView({
           <ActivityOrb state="composing" label="Writing…" size="sm" />
         ) : null}
       </div>
-
-      {terminal ? (
-        <p className="lucet-thread__ended" data-status={message.status} role="status">
-          <StateIcon name={terminal.icon} />
-          <span>
-            <strong>{terminal.word}.</strong> {message.reason ?? ''}
-          </span>
-        </p>
-      ) : null}
-      {actions}
-    </div>
-  )
+    )
+  }
 }
 
 /**
