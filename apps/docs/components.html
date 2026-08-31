@@ -11,19 +11,7 @@
       rel="stylesheet"
     />
     <title>Lucet · Components</title>
-    <script>
-      // Before first paint: the STORED appearance wins (one choice carries
-      // across all three pages); the lab's own fallback stays monochrome so
-      // primitives are judged without accent seduction.
-      try { var a = JSON.parse(localStorage.getItem('lucet-docs-appearance') || '{}') } catch (e) { a = {} }
-      document.documentElement.setAttribute('data-theme', a.theme || 'dark')
-      document.documentElement.setAttribute('data-accent', a.accent || 'monochrome')
-      document.documentElement.setAttribute('data-neutral', a.neutral || 'accent')
-      if (a.expression === 'expressive') document.documentElement.setAttribute('data-expression', a.expression)
-      if (a.radius && a.radius !== 'default') document.documentElement.setAttribute('data-radius', a.radius)
-      document.documentElement.setAttribute('data-scale', a.scale || '100')
-      document.documentElement.setAttribute('data-typeface', a.typeface || 'inter')
-    </script>
+    <script src="/appearance-boot.js" data-accent="monochrome"></script>
   </head>
   <body>
     <div id="root"></div>

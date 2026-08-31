@@ -15,18 +15,7 @@
       rel="stylesheet"
     />
     <title>Lucet</title>
-    <script>
-      // Before first paint: the STORED appearance wins; dark/violet is only
-      // the site's resting fallback. One choice, three pages, no flash.
-      try { var a = JSON.parse(localStorage.getItem('lucet-docs-appearance') || '{}') } catch (e) { a = {} }
-      document.documentElement.setAttribute('data-theme', a.theme || 'dark')
-      document.documentElement.setAttribute('data-accent', a.accent || 'violet')
-      document.documentElement.setAttribute('data-neutral', a.neutral || 'accent')
-      if (a.expression === 'expressive') document.documentElement.setAttribute('data-expression', a.expression)
-      if (a.radius && a.radius !== 'default') document.documentElement.setAttribute('data-radius', a.radius)
-      document.documentElement.setAttribute('data-scale', a.scale || '100')
-      document.documentElement.setAttribute('data-typeface', a.typeface || 'inter')
-    </script>
+    <script src="/appearance-boot.js" data-accent="violet"></script>
   </head>
   <body>
     <div id="root"></div>
