@@ -31,9 +31,12 @@ export interface SuggestionChipsProps {
   disabled?: boolean | undefined
 }
 
+/* The split, said out loud: the labels alone were two short words doing
+   heavy lifting, and the example prompts had drifted similar (Ian). The
+   descriptor under each label carries the real difference. */
 const GROUPS = [
-  { kind: 'ask', label: 'Ask' },
-  { kind: 'do', label: 'Do' },
+  { kind: 'ask', label: 'Ask', desc: 'Answers, in the thread' },
+  { kind: 'do', label: 'Do', desc: 'Work handed off and run' },
 ] as const
 
 function Chip({
@@ -84,7 +87,7 @@ export function SuggestionChips({ suggestions, onPick, disabled }: SuggestionChi
     <div className="lucet-chips" role="group" aria-label="Suggestions">
       {kinded ? (
         <>
-          {GROUPS.map(({ kind, label }) => {
+          {GROUPS.map(({ kind, label, desc }) => {
             const set = suggestions.filter((s) => s.kind === kind)
             if (set.length === 0) return null
             return (
@@ -94,8 +97,9 @@ export function SuggestionChips({ suggestions, onPick, disabled }: SuggestionChi
                 role="group"
                 aria-label={`${label} suggestions`}
               >
-                <span className="lucet-chips__label" aria-hidden>
-                  {label}
+                <span className="lucet-chips__head" aria-hidden>
+                  <span className="lucet-chips__label">{label}</span>
+                  <span className="lucet-chips__desc">{desc}</span>
                 </span>
                 {set.map((s) => (
                   <Chip key={s.id} suggestion={s} onPick={onPick} disabled={disabled} />

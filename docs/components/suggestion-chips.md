@@ -21,7 +21,9 @@ Prompts made visible, on the cold start.
   a question, words back, cheap. `do` is a commission — the agent goes and
   works. Both still only send their words (the chip itself never touches a
   system; the agent does the doing), but flattening the two trains people
-  to tap without reading, so each kind gets its own labelled group and its
+  to tap without reading, so each kind gets its own labelled group — the label carrying a short
+  descriptor ("Answers, in the thread" / "Work handed off and run"),
+  because two bare words let the split blur — and its
   own glyph: a speech square asks, the little agent does — shape alone,
   one ink for both (an accent on `do` was tried and cut: two colours in
   one list read as inconsistency, not meaning). An earlier draft of

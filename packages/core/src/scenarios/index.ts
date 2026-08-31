@@ -46,7 +46,7 @@ export const formatted = defineScenario({
   group: 'Baseline',
   description:
     'A response with structure — headings, lists, a table, code — rendered as it streams, never after.',
-  prompt: 'Turn my notes into a short plan for the release.',
+  prompt: 'Draft the release plan and set up the folder structure.',
   steps: [
     { type: 'wait', ms: 400 },
     {
@@ -116,7 +116,7 @@ export const toolSuccess = defineScenario({
   label: 'Tool call succeeds',
   group: 'Tools',
   description: 'A tool runs and returns. Shows the call lifecycle in context.',
-  prompt: 'Check the three sources I flagged.',
+  prompt: 'Check that the sources I flagged are still current.',
   steps: [
     { type: 'wait', ms: 250 },
     {
@@ -141,7 +141,7 @@ export const toolPartialFailure = defineScenario({
   group: 'Tools',
   description:
     'The hard case. Some of the data came back and some did not, so the answer is real but incomplete. Silently answering from two thirds of the data is the failure mode this state exists to prevent.',
-  prompt: 'Check the three sources I flagged.',
+  prompt: 'Check that the sources I flagged are still current.',
   steps: [
     { type: 'wait', ms: 250 },
     {

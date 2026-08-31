@@ -252,6 +252,9 @@ body {
 .cfg__side-new {
   display: flex;
   align-items: center;
+  /* A boxed action CENTRES: left-hugging content in a full-width box
+     read as a broken input, not a button (Ian). */
+  justify-content: center;
   gap: 8px;
   min-block-size: 30px;
   padding-inline: 9px;
@@ -303,6 +306,42 @@ body {
   background: var(--lucet-subtle);
   color: var(--lucet-foreground);
 }
+/* The demo's reset, wearing the stage bar's control grammar — a word
+   and its glyph, not app chrome. */
+.cfg__stage-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 26px;
+  margin-inline-start: 10px;
+  padding-inline: 9px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__stage-reset:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__stage-reset:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__stage-reset svg {
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* The demo page itself gets narrow before the phone view does; below the
    comfortable width the room folds away and the thread keeps the stage. */
 @media (max-width: 1100px) {
@@ -345,13 +384,18 @@ body {
 /* Window dots: honestly generic set dressing — a window is a window. They
    belong to the desktop containers only; the phone hides them. */
 .cfg__dots { display: inline-flex; gap: 6px; margin-inline-end: 4px; }
+/* The traffic lights are the OS's, so they wear the OS's colours — the
+   monochrome try read as unfinished, not restrained (Ian). Literal hex
+   on purpose: window hardware does not follow the app's theme. */
 .cfg__dots i {
   inline-size: 9px;
   block-size: 9px;
   border-radius: 50%;
-  background-color: var(--lucet-subtle);
   box-shadow: var(--lucet-hairline);
 }
+.cfg__dots i:nth-child(1) { background-color: #ff5f57; }
+.cfg__dots i:nth-child(2) { background-color: #febc2e; }
+.cfg__dots i:nth-child(3) { background-color: #28c840; }
 .cfg__phone .cfg__dots { display: none; }
 
 /* Phone dressing: a status strip and a home indicator, neutral. */

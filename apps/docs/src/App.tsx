@@ -175,13 +175,11 @@ function EventLog() {
  * `aside` is the container's own furniture (the full page's sidebar); it sits
  * inside the frame, beside the thread, and the thread neither knows nor cares. */
 function AppCore({
-  onReset,
   onSuggest,
   aside,
   chrome = 'window',
   home,
 }: {
-  onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
   /* Each container wears its own head — and a container that brings its
@@ -254,32 +252,18 @@ function AppCore({
     <>
       {chrome === 'bare' ? null : (
         <div className="cfg__frame-bar">
-          {/* Set dressing, honestly generic: a window is a window. */}
+          {/* Set dressing, honestly generic: a window is a window. Reset
+             used to live here, disguised as app chrome — but Reset is the
+             DEMO'S control, so it moved to the stage bar where the demo's
+             other controls live, and now no container can hide it. */}
           <span className="cfg__dots" aria-hidden>
             <i /><i /><i />
           </span>
-          {/* The window title is the DOCUMENT'S title, and the document is
-             the thread: its own first words, or the honest “New thread”.
-             A title that never changes is what makes a mock feel mock. */}
-          <span className="cfg__frame-title">
-            {state.turns[0]?.prompt.parts
-              .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
-              .join(' ') || 'New thread'}
-          </span>
-          <button
-            type="button"
-            className="cfg__reset"
-            aria-label="Reset the thread"
-            onClick={() => {
-              lucet.reset()
-              // A wiped thread has no current state; the rail must not claim one.
-              onReset?.()
-            }}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
-            </svg>
-          </button>
+          {/* The window titles itself the way a desktop app does: by the
+             APPLICATION. (A live thread-title version was tried here and
+             read as odd chrome — the conversation's name belongs to inner
+             surfaces, and the phone header will take it.) */}
+          <span className="cfg__frame-title">Application Name</span>
         </div>
       )}
 
@@ -580,6 +564,22 @@ export function App() {
                 </button>
               ))}
             </div>
+            {/* The demo's own control, in the demo's own chrome: wipes the
+               running thread in WHICHEVER container is showing. */}
+            <button
+              type="button"
+              className="cfg__stage-reset"
+              aria-label="Reset the thread"
+              onClick={() => {
+                lucet.reset()
+                setActive(null)
+              }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
+              </svg>
+              Reset
+            </button>
             <AppearancePrefs state={themeState} onChange={setThemeState} />
           </div>
 
@@ -587,7 +587,6 @@ export function App() {
             <section className="cfg__frame cfg__frame--app" aria-label="The running app">
               <AppCore
                 home
-                onReset={() => setActive(null)}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)
@@ -722,6 +721,9 @@ export function App() {
                   hole and three page-shaped holes. One control is live. */}
               <div className="cfg__mock-app">
               <div className="cfg__mock-bar">
+                <span className="cfg__dots" aria-hidden>
+                  <i /><i /><i />
+                </span>
                 <span className="cfg__mock-brand" aria-hidden>
                   <MockBrandMark />
                   Application Name
@@ -869,8 +871,7 @@ export function App() {
                     {drawerPane === 'thread' ? (
                       <AppCore
                         chrome="bare"
-                        onReset={() => setActive(null)}
-                        onSuggest={(s) => {
+                                onSuggest={(s) => {
                           writeStateParam(s.id)
                           fire(s.id)
                         }}
@@ -936,7 +937,6 @@ export function App() {
                   </span>
                 </div>
                 <AppCore
-                onReset={() => setActive(null)}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)
