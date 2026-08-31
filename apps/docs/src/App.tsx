@@ -319,8 +319,26 @@ function AppCore({
                   <i /><i /><i />
                 </div>
                 {home ? (
+                  /* The brand's GLYPH, not its tile: the plated mark is
+                     chrome furniture and read as a sticker over the
+                     atmosphere (Ian). In open air the same ring-and-core
+                     geometry goes flat, in the page's own ink, at a size
+                     that defers to the words. */
                   <span className="cfg__empty-mark" aria-hidden>
-                    <MockBrandMark idp="fbm2" />
+                    <svg viewBox="0 0 96 96">
+                      <circle
+                        cx="48"
+                        cy="49"
+                        r="24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="7.6"
+                        strokeDasharray="112 39"
+                        strokeLinecap="round"
+                        transform="rotate(156 48 49)"
+                      />
+                      <circle cx="48" cy="49" r="9.5" fill="currentColor" />
+                    </svg>
                   </span>
                 ) : null}
                 <p className="cfg__empty-hello">How can I help?</p>

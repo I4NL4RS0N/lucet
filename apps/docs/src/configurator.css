@@ -721,15 +721,15 @@ body {
   to { transform: translateY(10px) rotate(-1.5deg); }
 }
 
-/* The home's mark, over the greeting — the genre's grammar. */
-.cfg__empty-mark .cfg__mock-logo {
-  inline-size: 44px;
-  block-size: 44px;
-  border-radius: 12px;
-  box-shadow:
-    0 0 0 0.5px oklch(0 0 0 / 0.55),
-    0 1px 1px oklch(0 0 0 / 0.35),
-    0 6px 16px -4px oklch(0 0 0 / 0.4);
+/* The home's mark, over the greeting — the genre's grammar: a flat
+   glyph in the page's ink, floating in the atmosphere's light. The
+   plated tile was tried here and cut — plates belong to chrome. */
+.cfg__empty-mark { color: var(--lucet-foreground); }
+.cfg__empty-mark svg {
+  display: block;
+  inline-size: 32px;
+  block-size: 32px;
+  opacity: 0.92;
 }
 
 /* The greeting is the face now — a headline over lit air. */
