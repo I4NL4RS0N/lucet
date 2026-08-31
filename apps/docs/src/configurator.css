@@ -22,7 +22,10 @@ html {
 
 body {
   margin: 0;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  /* The token, not a hardcoded face: this page must obey its own typeface
+     axis. Hardcoding Inter here was why the More menu's Typeface appeared
+     to do nothing — the tokens changed and nobody on the page read them. */
+  font-family: var(--lucet-font-sans);
   font-feature-settings: 'cv05' 1, 'ss03' 1;
   background: var(--lucet-background);
   color: var(--lucet-foreground);

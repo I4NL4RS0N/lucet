@@ -1532,6 +1532,11 @@
   line-height: var(--lucet-leading-prose);
   color: var(--lucet-foreground);
 }
+/* The response document takes the PROSE slot — the whole point of the
+   'reading' typeface option: chrome stays a UI sans, the document is set
+   in a reading face, because a document is what it is. Everywhere else
+   the prose slot resolves to the sans and this rule is invisible. */
+.lucet-thread__doc .lucet-md { font-family: var(--lucet-font-prose); }
 .lucet-md__p { margin: 0; text-wrap: pretty; }
 
 /* Headings scale from the MARKDOWN level (the author's intent), not the
