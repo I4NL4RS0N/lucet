@@ -491,7 +491,10 @@ function PhoneNav({
       ? 'Chat history'
       : state.turns[0]?.prompt.parts
           .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
-          .join(' ') || 'New thread'
+          .join(' ') ||
+        /* An empty thread is the APP'S home screen, so the app's name —
+           the title becomes a conversation's only once one exists. */
+        'Application Name'
   return (
     <div className="cfg__frame-bar cfg__phone-bar">
       <details className="cfg__dmenu">
