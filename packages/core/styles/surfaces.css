@@ -20,13 +20,14 @@
 
 /* ---------- Light + System (default) ---------- */
 :root {
-  /* The page recedes a REAL step, not a token one: at neutral-50 (0.985)
-     the ground sat 1.5% from the white cards and light read flat — no
-     figure, no ground (Ian's crit, twice). 0.972 with the neutral hue
-     leaning in gives white something to stand on while staying clearly
-     above Expressive-light's deeper 0.945 recede. Pure white still means
-     "touchable"; now the page visibly is not it. */
-  --lucet-surface-ground: oklch(0.972 calc(var(--lucet-neutral-c) * 2.5) var(--lucet-neutral-h));
+  /* WHITE, by the ink-forward law. Two greyed grounds were tried first —
+     0.985 (flat: 1.5% from the cards) and 0.972 (better, still a grey
+     wash) — before Ian's reference settled it: good light mode has ONE
+     white ground, elevation carried by ring and shadow rather than by
+     value, and grey appearing only where it means something (a well, a
+     bubble). The felt shadows and 0.9 hairlines from the same passes are
+     what make white-on-white hold. */
+  --lucet-surface-ground: oklch(1 0 0);
   --lucet-surface-raised: var(--lucet-neutral-0);
   --lucet-surface-overlay: var(--lucet-neutral-0);
   --lucet-surface-sunken: var(--lucet-neutral-50);
