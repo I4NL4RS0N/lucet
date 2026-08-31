@@ -800,6 +800,9 @@ body {
 .cfg__composer--center .lucet-budget__panel {
   inset-block-end: auto;
   inset-block-start: calc(100% + 6px);
+  /* Downward here, so it arrives from above and grows from its top edge. */
+  --lucet-panel-from: -3px;
+  transform-origin: top;
 }
 /* Pinned menus breathe off the composer's border instead of sitting on
    it — the same "too close" fix, at the floor. */

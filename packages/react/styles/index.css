@@ -1042,6 +1042,7 @@
 }
 
 .lucet-thread__pair {
+  transition: opacity var(--lucet-duration-normal) var(--lucet-ease-out);
   display: grid;
   /* One step more than before: at space-5 the answer started before the
      prompt had landed. Belonging still reads — the between-turn beat is
@@ -1215,6 +1216,17 @@
 .lucet-thread__doc .lucet-md {
   animation: lucet-thread-arrive 220ms var(--lucet-ease-out) backwards;
 }
+@media (prefers-reduced-motion: reduce) {
+  /* Literal duration, so the token collapse in motion.css never reaches
+     it — guarded here like the drawer. */
+  .lucet-thread__turn,
+  .lucet-thread__ended,
+  .lucet-tool,
+  .lucet-reasoning,
+  .lucet-thread__doc .lucet-md {
+    animation: none;
+  }
+}
 
 /* ============================================================
  * Feedback controls — what you can DO with a settled response, in quiet
@@ -1290,6 +1302,9 @@
 .lucet-actions__btn[data-pop] svg {
   animation: lucet-thumb-pop 400ms var(--lucet-ease-out);
   transform-origin: 45% 60%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucet-actions__btn[data-pop] svg { animation: none; }
 }
 
 .lucet-thread__pair:not([data-latest]) .lucet-actions {
@@ -1662,7 +1677,33 @@
   border-block-end: 1.5px solid currentColor;
   rotate: 45deg;
 }
+/* Trigger-anchored surfaces ARRIVE from their trigger: a breath of
+   scale and a 3px step from the edge they grow out of, never a pop
+   from nothing. Upward panels rise; the one downward seat (the home's
+   centre composer) overrides --lucet-panel-from. Durations ride the
+   tokens, so reduced motion collapses these with everything else. */
+@keyframes lucet-panel-in {
+  from {
+    opacity: 0;
+    scale: 0.98;
+    translate: 0 var(--lucet-panel-from, 3px);
+  }
+}
+@keyframes lucet-disclose-in {
+  from {
+    opacity: 0;
+    translate: 0 2px;
+  }
+}
+.lucet-reasoning[open] > .lucet-reasoning__body,
+.lucet-tool[open] > * + *,
+.lucet-sources details[open] > * + * {
+  animation: lucet-disclose-in var(--lucet-duration-fast) var(--lucet-ease-out) backwards;
+}
+
 .lucet-scope__panel {
+  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease-out) backwards;
+  transform-origin: bottom;
   position: absolute;
   inset-block-end: calc(100% + 6px);
   inset-inline-start: 0;
@@ -1796,6 +1837,8 @@
   rotate: 45deg;
 }
 .lucet-budget__panel {
+  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease-out) backwards;
+  transform-origin: bottom;
   position: absolute;
   /* Anchored to the BAR, not the trigger: the trigger's seat moves per
      container (beside Send on the full page, left of the row on the
