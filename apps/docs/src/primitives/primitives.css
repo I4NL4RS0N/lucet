@@ -226,6 +226,72 @@ body {
 .stage--tight { padding: 22px; }
 
 .spec { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+/* Preview | Code: the specimen's head holds the toggle; the code well
+   shows the fixture's own events, generated so it cannot drift. */
+.spec__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  inline-size: 100%;
+  gap: 12px;
+}
+.spec__tabs { display: inline-flex; gap: 2px; }
+.spec__tabs button {
+  min-block-size: 24px;
+  padding-inline: 9px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--ink-3);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.spec__tabs button:hover { color: var(--lucet-foreground); }
+.spec__tabs button[aria-pressed='true'] {
+  background: var(--lucet-muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--lucet-foreground);
+}
+.spec__tabs button:focus-visible { outline: 2px solid var(--lucet-ring); outline-offset: 2px; }
+.spec__code {
+  position: relative;
+  inline-size: 100%;
+}
+.spec__code pre {
+  margin: 0;
+  padding: 14px 16px;
+  max-block-size: 340px;
+  overflow: auto;
+  border-radius: 10px;
+  background: var(--lucet-muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  white-space: pre;
+}
+.spec__code pre:focus-visible { outline: 2px solid var(--lucet-ring); outline-offset: 2px; }
+.spec__copy {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  min-block-size: 24px;
+  padding-inline: 9px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--lucet-card);
+  box-shadow: 0 0 0 1px var(--line);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.spec__copy:hover { color: var(--lucet-foreground); }
+.spec__copy:focus-visible { outline: 2px solid var(--lucet-ring); outline-offset: 2px; }
+
 .spec__label {
   font-size: 11px;
   color: var(--ink-3);

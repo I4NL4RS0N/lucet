@@ -37,7 +37,119 @@ const settle = (id: string, status: 'ready' | 'failed', reason: string | null = 
   reason,
 })
 
-type Fixture = { label: string; note: string; state: ThreadState; streaming?: boolean }
+type Fixture = {
+  label: string
+  note: string
+  /** The state IS these events, replayed — and the Code view shows them,
+      generated from this very array so it can never drift. */
+  events: readonly LucetEvent[]
+  streaming?: boolean
+}
+
+/* Replay once per fixture; render reads the cache. */
+const FIXTURE_STATE = new WeakMap<Fixture, ThreadState>()
+function stateOf(f: Fixture): ThreadState {
+  let st = FIXTURE_STATE.get(f)
+  if (!st) {
+    st = play(f.events)
+    FIXTURE_STATE.set(f, st)
+  }
+  return st
+}
+
+/* The Code view: the exact events above the exact usage — the state
+   inspector doubling as API documentation, per the brief. */
+function codeFor(f: Fixture, usage: string): string {
+  const lines = f.events.map((e) => `  ${JSON.stringify(e)},`)
+  return [
+    '// This state is nothing but these events, replayed through the reducer.',
+    ...(lines.length === 0
+      ? ['const events: LucetEvent[] = []']
+      : ['const events: LucetEvent[] = [', ...lines, ']']),
+    "const state = events.reduce((s, e) => reduce(s, e, { now: 0 }), createInitialState('app'))",
+    '',
+    usage,
+  ].join('\n')
+}
+
+const USAGE_THREAD = '<Thread state={state} selfId="you" onRetry={onRetry} onFeedback={onFeedback} />'
+
+/**
+ * Preview | Code, the adoption affordance — with the Lucet difference:
+ * the Code view is generated FROM the fixture's own events, so what you
+ * copy is the exact truth of what you saw. Elements shows one snippet
+ * for one happy path; this shows the event story of every state.
+ */
+function Example({
+  label,
+  note,
+  code,
+  max,
+  children,
+}: {
+  label: string
+  note: string
+  code: string
+  max?: number
+  children: React.ReactNode
+}) {
+  const [view, setView] = useState<'preview' | 'code'>('preview')
+  const [copied, setCopied] = useState(false)
+  return (
+    <div className="spec" style={{ inlineSize: '100%' }}>
+      <div className="spec__head">
+        <span className="spec__label">{label}</span>
+        <div className="spec__tabs" role="group" aria-label="View as">
+          {(['preview', 'code'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+            >
+              {v === 'preview' ? 'Preview' : 'Code'}
+            </button>
+          ))}
+        </div>
+      </div>
+      {view === 'preview' ? (
+        <div style={{ inlineSize: '100%', maxInlineSize: max ?? 640 }}>{children}</div>
+      ) : (
+        <div className="spec__code">
+          <button
+            type="button"
+            className="spec__copy"
+            onClick={() => {
+              navigator.clipboard
+                .writeText(code)
+                .then(() => {
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 1600)
+                })
+                .catch(() => setCopied(false))
+            }}
+          >
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+          <pre tabIndex={0} role="region" aria-label={`${label} — code`}>
+            <code>{code}</code>
+          </pre>
+        </div>
+      )}
+      <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{note}</p>
+    </div>
+  )
+}
+const USAGE_PROMPT = [
+  '<PromptInput',
+  '  composer={state.composer}',
+  '  model={state.model}',
+  '  service={state.service}',
+  '  selfId="you"',
+  '  onChange={…} onSubmit={…} onQueue={…} onModelChange={…}',
+  '  onAttach={…} onRemoveAttachment={…} onRetryAttachment={…}',
+  '/>',
+].join('\n')
 
 /* Build a full turn: prompt in, response streamed, settled however told. */
 function turn(
@@ -156,17 +268,17 @@ const SOURCES_FIXTURES: readonly Fixture[] = [
   {
     label: 'Cited, everything standing',
     note: 'Markers in the text, the bibliography under the answer. Sources are part of the message.',
-    state: play(CITE(1)),
+    events: (CITE(1)),
   },
   {
     label: 'A source updated since it was cited',
     note: 'The citation aged after settle: caution ink, the clock turned back, and the words say what happened.',
-    state: play(CITE(2)),
+    events: (CITE(2)),
   },
   {
     label: 'A source removed since it was cited',
     note: 'Struck through and said so, in the danger ink. A dead reference marked dead beats a confident link to nothing.',
-    state: play(CITE(3)),
+    events: (CITE(3)),
   },
 ]
 
@@ -188,12 +300,12 @@ const VERSIONS_FIXTURES: readonly Fixture[] = [
   {
     label: 'Superseded, and it says so',
     note: 'Every prompt is a commit: the retry carries the same words as v2, and v1 wears its marker instead of vanishing.',
-    state: play(VERSION_EVENTS),
+    events: (VERSION_EVENTS),
   },
   {
     label: 'The restored view',
     note: 'Walking back to v1: later turns set aside — dimmed, inert, hidden from the reader — and the banner offers the one way forward.',
-    state: play([...VERSION_EVENTS, { type: 'restore/entered' as const, turnId: 't1' }]),
+    events: ([...VERSION_EVENTS, { type: 'restore/entered' as const, turnId: 't1' }]),
   },
 ]
 
@@ -201,7 +313,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
   {
     label: 'A finished turn, attachments and all',
     note: 'The prompt keeps a surface and shows what went with it; the answer is a document — no bubble, full measure.',
-    state: play([
+    events: ([
       add('f1', 'quarterly-summary.pdf'), settle('f1', 'ready'),
       ...turn(1, 'What changed between these two revisions?', {
         attachmentIds: ['f1'],
@@ -221,18 +333,18 @@ const THREAD_FIXTURES: readonly Fixture[] = [
   {
     label: 'Streaming',
     note: 'The caret rides the live edge of the text — the eye tracks one thing.',
-    state: play(
-      turn(1, 'Summarise the meeting notes.', {
+    events: [
+      ...turn(1, 'Summarise the meeting notes.', {
         reply: 'Three decisions were made. The first covers the',
         settle: 'streaming',
       }),
-    ),
+    ],
   },
   {
     label: 'A tool at work',
     note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run.',
-    state: play(
-      turn(1, 'Check the three sources I flagged.', {
+    events: [
+      ...turn(1, 'Check the three sources I flagged.', {
         tool: {
           name: 'Searching the documents',
           status: 'running',
@@ -240,13 +352,13 @@ const THREAD_FIXTURES: readonly Fixture[] = [
         },
         settle: 'streaming',
       }),
-    ),
+    ],
   },
   {
     label: 'A tool, partly returned',
     note: 'The differentiator. Succeeded-or-failed is the lie that lets a product answer from two thirds of the data — partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it.',
-    state: play(
-      turn(1, 'Check the three sources I flagged.', {
+    events: [
+      ...turn(1, 'Check the three sources I flagged.', {
         tool: {
           name: 'Searched the documents',
           status: 'partial',
@@ -256,13 +368,13 @@ const THREAD_FIXTURES: readonly Fixture[] = [
         },
         reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
       }),
-    ),
+    ],
   },
   {
     label: 'A tool that failed, with nothing to show',
     note: 'No result came back, so there is no receipt to open on that side — and no payload at all means no chevron: a disclosure over an empty body is a dead promise, and this library has shipped its last one.',
-    state: play(
-      turn(1, 'Check the vendor quote.', {
+    events: [
+      ...turn(1, 'Check the vendor quote.', {
         tool: {
           name: 'Searched the documents',
           status: 'failed',
@@ -270,33 +382,33 @@ const THREAD_FIXTURES: readonly Fixture[] = [
         },
         reply: 'I could not check it — the source did not respond. Ask again and I will retry.',
       }),
-    ),
+    ],
   },
   {
     label: 'Thinking, live',
     note: 'While the model thinks, the row IS the loading state: the orb and its word, expandable mid-stream for anyone who wants to watch the working arrive.',
-    state: play(
-      turn(1, 'Which plan is more likely to slip?', {
+    events: [
+      ...turn(1, 'Which plan is more likely to slip?', {
         reasoning: 'Both end on the same date, so comparing end dates says nothing. The second front-loads its',
         settle: 'streaming',
       }),
-    ),
+    ],
   },
   {
     label: 'Thought about it',
     note: 'Settled thinking is a quiet fact wearing the quote’s grammar — the machine quoting its own working, collapsed by default, never pushed at you. A real disclosure now: it opens.',
-    state: play(
-      turn(1, 'Which plan is more likely to slip?', {
+    events: [
+      ...turn(1, 'Which plan is more likely to slip?', {
         reasoning: 'Both end on the same date, so comparing end dates says nothing. The second front-loads its dependencies, which shortens the critical path but leaves no slack if any single one moves.',
         reply: 'The second, though not for the reason the timeline suggests. Every task depends on the one before it, so a single delay moves the end date by the same amount.',
       }),
-    ),
+    ],
   },
   {
     label: 'A formatted answer',
     note: 'The response is a document, and markdown is the dress documents arrive in: headings demoted below the page’s own, links that earn the click, a table in a hairline grid, code with honest copy.',
-    state: play(
-      turn(1, 'Turn my notes into a short plan.', {
+    events: [
+      ...turn(1, 'Turn my notes into a short plan.', {
         reply: [
           '## The plan',
           '',
@@ -321,64 +433,64 @@ const THREAD_FIXTURES: readonly Fixture[] = [
           '> If a step slips, say so the day it slips — *that* day, not Friday.',
         ].join('\n'),
       }),
-    ),
+    ],
   },
   {
     label: 'Streaming into a code block',
     note: 'At the live edge, markers are promises: the open fence is already a code surface, the caret rides inside it, and copy waits — offering half a snippet would hand you broken code.',
-    state: play(
-      turn(1, 'Show the folder layout.', {
+    events: [
+      ...turn(1, 'Show the folder layout.', {
         reply: 'Flat, three files:\n\n```text\nplan/\n  brief.md',
         settle: 'streaming',
       }),
-    ),
+    ],
   },
   {
     label: 'Stopped inside a code block',
     note: 'The fence never closed, but at settle the grace is withdrawn and what arrived is kept — rendered as code, copyable, with the ending saying so in words.',
-    state: play(
-      turn(1, 'Show the folder layout.', {
+    events: [
+      ...turn(1, 'Show the folder layout.', {
         reply: 'Flat, three files:\n\n```text\nplan/\n  brief.md',
         settle: 'interrupted',
         reason: 'Stopped by you. What arrived is kept.',
       }),
-    ),
+    ],
   },
   {
     label: 'Stopped early',
     note: 'What arrived stays, and the ending says so plainly.',
-    state: play(
-      turn(1, 'List every open question.', {
+    events: [
+      ...turn(1, 'List every open question.', {
         reply: 'There are four. The first two concern the budget',
         settle: 'interrupted',
         reason: 'Stopped by you. What arrived is kept.',
       }),
-    ),
+    ],
   },
   {
     label: 'Failed',
     note: 'A failure is an ending with words, never a spinner that never resolves.',
-    state: play(
-      turn(1, 'Compare the proposals.', {
+    events: [
+      ...turn(1, 'Compare the proposals.', {
         settle: 'failed',
         reason: 'The service dropped the connection. Nothing was charged.',
       }),
-    ),
+    ],
   },
   {
     label: 'Declined',
     note: 'A refusal is not an error, so it does not wear red. It says why, calmly.',
-    state: play(
-      turn(1, 'Write it in her voice exactly.', {
+    events: [
+      ...turn(1, 'Write it in her voice exactly.', {
         settle: 'refused',
         reason: 'That would imitate a real person. Happy to draft it in a neutral voice instead.',
       }),
-    ),
+    ],
   },
   {
     label: 'Multiplayer — two people, one thread',
     note: 'The group-chat grammar: yours sit right with no avatar, other people sit left with a face — the humans get the avatars, the assistant is just its document.',
-    state: play([
+    events: ([
       ...turn(1, 'Pull the numbers for the northern site.', { author: 'Ada', reply: 'Done — the totals are in the table above, and the outlier is flagged.' }),
       ...turn(2, 'And the same for the southern one?', { author: 'you', reply: 'Same shape, one difference: the southern site peaks a month later.' }),
     ]),
@@ -390,22 +502,22 @@ const CORE_FIXTURES: readonly Fixture[] = [
   {
     label: 'Empty',
     note: 'Nothing to send yet, so the arrow waits. No nagging text — an empty box explains itself.',
-    state: play([]),
+    events: ([]),
   },
   {
     label: 'Composing',
     note: 'Something to send: the arrow is ready.',
-    state: play([type('Summarise the attached documents and list anything unresolved.')]),
+    events: ([type('Summarise the attached documents and list anything unresolved.')]),
   },
   {
     label: 'Attachment uploading',
     note: 'A file is still uploading, so sending waits — and says so, up top.',
-    state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'site-photograph.jpg', 'image')]),
+    events: ([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'site-photograph.jpg', 'image')]),
   },
   {
     label: 'Attachment variety',
     note: 'Icons show the kind of file, and the ending (.pdf, .mp4) never gets cut off, because the ending is what tells you the format.',
-    state: play([
+    events: ([
       type('Compare these.'),
       add('v1', 'site-visit-recordings-2026-08-final-selects-building-a.mp4'), settle('v1', 'ready'),
       add('v2', 'budget-projections-fy27.xlsx'), settle('v2', 'ready'),
@@ -416,12 +528,12 @@ const CORE_FIXTURES: readonly Fixture[] = [
   {
     label: 'Attachment failed',
     note: 'This file didn’t upload. Try again (↻) or remove it (×) — it is never dropped silently. The strip above says what to do; the chip says which file and why.',
-    state: play([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
+    events: ([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
   },
   {
     label: 'Service down',
     note: 'Nothing can send right now, and it says so. Your draft stays in the box. (A merely slow service never blocks you.)',
-    state: play([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' }]),
+    events: ([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' }]),
   },
 ]
 
@@ -437,12 +549,12 @@ const MULTI_FIXTURES: readonly Fixture[] = [
   {
     label: 'Locked — another person’s turn',
     note: 'Ada pressed send, so the thread is hers until her answer finishes. You can keep typing — Queue lines yours up to go next.',
-    state: play([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
+    events: ([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
   },
   {
     label: 'Queued behind her turn',
     note: 'Yours is lodged and the field is yours again for whatever comes next. It sends itself the moment her answer finishes — a promise the runtime keeps, not just copy.',
-    state: play([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }]),
+    events: ([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }]),
   },
 ]
 
@@ -543,13 +655,11 @@ export function ComponentsStage() {
         <Section n="02" name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             {CORE_FIXTURES.map((f) => (
-              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
-                <span className="spec__label">{f.label}</span>
-                <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
-                    composer={f.state.composer}
-                    model={f.state.model}
-                    service={f.state.service}
+                    composer={stateOf(f).composer}
+                    model={stateOf(f).model}
+                    service={stateOf(f).service}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -560,9 +670,7 @@ export function ComponentsStage() {
                     onAttach={noop}
                     {...(f.streaming ? { streaming: true, onStop: noop } : {})}
                   />
-                </div>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
-              </div>
+              </Example>
             ))}
           </div>
         </Section>
@@ -574,13 +682,11 @@ export function ComponentsStage() {
         >
           <div className="stage" style={{ display: 'grid', gap: 26 }}>
             {MULTI_FIXTURES.map((f) => (
-              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
-                <span className="spec__label">{f.label}</span>
-                <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
-                    composer={f.state.composer}
-                    model={f.state.model}
-                    service={f.state.service}
+                    composer={stateOf(f).composer}
+                    model={stateOf(f).model}
+                    service={stateOf(f).service}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -590,9 +696,7 @@ export function ComponentsStage() {
                     onRetryAttachment={noop}
                     onAttach={noop}
                   />
-                </div>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
-              </div>
+              </Example>
             ))}
           </div>
         </Section>
@@ -600,13 +704,9 @@ export function ComponentsStage() {
         <Section n="04" name="Thread — every ending" note="a response is never simply loading or done">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {THREAD_FIXTURES.map((f) => (
-              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
-                <span className="spec__label">{f.label}</span>
-                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
-                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
-                </div>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
-              </div>
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
             ))}
           </div>
         </Section>
@@ -614,13 +714,9 @@ export function ComponentsStage() {
         <Section n="04b" name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {SOURCES_FIXTURES.map((f) => (
-              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
-                <span className="spec__label">{f.label}</span>
-                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
-                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
-                </div>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
-              </div>
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
             ))}
           </div>
         </Section>
@@ -628,13 +724,9 @@ export function ComponentsStage() {
         <Section n="04c" name="Version marker + restore" note="every prompt is a commit; the thread is the version history">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {VERSIONS_FIXTURES.map((f) => (
-              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
-                <span className="spec__label">{f.label}</span>
-                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
-                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
-                </div>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
-              </div>
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
             ))}
           </div>
         </Section>
