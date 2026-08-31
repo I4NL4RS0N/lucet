@@ -219,7 +219,17 @@ function EventLog() {
   const log = useEventLog()
   const recent = log.slice(-30).reverse()
   return (
-    <details className="cfg__log">
+    <details
+      className="cfg__log"
+      onToggle={(e) => {
+        /* The log sits at the rail's floor, usually below its scroll fold —
+           opened from the top, it expanded into nothing the eye could see.
+           An action the page answers off-screen is an action that appears
+           to do nothing. */
+        if (e.currentTarget.open)
+          e.currentTarget.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }}
+    >
       <summary>Event log</summary>
       <div className="cfg__log-body" aria-label="Event log">
         {recent.map((entry) => (
