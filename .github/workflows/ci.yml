@@ -49,6 +49,8 @@ jobs:
       # colour and never render side by side.
       - name: Theme parity audit
         run: node scripts/audit-theme-parity.mjs
+      - name: State audit
+        run: node scripts/audit-states.mjs
 
       # The two audits above check what states LOOK like. This one drives a
       # real pointer and checks that states ARRIVE: dead hovers, disabled

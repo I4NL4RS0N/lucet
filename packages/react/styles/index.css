@@ -874,6 +874,7 @@
 /* ---- the bar ---- */
 
 .lucet-prompt__bar {
+  position: relative;
   display: flex;
   /* Wraps only for full-row children (the scope's moved note). */
   flex-wrap: wrap;
@@ -1935,7 +1936,9 @@
  * shuffles the bar.
  * ============================================================ */
 
-.lucet-budget { position: relative; }
+/* Not its own positioning context: the PANEL anchors to the bar (below),
+   so it can never overhang a container edge the trigger sits near. */
+.lucet-budget { }
 .lucet-budget__button {
   display: inline-flex;
   align-items: center;
@@ -1988,12 +1991,18 @@
 }
 .lucet-budget__panel {
   position: absolute;
+  /* Anchored to the BAR, not the trigger: the trigger's seat moves per
+     container (beside Send on the full page, left of the row on the
+     phone), and a trigger-anchored panel overhung whichever edge was
+     nearest. The bar is inside every container by definition, so the
+     panel opens above it, at its end edge, capped at its width. */
   inset-block-end: calc(100% + 6px);
-  inset-inline-start: 0;
+  inset-inline-end: 0;
   z-index: 30;
   display: grid;
   gap: 2px;
-  min-inline-size: 264px;
+  min-inline-size: min(264px, 100%);
+  max-inline-size: 100%;
   padding: 6px;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);

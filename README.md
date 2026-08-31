@@ -40,7 +40,7 @@ model, before you commit).
 
 **Accessibility is a gate, not a pass at the end.** WCAG 2.2 AA is enforced on
 every component by an audit that drives a real Chromium and measures what is
-actually painted — 3,600+ checks across 44 theme, expression and accent
+actually painted — 3,500+ checks across 44 theme, expression and accent
 combinations, run in CI on every push to `main` and every pull request. It renders a real browser on purpose:
 three of the first four contrast failures were cascade and paint behaviour that
 parsing tokens could never have seen.
