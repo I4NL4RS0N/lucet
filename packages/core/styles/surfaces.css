@@ -27,7 +27,11 @@
   --lucet-surface-raised: var(--lucet-neutral-0);
   --lucet-surface-overlay: var(--lucet-neutral-0);
   --lucet-surface-sunken: var(--lucet-neutral-50);
-  --lucet-line: var(--lucet-neutral-200);
+  /* Half a step past neutral-200, with the neutral hue leaning in a touch
+     harder: light's hairlines at 0.922 were nearly subliminal, and a page
+     whose every line whispers reads sterile rather than calm (Ian's crit,
+     2026-09-01 — the cursor.com comparison). Presence, not weight. */
+  --lucet-line: oklch(0.9 calc(var(--lucet-neutral-c) * 1.5) var(--lucet-neutral-h));
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.06;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { loadAppearance, saveAppearance } from '../lib/appearance'
+import { SiteHeader } from '../components/SiteHeader'
 
 /**
  * The primitives page. Private, never deployed.
@@ -266,34 +267,29 @@ export function Primitives() {
 
   return (
     <div className="prim">
-      <header className="prim__bar">
-        <span className="prim__mark">
-          Lucet <span>· primitives</span>
-        </span>
-        <div className="prim__bar-end">
-          <label className="select" style={{ inlineSize: 128 }}>
+      <SiteHeader page="primitives">
+        <div className="cfg__prefs">
+          <span className="cfg__pick">
             <select
-              value={accent}
-              onChange={(e) => setAccent(e.target.value)}
-              aria-label="Accent"
+              aria-label="Theme"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
             >
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </span>
+          <span className="cfg__pick">
+            <select value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent">
               {ACCENTS.map((a) => (
                 <option key={a} value={a}>
                   {a}
                 </option>
               ))}
             </select>
-          </label>
-          <div className="seg" role="group" aria-label="Theme">
-            {(['dark', 'light'] as const).map((t) => (
-              <label key={t}>
-                <input type="radio" name="theme" checked={theme === t} onChange={() => setTheme(t)} />
-                <span>{t}</span>
-              </label>
-            ))}
-          </div>
+          </span>
         </div>
-      </header>
+      </SiteHeader>
 
       <main className="prim__main">
         <h1 className="prim__title">Primitives</h1>

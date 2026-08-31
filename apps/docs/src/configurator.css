@@ -13,6 +13,8 @@
  * own styles from lucet-react; every value below is a token.
  */
 
+@import './site-header.css';
+
 * { box-sizing: border-box; }
 
 html {
@@ -37,98 +39,7 @@ body {
 
 /* ---- shell ---- */
 
-/* Full-bleed header: the hairline runs edge to edge; the content inside
-   keeps the page measure. */
-.cfg__bar {
-  border-block-end: 1px solid var(--lucet-border);
-}
-.cfg__bar-in {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-inline-size: 1240px;
-  margin: 0 auto;
-  padding: 14px 32px;
-}
 
-/* Identity: the tile and the name, nothing else. */
-.cfg__mark {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-/* The tile floats: the lithos shadow grammar — hairline separator, contact,
-   mid, ambient — in one stack, so the mark reads as an object on both page
-   grounds. */
-.cfg__logo {
-  inline-size: 26px;
-  block-size: 26px;
-  border-radius: 7px;
-  box-shadow:
-    0 0 0 0.5px oklch(0 0 0 / 0.55),
-    0 1px 1px oklch(0 0 0 / 0.35),
-    0 4px 10px -3px oklch(0 0 0 / 0.35);
-}
-.cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-
-/* Site navigation: the header's right half. */
-.cfg__nav {
-  margin-inline-start: auto;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-/* Theme and accent live on the STAGE BAR, beside the container switch. No
-   labels — the values name themselves — but the D1 decision holds here as
-   everywhere: a bare select leaves its chevron floating in the ether
-   (worse here, since a select is cut to its LONGEST option), so a hairline
-   at rest ties the word to its chevron. field-sizing lets the box hug the
-   chosen value where the browser can. */
-.cfg__prefs {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--lucet-muted-foreground);
-}
-.cfg__pick { position: relative; display: inline-block; }
-.cfg__pick::after {
-  content: '';
-  position: absolute;
-  inset-inline-end: 9px;
-  inset-block-start: 50%;
-  inline-size: 5px;
-  block-size: 5px;
-  margin-block-start: -3.5px;
-  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
-  border-block-end: 1.5px solid var(--lucet-muted-foreground);
-  rotate: 45deg;
-  pointer-events: none;
-}
-.cfg__prefs select {
-  appearance: none;
-  field-sizing: content;
-  min-block-size: 26px;
-  padding: 2px 22px 2px 9px;
-  border: 0;
-  border-radius: var(--lucet-radius-control);
-  box-shadow: var(--lucet-hairline);
-  background-color: transparent;
-  color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: 12.5px;
-  text-transform: capitalize;
-  cursor: pointer;
-  transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
-}
-.cfg__prefs select:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.cfg__prefs select:focus-visible {
-  outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: var(--lucet-focus-offset);
-}
 
 /* The rest of the appearance axes, behind one word. */
 .cfg__more { position: relative; }
@@ -195,36 +106,6 @@ body {
   outline-offset: var(--lucet-focus-offset);
 }
 
-/* Navigation is LINKS, not controls: no box, no fill — quiet ink that inks
-   up and underlines on hover, the same underline grammar as links in the
-   document. The padding keeps the target honest without drawing a button. */
-.cfg__navlink {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-block-size: 26px;
-  color: var(--lucet-subtle-foreground);
-  font-size: 13px;
-  text-decoration: none;
-  text-underline-offset: 4px;
-  transition: color var(--lucet-duration-fast) var(--lucet-ease-out);
-}
-.cfg__navlink-gh {
-  inline-size: 14px;
-  block-size: 14px;
-  fill: currentColor;
-  opacity: 0.8;
-}
-.cfg__navlink:hover {
-  color: var(--lucet-foreground);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
-}
-.cfg__navlink:focus-visible {
-  outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: var(--lucet-focus-offset);
-  border-radius: 2px;
-}
 
 .cfg__layout {
   display: grid;
@@ -535,25 +416,16 @@ body {
 }
 .cfg__rail::-webkit-scrollbar-track { background: transparent; }
 
-/* Two bands, the thesis's two halves: STATES (how a response can go) and
-   FEATURES (what others don't have). The band titles earned their way back
-   once there were two of them — a single title over a single first group
-   was a doubled label; two titles over two sets is a table of contents. */
-.cfg__band + .cfg__band {
-  margin-block-start: 18px;
-  padding-block-start: 16px;
-  border-block-start: 1px solid var(--lucet-border);
+/* The thesis's two halves as TABS at the top of the rail — States and
+   Features — wearing the page's segmented-control grammar. Full-width so
+   the switch reads as the column's own header. */
+.cfg__views--rail {
+  display: flex;
+  inline-size: auto;
+  margin-block-end: 12px;
 }
-.cfg__band-title {
-  margin: 0 0 8px;
-  padding-inline: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lucet-foreground);
-}
-.cfg__band .cfg__group:first-of-type { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
+.cfg__views--rail button { flex: 1; }
+.cfg__views--rail + .cfg__group { margin-block-start: 0; padding-block-start: 0; border-block-start: 0; }
 
 .cfg__group { display: grid; }
 .cfg__group + .cfg__group {
@@ -609,26 +481,29 @@ body {
 }
 .cfg__trigger[aria-current] .cfg__trigger-label { font-weight: 500; }
 .cfg__trigger[aria-current] .cfg__trigger-caret {
-  border-color: var(--lucet-accent-ink);
+  border-inline-start-color: var(--lucet-accent-ink);
 }
 .cfg__trigger[aria-current]:hover:not(:disabled) { background-color: var(--lucet-hover); }
 /* While a scenario runs the rail dims under the turn lock — except the row
    doing the work, which stays lit with its spinner. */
 .cfg__trigger[aria-current]:disabled { opacity: 1; }
 
-/* The caret says "this does something" before any hover; hover confirms by
-   brightening it and sliding it a step. */
+/* A PLAY glyph, not a chevron: a chevron promises expansion, and these
+   rows RUN things. The filled triangle is the universal "this fires". It
+   brightens and slides a step on hover — the same confirmation as before,
+   on the right verb. */
 .cfg__trigger-caret {
-  inline-size: 5px;
-  block-size: 5px;
+  inline-size: 0;
+  block-size: 0;
   flex: none;
-  border-inline-end: 1.5px solid var(--lucet-muted-foreground);
-  border-block-end: 1.5px solid var(--lucet-muted-foreground);
-  rotate: -45deg;
-  transition: translate var(--lucet-duration-fast) var(--lucet-ease-out);
+  border-block: 4px solid transparent;
+  border-inline-start: 6px solid var(--lucet-muted-foreground);
+  transition:
+    translate var(--lucet-duration-fast) var(--lucet-ease-out),
+    border-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 .cfg__trigger:hover:not(:disabled) .cfg__trigger-caret {
-  border-color: var(--lucet-foreground);
+  border-inline-start-color: var(--lucet-foreground);
   translate: 2px 0;
 }
 .cfg__trigger-label { min-inline-size: 0; }
