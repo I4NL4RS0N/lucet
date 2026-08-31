@@ -1278,7 +1278,10 @@
 
 .lucet-thread__pair {
   display: grid;
-  gap: var(--lucet-space-5);
+  /* One step more than before: at space-5 the answer started before the
+     prompt had landed. Belonging still reads — the between-turn beat is
+     64px with its hairline — but both halves breathe now. */
+  gap: var(--lucet-space-6);
 }
 
 .lucet-thread__turn { min-inline-size: 0; display: grid; justify-items: start; }

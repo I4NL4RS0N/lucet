@@ -526,7 +526,7 @@ body {
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 24px 24px 12px;
+  padding: 28px 24px 12px;
   --fade: 20px;
   mask-image: linear-gradient(
     to bottom,
