@@ -32,6 +32,9 @@ import { StateIcon } from './StateIcon.js'
  */
 
 export interface PromptInputProps {
+  /** The restored-view flag: while set, submitting is blocked with words
+      that say why (the past does not take new commits). */
+  restoredFrom?: string | null | undefined
   composer: ComposerState
   model: ModelState
   service: ServiceState
@@ -191,6 +194,7 @@ function AttachmentChip({
 }
 
 export function PromptInput({
+  restoredFrom,
   composer,
   model,
   service,
@@ -208,7 +212,7 @@ export function PromptInput({
   placeholder = 'Ask anything',
 }: PromptInputProps) {
   const id = useId()
-  const blocker = submitBlocker({ composer, service })
+  const blocker = submitBlocker({ composer, service, restoredFrom })
   const queued = composer.queued !== null
   const canQueue = blocker === 'locked' && onQueue !== undefined && !queued
 
@@ -228,7 +232,16 @@ export function PromptInput({
   const lockedByOther =
     composer.locked && composer.lockedBy !== null && composer.lockedBy !== (selfId ?? null)
   const strip =
-    service.status === 'down'
+    blocker === 'restored'
+      ? {
+          /* Above even the outage in the chain, matching the selector's
+             precedence: you are looking at the PAST, and no amount of
+             service health changes what that means for the send button. */
+          tone: 'info' as const,
+          icon: 'operational' as const,
+          text: describeSubmitBlocker('restored'),
+        }
+      : service.status === 'down'
       ? {
           tone: 'danger' as const,
           orb: 'down' as const,

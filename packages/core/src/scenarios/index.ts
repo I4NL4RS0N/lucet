@@ -439,6 +439,54 @@ export const sourceGone = defineScenario({
  * FEATURES: the other half of the thesis. States show how a response can
  * go; these show what other libraries do not have at all.
  */
+export const versionHistory = defineScenario({
+  id: 'version-history',
+  label: 'Version history',
+  group: 'Versions',
+  kind: 'feature',
+  description:
+    'Every prompt is a commit. A retry is the same words as a NEW version — and the old one says so instead of vanishing.',
+  prompt: 'Tighten the summary to three sentences.',
+  steps: [
+    { type: 'wait', ms: 300 },
+    {
+      type: 'say',
+      text: 'The workstreams are mostly on schedule, though two of them are blocked on the same review, which moved to Thursday. The budget follows the revised figures. The template switches over on Tuesday. Filing before then uses the old one. The venue hold still needs confirming.',
+    },
+    { type: 'complete' },
+    { type: 'wait', ms: 900 },
+    {
+      type: 'retryTurn',
+      say: 'Three of five workstreams are on schedule; the other two unblock after Thursday\u2019s review. Budget and template switch to the revised versions on Tuesday. Only the venue hold is still open.',
+    },
+  ],
+})
+
+export const restoreVersion = defineScenario({
+  id: 'restore-version',
+  label: 'Restore a version',
+  group: 'Versions',
+  kind: 'feature',
+  description:
+    'The thread IS the version history: walk back to an earlier commit, see later turns set aside, return to latest.',
+  prompt: 'Tighten the summary to three sentences.',
+  steps: [
+    { type: 'wait', ms: 300 },
+    {
+      type: 'say',
+      text: 'The workstreams are mostly on schedule, though two of them are blocked on the same review, which moved to Thursday. The budget follows the revised figures. The template switches over on Tuesday. Filing before then uses the old one. The venue hold still needs confirming.',
+    },
+    { type: 'complete' },
+    { type: 'wait', ms: 700 },
+    {
+      type: 'retryTurn',
+      say: 'Three of five workstreams are on schedule; the other two unblock after Thursday\u2019s review. Budget and template switch to the revised versions on Tuesday. Only the venue hold is still open.',
+    },
+    { type: 'wait', ms: 1100 },
+    { type: 'restore' },
+  ],
+})
+
 export const multiplayer = defineScenario({
   id: 'multiplayer',
   label: 'Another person’s turn',
@@ -475,5 +523,7 @@ export const builtInScenarios: readonly Scenario[] = [
   citedResponse,
   sourceUpdated,
   sourceGone,
+  versionHistory,
+  restoreVersion,
   multiplayer,
 ]

@@ -7,6 +7,7 @@ import {
   reduce,
   createInitialState,
   describeEvent,
+  submitBlocker,
 } from './index.js'
 
 /**
@@ -191,6 +192,33 @@ describe('feedback and retry', () => {
   it('retrying an unknown turn rejects instead of inventing one', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await expect(lucet.retry('nope')).rejects.toThrow('Unknown turn')
+  })
+})
+
+describe('version marker and restore', () => {
+  it('a retryTurn is a NEW commit of the same words, after settle', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('version-history')
+    const { turns } = lucet.getState()
+    expect(turns).toHaveLength(2)
+    expect(turns[1]!.retryOf).toBe(turns[0]!.id)
+    expect(turns[1]!.versionId).not.toBe(turns[0]!.versionId)
+    const words = (i: number) =>
+      turns[i]!.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('')
+    expect(words(1)).toBe(words(0))
+    expect(turns[1]!.response?.status).toBe('complete')
+  })
+
+  it('restore enters the past, blocks the composer, and exits clean', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('restore-version')
+    const state = lucet.getState()
+    expect(state.restoredFrom).toBe(state.turns[0]!.id)
+    /* The past does not take new commits — above even the lock. */
+    expect(submitBlocker({ ...state, restoredFrom: state.restoredFrom })).toBe('restored')
+    lucet.store.dispatch({ type: 'restore/exited' })
+    expect(lucet.getState().restoredFrom).toBeNull()
+    expect(submitBlocker({ ...lucet.getState() })).not.toBe('restored')
   })
 })
 

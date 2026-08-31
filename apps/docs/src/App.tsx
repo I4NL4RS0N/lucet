@@ -241,6 +241,7 @@ function AppCore({
   const composerNode = (
             <PromptInput
               composer={state.composer}
+              restoredFrom={state.restoredFrom}
               model={state.model}
               service={state.service}
               selfId="you"
@@ -377,6 +378,8 @@ function AppCore({
                 onFeedback={(messageId, verdict) =>
                   lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
                 }
+                onRestore={(turnId) => lucet.store.dispatch({ type: 'restore/entered', turnId })}
+                onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
               />
             )}
           </div>

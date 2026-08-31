@@ -11,7 +11,10 @@ import type { SubmitBlocker, ThreadState } from './types.js'
 
 /** The slice the blocker logic actually reads, so components holding only
     composer + service can call it without inventing a whole thread. */
-export type SubmitBlockerInput = Pick<ThreadState, 'composer' | 'service'>
+export type SubmitBlockerInput = Pick<ThreadState, 'composer' | 'service'> & {
+  /** Present when the thread is being viewed as a restored state. */
+  restoredFrom?: string | null | undefined
+}
 
 /**
  * Why the composer cannot submit right now, or null when it can.
@@ -28,6 +31,9 @@ export type SubmitBlockerInput = Pick<ThreadState, 'composer' | 'service'>
  */
 export function submitBlocker(state: SubmitBlockerInput): SubmitBlocker | null {
   const { composer, service } = state
+  /* Above even the lock: you are looking at the PAST, and the past does
+     not take new commits. Return to latest first. */
+  if (state.restoredFrom) return 'restored'
   if (composer.locked) return 'locked'
   if (service.status === 'down') return 'service-down'
   if (composer.attachments.some((a) => a.status === 'uploading')) return 'attachment-uploading'
@@ -58,6 +64,8 @@ export function suggestionsVisible(
 
 export function describeSubmitBlocker(blocker: SubmitBlocker): string {
   switch (blocker) {
+    case 'restored':
+      return 'Viewing a restored state — return to latest to continue'
     case 'locked':
       return 'A response is being written — yours will send next'
     case 'service-down':

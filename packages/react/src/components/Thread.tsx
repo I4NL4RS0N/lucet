@@ -38,6 +38,11 @@ import { ToolCall } from './ToolCall.js'
  */
 
 export interface ThreadProps {
+  /** Walk the view back to this commit (restore/entered). Offered on
+      settled, non-latest turns while not already viewing the past. */
+  onRestore?: ((turnId: string) => void) | undefined
+  /** Return to latest (restore/exited); the banner's one way forward. */
+  onExitRestore?: (() => void) | undefined
   state: ThreadState
   /** Matched against message authorIds; your own turns are labelled You. */
   selfId?: string | undefined
@@ -235,8 +240,19 @@ function ResponseAnnouncer({ state }: { state: ThreadState }) {
   )
 }
 
-export function Thread({ state, selfId, onRetry, onFeedback }: ThreadProps) {
+export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRestore }: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
+  /* Version arithmetic: a turn is SUPERSEDED when a later commit retries
+     it. Markers appear only where history is non-linear — a plain thread
+     stays plain. */
+  const supersededBy = new Map<string, number>()
+  state.turns.forEach((t, i) => {
+    if (t.retryOf) supersededBy.set(t.retryOf, i)
+  })
+  const restoredIndex = state.restoredFrom
+    ? state.turns.findIndex((t) => t.id === state.restoredFrom)
+    : -1
+  const setAside = state.turns.length - 1 - restoredIndex
   return (
     /*
      * The visible thread is a named region for FINDING; the hidden announcer
@@ -253,12 +269,34 @@ export function Thread({ state, selfId, onRetry, onFeedback }: ThreadProps) {
            latest/older visibility law is CSS on the pair. */
         const settled =
           response !== null && response.status !== 'streaming' && response.status !== 'pending'
+        const index = state.turns.indexOf(turn)
+        const superseded = supersededBy.has(turn.id)
+        const aside = restoredIndex >= 0 && index > restoredIndex
         return (
           <article
             className="lucet-thread__pair"
             key={turn.id}
             data-latest={turn.id === last?.id || undefined}
+            data-aside={aside || undefined}
+            /* Set-aside turns leave the page for EVERYONE while the view
+               is restored: inert removes them from pointer and tab order,
+               aria-hidden from the accessibility tree — the eyes and the
+               reader agree about what "as of v1" means. */
+            ref={(el) => {
+              if (el) el.inert = aside
+            }}
+            aria-hidden={aside || undefined}
           >
+            {superseded || turn.retryOf ? (
+              <div className="lucet-thread__vrow" data-superseded={superseded || undefined}>
+                <code className="lucet-thread__version">v{index + 1}</code>
+                <span>
+                  {superseded
+                    ? `superseded by v${(supersededBy.get(turn.id) ?? 0) + 1}`
+                    : 'same words, new commit'}
+                </span>
+              </div>
+            ) : null}
             <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
             {response ? (
               <MessageView
@@ -272,10 +310,36 @@ export function Thread({ state, selfId, onRetry, onFeedback }: ThreadProps) {
                       onFeedback={
                         onFeedback ? (verdict) => onFeedback(response.id, verdict) : undefined
                       }
+                      onRestore={
+                        onRestore && turn.id !== last?.id && restoredIndex < 0
+                          ? () => onRestore(turn.id)
+                          : undefined
+                      }
                     />
                   ) : null
                 }
               />
+            ) : null}
+            {restoredIndex === index ? (
+              /* The seam where history diverges: the banner sits right
+                 after the commit being viewed, counts what it set aside,
+                 and offers the one way forward. role=status announces the
+                 mode change without stealing focus. */
+              <div className="lucet-thread__restored" role="status">
+                <svg className="lucet-thread__restored-glyph" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
+                </svg>
+                <span>
+                  Viewing the thread as of <code className="lucet-thread__version">v{index + 1}</code>
+                  {' — '}
+                  {setAside} later {setAside === 1 ? 'turn' : 'turns'} set aside.
+                </span>
+                {onExitRestore ? (
+                  <button type="button" className="lucet-thread__return" onClick={onExitRestore}>
+                    Return to latest
+                  </button>
+                ) : null}
+              </div>
             ) : null}
           </article>
         )

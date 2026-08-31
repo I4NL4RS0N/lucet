@@ -1734,6 +1734,78 @@
 }
 
 /* ============================================================
+ * VERSION MARKER + RESTORE. Every prompt is a commit; markers appear
+ * only where history is non-linear. The restored view sets later turns
+ * aside — dimmed for the eyes, inert for pointer and tab, hidden from
+ * the reader — and the banner at the seam offers the one way forward.
+ * ============================================================ */
+
+.lucet-thread__vrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: flex-end;
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-muted-foreground);
+}
+.lucet-thread__version {
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-shadow: var(--lucet-hairline);
+  background-color: var(--lucet-muted);
+  font-family: var(--lucet-font-mono);
+  font-size: 10.5px;
+  color: var(--lucet-subtle-foreground);
+}
+/* Set aside: still there, visibly the past. Inert + aria-hidden are set
+   by the component; the veil here is only the visible half. */
+.lucet-thread__pair[data-aside] {
+  opacity: 0.35;
+}
+.lucet-thread__restored {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-block-start: var(--lucet-space-3);
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: var(--lucet-radius-control);
+  background-color: var(--lucet-tone-info-surface, var(--lucet-subtle));
+  box-shadow: var(--lucet-hairline);
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-thread__restored-glyph {
+  flex: none;
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: var(--lucet-tone-info-foreground, currentColor);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-thread__return {
+  margin-inline-start: auto;
+  min-block-size: 26px;
+  padding-inline: 10px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background-color: var(--lucet-card);
+  color: var(--lucet-foreground);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-thread__return:hover { background-color: var(--lucet-hover); }
+.lucet-thread__return:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* ============================================================
  * CITATIONS & SOURCES. The response's bibliography: quiet rows under a
  * caps label, [n] order implied by position. The aging states are the
  * point — stale wears caution and a turned clock, gone strikes the title

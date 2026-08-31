@@ -41,6 +41,11 @@ export type Step =
     }
   /** Age one cited source after the fact — the states nobody designs. */
   | { type: 'sourceChange'; sourceId: string; status: 'stale' | 'gone'; note: string }
+  /** Resubmit this scenario's own prompt: same words, NEW commit, with a
+      fresh (usually better) response. The version-history demo. */
+  | { type: 'retryTurn'; say: string; chunkMs?: number }
+  /** Enter the restored view at this scenario's first commit. */
+  | { type: 'restore' }
   | { type: 'refuse'; reason: string }
   | { type: 'fail'; reason: string }
   | { type: 'interrupt'; reason: string }

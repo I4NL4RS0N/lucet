@@ -59,6 +59,9 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
 
   /* The most recent bibliography, so a later sourceChange can address it. */
   let lastSourcesPartId: string | null = null
+  /* This run's original commit, so retryTurn and restore can point home. */
+  let currentTurnId: string | null = null
+  let currentPrompt: string | null = null
 
   async function step(
     s: Step,
@@ -104,6 +107,38 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         })
         return null
       }
+
+      case 'retryTurn': {
+        /* The whole commit ceremony again, deliberately: same words, new
+           turn ids, retryOf pointing home. The log reads exactly like a
+           person pressing Ask again. */
+        const retryTurnId = nextId('turn')
+        const retryPromptId = nextId('msg')
+        const retryResponseId = nextId('msg')
+        store.dispatch({
+          type: 'turn/submitted',
+          turnId: retryTurnId,
+          versionId: nextId('v'),
+          messageId: retryPromptId,
+          text: currentPrompt ?? '',
+          authorId,
+          attachmentIds: [],
+          retryOf: currentTurnId,
+        })
+        store.dispatch({ type: 'response/started', turnId: retryTurnId, messageId: retryResponseId })
+        await stream(retryResponseId, 'text', s.say, s.chunkMs ?? DEFAULT_CHUNK_MS, signal)
+        store.dispatch({
+          type: 'response/settled',
+          messageId: retryResponseId,
+          status: 'complete',
+          reason: null,
+        })
+        return null
+      }
+
+      case 'restore':
+        store.dispatch({ type: 'restore/entered', turnId: currentTurnId ?? '' })
+        return null
 
       case 'sources': {
         const partId = nextId('part')
@@ -201,6 +236,8 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       const turnId = nextId('turn')
       const promptId = nextId('msg')
       const messageId = nextId('msg')
+      currentTurnId = turnId
+      currentPrompt = scenario.prompt
 
       store.dispatch({
         type: 'turn/submitted',
@@ -228,7 +265,12 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
                cited source can age behind a finished answer. Only steps
                that model the world after settle may run here — the rest
                stay unreachable, exactly as before. */
-            if (s.type === 'wait' || s.type === 'sourceChange') {
+            if (
+              s.type === 'wait' ||
+              s.type === 'sourceChange' ||
+              s.type === 'retryTurn' ||
+              s.type === 'restore'
+            ) {
               await step(s, messageId, signal)
             }
             continue

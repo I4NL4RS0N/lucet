@@ -58,11 +58,13 @@ function turn(
     reasoning?: string
     settle?: 'complete' | 'interrupted' | 'failed' | 'refused' | 'streaming'
     reason?: string
+    /** The commit this turn retries — same words, new version. */
+    retryOf?: string
   } = {},
 ): LucetEvent[] {
   const t = `t${n}`, pm = `pm${n}`, rm = `rm${n}`
   const events: LucetEvent[] = [
-    { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [], retryOf: null },
+    { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [], retryOf: opts.retryOf ?? null },
     { type: 'response/started', turnId: t, messageId: rm },
   ]
   if (opts.reasoning !== undefined) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: opts.reasoning } })
@@ -165,6 +167,33 @@ const SOURCES_FIXTURES: readonly Fixture[] = [
     label: 'A source removed since it was cited',
     note: 'Struck through and said so, in the danger ink. A dead reference marked dead beats a confident link to nothing.',
     state: play(CITE(3)),
+  },
+]
+
+/* Version marker + restore: two commits of the same words, then the
+   restored view — replayed through the real reducer like everything. */
+const VERSION_EVENTS = [
+  ...turn(1, 'Tighten the summary to three sentences.', {
+    reply:
+      'The workstreams are mostly on schedule, though two are blocked on the same review. The budget follows the revised figures. The template switches Tuesday. The venue hold still needs confirming.',
+  }),
+  ...turn(2, 'Tighten the summary to three sentences.', {
+    reply:
+      'Three of five workstreams are on schedule; the rest unblock after Thursday. Budget and template switch Tuesday. Only the venue hold is open.',
+    retryOf: 't1',
+  }),
+]
+
+const VERSIONS_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Superseded, and it says so',
+    note: 'Every prompt is a commit: the retry carries the same words as v2, and v1 wears its marker instead of vanishing.',
+    state: play(VERSION_EVENTS),
+  },
+  {
+    label: 'The restored view',
+    note: 'Walking back to v1: later turns set aside — dimmed, inert, hidden from the reader — and the banner offers the one way forward.',
+    state: play([...VERSION_EVENTS, { type: 'restore/entered' as const, turnId: 't1' }]),
   },
 ]
 
@@ -585,6 +614,20 @@ export function ComponentsStage() {
         <Section n="04b" name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {SOURCES_FIXTURES.map((f) => (
+              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
+                <span className="spec__label">{f.label}</span>
+                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
+                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section n="04c" name="Version marker + restore" note="every prompt is a commit; the thread is the version history">
+          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+            {VERSIONS_FIXTURES.map((f) => (
               <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
                 <span className="spec__label">{f.label}</span>
                 <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>

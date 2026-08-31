@@ -34,6 +34,10 @@ export interface MessageActionsProps {
   message: Message
   onRetry?: (() => void) | undefined
   onFeedback?: ((verdict: 'up' | 'down' | null) => void) | undefined
+  /** Present only where restoring MEANS something: a settled, non-latest
+      turn, outside an existing restored view. The thread decides; this
+      component just draws what it is given. */
+  onRestore?: (() => void) | undefined
 }
 
 type CopyState = 'idle' | 'copied' | 'failed'
@@ -44,7 +48,7 @@ const COPY_WORDS: Record<CopyState, string> = {
   failed: 'Didn’t copy',
 }
 
-export function MessageActions({ message, onRetry, onFeedback }: MessageActionsProps) {
+export function MessageActions({ message, onRetry, onFeedback, onRestore }: MessageActionsProps) {
   const [copy, setCopy] = useState<CopyState>('idle')
   /* The pop fires on RECORDING a verdict, never on retracting one: giving
      feedback is a small moment; taking it back is quiet housekeeping. */
@@ -102,6 +106,15 @@ export function MessageActions({ message, onRetry, onFeedback }: MessageActionsP
             <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
           </svg>
           Ask again
+        </button>
+      ) : null}
+
+      {onRestore ? (
+        <button type="button" className="lucet-actions__btn" onClick={onRestore}>
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
+          </svg>
+          Restore
         </button>
       ) : null}
 

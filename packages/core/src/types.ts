@@ -212,6 +212,7 @@ export interface ModelState {
  * answer worst. One blocker at a time, most actionable first.
  */
 export type SubmitBlocker =
+  | 'restored'
   | 'locked'
   | 'service-down'
   | 'attachment-uploading'
