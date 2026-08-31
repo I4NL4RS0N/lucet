@@ -44,7 +44,6 @@
     0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
 .cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-.cfg__page { font-size: 13px; font-weight: 450; color: var(--lucet-muted-foreground); }
 
 /* Site navigation: the header's right half. */
 .cfg__nav {
@@ -86,6 +85,23 @@
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
   border-radius: 2px;
+}
+/* Where you are: full ink and weight, no underline — underline stays the
+   hover's word. */
+.cfg__navlink[aria-current='page'] {
+  color: var(--lucet-foreground);
+  font-weight: 500;
+}
+.cfg__navlink-out {
+  inline-size: 11px;
+  block-size: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.6;
+  margin-inline-start: -2px;
 }
 
 /* Quiet pickers, shared by the stage bars and the lab headers. No labels —

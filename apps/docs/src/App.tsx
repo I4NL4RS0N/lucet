@@ -335,6 +335,29 @@ export function App() {
     saveAppearance({ theme, accent, expression, radius, scale, typeface })
   }, [themeState])
 
+  /* The More popover closes like a popover: click anywhere else, or
+     Escape, and it goes. A details that only closes on its own summary
+     makes the reader do the tidying. */
+  useEffect(() => {
+    const closeIfOutside = (e: PointerEvent) => {
+      const more = document.querySelector('details.cfg__more[open]')
+      if (more && e.target instanceof Node && !more.contains(e.target)) {
+        more.removeAttribute('open')
+      }
+    }
+    const closeOnEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        document.querySelector('details.cfg__more[open]')?.removeAttribute('open')
+      }
+    }
+    document.addEventListener('pointerdown', closeIfOutside)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeIfOutside)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [])
+
   const fire = (id: string) => {
     setActive(id)
     setFiring(id)

@@ -1890,3 +1890,12 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *), .code {
   z-index: 1;
   background-color: var(--sunken);
 }
+
+/* The labs' viewing controls: right-aligned above the stage, mirroring the
+   Configurator's stage bar — controls beside the thing they change. */
+.prim__controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-block-end: 4px;
+}

@@ -267,31 +267,34 @@ export function Primitives() {
 
   return (
     <div className="prim">
-      <SiteHeader page="primitives">
-        <div className="cfg__prefs">
-          <span className="cfg__pick">
-            <select
-              aria-label="Theme"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
-            >
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </span>
-          <span className="cfg__pick">
-            <select value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent">
-              {ACCENTS.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </span>
-        </div>
-      </SiteHeader>
+      <SiteHeader page="primitives" />
 
       <main className="prim__main">
+        {/* Viewing controls live with the stage they change, not in the
+            site header — same law as the Configurator's stage bar. */}
+        <div className="prim__controls">
+            <div className="cfg__prefs">
+              <span className="cfg__pick">
+                <select
+                  aria-label="Theme"
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
+                >
+                  <option value="dark">Dark</option>
+                  <option value="light">Light</option>
+                </select>
+              </span>
+              <span className="cfg__pick">
+                <select value={accent} onChange={(e) => setAccent(e.target.value)} aria-label="Accent">
+                  {ACCENTS.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </span>
+            </div>
+        </div>
         <h1 className="prim__title">Primitives</h1>
         <p className="prim__lede">
           Every control the components will be built from, in every state.
