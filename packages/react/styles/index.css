@@ -381,12 +381,15 @@
   color: var(--lucet-tone-danger-foreground);
 }
 
+/* The receipt gets margins worthy of one: a hairline articulates it from
+   the row, and the payloads sit off the chip's edge instead of against it. */
 .lucet-tool__body {
   display: grid;
-  gap: var(--lucet-space-2);
-  padding: var(--lucet-space-1) var(--lucet-space-2) var(--lucet-space-2);
+  gap: var(--lucet-space-3);
+  padding: var(--lucet-space-3);
+  border-block-start: 1px solid var(--lucet-border);
 }
-.lucet-tool__io { display: grid; gap: 4px; min-inline-size: 0; }
+.lucet-tool__io { display: grid; gap: 5px; min-inline-size: 0; }
 .lucet-tool__io-label {
   font-size: var(--lucet-text-xs);
   letter-spacing: 0.02em;

@@ -1169,7 +1169,11 @@ kbd, .kbd {
 }
 
 /* Code. A code surface is SUNKEN: it is quoted material, not a control. */
-code, .code {
+/* The lab's inline-code chip — scoped OFF the library's components, which
+   carry their own code dress. A bare `code` selector once leaked onto every
+   CodeBlock and receipt rendered on the stage, painting per-line pills
+   through their blocks. */
+code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *), .code {
   padding: 1.5px 5px;
   border-radius: 5px;
   background-color: var(--sunken);
