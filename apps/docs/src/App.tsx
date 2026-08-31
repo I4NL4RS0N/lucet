@@ -206,7 +206,14 @@ function AppCore({
           <span className="cfg__dots" aria-hidden>
             <i /><i /><i />
           </span>
-          <span className="cfg__frame-title">Thread</span>
+          {/* The window title is the DOCUMENT'S title, and the document is
+             the thread: its own first words, or the honest “New thread”.
+             A title that never changes is what makes a mock feel mock. */}
+          <span className="cfg__frame-title">
+            {state.turns[0]?.prompt.parts
+              .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
+              .join(' ') || 'New thread'}
+          </span>
           <button
             type="button"
             className="cfg__reset"
@@ -312,6 +319,55 @@ function AppCore({
         </div>
       </div>
     </>
+  )
+}
+
+/** The B2 orb-ring tile — the mark Lucet tried on and set aside. The
+ * fake universe's ONE brand: every container is the same product. */
+function MockBrandMark() {
+  return (
+    <svg className="cfg__mock-logo" viewBox="0 0 96 96">
+      <defs>
+        <linearGradient id="fbm-p" x1="0" y1="0" x2="0.45" y2="1">
+          <stop offset="0" stopColor="#34343f" />
+          <stop offset="0.52" stopColor="#191920" />
+          <stop offset="1" stopColor="#0a0a0f" />
+        </linearGradient>
+        <linearGradient id="fbm-s" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
+          <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
+          <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="fbm-h">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="fbm-c">
+          <stop offset="0.6" stopColor="#fff" />
+          <stop offset="1" stopColor="#DDE0EC" />
+        </radialGradient>
+        <clipPath id="fbm-k">
+          <rect width="96" height="96" rx="27" />
+        </clipPath>
+      </defs>
+      <rect width="96" height="96" rx="27" fill="url(#fbm-p)" />
+      <g clipPath="url(#fbm-k)">
+        <circle cx="48" cy="49" r="26" fill="url(#fbm-h)" />
+        <circle
+          cx="48"
+          cy="49"
+          r="24"
+          fill="none"
+          stroke="#F4F5FB"
+          strokeWidth="7.6"
+          strokeDasharray="112 39"
+          strokeLinecap="round"
+          transform="rotate(156 48 49)"
+        />
+        <circle cx="48" cy="49" r="9.5" fill="url(#fbm-c)" />
+        <rect width="96" height="96" rx="27" fill="url(#fbm-s)" />
+      </g>
+    </svg>
   )
 }
 
@@ -522,6 +578,10 @@ export function App() {
                    * conversations that do not exist.
                    */
                   <aside className="cfg__side">
+                    <span className="cfg__side-brand" aria-hidden>
+                      <MockBrandMark />
+                      Application Name
+                    </span>
                     <button
                       type="button"
                       className="cfg__side-new"
@@ -544,6 +604,25 @@ export function App() {
                       <div className="cfg__side-row">Rename the workstreams</div>
                       <div className="cfg__side-row">Last week&rsquo;s review notes</div>
                     </div>
+                    {/* The classic sidebar footer: settings (honest about
+                        being dressing) and the person, pinned to the floor. */}
+                    <div className="cfg__side-foot">
+                      <button
+                        type="button"
+                        className="cfg__side-settings"
+                        disabled
+                        title="Not in this demo"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden>
+                          <path d="M4 7h9M17 7h3M4 17h3M11 17h9M13 4.5v5M7 14.5v5" />
+                        </svg>
+                        Settings
+                      </button>
+                      <div className="cfg__side-user" aria-hidden>
+                        <span className="cfg__side-avatar">Y</span>
+                        You
+                      </div>
+                    </div>
                   </aside>
                 }
               />
@@ -561,48 +640,7 @@ export function App() {
               <div className="cfg__mock-app">
               <div className="cfg__mock-bar">
                 <span className="cfg__mock-brand" aria-hidden>
-                  <svg className="cfg__mock-logo" viewBox="0 0 96 96">
-                    <defs>
-                      <linearGradient id="fbm-p" x1="0" y1="0" x2="0.45" y2="1">
-                        <stop offset="0" stopColor="#34343f" />
-                        <stop offset="0.52" stopColor="#191920" />
-                        <stop offset="1" stopColor="#0a0a0f" />
-                      </linearGradient>
-                      <linearGradient id="fbm-s" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
-                        <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
-                        <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
-                      </linearGradient>
-                      <radialGradient id="fbm-h">
-                        <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
-                        <stop offset="1" stopColor="#fff" stopOpacity="0" />
-                      </radialGradient>
-                      <radialGradient id="fbm-c">
-                        <stop offset="0.6" stopColor="#fff" />
-                        <stop offset="1" stopColor="#DDE0EC" />
-                      </radialGradient>
-                      <clipPath id="fbm-k">
-                        <rect width="96" height="96" rx="27" />
-                      </clipPath>
-                    </defs>
-                    <rect width="96" height="96" rx="27" fill="url(#fbm-p)" />
-                    <g clipPath="url(#fbm-k)">
-                      <circle cx="48" cy="49" r="26" fill="url(#fbm-h)" />
-                      <circle
-                        cx="48"
-                        cy="49"
-                        r="24"
-                        fill="none"
-                        stroke="#F4F5FB"
-                        strokeWidth="7.6"
-                        strokeDasharray="112 39"
-                        strokeLinecap="round"
-                        transform="rotate(156 48 49)"
-                      />
-                      <circle cx="48" cy="49" r="9.5" fill="url(#fbm-c)" />
-                      <rect width="96" height="96" rx="27" fill="url(#fbm-s)" />
-                    </g>
-                  </svg>
+                  <MockBrandMark />
                   Application Name
                 </span>
                 <span className="cfg__mock-tabs" aria-hidden>

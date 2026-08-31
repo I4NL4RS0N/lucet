@@ -113,11 +113,80 @@ body {
 .cfg__side {
   display: flex;
   flex-direction: column;
-  inline-size: 200px;
+  inline-size: 208px;
   flex-shrink: 0;
   padding: 12px 10px;
   border-inline-end: 1px solid var(--lucet-border);
   background: var(--lucet-surface-sunken);
+}
+/* The identity row: the same B2 tile as the drawer's host — one fake
+   universe, every container the same product. */
+.cfg__side-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.cfg__side-brand .cfg__mock-logo {
+  inline-size: 20px;
+  block-size: 20px;
+  flex: none;
+}
+/* The floor: settings (dressing, and honest about it) above the person. */
+.cfg__side-foot {
+  margin-block-start: auto;
+  display: grid;
+  gap: 2px;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--lucet-border);
+}
+.cfg__side-settings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 28px;
+  padding-inline: 9px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-muted-foreground);
+  font: inherit;
+  font-size: 13px;
+  text-align: start;
+  opacity: 0.55;
+  cursor: default;
+}
+.cfg__side-settings svg {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+.cfg__side-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px;
+  font-size: 13px;
+  color: var(--lucet-subtle-foreground);
+}
+.cfg__side-avatar {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 50%;
+  background: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--lucet-subtle-foreground);
 }
 .cfg__side-new {
   display: flex;
@@ -200,7 +269,17 @@ body {
   color: var(--lucet-muted-foreground);
 }
 
-.cfg__frame-title { font-weight: 500; color: var(--lucet-subtle-foreground); }
+.cfg__frame-title {
+  font-weight: 500;
+  color: var(--lucet-subtle-foreground);
+  /* The title is LIVE (the thread's own words): one line, ellipsized,
+     never allowed to push the bar's controls around. */
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Window dots: honestly generic set dressing — a window is a window. They
    belong to the desktop containers only; the phone hides them. */
