@@ -60,7 +60,15 @@ function stateOf(f: Fixture): ThreadState {
 /* The Code view: the exact events above the exact usage — the state
    inspector doubling as API documentation, per the brief. */
 function codeFor(f: Fixture, usage: string): string {
-  const lines = f.events.map((e) => `  ${JSON.stringify(e)},`)
+  /* Pretty-printed, one event per stanza: a single-line event ran off
+     the edge of the page and read as noise, not documentation. */
+  const lines = f.events.map(
+    (e) =>
+      JSON.stringify(e, null, 2)
+        .split('\n')
+        .map((ln) => `  ${ln}`)
+        .join('\n') + ',',
+  )
   return [
     '// This state is nothing but these events, replayed through the reducer.',
     ...(lines.length === 0
