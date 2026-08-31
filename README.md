@@ -27,7 +27,9 @@ with the reasoning written into the tokens themselves.
 component libraries don't attempt: citations that keep aging after the
 answer settles (a citation is a claim with a timestamp — sources go
 stale or vanish, and the bibliography says so); version markers and
-restore (every prompt is a commit, so the thread *is* the history); a
+restore designed as a visible state — set-aside turns you can still
+see, a banner saying you are looking at the past — where the field's
+checkpoint components rewind by silently slicing the message array; a
 single-writer turn lock, and a thread that switches to collaborative
 grammar the moment a second human speaks. None of these are bolt-ons:
 the core is an event log, so history, versions, provenance and presence
