@@ -69,7 +69,11 @@
     --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
     --lucet-surface-overlay: var(--lucet-neutral-850);
-    --lucet-surface-sunken: var(--lucet-neutral-950);
+    /* One GENTLE step below the ground — matching light's 1.5% recess.
+       At neutral-950 the rail was a hole, not a recess: near black, it
+       out-contrasted the content and inverted the hierarchy (Ian). Dark
+       deltas read amplified, so the step is smaller than light's. */
+    --lucet-surface-sunken: oklch(0.157 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-line: var(--lucet-neutral-800);
     --lucet-shadow-color: 0 0 0;
     --lucet-shadow-alpha: 0.5;
@@ -87,7 +91,8 @@
   --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
   --lucet-surface-overlay: var(--lucet-neutral-850);
-  --lucet-surface-sunken: var(--lucet-neutral-950);
+  /* One GENTLE step below the ground — see the media twin's note. */
+  --lucet-surface-sunken: oklch(0.157 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-line: var(--lucet-neutral-800);
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.5;

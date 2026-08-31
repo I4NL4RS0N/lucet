@@ -660,17 +660,19 @@ body {
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .cfg__atmo {
-    --cfg-silk-1: 38%;
-    --cfg-silk-2: 26%;
-    --cfg-silk-3: 18%;
-    --cfg-silk-core: 36%;
+    /* Eased from 38/26/18/36: the crown read too bright against the
+       settled dark ground (Ian) — presence, not spotlight. */
+    --cfg-silk-1: 30%;
+    --cfg-silk-2: 20%;
+    --cfg-silk-3: 14%;
+    --cfg-silk-core: 26%;
   }
 }
 :root[data-theme='dark'] .cfg__atmo {
-  --cfg-silk-1: 38%;
-  --cfg-silk-2: 26%;
-  --cfg-silk-3: 18%;
-  --cfg-silk-core: 36%;
+  --cfg-silk-1: 30%;
+  --cfg-silk-2: 20%;
+  --cfg-silk-3: 14%;
+  --cfg-silk-core: 26%;
 }
 /* The silk: three blurred ellipses, one long horizon and two strays.
    Transform-only drift, each on its own odd period so the composition
