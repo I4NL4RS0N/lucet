@@ -1996,7 +1996,7 @@
   display: flex;
   align-items: baseline;
   gap: 7px;
-  padding-inline: 2px;
+  padding-inline: 8px;
 }
 .lucet-chips__label {
   font-size: 10.5px;
@@ -2016,7 +2016,9 @@
   gap: 9px;
   min-block-size: 30px;
   max-inline-size: 100%;
-  padding: 5px 6px;
+  /* 8px inline: the text keeps clear of the veil's rounded edge, and
+     the heads below share the inset — the history pane's grammar. */
+  padding: 5px 8px;
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;

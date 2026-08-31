@@ -447,7 +447,7 @@ function MockHistory() {
           ['Draft the kickoff note', 'Today · 8:12'],
         ] as const
       ).map(([t, d]) => (
-        <div className="cfg__history-row" key={t}>
+        <div className="cfg__history-row" key={t} title="Not in this demo">
           <span className="cfg__history-text">
             <span className="cfg__history-title">{t}</span>
             <span className="cfg__history-date">{d}</span>
@@ -468,7 +468,7 @@ function MockHistory() {
           ['Last week\u2019s review notes', 'Fri · 15:45'],
         ] as const
       ).map(([t, d]) => (
-        <div className="cfg__history-row" key={t}>
+        <div className="cfg__history-row" key={t} title="Not in this demo">
           <span className="cfg__history-text">
             <span className="cfg__history-title">{t}</span>
             <span className="cfg__history-date">{d}</span>

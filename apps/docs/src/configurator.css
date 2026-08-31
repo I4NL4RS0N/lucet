@@ -1279,28 +1279,44 @@ body {
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
-  padding: 10px 14px 16px;
+  /* Room under the head before the first group speaks. */
+  padding: 16px 14px 16px;
 }
 .cfg__history-group {
-  margin-block: 14px 2px;
+  /* A label belongs to what FOLLOWS: clear separation above, a small
+     step down to its own rows. Inline inset matches the rows'. */
+  padding-inline: 8px;
+  margin-block: 20px 4px;
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--lucet-muted-foreground);
 }
-.cfg__history-group:first-child { margin-block-start: 4px; }
+.cfg__history-group:first-child { margin-block-start: 0; }
 .cfg__history-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-block: 10px;
+  padding-block: 11px;
+  /* The veil stays INSIDE the content column — bleeding into the pane's
+     padding crowded the drawer's edges (Ian). The labels below take the
+     same inset so text stays on one line of alignment. */
+  padding-inline: 8px;
+  border-radius: var(--lucet-radius-control);
   border-block-end: 1px solid var(--lucet-border);
+  /* Hover, honestly: the veil and the cursor make the shelf feel real
+     (Ian), the title tells the truth to anyone who lingers, and
+     aria-hidden already keeps the fiction away from the reader. */
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
 }
+.cfg__history-row:hover { background-color: var(--lucet-hover); }
+.cfg__history-row:hover svg { opacity: 0.85; }
 .cfg__history-row:last-child { border-block-end: 0; }
 .cfg__history-text {
   display: grid;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
   min-inline-size: 0;
 }
@@ -1315,7 +1331,10 @@ body {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  opacity: 0.7;
+  /* Present, but quiet: dressing must never weigh what real content
+     weighs. Sharpens with the row's hover. */
+  opacity: 0.55;
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
 }
 .cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
