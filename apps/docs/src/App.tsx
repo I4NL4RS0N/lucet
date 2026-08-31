@@ -123,20 +123,22 @@ function TriggerRail({
                 onFire(scenario.id)
               }}
             >
-              {/* Circle-play: the circle keeps the triangle from reading as
-                  a collapsed caret — this row RUNS, it does not expand. */}
-              <svg className="cfg__trigger-play" viewBox="0 0 24 24" aria-hidden>
-                <circle cx="12" cy="12" r="9.5" />
-                <path
-                  d="M10 8.7v6.6c0 .5.56.81.98.53l5.06-3.3a.64.64 0 0 0 0-1.06l-5.06-3.3a.64.64 0 0 0-.98.53z"
-                  fill="currentColor"
-                  stroke="none"
-                />
-              </svg>
+              {/* The run mark BECOMES the running mark: while the scenario
+                  plays, the spinner takes the circle-play's own slot — the
+                  glyph is the state, not a second lamp off to the side. */}
+              {firing === scenario.id ? (
+                <span className="cfg__firing" aria-hidden />
+              ) : (
+                <svg className="cfg__trigger-play" viewBox="0 0 24 24" aria-hidden>
+                  <circle cx="12" cy="12" r="9.5" />
+                  <path
+                    d="M10 8.7v6.6c0 .5.56.81.98.53l5.06-3.3a.64.64 0 0 0 0-1.06l-5.06-3.3a.64.64 0 0 0-.98.53z"
+                    fill="currentColor"
+                    stroke="none"
+                  />
+                </svg>
+              )}
               <span className="cfg__trigger-label">{scenario.label}</span>
-              {/* The clicked row works while its scenario runs: the rail is
-                  alive, not a list of links. */}
-              {firing === scenario.id ? <span className="cfg__firing" aria-hidden /> : null}
             </button>
           ))}
         </section>

@@ -88,11 +88,13 @@
   --lucet-inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.05);
 
   /* Light shadows must be FELT, not merely present: at 4-6% alpha a card's
-     lift was subliminal and the whole light theme read flat. These are the
-     light values; dark overrides below with its own, far heavier set. */
-  --lucet-shade-1: 0 1px 2px oklch(0 0 0 / 0.06);
-  --lucet-shade-2: 0 1px 3px oklch(0 0 0 / 0.07), 0 3px 8px oklch(0 0 0 / 0.06);
-  --lucet-shade-3: 0 2px 5px oklch(0 0 0 / 0.08), 0 10px 24px oklch(0 0 0 / 0.11);
+     lift was subliminal and the whole light theme read flat. And they are
+     tinted with the neutral hue rather than pure black — soot greys a
+     light page; a hued shadow reads as depth. Dark overrides below with
+     its own, far heavier set. */
+  --lucet-shade-1: 0 1px 2px oklch(0.25 0.015 264 / 0.07);
+  --lucet-shade-2: 0 1px 3px oklch(0.25 0.015 264 / 0.08), 0 3px 8px oklch(0.25 0.015 264 / 0.07);
+  --lucet-shade-3: 0 2px 5px oklch(0.25 0.015 264 / 0.09), 0 10px 24px oklch(0.25 0.015 264 / 0.13);
 
   --lucet-material-flat: var(--lucet-hairline);
   --lucet-material-control: var(--lucet-hairline), var(--lucet-shade-1);

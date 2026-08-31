@@ -510,15 +510,16 @@ body {
 }
 .cfg__trigger-label { min-inline-size: 0; }
 
-/* The clicked row works while its scenario runs. */
+/* The clicked row works while its scenario runs — the spinner sits in the
+   circle-play's own slot, drawn to its size, wearing the accent. */
 .cfg__firing {
-  inline-size: 12px;
-  block-size: 12px;
+  inline-size: 13px;
+  block-size: 13px;
   flex: none;
-  margin-inline-start: auto;
+  margin-inline: 1px;
   border-radius: 50%;
-  border: 1.5px solid var(--lucet-input);
-  border-block-start-color: var(--lucet-muted-foreground);
+  border: 1.8px solid var(--lucet-input);
+  border-block-start-color: var(--lucet-accent-ink);
   animation: cfg-spin 0.6s linear infinite;
 }
 @keyframes cfg-spin { to { rotate: 360deg; } }

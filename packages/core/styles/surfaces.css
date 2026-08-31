@@ -20,10 +20,13 @@
 
 /* ---------- Light + System (default) ---------- */
 :root {
-  /* neutral-50, NOT pure white -- see the figure-ground note in semantic.css:
-     the page recedes a step so pure white can mean "touchable". Expressive
-     light recedes further still, in its own block below. */
-  --lucet-surface-ground: var(--lucet-neutral-50);
+  /* The page recedes a REAL step, not a token one: at neutral-50 (0.985)
+     the ground sat 1.5% from the white cards and light read flat — no
+     figure, no ground (Ian's crit, twice). 0.972 with the neutral hue
+     leaning in gives white something to stand on while staying clearly
+     above Expressive-light's deeper 0.945 recede. Pure white still means
+     "touchable"; now the page visibly is not it. */
+  --lucet-surface-ground: oklch(0.972 calc(var(--lucet-neutral-c) * 2.5) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-0);
   --lucet-surface-overlay: var(--lucet-neutral-0);
   --lucet-surface-sunken: var(--lucet-neutral-50);
