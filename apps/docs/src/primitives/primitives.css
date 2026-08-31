@@ -169,7 +169,15 @@ body {
 
 /* ---- a section, and its stage ---- */
 
-.sec { margin-block-start: 64px; }
+.sec { margin-block-start: 64px; counter-increment: sec; }
+
+/*
+ * Section numbers come from a CSS counter, on the project's own rule:
+ * derived, never flagged. Delete a section and the sequence closes behind
+ * it instead of leaving a hole for a careful reader to find.
+ */
+.prim { counter-reset: sec; }
+.sec__n::before { content: counter(sec, decimal-leading-zero); }
 
 .sec__head {
   display: flex;
@@ -1572,7 +1580,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   rotate: -90deg;
 }
 
-/* ---- not working: the half nobody builds ---- */
+/* ---- not working: ready, blocked, queued, degraded, down ---- */
 
 /*
  * BLOCKED ON YOU. Nothing rotates, on purpose. A spinning mark next to "waiting

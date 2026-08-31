@@ -22,13 +22,11 @@ import { SiteHeader } from '../components/SiteHeader'
  */
 
 function Section({
-  n,
   name,
   note,
   children,
   variant,
 }: {
-  n: string
   name: string
   note: string
   children: React.ReactNode
@@ -37,7 +35,7 @@ function Section({
   return (
     <section className="sec">
       <header className="sec__head">
-        <span className="sec__n">{n}</span>
+        <span className="sec__n" aria-hidden="true" />
         <h2 className="sec__name">{name}</h2>
         <span className="sec__note">{note}</span>
       </header>
@@ -258,7 +256,7 @@ export function Primitives() {
           composed.
         </p>
 
-        <Section n="01" name="Button" note="variants, sizes, and every state">
+        <Section name="Button" note="variants, sizes, and every state">
           <Spec label="Variants">
             <div className="row">
               <button className="btn btn--primary">Save</button>
@@ -328,7 +326,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="02" name="Input" note="a field is inset where a control is raised">
+        <Section name="Input" note="a field is inset where a control is raised">
           <Spec label="All states">
             <StateRow
               render={(cls) => (
@@ -347,7 +345,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="03" name="Textarea" note="grows, never jumps">
+        <Section name="Textarea" note="the field, given more than one line">
           <Spec label="Default">
             <textarea
               className="field"
@@ -363,7 +361,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="04" name="Select" note="intrinsic width, chevron on the wrapper">
+        <Section name="Select" note="intrinsic width, chevron on the wrapper">
           <Spec label="All states">
             <div className="states">
               {STATES.map(({ cls, label }) => (
@@ -400,7 +398,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="05" name="Checkbox" note="the tick is drawn, not a glyph">
+        <Section name="Checkbox" note="the tick is drawn, not a glyph">
           <Spec label="All states, checked">
             <div className="states">
               {STATES.map(({ cls, label }) => (
@@ -438,7 +436,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="06" name="Radio" note="one of a set">
+        <Section name="Radio" note="the checkbox grammar with a round box and a drawn dot">
           <Spec label="All states, selected">
             <div className="states">
               {STATES.map(({ cls, label }) => (
@@ -469,7 +467,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="07" name="Switch" note="the knob moves, so it reads without colour">
+        <Section name="Switch" note="the knob moves, so it reads without colour">
           <Spec label="All states, on">
             <div className="states">
               {STATES.map(({ cls, label }) => (
@@ -499,7 +497,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="08" name="Segmented control" note="a well, with one raised cell">
+        <Section name="Segmented control" note="a recessed track holding one raised, selected cell">
           <Spec label="Default, hover, focus">
             <div className="row">
               <div className="seg" role="group" aria-label="Filter">
@@ -522,7 +520,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="09" name="Badge" note="the glyph carries the meaning, not the colour">
+        <Section name="Badge" note="every tone pairs its colour with a glyph">
           <span className="badge badge--ok">{StatusGlyph.ok}Operational</span>
           <span className="badge badge--warn">{StatusGlyph.warn}Degraded</span>
           <span className="badge badge--bad">{StatusGlyph.bad}Down</span>
@@ -530,7 +528,7 @@ export function Primitives() {
           <span className="badge">Draft</span>
         </Section>
 
-        <Section n="10" name="Avatar" note="a mark by default, a control when it needs to be">
+        <Section name="Avatar" note="solid, initials, stacked — and a button variant with states">
           <Spec label="Identity — inert on purpose">
             <div className="row">
               <span className="avatar avatar--solid">AI</span>
@@ -554,7 +552,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="11" name="Tooltip" note="hover or focus the control — these are real">
+        <Section name="Tooltip" note="hover or focus the control — these are real">
           <Spec label="On hover, and on keyboard focus">
             <div className="row">
               <span className="tipwrap">
@@ -575,7 +573,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="12" name="Menu" note="overlay, at full elevation">
+        <Section name="Menu" note="hover, shortcut hints, a separator, a destructive row">
           <div className="menu">
             <div className="menu__item is-hover">Rename<kbd>⌘R</kbd></div>
             <div className="menu__item">Duplicate<kbd>⌘D</kbd></div>
@@ -585,7 +583,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="13" name="Dialog" note="the top of the stack">
+        <Section name="Dialog" note="a dialog sits above every other surface and takes the deepest shadow">
           <div className="dialog">
             <h3 className="dialog__title">Discard this draft?</h3>
             <p className="dialog__body">
@@ -599,7 +597,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="14" name="Progress" note="determinate, complete, and unknown" variant="cols">
+        <Section name="Progress" note="determinate, complete, and unknown" variant="cols">
           <Spec label="In progress">
             <div className="meter-row">
               <div className="meter"><div className="meter__fill" style={{ inlineSize: '68%' }} /></div>
@@ -620,7 +618,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="15" name="Separator" note="a line is a line; it stays a border">
+        <Section name="Separator" note="drawn with the border token, so every line on the page matches">
           <Spec label="Default">
             <div style={{ inlineSize: 260 }}><hr className="sep" /></div>
           </Spec>
@@ -629,7 +627,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="16" name="Link" note="underlined from the start, not on hover">
+        <Section name="Link" note="underlined from the start, not on hover">
           <Spec label="In prose">
             <p style={{ maxInlineSize: 380, margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
               Answered from three sources, including{' '}
@@ -639,13 +637,13 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="17" name="Keyboard" note="raised, because a key is a thing you press">
+        <Section name="Keyboard" note="a raised cap on the control surface, sized to its text">
           <div className="row">
             <kbd>⌘</kbd><kbd>⇧</kbd><kbd>⏎</kbd><kbd>Esc</kbd><kbd>Tab</kbd>
           </div>
         </Section>
 
-        <Section n="18" name="Spinner" note="unknown duration, no false progress">
+        <Section name="Spinner" note="unknown duration, no false progress">
           <div className="row">
             <span className="spinner" />
             <span className="spinner spinner--lg" />
@@ -653,7 +651,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="19" name="Skeleton" note="the shape of what is coming, not a spinner">
+        <Section name="Skeleton" note="grey blocks shaped like the content they stand in for">
           <div style={{ display: 'flex', gap: 12, inlineSize: 340 }}>
             <span className="skel skel--circle" style={{ inlineSize: 28, blockSize: 28, flex: 'none' }} />
             <div style={{ display: 'grid', gap: 8, flex: 1 }}>
@@ -664,7 +662,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="20" name="Disclosure" note="what reasoning and tool calls are built on">
+        <Section name="Disclosure" note="what reasoning and tool calls are built on">
           <div style={{ display: 'grid', gap: 10, inlineSize: 420 }}>
             <div className="disc">
               <button className="disc__head" aria-expanded="false">
@@ -687,7 +685,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="21" name="Code" note="quoted material, so the surface is sunken">
+        <Section name="Code" note="quoted material, so the surface is sunken">
           <div style={{ display: 'grid', gap: 12, inlineSize: 460 }}>
             <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
               Inline, as in <code>npm install</code>, sits in running text.
@@ -702,7 +700,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="22" name="Prose" note="a streamed answer is this — the most important surface here">
+        <Section name="Prose" note="a streamed answer is this — the most important surface here">
           <div className="prose">
             <p>
               All three describe the same change, but only the last one gives a
@@ -723,7 +721,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="23" name="Loaders" note="waiting is not one state, so it is not one loader">
+        <Section name="Loaders" note="waiting is not one state, so it is not one loader">
           <Spec label="Long and unknown — calm, so it does not read as stuck">
             <div className="row">
               <span className="breathe" />
@@ -767,8 +765,8 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="24" name="Activity orbs" note="the mark says what kind of wait it is">
-          <Spec label="Working — every library ships these">
+        <Section name="Activity orbs" note="the mark says what kind of wait it is">
+          <Spec label="Working — thinking, searching, composing">
             <div style={{ display: 'grid', gap: 12 }}>
               <Orb state="thinking" label="Thinking" time="4.2s" />
               <Orb state="searching" label="Searching documents" time="1.1s" />
@@ -776,7 +774,7 @@ export function Primitives() {
             </div>
           </Spec>
 
-          <Spec label="Not working — the half nobody builds">
+          <Spec label="Not working — ready, blocked, queued, degraded, down">
             <div style={{ display: 'grid', gap: 12 }}>
               <Orb state="ready" label="Ready when you are" />
               <Orb state="blocked" label="Waiting for your answer" />
@@ -796,7 +794,7 @@ export function Primitives() {
         </Section>
 
 
-        <Section n="25" name="Media" note="the outline is pure black or white, never tinted">
+        <Section name="Media" note="the outline is pure black or white, never tinted">
           <Spec label="Square, wide, small">
             <div className="row" style={{ alignItems: 'flex-start' }}>
               <span className="media media--square" style={{ inlineSize: 68 }}>
@@ -815,7 +813,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="26" name="Attachments" note="three variants, because a file means three things">
+        <Section name="Attachments" note="grid in a message, inline in a composer, list in sources">
           <Spec label="Grid — in a message, the picture is the content">
             <div className="atts atts--grid">
               {[ART.one, ART.two, ART.three].map((src, i) => (
@@ -875,7 +873,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section n="27" name="Scroll area" note="content should never just stop">
+        <Section name="Scroll area" note="edges fade where content continues">
           <div className="scroller" style={{ maxBlockSize: 150, inlineSize: 320 }}>
             <div style={{ display: 'grid', gap: 8, padding: '4px 2px' }}>
               {[
@@ -895,7 +893,7 @@ export function Primitives() {
           </div>
         </Section>
 
-        <Section n="28" name="Table" note="numbers are tabular, so a column never shifts">
+        <Section name="Table" note="numbers are tabular, so a column never shifts">
           <div style={{ inlineSize: '100%' }}>
             <table className="table">
               <thead>
