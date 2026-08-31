@@ -38,17 +38,20 @@ and the **Budget Meter** (the price before you spend it — the model
 picker grown into a meter that projects the next turn's cost, per
 model, before you commit).
 
-**A written rationale for every component.** Each one ships with its
-positions, the alternatives that were tried and cut, and what is
-deliberately deferred — with the reason. The judgment is the product;
-the components are its proof.
-
 **Accessibility is a gate, not a pass at the end.** WCAG 2.2 AA is enforced on
 every component by an audit that drives a real Chromium and measures what is
 actually painted — 3,600+ checks across 44 theme, expression and accent
 combinations, run in CI on every push to `main` and every pull request. It renders a real browser on purpose:
 three of the first four contrast failures were cascade and paint behaviour that
 parsing tokens could never have seen.
+
+<details>
+<summary><strong>The supporting material</strong> — the rationale docs, theme parity, dependencies, shadcn interop, the icon slot, and the token contract</summary>
+
+**A written rationale for every component.** Each one ships with its
+positions, the alternatives that were tried and cut, and what is
+deliberately deferred — with the reason. The judgment is the product;
+the components are its proof.
 
 **A theme cannot depend on how you reached it.** Dark is declared twice — once
 under `prefers-color-scheme`, once under `[data-theme]` — because CSS gives no
@@ -70,6 +73,8 @@ attributed; any of it can be replaced without forking.
 **The token surface is a documented contract.** [docs/tokens.md](docs/tokens.md)
 says which properties you may build on and which are implementation detail — and
 a test fails if a token is added to the CSS without being classified.
+
+</details>
 
 ## Status
 
