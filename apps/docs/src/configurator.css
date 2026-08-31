@@ -362,7 +362,12 @@ body {
      beneath the page itself. */
   isolation: isolate;
   display: grid;
-  place-content: center;
+  /* ONE definite full-width column, content centered within it: the
+     chips' auto-fit grid needs a definite width to count columns against
+     — under place-content's auto track it measured against infinity and
+     overflowed the drawer. */
+  grid-template-columns: minmax(0, 100%);
+  align-content: center;
   justify-items: center;
   gap: 12px;
   text-align: center;
@@ -502,8 +507,8 @@ body {
 }
 .cfg__empty-sub { max-inline-size: 40ch; }
 .cfg__empty .lucet-chips {
-  margin-block-start: 10px;
-  max-inline-size: 440px;
+  margin-block-start: 14px;
+  max-inline-size: min(100%, 560px);
 }
 /* The room lights, then three beats — greeting, invitation, ways in —
    then stillness. Only the atmosphere keeps moving, slower than

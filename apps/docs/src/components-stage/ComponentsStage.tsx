@@ -500,9 +500,10 @@ export function ComponentsStage() {
               <div style={{ maxInlineSize: 460 }}>
                 <SuggestionChips
                   suggestions={[
-                    { id: 's1', prompt: 'Summarise the three documents I shared.' },
-                    { id: 's2', prompt: 'Turn my notes into a short plan.' },
-                    { id: 's3', prompt: 'Which of these two plans is more likely to slip?' },
+                    { id: 's1', prompt: 'Summarise the three documents I shared.', kind: 'ask' },
+                    { id: 's3', prompt: 'Which of these two plans is more likely to slip?', kind: 'ask' },
+                    { id: 's2', prompt: 'Turn my notes into a short plan.', kind: 'do' },
+                    { id: 's4', prompt: 'Check the three sources I flagged.', kind: 'do' },
                   ]}
                   onPick={noop}
                 />

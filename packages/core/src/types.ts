@@ -212,6 +212,15 @@ export interface UsageState {
 export interface Suggestion {
   readonly id: string
   readonly prompt: string
+  /**
+   * What kind of way in this is. `ask` sends a question — turn by turn,
+   * words back. `do` sends a COMMISSION — the agent goes and works.
+   * Both are still only words sent verbatim (the chip itself never
+   * touches a system), but flattening the two trains people to tap
+   * without reading, so the type carries the split and the component
+   * draws it. Omitted, the chip renders in a single unlabelled list.
+   */
+  readonly kind?: 'ask' | 'do'
 }
 
 export interface ThreadState {

@@ -1740,30 +1740,85 @@
  * and not the primary action.
  * ============================================================ */
 
+/* Two labelled columns when the room allows, one when it does not —
+   the drawer and the phone stack, the full page sits Ask beside Do.
+   Rows, not pills: a suggestion is a sentence, and a sentence deserves
+   a line with a glyph and a way-in chevron, not a lozenge squeezing it. */
 .lucet-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--lucet-space-4);
+  inline-size: 100%;
+  text-align: start;
+}
+.lucet-chips__set {
+  display: grid;
   gap: var(--lucet-space-2);
+  align-content: start;
+}
+.lucet-chips__label {
+  padding-inline: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
 }
 
 .lucet-chips__chip {
-  min-block-size: 30px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-block-size: 38px;
   max-inline-size: 100%;
-  padding: 4px 14px;
+  padding: 8px 11px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--lucet-radius-control);
   background-color: var(--lucet-secondary);
   box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
   color: var(--lucet-secondary-foreground);
   font: inherit;
   font-size: var(--lucet-text-sm);
+  line-height: 1.35;
   text-align: start;
   cursor: pointer;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease-out),
     box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
 }
+/* The kind's glyph: SHAPE carries the split (a bubble asks, a bolt does);
+   the accent on `do` is reinforcement, never the only signal (1.4.1). */
+.lucet-chips__glyph {
+  flex: none;
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-chips__chip[data-kind='do'] .lucet-chips__glyph { color: var(--lucet-primary); }
+.lucet-chips__text {
+  flex: 1;
+  min-inline-size: 0;
+}
+/* The chevron leans in when the row is considered. */
+.lucet-chips__chev {
+  flex: none;
+  inline-size: 11px;
+  block-size: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--lucet-muted-foreground);
+  opacity: 0.6;
+  transition: translate var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-chips__chip:hover:not(:disabled) .lucet-chips__chev { translate: 2px 0; }
 /* Opaque at rest, so hover MIXES the ink over the fill rather than veiling. */
 .lucet-chips__chip:hover:not(:disabled) {
   background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-secondary));
@@ -1778,5 +1833,8 @@
 .lucet-chips__chip:disabled { opacity: 0.55; cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
-  .lucet-chips__chip { transition: none; }
+  .lucet-chips__chip,
+  .lucet-chips__chev {
+    transition: none;
+  }
 }

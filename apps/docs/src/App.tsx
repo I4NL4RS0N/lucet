@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible } from 'lucet'
+import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible, toolSuccess } from 'lucet'
 import type { Suggestion } from 'lucet'
 import {
   LucetProvider,
@@ -36,11 +36,21 @@ const ACCENTS = [
 /*
  * The cold start's chips, built FROM the scenarios they fire: id and prompt
  * come straight off the scenario, so what a chip says is exactly what runs
- * — honest by construction, never by discipline.
+ * — honest by construction, never by discipline. The KIND is the page's
+ * judgment of each scenario's nature: questions that want words back are
+ * `ask`; commissions that set the agent working are `do`.
  */
-const SUGGESTIONS: readonly Suggestion[] = [happyPath, formatted, reasoning].map((s) => ({
+const SUGGESTIONS: readonly Suggestion[] = (
+  [
+    [happyPath, 'ask'],
+    [reasoning, 'ask'],
+    [formatted, 'do'],
+    [toolSuccess, 'do'],
+  ] as const
+).map(([s, kind]) => ({
   id: s.id,
   prompt: s.prompt ?? '',
+  kind,
 }))
 
 type View = 'full' | 'drawer' | 'mobile'
@@ -257,9 +267,9 @@ function AppCore({
                 <div className="cfg__atmo" aria-hidden="true">
                   <i /><i /><i />
                 </div>
-                <p className="cfg__empty-hello">Ready when you are.</p>
+                <p className="cfg__empty-hello">How can I help?</p>
                 <span className="cfg__empty-sub">
-                  Ask anything below, or start from one of these.
+                  Ask a question, or hand a task off.
                 </span>
                 {suggestionsVisible(state) ? (
                   <SuggestionChips
