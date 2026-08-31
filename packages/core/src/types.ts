@@ -82,6 +82,12 @@ export interface Message {
   readonly status: MessageStatus
   /** Set when status is 'refused', 'failed', or 'interrupted'. */
   readonly reason: string | null
+  /**
+   * The reader's verdict on a response, revocable. In the contract rather
+   * than fired-and-forgotten at an analytics endpoint, because a rating
+   * you cannot see or take back is not feedback, it is surveillance.
+   */
+  readonly feedback: 'up' | 'down' | null
   readonly createdAt: number
 }
 
@@ -95,6 +101,13 @@ export interface Turn {
   readonly id: string
   readonly index: number
   readonly versionId: string
+  /**
+   * Set when this turn is a RETRY of an earlier one: same words, new
+   * commit. Every prompt is a commit, and a retry is not an exception to
+   * that law — it is a new turn that knows its ancestor, which is exactly
+   * what Version Marker + Restore will need.
+   */
+  readonly retryOf: string | null
   readonly prompt: Message
   readonly response: Message | null
 }

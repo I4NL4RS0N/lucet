@@ -69,6 +69,7 @@ describe('composer attachments', () => {
         text: 'go',
         authorId: 'ada',
         attachmentIds: ['ok'],
+        retryOf: null,
       },
     ])
     // Silently discarding a failed or in-flight attachment on submit would
@@ -85,7 +86,7 @@ describe('composer attachments', () => {
     const s = play([
       add('a1'),
       settle('a1', 'ready'),
-      { type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: '', authorId: 'you', attachmentIds: ['a1'] },
+      { type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: '', authorId: 'you', attachmentIds: ['a1'], retryOf: null },
     ])
     expect(s.turns[0]!.prompt.parts).toMatchObject([{ kind: 'attachment', id: 'a1' }])
   })
@@ -164,7 +165,7 @@ describe('suggestions — the cold start', () => {
     expect(suggestionsVisible(s)).toBe(true)
     expect(suggestionsVisible({ ...s, status: 'streaming' })).toBe(false)
     const withTurn = play(
-      [{ type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: 'hi', authorId: 'you', attachmentIds: [] }],
+      [{ type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: 'hi', authorId: 'you', attachmentIds: [], retryOf: null }],
       s,
     )
     expect(suggestionsVisible(withTurn)).toBe(false)

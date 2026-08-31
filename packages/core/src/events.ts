@@ -43,6 +43,8 @@ export type LucetEvent =
       authorId: string
       /** What actually went with the turn. The log stays truthful. */
       attachmentIds: readonly string[]
+      /** The turn this one retries, when it is a retry. Same words, new commit. */
+      retryOf: string | null
     }
   | { type: 'response/started'; turnId: string; messageId: string }
   | { type: 'part/added'; messageId: string; part: MessagePart }
@@ -65,6 +67,12 @@ export type LucetEvent =
   | { type: 'service/changed'; status: ServiceStatus; message: string | null }
   | { type: 'service/dismissed' }
   | { type: 'usage/changed'; patch: Partial<UsageState> }
+  | {
+      type: 'feedback/given'
+      messageId: string
+      /** null retracts: a rating you cannot take back is not feedback. */
+      verdict: 'up' | 'down' | null
+    }
   | { type: 'restore/entered'; turnId: string }
   | { type: 'restore/exited' }
 
@@ -106,7 +114,9 @@ export function describeEvent(event: LucetEvent): string {
     case 'model/changed':
       return `Model set to ${event.modelId}`
     case 'turn/submitted':
-      return `Turn submitted by ${event.authorId}`
+      return event.retryOf
+        ? `Turn resubmitted by ${event.authorId} — same words, new commit`
+        : `Turn submitted by ${event.authorId}`
     case 'response/started':
       return 'Response started'
     case 'part/added':
@@ -123,6 +133,12 @@ export function describeEvent(event: LucetEvent): string {
       return 'Service notice dismissed'
     case 'usage/changed':
       return 'Usage updated'
+    case 'feedback/given':
+      return event.verdict === 'up'
+        ? 'Marked helpful'
+        : event.verdict === 'down'
+          ? 'Marked unhelpful'
+          : 'Feedback taken back'
     case 'restore/entered':
       return 'Viewing a restored state'
     case 'restore/exited':

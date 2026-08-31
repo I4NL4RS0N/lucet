@@ -212,12 +212,14 @@ export function reduce(
         ],
         status: 'complete',
         reason: null,
+        feedback: null,
         createdAt: ctx.now,
       }
       const turn: Turn = {
         id: event.turnId,
         index: state.turns.length,
         versionId: event.versionId,
+        retryOf: event.retryOf,
         prompt,
         response: null,
       }
@@ -244,6 +246,7 @@ export function reduce(
         parts: [],
         status: 'streaming',
         reason: null,
+        feedback: null,
         createdAt: ctx.now,
       }
       return {
@@ -310,6 +313,17 @@ export function reduce(
 
     case 'usage/changed':
       return { ...state, usage: { ...state.usage, ...event.patch } }
+
+    /* Feedback lands on responses only: rating your own words is a no-op
+       by construction, since mapResponse never matches a prompt. */
+    case 'feedback/given':
+      return {
+        ...state,
+        turns: mapResponse(state, event.messageId, (message) => ({
+          ...message,
+          feedback: event.verdict,
+        })),
+      }
 
     case 'restore/entered':
       return { ...state, restoredFrom: event.turnId }

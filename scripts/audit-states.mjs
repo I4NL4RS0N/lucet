@@ -70,6 +70,7 @@ const COMPONENT_PROBES = [
   { sec: 'Thread — every ending', hover: 'details.lucet-tool .lucet-tool__row--summary', part: 'tool summary', bg: true },
   { sec: 'Suggestion chips — the cold start', hover: '.lucet-chips__chip:not(:disabled)', part: 'suggestion chip' },
   { sec: 'Suggestion chips — the cold start', hover: '.lucet-chips__chip:disabled', part: 'suggestion chip disabled', expect: 'none' },
+  { sec: 'Thread — every ending', hover: '[data-latest] .lucet-actions__btn', part: 'message action', bg: true },
 ]
 
 const PROBES = [
@@ -480,6 +481,53 @@ async function main() {
     if (tool.plainRows === 0 || tool.plainRowsWithChevron > 0)
       failures.push(
         `tool: the payload-less row must exist and carry no chevron (plain=${tool.plainRows}, with chevron=${tool.plainRowsWithChevron})`,
+      )
+
+    /*
+     * THE VISIBILITY LAW, measured: actions ride every settled response —
+     * visible outright on the latest turn, hidden on older ones until
+     * hover OR FOCUS. Hover-only reveal is the failure this guards against:
+     * a keyboard Tab into an older turn's actions must reveal them too.
+     */
+    const multiplayerPair = page
+      .locator('.spec', { hasText: 'Multiplayer' })
+      .locator('.lucet-thread__pair')
+      .first()
+    await multiplayerPair.scrollIntoViewIfNeeded()
+    const actionsBefore = await multiplayerPair.evaluate((el) => {
+      const a = el.querySelector('.lucet-actions')
+      return a ? Number(getComputedStyle(a).opacity) : null
+    })
+    await multiplayerPair.locator('.lucet-actions__btn').first().focus()
+    // The reveal is a real transition; read it after it lands, not mid-flight.
+    await page.waitForTimeout(300)
+    const actionsFocused = await multiplayerPair.evaluate((el) => {
+      const a = el.querySelector('.lucet-actions')
+      return a ? Number(getComputedStyle(a).opacity) : null
+    })
+    const latestVisible = await page.evaluate(() => {
+      const a = document.querySelector('[data-latest] .lucet-actions')
+      return a ? Number(getComputedStyle(a).opacity) : null
+    })
+    // A recorded verdict renders as a PRESSED state with a silhouette (the
+    // fixtures replay a feedback/given event; toggle semantics are pinned in
+    // the core tests — static replays cannot dispatch).
+    const pressed = await page.evaluate(() => {
+      const btn = document.querySelector('.lucet-actions__btn[aria-pressed="true"]')
+      return btn ? getComputedStyle(btn).boxShadow !== 'none' : null
+    })
+    checks += 3
+    if (actionsBefore !== 0 || actionsFocused !== 1)
+      failures.push(
+        `actions: older turn must hide (got ${actionsBefore}) and reveal on FOCUS, not just hover (got ${actionsFocused})`,
+      )
+    if (latestVisible !== 1)
+      failures.push(`actions: the latest turn's actions must be visible outright (opacity ${latestVisible})`)
+    if (pressed !== true)
+      failures.push(
+        pressed === null
+          ? 'actions: no recorded verdict on the stage (a fixture must replay feedback/given)'
+          : 'actions: the pressed verdict must keep a silhouette, not just an ink change (1.4.1)',
       )
   } finally {
     await browser.close()

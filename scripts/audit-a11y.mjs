@@ -116,7 +116,7 @@ function collect() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.cfg__trigger, .cfg__reset, .cfg__navlink, .cfg__prefs select, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy',
+    '.cfg__trigger, .cfg__reset, .cfg__navlink, .cfg__prefs select, .cfg__aside select, .cfg__log summary, .lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-actions__btn',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
@@ -410,6 +410,9 @@ function collectComponents() {
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
     /* A suggestion chip: the content tier carrying a whole prompt. */
     'suggestion chip': '.lucet-chips__chip:not(:disabled)',
+    /* Message actions: resting ink and the pressed verdict. */
+    'message action': '.lucet-actions__btn:not([aria-pressed="true"])',
+    'message action pressed': '.lucet-actions__btn[aria-pressed="true"]',
     /* The reasoning disclosure: the row in both dresses, and the working. */
     'reasoning summary': 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary',
     'reasoning thinking word': 'details.lucet-reasoning[data-streaming] .lucet-reasoning__summary',
@@ -444,7 +447,7 @@ function collectComponents() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary, .lucet-tool__row--summary, .lucet-chips__chip:not(:disabled)',
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary, .lucet-tool__row--summary, .lucet-chips__chip:not(:disabled), .lucet-actions__btn',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue

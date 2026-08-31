@@ -158,3 +158,37 @@ describe('the reducer is pure', () => {
     expect(() => reduce(state, { type: 'restore/exited' }, { now: 0 })).not.toThrow()
   })
 })
+
+describe('feedback and retry', () => {
+  it('feedback lands on the response, toggles, and retracts', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('happy-path')
+    const msg = () => lucet.getState().turns[0]?.response
+    lucet.store.dispatch({ type: 'feedback/given', messageId: msg()!.id, verdict: 'up' })
+    expect(msg()?.feedback).toBe('up')
+    lucet.store.dispatch({ type: 'feedback/given', messageId: msg()!.id, verdict: 'down' })
+    expect(msg()?.feedback).toBe('down')
+    lucet.store.dispatch({ type: 'feedback/given', messageId: msg()!.id, verdict: null })
+    expect(msg()?.feedback).toBeNull()
+  })
+
+  it('retry is a NEW turn that knows its ancestor: same words, new commit', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('happy-path')
+    const first = lucet.getState().turns[0]!
+    await lucet.retry(first.id)
+    const { turns } = lucet.getState()
+    expect(turns).toHaveLength(2)
+    const second = turns[1]!
+    expect(second.retryOf).toBe(first.id)
+    expect(second.versionId).not.toBe(first.versionId)
+    const words = (t: typeof first) =>
+      t.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('\n')
+    expect(words(second)).toBe(words(first))
+  })
+
+  it('retrying an unknown turn rejects instead of inventing one', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await expect(lucet.retry('nope')).rejects.toThrow('Unknown turn')
+  })
+})

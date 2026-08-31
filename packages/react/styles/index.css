@@ -1401,6 +1401,77 @@
   animation: lucet-thread-arrive 220ms var(--lucet-ease-out) backwards;
 }
 
+/* ============================================================
+ * Feedback controls — what you can DO with a settled response, in quiet
+ * ink. THE VISIBILITY LAW: always present on the latest turn (where you
+ * would actually use them); on older turns revealed by hover OR focus —
+ * never hover alone, because touch has no hover and a keyboard has nothing
+ * to hover with. Opacity, not display: the buttons stay in the
+ * accessibility tree and stay tabbable, and tabbing into them reveals them.
+ * ============================================================ */
+
+.lucet-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-block-start: var(--lucet-space-1);
+}
+.lucet-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 26px;
+  padding-inline: var(--lucet-space-2);
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  background: none;
+  color: var(--lucet-muted-foreground);
+  font: inherit;
+  font-size: var(--lucet-text-xs);
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-actions__btn svg {
+  inline-size: 13px;
+  block-size: 13px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lucet-actions__btn--icon {
+  inline-size: 26px;
+  padding-inline: 0;
+  justify-content: center;
+}
+.lucet-actions__btn:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-actions__btn:active { background-color: var(--lucet-press); }
+.lucet-actions__btn:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+/* A recorded verdict keeps a SILHOUETTE, not just an ink change: the
+   hairline container is the pressed state's shape. */
+.lucet-actions__btn[aria-pressed='true'] {
+  color: var(--lucet-foreground);
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+}
+.lucet-actions__btn[data-state='failed'] { color: var(--lucet-tone-danger-foreground); }
+
+.lucet-thread__pair:not([data-latest]) .lucet-actions {
+  opacity: 0;
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-thread__pair:not([data-latest]):hover .lucet-actions,
+.lucet-thread__pair:not([data-latest]):focus-within .lucet-actions {
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lucet-thread__caret { animation: none; }
   .lucet-thread__turn,
@@ -1414,6 +1485,8 @@
   .lucet-reasoning__summary::before { transition: none; }
   .lucet-tool__row--summary { transition: none; }
   .lucet-tool__row--summary::before { transition: none; }
+  .lucet-actions__btn { transition: none; }
+  .lucet-thread__pair:not([data-latest]) .lucet-actions { transition: none; }
 }
 
 /* ============================================================

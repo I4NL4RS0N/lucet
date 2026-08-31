@@ -21,7 +21,7 @@ export interface MockRuntimeOptions {
 }
 
 export interface MockRuntime {
-  run(scenario: Scenario, signal?: AbortSignal): Promise<void>
+  run(scenario: Scenario, signal?: AbortSignal, meta?: { retryOf?: string }): Promise<void>
 }
 
 const DEFAULT_CHUNK_MS = 24
@@ -158,7 +158,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
   }
 
   return {
-    async run(scenario, signal) {
+    async run(scenario, signal, meta) {
       const turnId = nextId('turn')
       const promptId = nextId('msg')
       const messageId = nextId('msg')
@@ -174,6 +174,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           .getState()
           .composer.attachments.filter((a) => a.status === 'ready')
           .map((a) => a.id),
+        retryOf: meta?.retryOf ?? null,
       })
       // Single writer at a time. The composer closes for everyone, not just the
       // person who submitted.

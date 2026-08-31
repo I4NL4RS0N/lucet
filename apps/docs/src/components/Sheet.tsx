@@ -22,7 +22,7 @@ function msg(
   reason: string | null = null,
 ): MessageType {
   seq += 1
-  return { id: `sheet_${seq}`, role, authorId: role === 'user' ? 'you' : 'assistant', parts, status, reason, createdAt: 0 }
+  return { id: `sheet_${seq}`, role, authorId: role === 'user' ? 'you' : 'assistant', parts, status, reason, feedback: null, createdAt: 0 }
 }
 
 const text = (t: string): MessagePart => ({ kind: 'text', id: `t${seq++}`, text: t })

@@ -58,6 +58,13 @@ export interface Lucet {
   subscribe(listener: Listener): () => void
   /** Send a prompt. With the mock runtime, this runs the default script. */
   submit(text: string): Promise<void>
+  /**
+   * Ask again with the same words: a NEW turn that knows its ancestor
+   * (Turn.retryOf), because every prompt is a commit and a retry is not an
+   * exception to that law. Attachments do not re-send — they left the
+   * composer with the original turn; the words are what travel again.
+   */
+  retry(turnId: string): Promise<void>
   /** Force a named state, in context, without resetting the thread. */
   trigger(id: string): Promise<void>
   /** Stop the current response. What already arrived stays. */
@@ -103,12 +110,12 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     steps: defaultReply,
   })
 
-  async function run(scenario: Scenario): Promise<void> {
+  async function run(scenario: Scenario, meta?: { retryOf?: string }): Promise<void> {
     controller?.abort()
     const own = new AbortController()
     controller = own
     try {
-      await runtime.run(scenario, own.signal)
+      await runtime.run(scenario, own.signal, meta)
     } finally {
       if (controller === own) controller = null
     }
@@ -146,6 +153,15 @@ export function createLucet(options: LucetOptions = {}): Lucet {
 
     submit(text) {
       return run(submitScenario(text))
+    },
+
+    retry(turnId) {
+      const turn = store.getState().turns.find((t) => t.id === turnId)
+      if (!turn) {
+        return Promise.reject(new Error(`Unknown turn: ${turnId}`))
+      }
+      const text = turn.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('\n')
+      return run(submitScenario(text), { retryOf: turnId })
     },
 
     trigger(id) {

@@ -175,7 +175,14 @@ function AppCore({
             ) : null}
           </div>
         ) : (
-          <Thread state={state} selfId="you" />
+          <Thread
+            state={state}
+            selfId="you"
+            onRetry={(turnId) => void lucet.retry(turnId)}
+            onFeedback={(messageId, verdict) =>
+              lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
+            }
+          />
         )}
       </div>
 

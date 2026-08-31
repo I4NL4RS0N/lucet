@@ -65,7 +65,7 @@ function turn(
 ): LucetEvent[] {
   const t = `t${n}`, pm = `pm${n}`, rm = `rm${n}`
   const events: LucetEvent[] = [
-    { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [] },
+    { type: 'turn/submitted', turnId: t, versionId: `v${n}`, messageId: pm, text: prompt, authorId: opts.author ?? 'you', attachmentIds: opts.attachmentIds ?? [], retryOf: null },
     { type: 'response/started', turnId: t, messageId: rm },
   ]
   if (opts.reasoning !== undefined) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: opts.reasoning } })
@@ -99,6 +99,8 @@ const THREAD_FIXTURES: readonly Fixture[] = [
         },
         reply: 'Only the schedule moved. The review step now runs after approval, and anything filed before Tuesday follows the previous order.',
       }),
+      /* A recorded verdict, so the pressed state is on the stage. */
+      { type: 'feedback/given', messageId: 'rm1', verdict: 'up' },
     ]),
   },
   {
@@ -351,7 +353,14 @@ function Live() {
 
   return (
     <div style={{ display: 'grid', gap: 20 }}>
-      <Thread state={state} selfId="you" />
+      <Thread
+        state={state}
+        selfId="you"
+        onRetry={(turnId) => void lucet.retry(turnId)}
+        onFeedback={(messageId, verdict) =>
+          lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
+        }
+      />
       <PromptInput
       composer={state.composer}
       model={state.model}
@@ -499,7 +508,7 @@ export function ComponentsStage() {
               <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
                 <span className="spec__label">{f.label}</span>
                 <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
-                  <Thread state={f.state} selfId="you" />
+                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
                 </div>
                 <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
               </div>

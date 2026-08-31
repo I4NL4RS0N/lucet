@@ -4,6 +4,7 @@ import type { Message, MessagePart, ThreadState } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
+import { MessageActions } from './MessageActions.js'
 import { Reasoning } from './Reasoning.js'
 import { StateIcon } from './StateIcon.js'
 import { ToolCall } from './ToolCall.js'
@@ -39,6 +40,10 @@ export interface ThreadProps {
   state: ThreadState
   /** Matched against message authorIds; your own turns are labelled You. */
   selfId?: string | undefined
+  /** Ask again with the same words: a new turn that knows its ancestor. */
+  onRetry?: ((turnId: string) => void) | undefined
+  /** Record or retract a verdict on a response. */
+  onFeedback?: ((messageId: string, verdict: 'up' | 'down' | null) => void) | undefined
 }
 
 const TERMINAL: Record<string, { icon: 'interrupted' | 'failed' | 'refused'; word: string }> = {
@@ -101,7 +106,15 @@ function Part({
   }
 }
 
-function MessageView({ message, self }: { message: Message; self: boolean }) {
+function MessageView({
+  message,
+  self,
+  actions,
+}: {
+  message: Message
+  self: boolean
+  actions?: React.ReactNode
+}) {
   const isUser = message.role === 'user'
   const terminal = TERMINAL[message.status]
   const attachments = message.parts.filter((p) => p.kind === 'attachment')
@@ -160,6 +173,7 @@ function MessageView({ message, self }: { message: Message; self: boolean }) {
           </span>
         </p>
       ) : null}
+      {actions}
     </div>
   )
 }
@@ -218,7 +232,8 @@ function ResponseAnnouncer({ state }: { state: ThreadState }) {
   )
 }
 
-export function Thread({ state, selfId }: ThreadProps) {
+export function Thread({ state, selfId, onRetry, onFeedback }: ThreadProps) {
+  const last = state.turns[state.turns.length - 1]
   return (
     /*
      * The visible thread is a named region for FINDING; the hidden announcer
@@ -228,12 +243,40 @@ export function Thread({ state, selfId }: ThreadProps) {
      * mess this component exists to clean up.
      */
     <section className="lucet-thread" aria-label="Conversation">
-      {state.turns.map((turn) => (
-        <article className="lucet-thread__pair" key={turn.id}>
-          <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
-          {turn.response ? <MessageView message={turn.response} self={false} /> : null}
-        </article>
-      ))}
+      {state.turns.map((turn) => {
+        const response = turn.response
+        /* Actions appear once a response has SETTLED — there is nothing to
+           copy, judge, or retry about a stream still arriving. The
+           latest/older visibility law is CSS on the pair. */
+        const settled =
+          response !== null && response.status !== 'streaming' && response.status !== 'pending'
+        return (
+          <article
+            className="lucet-thread__pair"
+            key={turn.id}
+            data-latest={turn.id === last?.id || undefined}
+          >
+            <MessageView message={turn.prompt} self={turn.prompt.authorId === (selfId ?? null)} />
+            {response ? (
+              <MessageView
+                message={response}
+                self={false}
+                actions={
+                  settled ? (
+                    <MessageActions
+                      message={response}
+                      onRetry={onRetry ? () => onRetry(turn.id) : undefined}
+                      onFeedback={
+                        onFeedback ? (verdict) => onFeedback(response.id, verdict) : undefined
+                      }
+                    />
+                  ) : null
+                }
+              />
+            ) : null}
+          </article>
+        )
+      })}
       <ResponseAnnouncer state={state} />
     </section>
   )

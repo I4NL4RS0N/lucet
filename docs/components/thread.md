@@ -51,13 +51,14 @@ without it every appearance is instant and the eye cannot follow what
 changed. Streaming text needs none of this — the caret's crawl is its own
 continuity — and all of it yields to `prefers-reduced-motion`.
 
-## What is deliberately not here yet
+## Nothing is deliberately missing any more
 
-- **Message actions** (copy the whole response, retry, feedback) — the
-  Feedback Controls item.
-
-(The empty thread is no longer missing: the cold start is designed on the
-Configurator home — see [suggestion-chips.md](suggestion-chips.md).)
+Every part of a turn now renders through its own component with its own
+rationale: [streaming-response.md](streaming-response.md),
+[reasoning.md](reasoning.md), [tool-call.md](tool-call.md),
+[feedback-controls.md](feedback-controls.md), and the cold start via
+[suggestion-chips.md](suggestion-chips.md). The thread decides where things
+sit and when they are live; the components decide everything else.
 
 (The asides are all real now: [reasoning.md](reasoning.md) and
 [tool-call.md](tool-call.md) own their rows; the thread only decides where
