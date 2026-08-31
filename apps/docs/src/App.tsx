@@ -179,6 +179,8 @@ function AppCore({
   onSuggest,
   aside,
   chrome = 'window',
+  home,
+  barStart,
 }: {
   onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
@@ -187,6 +189,12 @@ function AppCore({
      OWN chrome (the drawer) takes `bare`: no bar at all, the furniture
      belongs to the room. The thread never changes either way. */
   chrome?: 'window' | 'bare'
+  /* The full page is a HOME, and homes follow the genre (Claude, ChatGPT,
+     Le Chat): brand over the greeting, and the composer sits IN the page
+     until the first turn exists, then moves to the floor. */
+  home?: boolean
+  /* A control the container wants at the bar's start (the rail toggle). */
+  barStart?: React.ReactNode
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -198,6 +206,53 @@ function AppCore({
     if (el && state.status !== 'idle') el.scrollTop = el.scrollHeight
   }, [state])
 
+  /* ONE composer, two seats: the home page seats it centre-stage until a
+     turn exists (the genre's grammar — Claude, ChatGPT, Le Chat); every
+     other moment it sits on the floor of the frame. */
+  const composerCentered = Boolean(home) && state.turns.length === 0
+  const composerNode = (
+            <PromptInput
+              composer={state.composer}
+              model={state.model}
+              service={state.service}
+              selfId="you"
+              streaming={state.status === 'streaming'}
+              onStop={() => lucet.abort()}
+              onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
+              onSubmit={() => void lucet.submit(state.composer.text)}
+              onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
+              onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
+              onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
+              onRetryAttachment={(id) => {
+                lucet.store.dispatch({ type: 'attachment/retried', id })
+                setTimeout(
+                  () => lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }),
+                  1200,
+                )
+              }}
+              onAttach={() => {
+                // The host owns file IO; this host fakes one honestly. Every
+                // third attachment fails, so the failure path stays one click away.
+                const n = ++attachCount.current
+                const id = `cfg_${n}`
+                lucet.store.dispatch({
+                  type: 'attachment/added',
+                  id,
+                  name: `document-${n}.pdf`,
+                  fileKind: 'document',
+                  sizeBytes: 240_000,
+                })
+                setTimeout(() => {
+                  lucet.store.dispatch(
+                    n % 3 === 0
+                      ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
+                      : { type: 'attachment/settled', id, status: 'ready', reason: null },
+                  )
+                }, 1200)
+              }}
+            />
+  )
+
   return (
     <>
       {chrome === 'bare' ? null : (
@@ -206,6 +261,7 @@ function AppCore({
           <span className="cfg__dots" aria-hidden>
             <i /><i /><i />
           </span>
+          {barStart}
           {/* The window title is the DOCUMENT'S title, and the document is
              the thread: its own first words, or the honest “New thread”.
              A title that never changes is what makes a mock feel mock. */}
@@ -250,10 +306,18 @@ function AppCore({
                 <div className="cfg__atmo" aria-hidden="true">
                   <i /><i /><i />
                 </div>
+                {home ? (
+                  <span className="cfg__empty-mark" aria-hidden>
+                    <MockBrandMark idp="fbm2" />
+                  </span>
+                ) : null}
                 <p className="cfg__empty-hello">How can I help?</p>
                 <span className="cfg__empty-sub">
                   Ask a question, or hand a task off.
                 </span>
+                {composerCentered ? (
+                  <div className="cfg__composer cfg__composer--center">{composerNode}</div>
+                ) : null}
                 {suggestionsVisible(state) ? (
                   <SuggestionChips
                     suggestions={state.suggestions}
@@ -274,48 +338,9 @@ function AppCore({
             )}
           </div>
 
-          <div className="cfg__composer">
-            <PromptInput
-              composer={state.composer}
-              model={state.model}
-              service={state.service}
-              selfId="you"
-              streaming={state.status === 'streaming'}
-              onStop={() => lucet.abort()}
-              onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
-              onSubmit={() => void lucet.submit(state.composer.text)}
-              onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
-              onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
-              onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
-              onRetryAttachment={(id) => {
-                lucet.store.dispatch({ type: 'attachment/retried', id })
-                setTimeout(
-                  () => lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }),
-                  1200,
-                )
-              }}
-              onAttach={() => {
-                // The host owns file IO; this host fakes one honestly. Every
-                // third attachment fails, so the failure path stays one click away.
-                const n = ++attachCount.current
-                const id = `cfg_${n}`
-                lucet.store.dispatch({
-                  type: 'attachment/added',
-                  id,
-                  name: `document-${n}.pdf`,
-                  fileKind: 'document',
-                  sizeBytes: 240_000,
-                })
-                setTimeout(() => {
-                  lucet.store.dispatch(
-                    n % 3 === 0
-                      ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
-                      : { type: 'attachment/settled', id, status: 'ready', reason: null },
-                  )
-                }, 1200)
-              }}
-            />
-          </div>
+          {composerCentered ? null : (
+            <div className="cfg__composer">{composerNode}</div>
+          )}
         </div>
       </div>
     </>
@@ -324,35 +349,35 @@ function AppCore({
 
 /** The B2 orb-ring tile — the mark Lucet tried on and set aside. The
  * fake universe's ONE brand: every container is the same product. */
-function MockBrandMark() {
+function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
   return (
     <svg className="cfg__mock-logo" viewBox="0 0 96 96">
       <defs>
-        <linearGradient id="fbm-p" x1="0" y1="0" x2="0.45" y2="1">
+        <linearGradient id={`${idp}-p`} x1="0" y1="0" x2="0.45" y2="1">
           <stop offset="0" stopColor="#34343f" />
           <stop offset="0.52" stopColor="#191920" />
           <stop offset="1" stopColor="#0a0a0f" />
         </linearGradient>
-        <linearGradient id="fbm-s" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`${idp}-s`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
           <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
           <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
-        <radialGradient id="fbm-h">
+        <radialGradient id={`${idp}-h`}>
           <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
           <stop offset="1" stopColor="#fff" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="fbm-c">
+        <radialGradient id={`${idp}-c`}>
           <stop offset="0.6" stopColor="#fff" />
           <stop offset="1" stopColor="#DDE0EC" />
         </radialGradient>
-        <clipPath id="fbm-k">
+        <clipPath id={`${idp}-k`}>
           <rect width="96" height="96" rx="27" />
         </clipPath>
       </defs>
-      <rect width="96" height="96" rx="27" fill="url(#fbm-p)" />
-      <g clipPath="url(#fbm-k)">
-        <circle cx="48" cy="49" r="26" fill="url(#fbm-h)" />
+      <rect width="96" height="96" rx="27" fill={`url(#${idp}-p)`} />
+      <g clipPath={`url(#${idp}-k)`}>
+        <circle cx="48" cy="49" r="26" fill={`url(#${idp}-h)`} />
         <circle
           cx="48"
           cy="49"
@@ -364,8 +389,8 @@ function MockBrandMark() {
           strokeLinecap="round"
           transform="rotate(156 48 49)"
         />
-        <circle cx="48" cy="49" r="9.5" fill="url(#fbm-c)" />
-        <rect width="96" height="96" rx="27" fill="url(#fbm-s)" />
+        <circle cx="48" cy="49" r="9.5" fill={`url(#${idp}-c)`} />
+        <rect width="96" height="96" rx="27" fill={`url(#${idp}-s)`} />
       </g>
     </svg>
   )
@@ -423,6 +448,8 @@ export function App() {
      floating clear of the edges — the three presentations every real
      drawer product ends up offering. */
   const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
+  /* The rail collapses, the way every home's rail does. */
+  const [sideOpen, setSideOpen] = useState(true)
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
   /* The floating panel DRAGS — by its bar, the way every floating panel
      has ever dragged. Position is a preference, not a function: nothing
@@ -563,11 +590,26 @@ export function App() {
           {view === 'full' ? (
             <section className="cfg__frame cfg__frame--app" aria-label="The running app">
               <AppCore
+                home
                 onReset={() => setActive(null)}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)
                 }}
+                barStart={
+                  <button
+                    type="button"
+                    className="cfg__reset cfg__side-toggle"
+                    aria-label={sideOpen ? 'Hide the sidebar' : 'Show the sidebar'}
+                    aria-expanded={sideOpen}
+                    onClick={() => setSideOpen((o) => !o)}
+                  >
+                    <svg viewBox="0 0 24 24" aria-hidden>
+                      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+                      <path d="M9.5 4.5v15" />
+                    </svg>
+                  </button>
+                }
                 aside={
                   /*
                    * What makes a full page an APPLICATION instead of a chat
@@ -577,7 +619,7 @@ export function App() {
                    * decorative so it cannot lie to a screen reader about
                    * conversations that do not exist.
                    */
-                  <aside className="cfg__side">
+                  <aside className="cfg__side" data-closed={sideOpen ? undefined : ''}>
                     <span className="cfg__side-brand" aria-hidden>
                       <MockBrandMark />
                       Application Name

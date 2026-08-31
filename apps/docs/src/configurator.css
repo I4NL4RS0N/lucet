@@ -118,6 +118,27 @@ body {
   padding: 12px 10px;
   border-inline-end: 1px solid var(--lucet-border);
   background: var(--lucet-surface-sunken);
+  transition:
+    margin-inline-start var(--lucet-duration-normal) var(--lucet-ease-out),
+    visibility 0s;
+}
+/* Collapsed: slid out under the frame's clip, and INVISIBLE to keyboard
+   and AT the moment the slide ends — the eyes and the tab order agree. */
+.cfg__side[data-closed] {
+  margin-inline-start: -209px;
+  visibility: hidden;
+  transition:
+    margin-inline-start var(--lucet-duration-normal) var(--lucet-ease-out),
+    visibility 0s var(--lucet-duration-normal);
+}
+.cfg__side-toggle { margin-inline-start: 0; }
+.cfg__side-toggle svg {
+  inline-size: 15px;
+  block-size: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
 }
 /* The identity row: the same B2 tile as the drawer's host — one fake
    universe, every container the same product. */
@@ -577,6 +598,17 @@ body {
   to { transform: translateY(10px) rotate(-1.5deg); }
 }
 
+/* The home's mark, over the greeting — the genre's grammar. */
+.cfg__empty-mark .cfg__mock-logo {
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 1px 1px oklch(0 0 0 / 0.35),
+    0 6px 16px -4px oklch(0 0 0 / 0.4);
+}
+
 /* The greeting is the face now — a headline over lit air. */
 .cfg__empty-hello {
   margin: 0;
@@ -600,6 +632,8 @@ body {
 .cfg__empty > :nth-child(2) { animation-delay: 80ms; }
 .cfg__empty > :nth-child(3) { animation-delay: 170ms; }
 .cfg__empty > :nth-child(4) { animation-delay: 260ms; }
+.cfg__empty > :nth-child(5) { animation-delay: 340ms; }
+.cfg__empty > :nth-child(6) { animation-delay: 380ms; }
 @media (prefers-reduced-motion: reduce) {
   .cfg__empty > *,
   .cfg__atmo,
@@ -611,6 +645,16 @@ body {
 .cfg__composer {
   padding: 12px 16px 16px;
   border-block-start: 1px solid var(--lucet-border);
+}
+/* The centre seat: on the home's cold start the composer sits IN the
+   page (Claude, ChatGPT, Le Chat) and returns to the floor with the
+   first turn. */
+.cfg__composer--center {
+  padding: 0;
+  border-block-start: 0;
+  inline-size: 100%;
+  max-inline-size: 620px;
+  margin-block-start: 6px;
 }
 
 /* ---- the rail: plain words that do things ---- */
