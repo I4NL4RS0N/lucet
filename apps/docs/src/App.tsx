@@ -703,6 +703,11 @@ export function App() {
   }, [view])
   /* The rail collapses, the way every home's rail does. */
   const [sideOpen, setSideOpen] = useState(true)
+  /* The peek ARMS only when the pointer enters the edge strip after a
+     close. Without this, clicking Hide left the pointer standing on the
+     rail, whose own :hover peek rule then held it at translate 0 — the
+     rail never retracted, it just swapped into the floating skin. */
+  const [peekArmed, setPeekArmed] = useState(false)
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
   /* The floating panel DRAGS — by its bar, the way every floating panel
      has ever dragged. Position is a preference, not a function: nothing
@@ -865,8 +870,8 @@ export function App() {
                       stays the keyboard door — hover is a shortcut, never the
                       only way in (1.4.13: persists while hovered, dismissed
                       by leaving). */}
-                  {sideOpen ? null : <div className="cfg__side-hot" aria-hidden />}
-                  <aside className="cfg__side" data-closed={sideOpen ? undefined : ''}>
+                  {sideOpen ? null : <div className="cfg__side-hot" aria-hidden onPointerEnter={() => setPeekArmed(true)} />}
+                  <aside className="cfg__side" data-closed={sideOpen ? undefined : ''} data-armed={!sideOpen && peekArmed ? '' : undefined}>
                     <span className="cfg__side-brand">
                       <span className="cfg__side-brand-id" aria-hidden>
                         <MockBrandMark />
@@ -880,6 +885,7 @@ export function App() {
                         onClick={() => {
                           const next = !sideOpen
                           setSideOpen(next)
+                          setPeekArmed(false)
                           if (!next) {
                             setTimeout(() => {
                               document

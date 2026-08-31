@@ -153,8 +153,11 @@ body {
   inset-inline-start: 10px;
   z-index: 19;
 }
-.cfg__side-hot:hover ~ .cfg__side[data-closed],
-.cfg__side[data-closed]:hover {
+/* Both peek rules require data-armed — set the first time the pointer
+   enters the strip after a close. The pointer merely LEFT STANDING on
+   the just-closed rail must not hold it open. */
+.cfg__side-hot:hover ~ .cfg__side[data-closed][data-armed],
+.cfg__side[data-closed][data-armed]:hover {
   translate: 0 0;
   visibility: visible;
   transition:
