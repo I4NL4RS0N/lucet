@@ -53,6 +53,8 @@ export type LucetEvent =
       partId: string
       status: ToolStatus
       detail: string
+      /** The raw output, if the host shares it. The words go in `detail`. */
+      result: string | null
     }
   | {
       type: 'response/settled'

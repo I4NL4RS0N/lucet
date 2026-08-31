@@ -62,6 +62,16 @@ describe('terminal states are distinct', () => {
     const tool = lucet.getState().turns[0]?.response?.parts.find((p) => p.kind === 'tool')
     expect(tool && tool.kind === 'tool' && tool.status).toBe('partial')
   })
+
+  it('a tool call carries its receipt: args from the start, result at settle', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('tool-partial-failure')
+    const tool = lucet.getState().turns[0]?.response?.parts.find((p) => p.kind === 'tool')
+    if (!tool || tool.kind !== 'tool') throw new Error('no tool part')
+    expect(tool.args).toContain('"limit": 3')
+    expect(tool.result).toContain('"timed_out"')
+    expect(tool.detail).toContain('2 of 3')
+  })
 })
 
 describe('the turn lock', () => {

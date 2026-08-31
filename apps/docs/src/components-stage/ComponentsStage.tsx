@@ -50,7 +50,13 @@ function turn(
     author?: string
     attachmentIds?: readonly string[]
     reply?: string
-    tool?: { name: string; status: 'running' | 'succeeded' | 'failed' | 'partial'; detail?: string }
+    tool?: {
+      name: string
+      status: 'running' | 'succeeded' | 'failed' | 'partial'
+      detail?: string
+      args?: string
+      result?: string
+    }
     /** Reasoning text streamed before the reply. */
     reasoning?: string
     settle?: 'complete' | 'interrupted' | 'failed' | 'refused' | 'streaming'
@@ -63,7 +69,7 @@ function turn(
     { type: 'response/started', turnId: t, messageId: rm },
   ]
   if (opts.reasoning !== undefined) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: opts.reasoning } })
-  if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null } })
+  if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null, args: opts.tool.args ?? null, result: opts.tool.result ?? null } })
   if (opts.reply !== undefined) {
     events.push({ type: 'part/added', messageId: rm, part: { kind: 'text', id: `${rm}_x`, text: '' } })
     events.push({ type: 'part/delta', messageId: rm, partId: `${rm}_x`, delta: opts.reply })
@@ -84,7 +90,13 @@ const THREAD_FIXTURES: readonly Fixture[] = [
       add('f1', 'quarterly-summary.pdf'), settle('f1', 'ready'),
       ...turn(1, 'What changed between these two revisions?', {
         attachmentIds: ['f1'],
-        tool: { name: 'Searched the document', status: 'succeeded', detail: '12 passages' },
+        tool: {
+          name: 'Searched the document',
+          status: 'succeeded',
+          detail: '12 passages',
+          args: '{ "query": "changes between revisions", "limit": 20 }',
+          result: '{ "passages": 12, "sections": ["schedule", "review"] }',
+        },
         reply: 'Only the schedule moved. The review step now runs after approval, and anything filed before Tuesday follows the previous order.',
       }),
     ]),
@@ -96,6 +108,50 @@ const THREAD_FIXTURES: readonly Fixture[] = [
       turn(1, 'Summarise the meeting notes.', {
         reply: 'Three decisions were made. The first covers the',
         settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'A tool at work',
+    note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run.',
+    state: play(
+      turn(1, 'Check the three sources I flagged.', {
+        tool: {
+          name: 'Searching the documents',
+          status: 'running',
+          args: '{ "query": "sources flagged this week", "limit": 3 }',
+        },
+        settle: 'streaming',
+      }),
+    ),
+  },
+  {
+    label: 'A tool, partly returned',
+    note: 'The differentiator. Succeeded-or-failed is the lie that lets a product answer from two thirds of the data — partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it.',
+    state: play(
+      turn(1, 'Check the three sources I flagged.', {
+        tool: {
+          name: 'Searched the documents',
+          status: 'partial',
+          detail: '2 of 3 sources returned. Timed out on the third.',
+          args: '{ "query": "sources flagged this week", "limit": 3 }',
+          result: '{ "returned": 2, "timed_out": ["vendor quote"], "retryable": true }',
+        },
+        reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
+      }),
+    ),
+  },
+  {
+    label: 'A tool that failed, with nothing to show',
+    note: 'No result came back, so there is no receipt to open on that side — and no payload at all means no chevron: a disclosure over an empty body is a dead promise, and this library has shipped its last one.',
+    state: play(
+      turn(1, 'Check the vendor quote.', {
+        tool: {
+          name: 'Searched the documents',
+          status: 'failed',
+          detail: 'The source did not respond.',
+        },
+        reply: 'I could not check it — the source did not respond. Ask again and I will retry.',
       }),
     ),
   },

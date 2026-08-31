@@ -48,6 +48,15 @@ export interface ToolPart {
   readonly status: ToolStatus
   /** Human-readable outcome. Present once the call settles. */
   readonly detail: string | null
+  /**
+   * The raw exchange, serialized by the host (usually JSON): what the tool
+   * was asked, and what came back. `detail` is the words; these are the
+   * receipt — the same progressive-disclosure split as everywhere else,
+   * legible at the top, exact underneath. Null when the host withholds
+   * them, and the display must then offer nothing to expand.
+   */
+  readonly args: string | null
+  readonly result: string | null
 }
 
 /**

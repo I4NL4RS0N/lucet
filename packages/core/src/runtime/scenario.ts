@@ -22,6 +22,9 @@ export type Step =
       ms: number
       outcome: Extract<ToolStatus, 'succeeded' | 'failed' | 'partial'>
       detail: string
+      /** The raw exchange, when the scenario models a host that shares it. */
+      args?: string
+      result?: string
     }
   | { type: 'refuse'; reason: string }
   | { type: 'fail'; reason: string }

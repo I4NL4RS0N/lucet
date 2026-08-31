@@ -311,56 +311,102 @@
 }
 
 /* ============================================================
- * Tool call
- *
- * Compact while it works. It earns weight only when it settles somewhere the
- * reader has to act on.
+ * Tool call — the receipt. Legible at the top (words on a quiet chip),
+ * exact underneath (the raw exchange behind the disclosure). The chip does
+ * not wear a banner when things go wrong: like the thread's endings, the
+ * WORD and the silhouette wear the ink, and the surface stays calm.
  * ============================================================ */
 
-/* Flat: content sitting ON a surface, not floating above it. */
 .lucet-tool {
-  margin: 0 0 var(--lucet-space-3);
-  padding: var(--lucet-space-2) var(--lucet-space-3);
-  border-radius: var(--lucet-radius-surface);
-  border: 1px solid var(--lucet-border);
-  background: var(--lucet-subtle);
+  margin: 0;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  border-radius: var(--lucet-radius-control);
+  background-color: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
   font-size: var(--lucet-text-sm);
+  color: var(--lucet-subtle-foreground);
 }
 
-.lucet-tool__head {
+.lucet-tool__row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   gap: var(--lucet-space-2);
+  min-block-size: 30px;
+  padding-inline: var(--lucet-space-2);
+  border-radius: var(--lucet-radius-control);
 }
 
-.lucet-tool__status {
-  font-size: var(--lucet-text-xs);
-  text-transform: uppercase;
-  letter-spacing: var(--lucet-tracking-wide);
-  color: var(--lucet-muted-foreground);
+/* Only a row with a receipt behind it is a control, and only it gets the
+   chevron and the veil. Same disclosure grammar as the reasoning row. */
+.lucet-tool__row--summary {
+  cursor: pointer;
+  list-style: none;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-tool__row--summary::-webkit-details-marker { display: none; }
+.lucet-tool__row--summary::before {
+  content: '';
+  flex: none;
+  inline-size: 0.35em;
+  block-size: 0.35em;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-tool[open] > .lucet-tool__row--summary::before { transform: rotate(45deg); }
+.lucet-tool__row--summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.lucet-tool__row--summary:active { background-color: var(--lucet-press); }
+.lucet-tool__row--summary:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
 }
 
-.lucet-tool__name {
-  font-family: var(--lucet-font-mono);
-  font-size: var(--lucet-text-sm);
-}
-
+.lucet-tool__name { font-weight: 500; }
+.lucet-tool__word { font-weight: 600; }
 .lucet-tool__detail {
-  margin: var(--lucet-space-1) 0 0;
   color: var(--lucet-muted-foreground);
-  line-height: var(--lucet-leading-normal);
+  font-size: var(--lucet-text-xs);
 }
 
-.lucet-tool[data-status='partial'] {
-  background: var(--lucet-state-partial-surface);
-  border-color: var(--lucet-state-partial-border);
+/* The unhappy settlements carry their ink on the word and the silhouette. */
+.lucet-tool[data-status='partial'] .lucet-tool__word,
+.lucet-tool[data-status='partial'] .lucet-icon {
   color: var(--lucet-state-partial-foreground);
 }
+.lucet-tool[data-status='failed'] .lucet-tool__word,
+.lucet-tool[data-status='failed'] .lucet-icon {
+  color: var(--lucet-tone-danger-foreground);
+}
 
-.lucet-tool[data-status='failed'] {
-  background: var(--lucet-state-failed-surface);
-  border-color: var(--lucet-state-failed-border);
-  color: var(--lucet-state-failed-foreground);
+.lucet-tool__body {
+  display: grid;
+  gap: var(--lucet-space-2);
+  padding: var(--lucet-space-1) var(--lucet-space-2) var(--lucet-space-2);
+}
+.lucet-tool__io { display: grid; gap: 4px; min-inline-size: 0; }
+.lucet-tool__io-label {
+  font-size: var(--lucet-text-xs);
+  letter-spacing: 0.02em;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-tool__io-pre {
+  margin: 0;
+  padding: var(--lucet-space-2) var(--lucet-space-3);
+  border-radius: calc(var(--lucet-radius-control) - 2px);
+  background-color: var(--lucet-muted);
+  box-shadow: var(--lucet-hairline);
+  overflow-x: auto;
+  font-family: var(--lucet-font-mono);
+  font-size: var(--lucet-text-xs);
+  line-height: 1.6;
+  color: var(--lucet-foreground);
+}
+.lucet-tool__io-pre:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: calc(-1 * var(--lucet-focus-width));
 }
 
 .lucet-tool[data-status='partial'] .lucet-tool__status,
@@ -1259,26 +1305,6 @@
 }
 @keyframes lucet-thread-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
 
-/* Reasoning and tool rows: quiet asides in the document flow. Each becomes
-   its own baseline component later; this is the honest minimum meanwhile. */
-.lucet-thread__aside {
-  display: flex;
-  align-items: center;
-  gap: var(--lucet-space-2);
-  min-block-size: 30px;
-  padding-inline: var(--lucet-space-2);
-  border-radius: var(--lucet-radius-control);
-  background-color: var(--lucet-subtle);
-  box-shadow: var(--lucet-hairline);
-  font-size: var(--lucet-text-sm);
-  color: var(--lucet-subtle-foreground);
-  inline-size: fit-content;
-}
-.lucet-thread__aside-meta {
-  font-size: var(--lucet-text-xs);
-  color: var(--lucet-muted-foreground);
-}
-
 .lucet-thread__atts {
   display: flex;
   flex-wrap: wrap;
@@ -1314,7 +1340,7 @@
 }
 .lucet-thread__turn,
 .lucet-thread__ended,
-.lucet-thread__aside,
+.lucet-tool,
 .lucet-reasoning,
 .lucet-thread__doc .lucet-md {
   animation: lucet-thread-arrive 220ms var(--lucet-ease-out) backwards;
@@ -1324,13 +1350,15 @@
   .lucet-thread__caret { animation: none; }
   .lucet-thread__turn,
   .lucet-thread__ended,
-  .lucet-thread__aside,
+  .lucet-tool,
   .lucet-reasoning,
   .lucet-thread__doc .lucet-md {
     animation: none;
   }
   .lucet-reasoning__summary { transition: none; }
   .lucet-reasoning__summary::before { transition: none; }
+  .lucet-tool__row--summary { transition: none; }
+  .lucet-tool__row--summary::before { transition: none; }
 }
 
 /* ============================================================

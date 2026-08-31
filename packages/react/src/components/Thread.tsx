@@ -6,6 +6,7 @@ import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
 import { Reasoning } from './Reasoning.js'
 import { StateIcon } from './StateIcon.js'
+import { ToolCall } from './ToolCall.js'
 
 /**
  * The thread: turns, rendered from the contract. New-era counterpart to the
@@ -30,8 +31,8 @@ import { StateIcon } from './StateIcon.js'
  * 4. WHAT YOU SENT STAYS VISIBLE. Attachment parts render as read-only chips
  *    on the prompt -- the composer's chips, minus the verbs.
  *
- * Reasoning and tool parts render as quiet single rows here; each is its own
- * baseline component later and will take over that rendering.
+ * Reasoning and tool parts render through their own components (Reasoning,
+ * ToolCall); the thread only decides where they sit and when they are live.
  */
 
 export interface ThreadProps {
@@ -79,17 +80,13 @@ function Part({
       return <Reasoning text={part.text} streaming={streaming && last} />
     case 'tool':
       return (
-        <div className="lucet-thread__aside" data-status={part.status}>
-          {part.status === 'running' || part.status === 'pending' ? (
-            <ActivityOrb state="searching" label={part.name} size="sm" />
-          ) : (
-            <>
-              <StateIcon name={part.status === 'succeeded' ? 'operational' : part.status === 'partial' ? 'degraded' : 'failed'} />
-              <span>{part.name}</span>
-            </>
-          )}
-          {part.detail ? <span className="lucet-thread__aside-meta">{part.detail}</span> : null}
-        </div>
+        <ToolCall
+          name={part.name}
+          status={part.status}
+          detail={part.detail}
+          args={part.args}
+          result={part.result}
+        />
       )
     case 'attachment':
       return (

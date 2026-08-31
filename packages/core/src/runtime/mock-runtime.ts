@@ -80,7 +80,15 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         store.dispatch({
           type: 'part/added',
           messageId,
-          part: { kind: 'tool', id: partId, name: s.name, status: 'running', detail: null },
+          part: {
+            kind: 'tool',
+            id: partId,
+            name: s.name,
+            status: 'running',
+            detail: null,
+            args: s.args ?? null,
+            result: null,
+          },
         })
         await scheduler.sleep(s.ms, signal)
         store.dispatch({
@@ -89,6 +97,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           partId,
           status: s.outcome,
           detail: s.detail,
+          result: s.result ?? null,
         })
         return null
       }

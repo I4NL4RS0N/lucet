@@ -67,6 +67,7 @@ const COMPONENT_PROBES = [
   /* The reasoning row is a real control now; its veil must land like any
      other. (Its predecessor was a dead div that said "expand".) */
   { sec: 'Thread — every ending', hover: 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary', part: 'reasoning summary', bg: true },
+  { sec: 'Thread — every ending', hover: 'details.lucet-tool .lucet-tool__row--summary', part: 'tool summary', bg: true },
 ]
 
 const PROBES = [
@@ -433,6 +434,50 @@ async function main() {
     if (!reasoningOpen.open || !reasoningOpen.bodyVisible || reasoningOpen.bodyWords < 40)
       failures.push(
         `reasoning: clicking the row must open the working (open=${reasoningOpen.open}, visible=${reasoningOpen.bodyVisible}, ${reasoningOpen.bodyWords} chars)`,
+      )
+
+    /*
+     * The tool receipt, and THE ANTI-DEAD-EXPAND LAW: every disclosure on
+     * this page must have something behind it, and every payload-less tool
+     * row must not be a disclosure at all. A chevron is a promise.
+     */
+    const toolSummary = page.locator('details.lucet-tool .lucet-tool__row--summary').first()
+    await toolSummary.scrollIntoViewIfNeeded()
+    await toolSummary.click()
+    const tool = await page.evaluate(() => {
+      const open = document.querySelector('details.lucet-tool[open]')
+      const labels = open
+        ? [...open.querySelectorAll('.lucet-tool__io-label')].map((l) => l.textContent)
+        : []
+      return {
+        opened: open !== null,
+        labels,
+        receiptChars: open
+          ? [...open.querySelectorAll('.lucet-tool__io-pre')].reduce(
+              (n, p) => n + p.textContent.length,
+              0,
+            )
+          : 0,
+        emptyDisclosures: [...document.querySelectorAll('details.lucet-tool')].filter(
+          (d) => d.querySelectorAll('.lucet-tool__io-pre').length === 0,
+        ).length,
+        plainRows: document.querySelectorAll('div.lucet-tool').length,
+        plainRowsWithChevron: [...document.querySelectorAll('div.lucet-tool .lucet-tool__row')].filter(
+          (r) => getComputedStyle(r, '::before').content !== 'none',
+        ).length,
+      }
+    })
+    await toolSummary.click()
+    checks += 3
+    if (!tool.opened || tool.receiptChars < 30 || !tool.labels.includes('What it was asked'))
+      failures.push(
+        `tool: clicking the row must open the receipt (opened=${tool.opened}, ${tool.receiptChars} chars, labels=${tool.labels.join('|')})`,
+      )
+    if (tool.emptyDisclosures > 0)
+      failures.push(`tool: ${tool.emptyDisclosures} disclosure(s) with nothing behind them -- a chevron is a promise`)
+    if (tool.plainRows === 0 || tool.plainRowsWithChevron > 0)
+      failures.push(
+        `tool: the payload-less row must exist and carry no chevron (plain=${tool.plainRows}, with chevron=${tool.plainRowsWithChevron})`,
       )
   } finally {
     await browser.close()

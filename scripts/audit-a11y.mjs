@@ -398,8 +398,13 @@ function collectComponents() {
     'thread author': '.lucet-thread__author',
     'thread prompt text': '.lucet-thread__prompt .lucet-thread__text',
     'thread document text': '.lucet-thread__doc .lucet-thread__text',
-    'thread aside': '.lucet-thread__aside',
-    'thread aside meta': '.lucet-thread__aside-meta',
+    /* The tool receipt, in every ink it can wear. */
+    'tool name': '.lucet-tool__name',
+    'tool detail': '.lucet-tool__detail',
+    'tool word (partial)': '.lucet-tool[data-status="partial"] .lucet-tool__word',
+    'tool word (failed)': '.lucet-tool[data-status="failed"] .lucet-tool__word',
+    'tool receipt label': '.lucet-tool__io-label',
+    'tool receipt body': '.lucet-tool__io-pre',
     'thread ending': '.lucet-thread__ended',
     'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
@@ -437,7 +442,7 @@ function collectComponents() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary',
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary, .lucet-tool__row--summary',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue
@@ -683,10 +688,11 @@ async function main() {
         content:
           '*, *::before, *::after { transition: none !important; animation: none !important; }',
       })
-      // The reasoning bodies hide behind their disclosures; open them all so
-      // the working's ink is measured like any other text on the page.
+      // Reasoning bodies and tool receipts hide behind their disclosures;
+      // open them all so their ink is measured like any other text.
       await page.evaluate(() => {
-        for (const d of document.querySelectorAll('details.lucet-reasoning')) d.open = true
+        for (const d of document.querySelectorAll('details.lucet-reasoning, details.lucet-tool'))
+          d.open = true
       })
       for (const theme of THEMES) {
         for (const accent of ACCENTS) {

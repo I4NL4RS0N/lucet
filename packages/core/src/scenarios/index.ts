@@ -119,7 +119,17 @@ export const toolSuccess = defineScenario({
   prompt: 'Check the three sources I flagged.',
   steps: [
     { type: 'wait', ms: 250 },
-    { type: 'tool', name: 'search_documents', ms: 1400, outcome: 'succeeded', detail: '3 of 3 sources returned' },
+    {
+      type: 'tool',
+      /* The row is for readers, so the name is words; the receipt below it
+         stays exact. Identifiers belong in the payload, not the sentence. */
+      name: 'Searched the documents',
+      ms: 1400,
+      outcome: 'succeeded',
+      detail: '3 of 3 sources returned',
+      args: '{ "query": "sources flagged this week", "limit": 3 }',
+      result: '{ "returned": 3, "sources": ["Q3 revision", "site survey", "vendor quote"] }',
+    },
     { type: 'say', text: 'All three have been updated since you flagged them, the most recent one yesterday.' },
     { type: 'complete' },
   ],
@@ -134,7 +144,15 @@ export const toolPartialFailure = defineScenario({
   prompt: 'Check the three sources I flagged.',
   steps: [
     { type: 'wait', ms: 250 },
-    { type: 'tool', name: 'search_documents', ms: 1600, outcome: 'partial', detail: '2 of 3 sources returned. Timed out on the third.' },
+    {
+      type: 'tool',
+      name: 'Searched the documents',
+      ms: 1600,
+      outcome: 'partial',
+      detail: '2 of 3 sources returned. Timed out on the third.',
+      args: '{ "query": "sources flagged this week", "limit": 3 }',
+      result: '{ "returned": 2, "timed_out": ["vendor quote"], "retryable": true }',
+    },
     {
       type: 'say',
       text: 'Two of the three have changed since you flagged them. The third did not come back in time, so this is not the full picture. Ask again and I will retry just that one.',
@@ -242,7 +260,15 @@ export const staleData = defineScenario({
   prompt: 'What is the latest version of this?',
   steps: [
     { type: 'wait', ms: 200 },
-    { type: 'tool', name: 'fetch_index', ms: 500, outcome: 'succeeded', detail: 'Served from cache, 4 hours old' },
+    {
+      type: 'tool',
+      name: 'Fetched the index',
+      ms: 500,
+      outcome: 'succeeded',
+      detail: 'Served from cache, 4 hours old',
+      args: '{ "path": "revisions/latest" }',
+      result: '{ "revision": 7, "dated": "Tuesday", "cache_age_hours": 4 }',
+    },
     {
       type: 'say',
       text: 'Revision 7, dated Tuesday. This is from a cache that is four hours old, so if something was published this morning I would not have it yet.',

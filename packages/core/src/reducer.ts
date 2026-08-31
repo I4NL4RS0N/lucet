@@ -275,7 +275,7 @@ export function reduce(
         turns: mapResponse(state, event.messageId, (message) =>
           mapPart(message, event.partId, (part) =>
             part.kind === 'tool'
-              ? { ...part, status: event.status, detail: event.detail }
+              ? { ...part, status: event.status, detail: event.detail, result: event.result }
               : part,
           ),
         ),

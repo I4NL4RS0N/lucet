@@ -53,9 +53,14 @@ continuity — and all of it yields to `prefers-reduced-motion`.
 
 ## What is deliberately not here yet
 
-- **The tool display.** It renders as a quiet single-row aside here; it is
-  its own baseline component, next in the ledger, and will take over.
-  (Reasoning already did: see [reasoning.md](reasoning.md).)
+- **Message actions** (copy the whole response, retry, feedback) — the
+  Feedback Controls item.
+- **The empty thread** — owned by the Configurator home, where it is the
+  first thing every visitor sees.
+
+(The asides are all real now: [reasoning.md](reasoning.md) and
+[tool-call.md](tool-call.md) own their rows; the thread only decides where
+they sit and when they are live.)
 - **Message actions** (copy, retry, feedback) — the Feedback Controls item.
 - **The empty thread.** What an app shows before the first turn is a real
   design question, owned by the Configurator home where it is the first
