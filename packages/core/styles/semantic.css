@@ -57,9 +57,11 @@
      their ring and cast. White pops forward; grey sinks. */
   --lucet-default-secondary: oklch(1 0 0);
   --lucet-default-secondary-foreground: var(--lucet-neutral-900);
-  /* Fields must read as recesses again now the page is 0.985. */
-  --lucet-default-muted: oklch(0.961 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-muted-foreground: var(--lucet-neutral-550);
+  /* Fields must read as recesses against the 0.972 ground — at 0.961
+     they sat 1.1% from the page and the layers collapsed into one grey
+     wash (the light-mode wonk, Ian, 2026-09-01). A well is a WELL. */
+  --lucet-default-muted: oklch(0.952 calc(var(--lucet-neutral-c) * 2) var(--lucet-neutral-h));
+  --lucet-default-muted-foreground: var(--lucet-neutral-600);
   /*
    * The quiet surface, and in light it was barely a surface at all: 0.985
    * against a pure-white page is 0.015 of separation, so a well read as a
@@ -69,8 +71,11 @@
    * 0.945 keeps the well 0.04 below the 0.985 page, so a genuine recess (a
    * code block, a segmented track) still reads as one.
    */
-  --lucet-default-subtle: oklch(0.945 var(--lucet-neutral-c) var(--lucet-neutral-h));
-  --lucet-default-subtle-foreground: var(--lucet-neutral-700);
+  --lucet-default-subtle: oklch(0.936 calc(var(--lucet-neutral-c) * 2) var(--lucet-neutral-h));
+  /* One step darker than before: the reference light modes are INK-FORWARD
+     — near-black text carrying the hierarchy, secondary text rare and
+     still firm. A page of 0.37-lightness grey text reads weak, not calm. */
+  --lucet-default-subtle-foreground: var(--lucet-neutral-800);
   --lucet-default-border: var(--lucet-line);
   /*
    * INPUT IS THE STRONG LINE, AND IT WAS NEVER STRONGER.
