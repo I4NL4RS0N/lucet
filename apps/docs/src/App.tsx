@@ -295,9 +295,10 @@ export function App() {
       <header className="cfg__bar">
         <div className="cfg__bar-in">
         <span className="cfg__mark">
-          {/* The mark: an orb of light on a graphite tile — a made object,
-              not a line drawing. Dark in both themes, the way a lamp stays a
-              lamp in daylight. Full rationale in public/favicon.svg. */}
+          {/* The tile: settled material (graphite plate, sheen, edge-light),
+              carrying Ian's personal mark as a stand-in while the Lucet
+              glyph is still being explored. Full rationale in
+              public/favicon.svg. */}
           <svg className="cfg__logo" viewBox="0 0 96 96" aria-hidden>
             <defs>
               <linearGradient id="lgo-p" x1="0" y1="0" x2="0.45" y2="1">
@@ -311,12 +312,8 @@ export function App() {
                 <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
               </linearGradient>
               <radialGradient id="lgo-h">
-                <stop offset="0" stopColor="#fff" stopOpacity="0.38" />
+                <stop offset="0" stopColor="#fff" stopOpacity="0.26" />
                 <stop offset="1" stopColor="#fff" stopOpacity="0" />
-              </radialGradient>
-              <radialGradient id="lgo-o">
-                <stop offset="0.6" stopColor="#fff" />
-                <stop offset="1" stopColor="#DDE0EC" />
               </radialGradient>
               <clipPath id="lgo-c">
                 <rect width="96" height="96" rx="27" />
@@ -324,9 +321,12 @@ export function App() {
             </defs>
             <rect width="96" height="96" rx="27" fill="url(#lgo-p)" />
             <g clipPath="url(#lgo-c)">
-              <circle cx="48" cy="49" r="26" fill="url(#lgo-h)" />
-              <circle cx="48" cy="49" r="24" fill="none" stroke="#F4F5FB" strokeWidth="7" strokeDasharray="102 49" strokeLinecap="round" transform="rotate(114 48 49)" />
-              <circle cx="48" cy="49" r="9" fill="url(#lgo-o)" />
+              <circle cx="48" cy="48" r="30" fill="url(#lgo-h)" />
+              <path
+                transform="translate(-2.58 1.11) scale(0.14427)"
+                fill="#F4F5FB"
+                d="M425.57,429.21c-3.97,0-6.35-4.42-4.16-7.73l127.91-193.94c2.18-3.31-.19-7.73-4.16-7.73h-81.27c-3.35,0-6.48,1.69-8.32,4.48l-132.19,200.44c-1.84,2.79-4.97,4.48-8.32,4.48h-68.91c-3.97,0-6.35-4.42-4.16-7.73l173.94-263.75c2.18-3.31-.19-7.73-4.16-7.73h-76.28c-3.35,0-6.48,1.69-8.32,4.48l-176.75,268c-2.18,3.31.19,7.73,4.16,7.73h71.19c3.97,0,6.35,4.42,4.16,7.73l-35.83,54.34c-2.18,3.31.19,7.73,4.16,7.73h81.27c3.35,0,6.48-1.68,8.32-4.48l40.13-60.84c1.84-2.8,4.97-4.48,8.32-4.48h68.91c3.97,0,6.35,4.42,4.16,7.73l-35.83,54.34c-2.18,3.31.19,7.73,4.16,7.73h126.12c3.35,0,6.48-1.68,8.32-4.48l38.64-58.59c2.18-3.31-.19-7.73-4.16-7.73h-121.03Z"
+              />
               <rect width="96" height="96" rx="27" fill="url(#lgo-s)" />
             </g>
           </svg>
