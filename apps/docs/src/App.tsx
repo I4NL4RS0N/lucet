@@ -168,10 +168,16 @@ function AppCore({
   onReset,
   onSuggest,
   aside,
+  chrome = 'window',
+  onClose,
 }: {
   onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
+  /* Each container wears its own head: a window has dots and a title, a
+     drawer has its purpose and a way out. The thread never changes. */
+  chrome?: 'window' | 'drawer'
+  onClose?: (() => void) | undefined
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -186,11 +192,24 @@ function AppCore({
   return (
     <>
       <div className="cfg__frame-bar">
-        {/* Set dressing, honestly generic: a window is a window. */}
-        <span className="cfg__dots" aria-hidden>
-          <i /><i /><i />
-        </span>
-        <span className="cfg__frame-title">Thread</span>
+        {chrome === 'drawer' ? (
+          /* A drawer names its purpose, not its widget: the head says what
+             the panel is for and offers the way out. */
+          <span className="cfg__drawer-head">
+            <svg className="cfg__spark" viewBox="0 0 24 24" aria-hidden>
+              <path d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5z" />
+            </svg>
+            <span className="cfg__frame-title">Ask AI</span>
+          </span>
+        ) : (
+          <>
+            {/* Set dressing, honestly generic: a window is a window. */}
+            <span className="cfg__dots" aria-hidden>
+              <i /><i /><i />
+            </span>
+            <span className="cfg__frame-title">Thread</span>
+          </>
+        )}
         <button
           type="button"
           className="cfg__reset"
@@ -205,6 +224,18 @@ function AppCore({
             <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
           </svg>
         </button>
+        {chrome === 'drawer' ? (
+          <button
+            type="button"
+            className="cfg__reset cfg__drawer-close"
+            aria-label="Close the Ask AI panel"
+            onClick={() => onClose?.()}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        ) : null}
       </div>
 
       <div className="cfg__app-body">
@@ -340,12 +371,30 @@ export function App() {
   const booted = useRef(false)
   const [active, setActive] = useState<string | null>(null)
   const [firing, setFiring] = useState<string | null>(null)
+  /* The drawer is a REAL drawer: it closes, and the mock app's own "Ask
+     AI" button brings it back — the reference interaction, demoed live.
+     It rests open so arriving on the view shows the product, not a door. */
+  const [drawerOpen, setDrawerOpen] = useState(true)
+  const drawerViaButton = useRef(false)
 
   const fire = (id: string) => {
+    /* A state fired at a closed drawer opens it first: the rail's whole
+       job is to make things happen WHERE YOU CAN SEE THEM. */
+    setDrawerOpen(true)
     setActive(id)
     setFiring(id)
     void lucet.trigger(id).finally(() => setFiring(null))
   }
+
+  /* Focus follows the drawer honestly: opening it by the button moves
+     focus in; closing it hands focus back to the button. A view switch
+     that happens to mount the drawer steals nothing. */
+  useEffect(() => {
+    if (drawerOpen && drawerViaButton.current) {
+      drawerViaButton.current = false
+      document.querySelector<HTMLButtonElement>('.cfg__drawer-close')?.focus()
+    }
+  }, [drawerOpen])
 
   /*
    * Deep link: land someone straight in a state, in context. With no link,
@@ -440,16 +489,51 @@ export function App() {
             </section>
           ) : view === 'drawer' ? (
             <section className="cfg__mock" aria-label="The running app, as a drawer">
-              <MockDocument />
-              <div className="cfg__drawer">
-                <AppCore
-                onReset={() => setActive(null)}
-                onSuggest={(s) => {
-                  writeStateParam(s.id)
-                  fire(s.id)
-                }}
-              />
+              {/* The host application's own chrome: a brand that is nobody's
+                  (mark plus a generic name), navigation that goes nowhere on
+                  purpose, and ONE real control — the button every product
+                  with an AI drawer has. */}
+              <div className="cfg__mock-bar">
+                <span className="cfg__mock-brand" aria-hidden>
+                  <span className="cfg__mock-logo" />
+                  Workspace
+                </span>
+                <span className="cfg__mock-tabs" aria-hidden>
+                  <span data-active>Plans</span>
+                  <span>Reports</span>
+                  <span>Library</span>
+                </span>
+                <button
+                  type="button"
+                  className="cfg__askai"
+                  onClick={() => {
+                    drawerViaButton.current = true
+                    setDrawerOpen(true)
+                  }}
+                >
+                  <svg className="cfg__spark" viewBox="0 0 24 24" aria-hidden>
+                    <path d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5z" />
+                  </svg>
+                  Ask AI
+                </button>
               </div>
+              <MockDocument />
+              {drawerOpen ? (
+                <div className="cfg__drawer">
+                  <AppCore
+                    chrome="drawer"
+                    onClose={() => {
+                      setDrawerOpen(false)
+                      document.querySelector<HTMLButtonElement>('.cfg__askai')?.focus()
+                    }}
+                    onReset={() => setActive(null)}
+                    onSuggest={(s) => {
+                      writeStateParam(s.id)
+                      fire(s.id)
+                    }}
+                  />
+                </div>
+              ) : null}
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">

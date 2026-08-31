@@ -740,6 +740,81 @@ body {
 .cfg__mock-doc h3 { margin: 20px 0 8px; font-size: 14px; }
 .cfg__mock-doc p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--lucet-subtle-foreground); }
 
+/* The host application's chrome: what makes the drawer view an APP with
+   an assistant instead of a document with a panel stuck on. The brand is
+   deliberately nobody's — an abstract tile and a generic name — and the
+   navigation goes nowhere; the one real control is Ask AI. */
+.cfg__mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 16px;
+  border-block-end: 1px solid var(--lucet-border);
+}
+.cfg__mock-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.cfg__mock-logo {
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 5px;
+  background: var(--lucet-subtle);
+  box-shadow: var(--lucet-hairline);
+  position: relative;
+}
+.cfg__mock-logo::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 2px;
+  background: var(--lucet-subtle-foreground);
+  opacity: 0.7;
+}
+.cfg__mock-tabs {
+  display: flex;
+  gap: 16px;
+  font-size: 12.5px;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__mock-tabs [data-active] { color: var(--lucet-foreground); font-weight: 500; }
+.cfg__askai {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-inline-start: auto;
+  min-block-size: 28px;
+  padding-inline: 10px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__askai:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__askai:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+
+/* The genre's glyph: a four-point spark, filled with the current ink. */
+.cfg__spark {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: currentColor;
+}
+
 .cfg__drawer {
   position: absolute;
   inset-block: 0;
@@ -750,7 +825,27 @@ body {
   background: var(--lucet-card);
   border-inline-start: 1px solid var(--lucet-border);
   box-shadow: var(--lucet-shade-3);
+  /* It ARRIVES like a drawer: from the right edge, one motion, done.
+     The shadow rides along, so the light stays honest on the way in. */
+  animation: cfg-drawer-in 320ms var(--lucet-ease-out);
 }
+@keyframes cfg-drawer-in {
+  from { transform: translateX(calc(100% + 32px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfg__drawer { animation: none; }
+}
+
+/* The drawer's head: purpose on the left, the way out on the right. */
+.cfg__drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cfg__drawer-head .cfg__spark { color: var(--lucet-primary); }
+/* The reset keeps its auto-margin job; the close sits after it, so the
+   way OUT is the last thing in the row — where every drawer puts it. */
+.cfg__drawer-close { margin-inline-start: 0; }
 .cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
 /* Mobile view: the same app, in a hand. */
