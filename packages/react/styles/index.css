@@ -144,105 +144,6 @@
 }
 
 /* ============================================================
- * Message and thread
- *
- * The assistant gets no bubble. Its output is the artefact, so it reads as a
- * document at full measure. The prompt keeps a surface because it is an
- * utterance, and because you need to find it again when scrolling back.
- * ============================================================ */
-
-.lucet-message {
-  display: block;
-  margin-block: var(--lucet-space-6);
-}
-
-.lucet-message__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--lucet-space-2);
-  margin-bottom: var(--lucet-space-2);
-}
-
-.lucet-message__author {
-  font-size: var(--lucet-text-xs);
-  letter-spacing: var(--lucet-tracking-wide);
-  text-transform: uppercase;
-  color: var(--lucet-muted-foreground);
-}
-
-/* Every prompt is a commit. The marker is quiet until you look for it. */
-.lucet-message__version {
-  font-family: var(--lucet-font-mono);
-  font-size: var(--lucet-text-xs);
-  color: var(--lucet-muted-foreground);
-  opacity: 0.65;
-}
-
-.lucet-message[data-role='user'] .lucet-message__body {
-  background: var(--lucet-subtle);
-  color: var(--lucet-subtle-foreground);
-  border-radius: var(--lucet-radius-surface);
-  padding: var(--lucet-space-3) var(--lucet-space-4);
-  /* Narrower than the response. A prompt is the smaller thing on the page. */
-  max-width: 46ch;
-}
-
-.lucet-message[data-role='assistant'] .lucet-message__body {
-  max-width: 68ch;
-}
-
-/* The response is set as prose, not as chrome. See typefaces.css. */
-.lucet-message[data-role='assistant'] .lucet-message__text {
-  font-family: var(--lucet-font-prose);
-}
-
-.lucet-message__text {
-  margin: 0 0 var(--lucet-space-3);
-  line-height: var(--lucet-leading-prose);
-  font-size: var(--lucet-text-base);
-  letter-spacing: var(--lucet-tracking-normal);
-}
-
-.lucet-message__text:last-child {
-  margin-bottom: 0;
-}
-
-.lucet-message__actions {
-  display: flex;
-  gap: var(--lucet-space-2);
-  margin-top: var(--lucet-space-2);
-  /* Restore and feedback stay out of the way until the turn is hovered or
-     focused. Present, not soliciting. */
-  opacity: 0;
-  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
-}
-
-.lucet-message:hover .lucet-message__actions,
-.lucet-message:focus-within .lucet-message__actions {
-  opacity: 1;
-}
-
-/* The live edge of the stream, on the text rather than floating below it. */
-.lucet-caret {
-  display: inline-block;
-  width: 0.5ch;
-  height: 1em;
-  margin-left: 0.15ch;
-  vertical-align: text-bottom;
-  background: var(--lucet-foreground);
-  opacity: 0.7;
-  animation: lucet-blink 1.1s steps(2, start) infinite;
-}
-
-@keyframes lucet-blink {
-  50% { opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lucet-caret { animation: none; }
-}
-
-/* ============================================================
  * Reasoning disclosure — the quote's grammar, because that is what it is:
  * the machine quoting its own working. The rail marks it as NOT the answer;
  * the summary row is a real control with the standard states.
@@ -517,97 +418,6 @@
 }
 
 /* ============================================================
- * Composer
- * ============================================================ */
-
-.lucet-composer {
-  /* Contains its own visually-hidden label. */
-  position: relative;
-  border: 1px solid var(--lucet-input);
-  /*
-   * A panel, not a control: it is multi-line, so it takes no fixed height. But
-   * its padding and radius come from the same tokens as everything else, which
-   * is what stops it drifting the way the buttons and selects did.
-   */
-  border-radius: var(--lucet-radius-panel);
-  background: var(--lucet-card);
-  padding: var(--lucet-control-inset);
-  transition:
-    border-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    box-shadow var(--lucet-duration-normal) var(--lucet-ease-out);
-}
-
-.lucet-composer:focus-within {
-  border-color: var(--lucet-ring);
-}
-
-.lucet-composer__lock {
-  margin: 0 0 var(--lucet-space-2);
-  padding: var(--lucet-space-2) var(--lucet-space-3);
-  border-radius: var(--lucet-radius-surface);
-  background: var(--lucet-state-queued-surface);
-  color: var(--lucet-state-queued-foreground);
-  font-size: var(--lucet-text-sm);
-}
-
-.lucet-composer__field {
-  font-family: var(--lucet-font-prose);
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: var(--lucet-text-base);
-  line-height: var(--lucet-leading-normal);
-  padding: var(--lucet-space-2) calc(var(--lucet-control-pad-x) - var(--lucet-control-inset));
-  resize: vertical;
-}
-
-.lucet-composer__field:focus { outline: none; }
-
-/* A field is recessed, not raised. The detail that sells the surface. */
-:root[data-expression='system'] .lucet-composer {
-  box-shadow: var(--lucet-material-inset);
-}
-
-.lucet-composer__field::placeholder { color: var(--lucet-muted-foreground); }
-
-.lucet-composer__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--lucet-space-2);
-  padding-top: var(--lucet-space-1);
-}
-
-.lucet-composer__tools {
-  display: flex;
-  align-items: center;
-  gap: var(--lucet-space-2);
-  min-width: 0;
-}
-
-/* Expressive lifts the composer off the page, the way the reference does. */
-:root[data-expression='expressive'] .lucet-composer {
-  border-width: 0;
-  box-shadow: var(--lucet-material-raised);
-}
-
-/*
- * The focus ring, and it has to be a box-shadow here.
- *
- * The rule above sets border-color at higher specificity than
- * .lucet-composer:focus-within, so the border-based focus indicator never
- * appeared in Expressive at all. Focusing the field changed nothing visible,
- * which is a 2.4.7 Focus Visible failure at Level A.
- */
-:root[data-expression='expressive'] .lucet-composer:focus-within {
-  box-shadow: 0 0 0 var(--lucet-focus-width) var(--lucet-ring), var(--lucet-material-raised);
-}
-
-/* ============================================================
  * Expressive: the primary action earns the one gradient.
  *
  * Exactly one element gets it, and the glow is tied to the accent so a
@@ -672,9 +482,7 @@
 }
 
 @supports (corner-shape: squircle) {
-  :root[data-expression='expressive'] .lucet-button,
-  :root[data-expression='expressive'] .lucet-composer,
-  :root[data-expression='expressive'] .sheet__stage {
+  :root[data-expression='expressive'] .lucet-button {
     corner-shape: squircle;
   }
 }
@@ -690,8 +498,6 @@
  *
  * One surface, and it is the FIELD: the container itself is the inset
  * material, with the textarea, attachments, and toolbar living inside it.
- * The old .lucet-composer stays until the Konfabulator is rebuilt against
- * this component.
  *
  * Every state rule here mirrors something the core contract can be in;
  * nothing is decorative. Hover is ink, press is shadow, and the disabled

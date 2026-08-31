@@ -11,8 +11,7 @@ import { StateIcon } from './StateIcon.js'
 import { ToolCall } from './ToolCall.js'
 
 /**
- * The thread: turns, rendered from the contract. New-era counterpart to the
- * old Message/Sheet pair, which retires at the Konfabulator rebuild.
+ * The thread: turns, rendered from the contract.
  *
  * The positions this encodes:
  *
