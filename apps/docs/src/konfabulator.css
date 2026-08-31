@@ -788,6 +788,16 @@ body {
 /* The menu is its own stratum, not the composer's shadow: real air
    between the input and the ways in (Ian — "too close"). */
 .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 26px; }
+
+/* Center-seated, the meter's panel opens DOWNWARD: above the composer sit
+   the greeting and the mock window's own chrome, and an app menu floating
+   over OS chrome reads as broken layering. Below is the suggestion field —
+   overlay room this seat actually owns. On the floor seat it opens upward
+   as everywhere else. */
+.cfg__composer--center .lucet-budget__panel {
+  inset-block-end: auto;
+  inset-block-start: calc(100% + 6px);
+}
 /* Pinned menus breathe off the composer's border instead of sitting on
    it — the same "too close" fix, at the floor. */
 .cfg__empty:not(:has(.cfg__composer--center)) .lucet-chips { margin-block-end: 12px; }

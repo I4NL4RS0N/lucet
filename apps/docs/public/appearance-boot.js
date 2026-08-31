@@ -16,4 +16,22 @@
   if (a.radius && a.radius !== 'default') root.setAttribute('data-radius', a.radius)
   root.setAttribute('data-scale', a.scale || '100')
   root.setAttribute('data-typeface', a.typeface || 'inter')
+
+  // The browser chrome follows the page ground. The mapping lives HERE,
+  // once; the runtime theme toggle calls this same function, so the boot
+  // colour and the toggle colour cannot drift. Pages without the meta
+  // (the labs) skip it harmlessly.
+  var THEME_BG = { dark: '#111013', light: '#ffffff' }
+  window.lucetThemeColor = function (theme) {
+    var meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) return
+    var resolved =
+      theme === 'dark' || theme === 'light'
+        ? theme
+        : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light'
+    meta.setAttribute('content', THEME_BG[resolved])
+  }
+  window.lucetThemeColor(a.theme || 'dark')
 })()

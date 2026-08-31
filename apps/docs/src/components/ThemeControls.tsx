@@ -93,6 +93,8 @@ export function useApplyTheme({
     const root = document.documentElement
     if (theme === 'system') root.removeAttribute('data-theme')
     else root.setAttribute('data-theme', theme)
+    /* Browser-chrome colour: the boot script owns the mapping. */
+    ;(window as { lucetThemeColor?: (theme: string) => void }).lucetThemeColor?.(theme)
     root.setAttribute('data-accent', accent)
     root.setAttribute('data-neutral', neutral)
     root.setAttribute('data-expression', expression)
