@@ -161,13 +161,17 @@ function EventLog() {
   )
 }
 
-/** The running app itself: thread above, composer below. Container-agnostic. */
+/** The running app itself: thread above, composer below. Container-agnostic.
+ * `aside` is the container's own furniture (the full page's sidebar); it sits
+ * inside the frame, beside the thread, and the thread neither knows nor cares. */
 function AppCore({
   onReset,
   onSuggest,
+  aside,
 }: {
   onReset?: (() => void) | undefined
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
+  aside?: React.ReactNode
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -203,87 +207,92 @@ function AppCore({
         </button>
       </div>
 
-      <div className="cfg__scroll" ref={scrollRef}>
-        {state.turns.length === 0 ? (
-          /*
-           * The cold start, designed: the product's real first state. The
-           * orb at rest is the face, its label is the greeting, and the
-           * chips are ways in. This is the "empty & cold start" entry from
-           * the unhappy-states list, living where every visitor lands.
-           */
-          <div className="cfg__empty">
-            {/* The atmosphere: the vibe lives in the BACKGROUND — silk
-                ribbons of the accent's light and a breath of grain, drawn
-                and animated entirely in CSS from tokens. No hero object;
-                the greeting is the face, and the room is lit. */}
-            <div className="cfg__atmo" aria-hidden="true">
-              <i /><i /><i />
-            </div>
-            <p className="cfg__empty-hello">Ready when you are.</p>
-            <span className="cfg__empty-sub">
-              Ask anything below, or start from one of these.
-            </span>
-            {suggestionsVisible(state) ? (
-              <SuggestionChips
-                suggestions={state.suggestions}
-                disabled={state.composer.locked}
-                onPick={(s) => onSuggest?.(s)}
+      <div className="cfg__app-body">
+        {aside}
+        <div className="cfg__app-main">
+          <div className="cfg__scroll" ref={scrollRef}>
+            {state.turns.length === 0 ? (
+              /*
+               * The cold start, designed: the product's real first state. The
+               * orb at rest is the face, its label is the greeting, and the
+               * chips are ways in. This is the "empty & cold start" entry from
+               * the unhappy-states list, living where every visitor lands.
+               */
+              <div className="cfg__empty">
+                {/* The atmosphere: the vibe lives in the BACKGROUND — silk
+                    ribbons of the accent's light and a breath of grain, drawn
+                    and animated entirely in CSS from tokens. No hero object;
+                    the greeting is the face, and the room is lit. */}
+                <div className="cfg__atmo" aria-hidden="true">
+                  <i /><i /><i />
+                </div>
+                <p className="cfg__empty-hello">Ready when you are.</p>
+                <span className="cfg__empty-sub">
+                  Ask anything below, or start from one of these.
+                </span>
+                {suggestionsVisible(state) ? (
+                  <SuggestionChips
+                    suggestions={state.suggestions}
+                    disabled={state.composer.locked}
+                    onPick={(s) => onSuggest?.(s)}
+                  />
+                ) : null}
+              </div>
+            ) : (
+              <Thread
+                state={state}
+                selfId="you"
+                onRetry={(turnId) => void lucet.retry(turnId)}
+                onFeedback={(messageId, verdict) =>
+                  lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
+                }
               />
-            ) : null}
+            )}
           </div>
-        ) : (
-          <Thread
-            state={state}
-            selfId="you"
-            onRetry={(turnId) => void lucet.retry(turnId)}
-            onFeedback={(messageId, verdict) =>
-              lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
-            }
-          />
-        )}
-      </div>
 
-      <div className="cfg__composer">
-        <PromptInput
-          composer={state.composer}
-          model={state.model}
-          service={state.service}
-          selfId="you"
-          streaming={state.status === 'streaming'}
-          onStop={() => lucet.abort()}
-          onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
-          onSubmit={() => void lucet.submit(state.composer.text)}
-          onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
-          onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
-          onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
-          onRetryAttachment={(id) => {
-            lucet.store.dispatch({ type: 'attachment/retried', id })
-            setTimeout(
-              () => lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }),
-              1200,
-            )
-          }}
-          onAttach={() => {
-            // The host owns file IO; this host fakes one honestly. Every
-            // third attachment fails, so the failure path stays one click away.
-            const n = ++attachCount.current
-            const id = `cfg_${n}`
-            lucet.store.dispatch({
-              type: 'attachment/added',
-              id,
-              name: `document-${n}.pdf`,
-              fileKind: 'document',
-              sizeBytes: 240_000,
-            })
-            setTimeout(() => {
-              lucet.store.dispatch(
-                n % 3 === 0
-                  ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
-                  : { type: 'attachment/settled', id, status: 'ready', reason: null },
-              )
-            }, 1200)
-          }}
-        />
+          <div className="cfg__composer">
+            <PromptInput
+              composer={state.composer}
+              model={state.model}
+              service={state.service}
+              selfId="you"
+              streaming={state.status === 'streaming'}
+              onStop={() => lucet.abort()}
+              onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
+              onSubmit={() => void lucet.submit(state.composer.text)}
+              onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
+              onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
+              onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
+              onRetryAttachment={(id) => {
+                lucet.store.dispatch({ type: 'attachment/retried', id })
+                setTimeout(
+                  () => lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }),
+                  1200,
+                )
+              }}
+              onAttach={() => {
+                // The host owns file IO; this host fakes one honestly. Every
+                // third attachment fails, so the failure path stays one click away.
+                const n = ++attachCount.current
+                const id = `cfg_${n}`
+                lucet.store.dispatch({
+                  type: 'attachment/added',
+                  id,
+                  name: `document-${n}.pdf`,
+                  fileKind: 'document',
+                  sizeBytes: 240_000,
+                })
+                setTimeout(() => {
+                  lucet.store.dispatch(
+                    n % 3 === 0
+                      ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
+                      : { type: 'attachment/settled', id, status: 'ready', reason: null },
+                  )
+                }, 1200)
+              }}
+            />
+          </div>
+        </div>
       </div>
     </>
   )
@@ -386,13 +395,47 @@ export function App() {
           </div>
 
           {view === 'full' ? (
-            <section className="cfg__frame" aria-label="The running app">
+            <section className="cfg__frame cfg__frame--app" aria-label="The running app">
               <AppCore
                 onReset={() => setActive(null)}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)
                 }}
+                aside={
+                  /*
+                   * What makes a full page an APPLICATION instead of a chat
+                   * widget: the room around the thread. One control is real —
+                   * New thread does exactly what it says, the same commit as
+                   * the bar's reset — and the history is set dressing, marked
+                   * decorative so it cannot lie to a screen reader about
+                   * conversations that do not exist.
+                   */
+                  <aside className="cfg__side">
+                    <button
+                      type="button"
+                      className="cfg__side-new"
+                      onClick={() => {
+                        lucet.reset()
+                        setActive(null)
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden>
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                      New thread
+                    </button>
+                    <div className="cfg__side-list" aria-hidden>
+                      <div className="cfg__side-group">Today</div>
+                      <div className="cfg__side-row" data-active>Quarterly planning</div>
+                      <div className="cfg__side-row">Draft the kickoff note</div>
+                      <div className="cfg__side-group">Earlier</div>
+                      <div className="cfg__side-row">Compare the two vendor quotes</div>
+                      <div className="cfg__side-row">Rename the workstreams</div>
+                      <div className="cfg__side-row">Last week&rsquo;s review notes</div>
+                    </div>
+                  </aside>
+                }
               />
             </section>
           ) : view === 'drawer' ? (

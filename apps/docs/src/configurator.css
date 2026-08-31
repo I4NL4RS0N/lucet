@@ -89,6 +89,106 @@ body {
   overflow: hidden;
 }
 
+/* ---- the application shell: the room around the thread ---- */
+
+/* One structure for every container — the body row and main column exist
+   even when there is no sidebar — so the fixed-height flex chain is the
+   same chain everywhere and the window never learns to breathe again. */
+.cfg__app-body {
+  display: flex;
+  flex: 1;
+  min-block-size: 0;
+}
+.cfg__app-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* The sidebar: what separates an APPLICATION from a chat widget is the
+   room around the thread — a place conversations live. Recessed a step
+   below the content, the way real products seat their rails. Only "New
+   thread" is interactive; the history is dressing and says so. */
+.cfg__side {
+  display: flex;
+  flex-direction: column;
+  inline-size: 200px;
+  flex-shrink: 0;
+  padding: 12px 10px;
+  border-inline-end: 1px solid var(--lucet-border);
+  background: var(--lucet-surface-sunken);
+}
+.cfg__side-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 30px;
+  padding-inline: 9px;
+  border: 0;
+  border-radius: var(--lucet-radius-control);
+  box-shadow: var(--lucet-hairline);
+  background: none;
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__side-new svg {
+  inline-size: 13px;
+  block-size: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.cfg__side-new:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__side-new:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__side-group {
+  margin-block: 16px 4px;
+  padding-inline: 9px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__side-row {
+  padding: 6px 9px;
+  border-radius: var(--lucet-radius-control);
+  font-size: 13px;
+  color: var(--lucet-muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cfg__side-row + .cfg__side-row { margin-block-start: 1px; }
+.cfg__side-row[data-active] {
+  background: var(--lucet-subtle);
+  color: var(--lucet-foreground);
+}
+/* The demo page itself gets narrow before the phone view does; below the
+   comfortable width the room folds away and the thread keeps the stage. */
+@media (max-width: 1100px) {
+  .cfg__side { display: none; }
+}
+
+/* The thread at a reading measure: an application centers its column
+   instead of running text to the chrome. The welcome keeps full bleed —
+   its atmosphere belongs to the whole room, not the column. */
+.cfg__frame--app .lucet-thread,
+.cfg__frame--app .cfg__composer > * {
+  inline-size: 100%;
+  max-inline-size: 620px;
+  margin-inline: auto;
+}
+
 .cfg__frame-bar {
   display: flex;
   align-items: center;
