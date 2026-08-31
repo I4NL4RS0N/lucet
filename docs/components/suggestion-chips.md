@@ -66,6 +66,9 @@ the very state a first visit should demonstrate.
 
 ## What is deliberately not here yet
 
+- **English copy is hardcoded** — the Ask/Do group labels and their descriptions. A labels escape hatch is
+  deferred until a real host shows which strings it must own;
+  freezing a copy API speculatively would freeze the wrong one.
 - **Direct-execution controls** (labels apart from prompts, duration and
   stop affordances, effects without a turn) — still the Action Surface.
   The `kind` split landed here first and is the seam it will build on.

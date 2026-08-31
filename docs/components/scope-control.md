@@ -33,9 +33,15 @@ User-controlled context: the breadcrumb is the ladder.
 
 ## What is deliberately not here yet
 
-- **Full menu keyboard grammar** — the panel uses the library's
-  details-disclosure pattern (reasoning's and the tool's), with
-  aria-pressed rows; arrow-key roving waits for the Menu primitive.
+- **English copy is hardcoded** — the aria-label prefix and the moved-note framing. A labels escape hatch is
+  deferred until a real host shows which strings it must own;
+  freezing a copy API speculatively would freeze the wrong one.
+- ~~Full menu keyboard grammar~~ — delivered via the shared
+  disclosure-menu hook (`useMenuGrammar`, shared with the Budget
+  Meter): open focuses the pressed row, arrows rove with wrap,
+  Home/End jump, Escape returns focus to the trigger, an outside
+  click closes. Asserted with real key events in the state audit.
+  Typeahead stays deferred.
 - **Multi-select scopes** ("this page and the appendix") — the contract
   is single-rung until a real host proves the need.
 - **Live re-counting while open** — counts arrive with the ladder; a

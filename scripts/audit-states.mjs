@@ -320,6 +320,50 @@ async function main() {
     await tagProbes(COMPONENT_PROBES)
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
 
+    /*
+     * Menu keyboard grammar, asserted with REAL key events (the shared
+     * disclosure hook behind both the scope control and the budget
+     * meter). Open lands focus on the pressed row; ArrowDown roves off
+     * it; Escape closes and hands focus back to the trigger. A panel
+     * only a pointer can drive is a menu in costume.
+     */
+    const kbdOpen = await page.evaluate(() => {
+      const sec = [...document.querySelectorAll('.sec')].find(
+        (s) => s.querySelector('.sec__name')?.textContent === 'Budget meter — the price before you spend it',
+      )
+      const details = sec?.querySelector('.lucet-budget')
+      if (!details) return null
+      details.scrollIntoView({ block: 'center' })
+      details.open = true
+      return true
+    })
+    checks++
+    if (!kbdOpen) failures.push('menu grammar: budget meter section or its details not found')
+    await page.waitForTimeout(80)
+    const kbdFocused = await page.evaluate(() => ({
+      cls: document.activeElement?.className ?? '',
+      pressed: document.activeElement?.getAttribute('aria-pressed') ?? '',
+    }))
+    checks++
+    if (!kbdFocused.cls.includes('lucet-budget__row') || kbdFocused.pressed !== 'true')
+      failures.push(`menu grammar: opening did not focus the pressed row (got ${kbdFocused.cls || 'nothing'})`)
+    await page.keyboard.press('ArrowDown')
+    const kbdRoved = await page.evaluate(() => document.activeElement?.getAttribute('aria-pressed') ?? '')
+    checks++
+    if (kbdRoved !== 'false') failures.push('menu grammar: ArrowDown did not rove off the pressed row')
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(40)
+    const kbdClosed = await page.evaluate(() => {
+      const sec = [...document.querySelectorAll('.sec')].find(
+        (s) => s.querySelector('.sec__name')?.textContent === 'Budget meter — the price before you spend it',
+      )
+      const details = sec?.querySelector('.lucet-budget')
+      return { open: details?.open ?? true, cls: document.activeElement?.className ?? '' }
+    })
+    checks++
+    if (kbdClosed.open || !kbdClosed.cls.includes('lucet-budget__button'))
+      failures.push('menu grammar: Escape must close the panel and return focus to the trigger')
+
     // Chip hit-area honesty: the middle of a chip's NAME must never hit the
     // remove or retry button -- the pseudo-anchor regression, guarded here too.
     const chipHits = await page.evaluate(() => {

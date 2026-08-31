@@ -1,4 +1,5 @@
 import { projectNextTurn } from 'lucet'
+import { useMenuGrammar } from '../menu-grammar.js'
 import type { ModelState, TurnProjection, UsageState } from 'lucet'
 
 /**
@@ -46,6 +47,7 @@ function tok(value: number): string {
 }
 
 export function BudgetMeter({ model, onChange, usage, composerText, disabled }: BudgetMeterProps) {
+  const menuRef = useMenuGrammar()
   const selected = model.options.find((o) => o.id === model.selectedId) ?? model.options[0]
   if (!selected) return null
   const slice = { model, usage: usage ?? NO_USAGE, composer: { text: composerText ?? '' } }
@@ -73,7 +75,7 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
     .join(' — ')
 
   return (
-    <details className="lucet-budget">
+    <details className="lucet-budget" ref={menuRef}>
       <summary
         className="lucet-budget__button"
         aria-label={label}

@@ -50,6 +50,10 @@ The price before you spend it: the model picker grown into the meter.
 
 ## What is deliberately not here yet
 
+- **English copy is hardcoded** — the panel strings ("Next turn on…",
+  "the window re-sends each turn", the ledger rows) and the USD
+  formatting. Deferred with the same reasoning as the currency field
+  below.
 - **Real pricing models** — split input/output rates, cache discounts,
   per-seat plans. The single blended rate is the demo's honesty about
   what a projection is; a host with a billing system supplies better

@@ -11,6 +11,7 @@
 export { LucetProvider, useLucet } from './context.js'
 export type { LucetProviderProps } from './context.js'
 export { useThread, useEventLog, useTriggerGroups } from './hooks.js'
+export { useMenuGrammar } from './menu-grammar.js'
 
 export { Button } from './components/Button.js'
 export type { ButtonProps } from './components/Button.js'

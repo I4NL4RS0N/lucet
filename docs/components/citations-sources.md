@@ -34,6 +34,9 @@ The response's bibliography, and what time does to it.
 
 ## What is deliberately not here yet
 
+- **English copy is hardcoded** — the per-kind trace labels and status words. A labels escape hatch is
+  deferred until a real host shows which strings it must own;
+  freezing a copy API speculatively would freeze the wrong one.
 - **Marker-to-row linking** — `[n]` is plain text on purpose.
   Linking markers to rows needs citation tokens at the parser level,
   which is the same live-edge-versus-settle question tables raised;

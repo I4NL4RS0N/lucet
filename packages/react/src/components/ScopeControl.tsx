@@ -1,4 +1,5 @@
 import type { ScopeState } from 'lucet'
+import { useMenuGrammar } from '../menu-grammar.js'
 
 /**
  * Scope Control: user-controlled context. The positions:
@@ -16,9 +17,10 @@ import type { ScopeState } from 'lucet'
  *    until the person acts on scope — silent following is guessing.
  * 4. THE TOGGLE IS THE CONFIG. No levels, no control. Hosts without a
  *    scope feature render nothing.
- * 5. Deferred, recorded: full menu keyboard grammar (this uses the
- *    library's details-disclosure pattern, as reasoning and tool do);
- *    multi-select scopes; live re-counting while open.
+ * 5. Keyboard grammar via the shared disclosure-menu hook: roving
+ *    arrows, Home/End, Escape-to-trigger, outside click closes.
+ *    Deferred, recorded: typeahead; multi-select scopes; live
+ *    re-counting while open.
  */
 
 export interface ScopeControlProps {
@@ -28,11 +30,12 @@ export interface ScopeControlProps {
 }
 
 export function ScopeControl({ scope, onChange, disabled }: ScopeControlProps) {
+  const menuRef = useMenuGrammar()
   if (scope.levels.length === 0) return null
   const selected = scope.levels.find((l) => l.id === scope.selectedId) ?? scope.levels[0]!
   return (
     <span className="lucet-scope">
-      <details className="lucet-scope__menu">
+      <details className="lucet-scope__menu" ref={menuRef}>
         <summary
           className="lucet-scope__button"
           aria-label={`Scope: ${selected.label} — ${selected.summary}`}

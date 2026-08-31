@@ -97,6 +97,9 @@ extension**, because the extension is what actually tells you the format.
 
 ## What is deliberately not here yet
 
+- **English copy is hardcoded** — the submit-blocker strings (core's describeSubmitBlocker; the strip reads it directly, with no per-string override prop yet). A labels escape hatch is
+  deferred until a real host shows which strings it must own;
+  freezing a copy API speculatively would freeze the wrong one.
 - Attachment parts on the submitted *message* — that representation belongs
   to the Message component and will be added with it.
 - Token estimation for the draft — the context meter reads real usage; a
