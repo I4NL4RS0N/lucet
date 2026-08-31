@@ -79,6 +79,65 @@ function turn(
   return events
 }
 
+/* Citations & sources: the bibliography in each of its three conditions,
+   the aging built by replaying source/changed through the real reducer. */
+const CITE = (n: 1 | 2 | 3) => [
+  ...turn(1, 'Where do the revised dates come from?', {
+    reply:
+      'The freeze lands Tuesday per the Q3 revision [1], and the vendor quote fixes the print deadline [2].',
+  }),
+  {
+    type: 'part/added' as const,
+    messageId: 'rm1',
+    part: {
+      kind: 'sources' as const,
+      id: 'srcp1',
+      sources: [
+        { id: 's-q3', title: 'Q3 revision', location: 'Plans / Quarterly', sourceKind: 'document' as const, status: 'ok' as const, note: null },
+        { id: 's-quote', title: 'Vendor quote', location: 'Suppliers / Print', sourceKind: 'data' as const, status: 'ok' as const, note: null },
+      ],
+    },
+  },
+  ...(n >= 2
+    ? [{
+        type: 'source/changed' as const,
+        messageId: 'rm1',
+        partId: 'srcp1',
+        sourceId: 's-q3',
+        status: 'stale' as const,
+        note: 'Updated after it was cited — the dates may have moved.',
+      }]
+    : []),
+  ...(n >= 3
+    ? [{
+        type: 'source/changed' as const,
+        messageId: 'rm1',
+        partId: 'srcp1',
+        sourceId: 's-quote',
+        status: 'gone' as const,
+        note: 'Removed from the library after it was cited.',
+      }]
+    : []),
+]
+
+const SOURCES_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Cited, everything standing',
+    note: 'Markers in the text, the bibliography under the answer. Sources are part of the message.',
+    state: play(CITE(1)),
+  },
+  {
+    label: 'A source updated since it was cited',
+    note: 'The citation aged after settle: caution ink, the clock turned back, and the words say what happened.',
+    state: play(CITE(2)),
+  },
+  {
+    label: 'A source removed since it was cited',
+    note: 'Struck through and said so, in the danger ink. A dead reference marked dead beats a confident link to nothing.',
+    state: play(CITE(3)),
+  },
+]
+
 const THREAD_FIXTURES: readonly Fixture[] = [
   {
     label: 'A finished turn, attachments and all',
@@ -482,6 +541,20 @@ export function ComponentsStage() {
         <Section n="04" name="Thread — every ending" note="a response is never simply loading or done">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {THREAD_FIXTURES.map((f) => (
+              <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
+                <span className="spec__label">{f.label}</span>
+                <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>
+                  <Thread state={f.state} selfId="you" onRetry={noop} onFeedback={noop} />
+                </div>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{f.note}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        <Section n="04b" name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
+          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+            {SOURCES_FIXTURES.map((f) => (
               <div className="spec" key={f.label} style={{ inlineSize: '100%' }}>
                 <span className="spec__label">{f.label}</span>
                 <div style={{ inlineSize: '100%', maxInlineSize: 640 }}>

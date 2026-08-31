@@ -14,6 +14,7 @@ import type {
   ServiceStatus,
   ToolStatus,
   UsageState,
+  SourceStatus,
 } from './types.js'
 
 export type LucetEvent =
@@ -75,6 +76,20 @@ export type LucetEvent =
     }
   | { type: 'restore/entered'; turnId: string }
   | { type: 'restore/exited' }
+  | {
+      /**
+       * A cited source's condition changed AFTER the response settled —
+       * updated behind the citation, or removed outright. This is why
+       * sources live in the event log: the thread can tell the truth
+       * about its own bibliography aging.
+       */
+      type: 'source/changed'
+      messageId: string
+      partId: string
+      sourceId: string
+      status: SourceStatus
+      note: string | null
+    }
 
 export interface LoggedEvent {
   readonly seq: number
@@ -143,5 +158,11 @@ export function describeEvent(event: LucetEvent): string {
       return 'Viewing a restored state'
     case 'restore/exited':
       return 'Returned to latest'
+    case 'source/changed':
+      return event.status === 'gone'
+        ? 'A cited source is no longer available'
+        : event.status === 'stale'
+          ? 'A cited source was updated since it was cited'
+          : 'A cited source checks out again'
   }
 }

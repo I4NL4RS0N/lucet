@@ -6,6 +6,7 @@ import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
 import { MessageActions } from './MessageActions.js'
 import { Reasoning } from './Reasoning.js'
+import { Sources } from './Sources.js'
 import { StateIcon } from './StateIcon.js'
 import { ToolCall } from './ToolCall.js'
 
@@ -93,6 +94,8 @@ function Part({
           result={part.result}
         />
       )
+    case 'sources':
+      return <Sources sources={part.sources} />
     case 'attachment':
       return (
         <span className="lucet-att lucet-att--readonly">

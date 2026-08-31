@@ -325,6 +325,26 @@ export function reduce(
         })),
       }
 
+    case 'source/changed':
+      return {
+        ...state,
+        turns: mapResponse(state, event.messageId, (message) => ({
+          ...message,
+          parts: message.parts.map((part) =>
+            part.kind === 'sources' && part.id === event.partId
+              ? {
+                  ...part,
+                  sources: part.sources.map((source) =>
+                    source.id === event.sourceId
+                      ? { ...source, status: event.status, note: event.note }
+                      : source,
+                  ),
+                }
+              : part,
+          ),
+        })),
+      }
+
     case 'restore/entered':
       return { ...state, restoredFrom: event.turnId }
 

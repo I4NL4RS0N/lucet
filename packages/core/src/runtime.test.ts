@@ -6,6 +6,7 @@ import {
   instantScheduler,
   reduce,
   createInitialState,
+  describeEvent,
 } from './index.js'
 
 /**
@@ -190,5 +191,43 @@ describe('feedback and retry', () => {
   it('retrying an unknown turn rejects instead of inventing one', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await expect(lucet.retry('nope')).rejects.toThrow('Unknown turn')
+  })
+})
+
+describe('citations and sources', () => {
+  it('a cited response carries its bibliography, all sources ok', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('cited-response')
+    const parts = lucet.getState().turns[0]!.response!.parts
+    const sources = parts.find((p) => p.kind === 'sources')
+    expect(sources?.kind).toBe('sources')
+    if (sources?.kind !== 'sources') return
+    expect(sources.sources).toHaveLength(3)
+    expect(sources.sources.every((s) => s.status === 'ok' && s.note === null)).toBe(true)
+  })
+
+  it('a source ages AFTER the response settles — status and note land, neighbours untouched', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('source-updated')
+    const message = lucet.getState().turns[0]!.response!
+    expect(message.status).toBe('complete')
+    const sources = message.parts.find((p) => p.kind === 'sources')
+    if (sources?.kind !== 'sources') throw new Error('no sources part')
+    const aged = sources.sources.find((s) => s.id === 'src-q3')
+    expect(aged?.status).toBe('stale')
+    expect(aged?.note).toContain('Updated after it was cited')
+    expect(sources.sources.filter((s) => s.status === 'ok')).toHaveLength(2)
+  })
+
+  it('a removed source is marked gone, and the log says so in words', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('source-gone')
+    const sources = lucet.getState().turns[0]!.response!.parts.find((p) => p.kind === 'sources')
+    if (sources?.kind !== 'sources') throw new Error('no sources part')
+    expect(sources.sources.find((s) => s.id === 'src-quote')?.status).toBe('gone')
+    const described = lucet.store.getLog()
+      .map((entry) => describeEvent(entry.event))
+      .filter((line) => line.includes('source'))
+    expect(described).toContain('A cited source is no longer available')
   })
 })

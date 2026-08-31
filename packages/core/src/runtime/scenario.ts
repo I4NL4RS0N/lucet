@@ -26,6 +26,18 @@ export type Step =
       args?: string
       result?: string
     }
+  /** Attach the response's bibliography, all sources arriving `ok`. */
+  | {
+      type: 'sources'
+      sources: readonly {
+        id: string
+        title: string
+        location: string
+        sourceKind: 'document' | 'web' | 'data'
+      }[]
+    }
+  /** Age one cited source after the fact — the states nobody designs. */
+  | { type: 'sourceChange'; sourceId: string; status: 'stale' | 'gone'; note: string }
   | { type: 'refuse'; reason: string }
   | { type: 'fail'; reason: string }
   | { type: 'interrupt'; reason: string }

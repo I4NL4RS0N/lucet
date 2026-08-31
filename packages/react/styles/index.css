@@ -1734,6 +1734,95 @@
 }
 
 /* ============================================================
+ * CITATIONS & SOURCES. The response's bibliography: quiet rows under a
+ * caps label, [n] order implied by position. The aging states are the
+ * point — stale wears caution and a turned clock, gone strikes the title
+ * and wears danger. Word + silhouette + tone, never colour alone.
+ * ============================================================ */
+
+.lucet-sources {
+  display: grid;
+  gap: var(--lucet-space-1);
+  margin-block-start: var(--lucet-space-3);
+  padding-block-start: var(--lucet-space-3);
+  border-block-start: 1px solid var(--lucet-border);
+}
+.lucet-sources__label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-sources__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+.lucet-sources__row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-block-size: 30px;
+  padding: 3px 2px;
+  font-size: var(--lucet-text-sm);
+}
+.lucet-sources__glyph {
+  flex: none;
+  inline-size: 14px;
+  block-size: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--lucet-muted-foreground);
+}
+.lucet-sources__body {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-inline-size: 0;
+}
+.lucet-sources__title { color: var(--lucet-subtle-foreground); }
+.lucet-sources__loc {
+  font-size: var(--lucet-text-xs, 11.5px);
+  color: var(--lucet-muted-foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The condition, said in words at the row's end. */
+.lucet-sources__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+  font-size: var(--lucet-text-xs, 11.5px);
+}
+.lucet-sources__flag-glyph {
+  flex: none;
+  inline-size: 12px;
+  block-size: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Stale: the citation aged. Caution ink, clock turned back. */
+.lucet-sources__row[data-status='stale'] .lucet-sources__flag { color: var(--lucet-tone-caution-foreground); }
+/* Gone: struck through and said so, in the danger ink. */
+.lucet-sources__row[data-status='gone'] .lucet-sources__flag { color: var(--lucet-tone-danger-foreground); }
+.lucet-sources__row[data-status='gone'] .lucet-sources__title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--lucet-muted-foreground);
+}
+
+/* ============================================================
  * Suggestion chips — prompts made visible, on the cold start. They wear
  * the composer's CONTENT tier (the white raised chip, same as an
  * attachment): a suggestion is content in waiting, not an ambient tool

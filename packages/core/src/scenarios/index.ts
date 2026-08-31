@@ -278,6 +278,101 @@ export const staleData = defineScenario({
 })
 
 /*
+ * SOURCES: a citation is a claim with a timestamp. One happy scenario,
+ * and two where the bibliography AGES — the sourceChange steps run after
+ * the response settles, because that is when sources actually rot.
+ */
+
+export const citedResponse = defineScenario({
+  id: 'cited-response',
+  label: 'Cited response',
+  group: 'Sources',
+  description:
+    'Claims carry [n] markers and the response carries its bibliography — sources are part of the message, not decoration.',
+  prompt: 'Where do the revised dates come from?',
+  steps: [
+    { type: 'wait', ms: 300 },
+    {
+      type: 'say',
+      text: 'The dates come from three places, and they agree with each other. The freeze lands Tuesday per the Q3 revision [1], the room survey confirms capacity for the review [2], and the vendor quote fixes the print deadline [3].',
+    },
+    {
+      type: 'sources',
+      sources: [
+        { id: 'src-q3', title: 'Q3 revision', location: 'Plans / Quarterly', sourceKind: 'document' },
+        { id: 'src-survey', title: 'Site survey', location: 'Facilities / Reviews', sourceKind: 'document' },
+        { id: 'src-quote', title: 'Vendor quote', location: 'Suppliers / Print', sourceKind: 'data' },
+      ],
+    },
+    { type: 'complete' },
+  ],
+})
+
+export const sourceUpdated = defineScenario({
+  id: 'source-updated',
+  label: 'Source updated since',
+  group: 'Sources',
+  description:
+    'A cited source changes AFTER the answer settles. The bibliography says so instead of silently aging.',
+  prompt: 'Where do the revised dates come from?',
+  steps: [
+    { type: 'wait', ms: 300 },
+    {
+      type: 'say',
+      text: 'The dates come from three places, and they agree with each other. The freeze lands Tuesday per the Q3 revision [1], the room survey confirms capacity for the review [2], and the vendor quote fixes the print deadline [3].',
+    },
+    {
+      type: 'sources',
+      sources: [
+        { id: 'src-q3', title: 'Q3 revision', location: 'Plans / Quarterly', sourceKind: 'document' },
+        { id: 'src-survey', title: 'Site survey', location: 'Facilities / Reviews', sourceKind: 'document' },
+        { id: 'src-quote', title: 'Vendor quote', location: 'Suppliers / Print', sourceKind: 'data' },
+      ],
+    },
+    { type: 'complete' },
+    { type: 'wait', ms: 1600 },
+    {
+      type: 'sourceChange',
+      sourceId: 'src-q3',
+      status: 'stale',
+      note: 'Updated after it was cited — the dates may have moved.',
+    },
+  ],
+})
+
+export const sourceGone = defineScenario({
+  id: 'source-gone',
+  label: 'Source no longer available',
+  group: 'Sources',
+  description:
+    'A cited source is removed after the fact. A dead reference marked dead beats a confident link to nothing.',
+  prompt: 'Where do the revised dates come from?',
+  steps: [
+    { type: 'wait', ms: 300 },
+    {
+      type: 'say',
+      text: 'The dates come from three places, and they agree with each other. The freeze lands Tuesday per the Q3 revision [1], the room survey confirms capacity for the review [2], and the vendor quote fixes the print deadline [3].',
+    },
+    {
+      type: 'sources',
+      sources: [
+        { id: 'src-q3', title: 'Q3 revision', location: 'Plans / Quarterly', sourceKind: 'document' },
+        { id: 'src-survey', title: 'Site survey', location: 'Facilities / Reviews', sourceKind: 'document' },
+        { id: 'src-quote', title: 'Vendor quote', location: 'Suppliers / Print', sourceKind: 'data' },
+      ],
+    },
+    { type: 'complete' },
+    { type: 'wait', ms: 1600 },
+    {
+      type: 'sourceChange',
+      sourceId: 'src-quote',
+      status: 'gone',
+      note: 'Removed from the library after it was cited.',
+    },
+  ],
+})
+
+/*
  * FEATURES: the other half of the thesis. States show how a response can
  * go; these show what other libraries do not have at all.
  */
@@ -314,5 +409,8 @@ export const builtInScenarios: readonly Scenario[] = [
   degradedModel,
   serviceDown,
   staleData,
+  citedResponse,
+  sourceUpdated,
+  sourceGone,
   multiplayer,
 ]

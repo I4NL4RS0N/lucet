@@ -78,6 +78,7 @@ export function Message({ message, version, actions }: MessageProps) {
              old-era renderer retires at the Configurator rebuild and its
              scenarios never produce them. */
           if (part.kind === 'attachment') return null
+          if (part.kind === 'sources') return null
           return (
             <p key={part.id} className="lucet-message__text">
               {part.text}

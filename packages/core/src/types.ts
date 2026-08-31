@@ -72,7 +72,36 @@ export interface AttachmentPart {
   readonly sizeBytes: number
 }
 
-export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart
+/**
+ * Where a claim came from. A citation is a claim WITH A TIMESTAMP: the
+ * source was true at citation time and keeps aging afterwards, so its
+ * condition lives in the contract, not in the styling. `stale` and
+ * `gone` are the unhappy half nobody designs — a bibliography that can
+ * only say "fine" is decoration.
+ */
+export type SourceStatus = 'ok' | 'stale' | 'gone'
+
+export interface Source {
+  readonly id: string
+  readonly title: string
+  /** Where it lives, in words — a collection, a path, a place. The demo
+   * cites documents rather than URLs, so nothing pretends to be a link. */
+  readonly location: string
+  readonly sourceKind: 'document' | 'web' | 'data'
+  readonly status: SourceStatus
+  /** The condition in words, once status is not 'ok'. */
+  readonly note: string | null
+}
+
+/** The bibliography of a response, as a part — in the message, in the
+ * log, in history. Inline [n] markers in the text refer to its order. */
+export interface SourcesPart {
+  readonly kind: 'sources'
+  readonly id: string
+  readonly sources: readonly Source[]
+}
+
+export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart | SourcesPart
 
 export interface Message {
   readonly id: string

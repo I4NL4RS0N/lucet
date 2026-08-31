@@ -57,6 +57,9 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
     }
   }
 
+  /* The most recent bibliography, so a later sourceChange can address it. */
+  let lastSourcesPartId: string | null = null
+
   async function step(
     s: Step,
     messageId: string,
@@ -101,6 +104,36 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         })
         return null
       }
+
+      case 'sources': {
+        const partId = nextId('part')
+        lastSourcesPartId = partId
+        store.dispatch({
+          type: 'part/added',
+          messageId,
+          part: {
+            kind: 'sources',
+            id: partId,
+            sources: s.sources.map((source) => ({ ...source, status: 'ok', note: null })),
+          },
+        })
+        return null
+      }
+
+      case 'sourceChange':
+        /* Ages a source on the CURRENT response's bibliography. Scenarios
+           cite first, then age; a change with nothing cited is a script
+           bug and throws in the fixture run, not silently in the UI. */
+        if (!lastSourcesPartId) throw new Error('sourceChange before sources')
+        store.dispatch({
+          type: 'source/changed',
+          messageId,
+          partId: lastSourcesPartId,
+          sourceId: s.sourceId,
+          status: s.status,
+          note: s.note,
+        })
+        return null
 
       case 'usage': {
         const { usage } = store.getState()
@@ -184,11 +217,18 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       let settled = false
       try {
         for (const s of scenario.steps) {
-          const outcome = await step(s, messageId, signal)
-          if (outcome !== null) {
-            settled = true
-            break
+          if (settled) {
+            /* The response has settled, but the WORLD keeps moving: a
+               cited source can age behind a finished answer. Only steps
+               that model the world after settle may run here — the rest
+               stay unreachable, exactly as before. */
+            if (s.type === 'wait' || s.type === 'sourceChange') {
+              await step(s, messageId, signal)
+            }
+            continue
           }
+          const outcome = await step(s, messageId, signal)
+          if (outcome !== null) settled = true
         }
         if (!settled) {
           store.dispatch({
