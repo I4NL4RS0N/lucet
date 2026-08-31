@@ -44,7 +44,10 @@ Prompts made visible, on the cold start.
   grammar — and the composer stays the only box on the home. The
   per-row kind glyphs left in the same pass: once the group labels said
   the split out loud, the icons were reinforcement that had outlived
-  its job.
+  its job. One trailing distinction returned by request: do-rows end in
+  the rail's run-triangle rather than the way-in chevron, because "the
+  agent takes this and goes" deserved a mark — and the descriptors name
+  it outright ("Run by the agent").
 - **The lock reaches the chips.** While it is another person's turn, a way
   in that would fail is not offered as live: chips disable under the same
   single-writer rule as the composer.

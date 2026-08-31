@@ -1979,7 +1979,7 @@
 .lucet-chips {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: var(--lucet-space-4);
+  gap: var(--lucet-space-3) var(--lucet-space-4);
   inline-size: 100%;
   text-align: start;
 }
@@ -1988,9 +1988,13 @@
   gap: var(--lucet-space-2);
   align-content: start;
 }
+/* Label and descriptor share ONE line: the caps-to-case shift is all
+   the separation they need, and a stacked head cost a row of height for
+   nothing (Ian). */
 .lucet-chips__head {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
   padding-inline: 2px;
   margin-block-end: 2px;
 }
@@ -2010,9 +2014,9 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  min-block-size: 40px;
+  min-block-size: 34px;
   max-inline-size: 100%;
-  padding: 9px 6px;
+  padding: 7px 6px;
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;

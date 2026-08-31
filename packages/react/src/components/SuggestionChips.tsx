@@ -36,8 +36,8 @@ export interface SuggestionChipsProps {
    heavy lifting, and the example prompts had drifted similar (Ian). The
    descriptor under each label carries the real difference. */
 const GROUPS = [
-  { kind: 'ask', label: 'Ask', desc: 'Answers, in the thread' },
-  { kind: 'do', label: 'Do', desc: 'Work handed off and run' },
+  { kind: 'ask', label: 'Ask', desc: 'Answered in the thread' },
+  { kind: 'do', label: 'Do', desc: 'Run by the agent' },
 ] as const
 
 function Chip({
@@ -58,9 +58,22 @@ function Chip({
       onClick={() => onPick(suggestion)}
     >
       <span className="lucet-chips__text">{suggestion.prompt}</span>
-      <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
-        <path d="M9 6l6 6-6 6" />
-      </svg>
+      {suggestion.kind === 'do' ? (
+        /* A do-row RUNS: it wears the rail's own run-triangle instead of
+           the way-in chevron, so "the agent takes this and goes" rhymes
+           with the page's controls that run things. */
+        <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
+          <path
+            d="M9 6.8v10.4c0 .55.6.9 1.08.6l8.2-5.2a.72.72 0 0 0 0-1.2l-8.2-5.2A.72.72 0 0 0 9 6.8z"
+            fill="currentColor"
+            stroke="none"
+          />
+        </svg>
+      ) : (
+        <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      )}
     </button>
   )
 }

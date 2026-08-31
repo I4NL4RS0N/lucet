@@ -580,14 +580,10 @@ body {
   /* The atmosphere child sits at z -1; isolate so it can never slip
      beneath the page itself. */
   isolation: isolate;
-  display: grid;
-  /* ONE definite full-width column, content centered within it: the
-     chips' auto-fit grid needs a definite width to count columns against
-     — under place-content's auto track it measured against infinity and
-     overflowed the drawer. */
-  grid-template-columns: minmax(0, 100%);
-  align-content: center;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   text-align: center;
   min-block-size: 100%;
@@ -595,6 +591,16 @@ body {
   color: var(--lucet-muted-foreground);
   font-size: 13px;
 }
+/* The reference composition where the composer sits at the FLOOR
+   (drawer, phone): greeting floats in the upper half, the menu of ways
+   in sits pinned just above the input — not adrift in the middle. Two
+   auto margins split the free space; the home (composer IN the page)
+   switches both off below and keeps its chips docked to the composer. */
+.cfg__empty::before {
+  content: '';
+  margin-block-end: auto;
+}
+.cfg__empty:has(.cfg__composer--center)::before { margin-block-end: 0; }
 /*
  * The atmosphere. Round one put the vibe in a hero orb; it read as a
  * low-budget object (Ian). Round two follows the lithos studies — silk
@@ -738,9 +744,14 @@ body {
 }
 .cfg__empty-sub { max-inline-size: 40ch; }
 .cfg__empty .lucet-chips {
-  margin-block-start: 14px;
+  /* Stretch-then-clamp gives the chips grid the definite width its
+     auto-fit column count needs (the old grid column did this job). */
+  align-self: stretch;
+  margin-inline: auto;
   max-inline-size: min(100%, 560px);
+  margin-block-start: auto;
 }
+.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 10px; }
 /* The room lights, then three beats — greeting, invitation, ways in —
    then stillness. Only the atmosphere keeps moving, slower than
    attention. */
