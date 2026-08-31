@@ -136,6 +136,35 @@ function MessageView({
      Everything before it has already settled into history. */
   const lastPartId = rest[rest.length - 1]?.id
 
+  /* A VALUE, not a nested component. Rendered as <PromptBody /> this was
+     a fresh component type every render, so React remounted the whole
+     prompt/doc subtree on every streamed chunk — replaying the arrival
+     animation on turns that had long since arrived, and rebuilding their
+     DOM for nothing. */
+  const promptBody = (
+    <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
+      {rest.map((part) => (
+        <Part
+          key={part.id}
+          part={part}
+          streaming={message.status === 'streaming'}
+          last={part.id === lastPartId}
+          doc={!isUser}
+        />
+      ))}
+      {attachments.length > 0 ? (
+        <div className="lucet-thread__atts">
+          {attachments.map((part) => (
+            <Part key={part.id} part={part} streaming={false} last={false} doc={false} />
+          ))}
+        </div>
+      ) : null}
+      {message.status === 'streaming' && rest.length === 0 ? (
+        <ActivityOrb state="composing" label="Writing…" size="sm" />
+      ) : null}
+    </div>
+  )
+
   return (
     <div className="lucet-thread__turn" data-role={message.role} data-self={self || undefined}>
       {/*
@@ -158,11 +187,11 @@ function MessageView({
           <Avatar name={message.authorId} />
           <div className="lucet-thread__spoke">
             <span className="lucet-thread__author">{message.authorId}</span>
-            <PromptBody />
+            {promptBody}
           </div>
         </div>
       ) : (
-        <PromptBody />
+        promptBody
       )}
       {terminal ? (
         <p className="lucet-thread__ended" data-status={message.status} role="status">
@@ -175,32 +204,6 @@ function MessageView({
       {actions}
     </div>
   )
-
-  function PromptBody() {
-    return (
-      <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
-        {rest.map((part) => (
-          <Part
-            key={part.id}
-            part={part}
-            streaming={message.status === 'streaming'}
-            last={part.id === lastPartId}
-            doc={!isUser}
-          />
-        ))}
-        {attachments.length > 0 ? (
-          <div className="lucet-thread__atts">
-            {attachments.map((part) => (
-              <Part key={part.id} part={part} streaming={false} last={false} doc={false} />
-            ))}
-          </div>
-        ) : null}
-        {message.status === 'streaming' && rest.length === 0 ? (
-          <ActivityOrb state="composing" label="Writing…" size="sm" />
-        ) : null}
-      </div>
-    )
-  }
 }
 
 /**
