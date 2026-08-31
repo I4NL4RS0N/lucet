@@ -1,0 +1,10 @@
+
+
+# Subject: imperative mood, under 72 chars, naming the component, file,
+# or token that changed. No metaphor, no aphorism, no colon-then-flourish.
+#   Good: Fix dark recess to render as a step, not a hole
+#   Good: Add ISO severity tones to state color tokens
+#
+# Body (optional): the why — constraints, alternatives, what was tried.
+# Deeper rationale belongs in docs/components/*.md or in token comments,
+# where a reader will actually look for it.

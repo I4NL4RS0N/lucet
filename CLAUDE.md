@@ -60,6 +60,12 @@ Repeated here because they are easy to violate by reflex:
   silhouette, never colour alone.
 - Scope discipline: ten to twelve components done properly, with written
   rationale for each. Pick from the named patterns, do not build all ten.
+- **Commit messages are plain and functional.** Imperative mood, under 72
+  characters, naming the component, file, or token that changed. No
+  metaphor, no aphorism, no colon-then-flourish construction. Reasoning
+  goes in the commit body or in the component's rationale doc — never
+  carried by the subject line alone. Someone should be able to
+  `git log --oneline | grep radius` and find the radius work.
 - **This repo is public. Never commit a secret.** History goes public with it and
   stays public even after a later removal.
 - Keep this project strictly separate from every other project on this machine.

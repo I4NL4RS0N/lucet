@@ -532,6 +532,8 @@ body {
   overflow-x: hidden;
   overscroll-behavior: contain;
   --cfg-gutter: 24px;
+  /* 28px of headroom at the top: at 24 the first turn sat against the
+     bar's hairline and the thread opened mid-thought. */
   padding: 28px var(--cfg-gutter) 12px;
   --fade: 20px;
   mask-image: linear-gradient(
