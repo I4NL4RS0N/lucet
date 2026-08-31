@@ -1316,7 +1316,11 @@
 .lucet-thread__prompt {
   display: grid;
   gap: var(--lucet-space-2);
-  max-inline-size: 46ch;
+  /* Capped by measure AND by column: in a narrow container a 46ch
+     bubble went full-bleed, and a user bubble touching the far edge
+     loses the alignment cue that says YOURS. A left gutter survives
+     at any width. */
+  max-inline-size: min(46ch, 88%);
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-secondary);
