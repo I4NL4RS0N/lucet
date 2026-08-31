@@ -58,22 +58,13 @@ function Chip({
       onClick={() => onPick(suggestion)}
     >
       <span className="lucet-chips__text">{suggestion.prompt}</span>
-      {suggestion.kind === 'do' ? (
-        /* A do-row RUNS: it wears the rail's own run-triangle instead of
-           the way-in chevron, so "the agent takes this and goes" rhymes
-           with the page's controls that run things. */
-        <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
-          <path
-            d="M9 6.8v10.4c0 .55.6.9 1.08.6l8.2-5.2a.72.72 0 0 0 0-1.2l-8.2-5.2A.72.72 0 0 0 9 6.8z"
-            fill="currentColor"
-            stroke="none"
-          />
-        </svg>
-      ) : (
-        <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
-          <path d="M9 6l6 6-6 6" />
-        </svg>
-      )}
+      {/* One chevron for both kinds — per-kind trailing glyphs were
+          tried (a run-triangle on do-rows) and cut, the second such cut:
+          the trailing slot is the WAY-IN affordance, and the way in is
+          identical for ask and do. The words carry the kind. */}
+      <svg className="lucet-chips__chev" viewBox="0 0 24 24" aria-hidden>
+        <path d="M9 6l6 6-6 6" />
+      </svg>
     </button>
   )
 }

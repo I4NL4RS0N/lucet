@@ -343,6 +343,7 @@ function AppCore({
                 <span className="cfg__empty-sub">
                   Ask a question, or hand a task off.
                 </span>
+                <span className="cfg__empty-gap" aria-hidden />
                 {composerCentered ? (
                   <div className="cfg__composer cfg__composer--center">{composerNode}</div>
                 ) : null}

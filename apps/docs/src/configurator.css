@@ -583,7 +583,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 12px;
   text-align: center;
   min-block-size: 100%;
@@ -591,16 +591,25 @@ body {
   color: var(--lucet-muted-foreground);
   font-size: 13px;
 }
-/* The reference composition where the composer sits at the FLOOR
-   (drawer, phone): greeting floats in the upper half, the menu of ways
-   in sits pinned just above the input — not adrift in the middle. Two
-   auto margins split the free space; the home (composer IN the page)
-   switches both off below and keeps its chips docked to the composer. */
+/* ONE rhythm for every container, tuned to the one that already looked
+   right (the phone): the words live in the atmosphere's crown — about
+   the upper third — and the menu sits by the floor. Crown headroom and
+   floor room split the free space 1 : 1.7 through explicit spacers; the
+   centred-composer home keeps its chips docked by zeroing the gap and
+   taking the floor room as ::after instead. */
 .cfg__empty::before {
   content: '';
-  margin-block-end: auto;
+  flex: 1 1 0;
 }
-.cfg__empty:has(.cfg__composer--center)::before { margin-block-end: 0; }
+.cfg__empty-gap {
+  display: block;
+  flex: 1.7 1 0;
+}
+.cfg__empty:has(.cfg__composer--center) .cfg__empty-gap { flex: 0 0 0; }
+.cfg__empty:has(.cfg__composer--center)::after {
+  content: '';
+  flex: 1.7 1 0;
+}
 /*
  * The atmosphere. Round one put the vibe in a hero orb; it read as a
  * low-budget object (Ian). Round two follows the lithos studies — silk
@@ -757,7 +766,6 @@ body {
   align-self: stretch;
   margin-inline: auto;
   max-inline-size: min(100%, 560px);
-  margin-block-start: auto;
 }
 .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 10px; }
 /* The room lights, then three beats — greeting, invitation, ways in —
