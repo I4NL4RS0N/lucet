@@ -15,9 +15,32 @@ one observation.
 
 ## What makes it different
 
+**The missing states, designed.** Most AI tools — and every component
+library under them — ship the happy path and improvise the rest. Lucet
+names the rest and designs each one: refused, interrupted, failed,
+rate-limited, silently downgraded, answered from stale cache, partly
+done. Every ending is triple-coded — silhouette, word, and tone, never
+colour alone — and the tones stand on the ANSI/ISO severity standard,
+with the reasoning written into the tokens themselves.
+
+**The missing features, working.** The things AI products need and
+component libraries don't attempt: citations that keep aging after the
+answer settles (a citation is a claim with a timestamp — sources go
+stale or vanish, and the bibliography says so); version markers and
+restore (every prompt is a commit, so the thread *is* the history); a
+single-writer turn lock, and a thread that switches to collaborative
+grammar the moment a second human speaks. None of these are bolt-ons:
+the core is an event log, so history, versions, provenance and presence
+are reads, not features glued on top.
+
+**A written rationale for every component.** Each one ships with its
+positions, the alternatives that were tried and cut, and what is
+deliberately deferred — with the reason. The judgment is the product;
+the components are its proof.
+
 **Accessibility is a gate, not a pass at the end.** WCAG 2.2 AA is enforced on
 every component by an audit that drives a real Chromium and measures what is
-actually painted — 1188 checks across 44 theme, expression and accent
+actually painted — 3,600+ checks across 44 theme, expression and accent
 combinations, run in CI on every push to `main` and every pull request. It renders a real browser on purpose:
 three of the first four contrast failures were cascade and paint behaviour that
 parsing tokens could never have seen.
@@ -45,9 +68,13 @@ a test fails if a token is added to the CSS without being classified.
 
 ## Status
 
-Early, and honest about it: the argument is further along than the code, and
-nothing is published yet. The foundations — state model, token system,
-accessibility tooling — are the parts that are real.
+The first components are real, audited, and running: streaming markdown,
+reasoning disclosure, tool calls with receipts, suggestion chips with the
+ask/do split, feedback controls, citations & sources with aging, and
+version marker + restore — demonstrated in one persistent interface
+across three honest containers (a full-page app, a drawer over a host
+application, a phone). Nothing is on npm yet, deliberately: the bar for
+publishing is the same as the bar for everything else here.
 
 ## Packages
 
