@@ -19,7 +19,7 @@ import { createTriggerRegistry } from './runtime/triggers.js'
 import type { TriggerRegistry } from './runtime/triggers.js'
 import type { Scenario } from './runtime/scenario.js'
 import { builtInScenarios } from './scenarios/index.js'
-import type { ModelOption, ThreadState } from './types.js'
+import type { ModelOption, Suggestion, ThreadState } from './types.js'
 
 export * from './types.js'
 export * from './events.js'
@@ -43,6 +43,8 @@ export interface LucetOptions {
   contextLimit?: number
   /** The model options the thread offers. Defaults to the capability-named set. */
   models?: readonly ModelOption[]
+  /** Conversation starters, shown while the thread is empty. */
+  suggestions?: readonly Suggestion[]
   authorId?: string
   /** Replaces the built-in set. Pass [] for a registry you fill yourself. */
   scenarios?: readonly Scenario[]
@@ -80,6 +82,7 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     clock: options.clock ?? systemClock,
     ...(options.contextLimit === undefined ? {} : { contextLimit: options.contextLimit }),
     ...(options.models === undefined ? {} : { models: options.models }),
+    ...(options.suggestions === undefined ? {} : { suggestions: options.suggestions }),
   })
   const triggers = createTriggerRegistry(options.scenarios ?? builtInScenarios)
   const runtime = createMockRuntime({

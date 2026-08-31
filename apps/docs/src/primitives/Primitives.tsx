@@ -173,7 +173,7 @@ function Orb({
   time,
   size,
 }: {
-  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded' | 'down'
+  state: 'thinking' | 'searching' | 'composing' | 'blocked' | 'queued' | 'degraded' | 'down' | 'ready'
   label: string
   time?: string
   size?: 'sm' | 'lg'
@@ -185,7 +185,7 @@ function Orb({
           <circle className="orb__track" cx="12" cy="12" r="9" />
           <circle className="orb__arc" cx="12" cy="12" r="9" />
           {state === 'thinking' && <circle className="orb__arc orb__arc2" cx="12" cy="12" r="9" />}
-          {(state === 'thinking' || state === 'blocked') && (
+          {(state === 'thinking' || state === 'blocked' || state === 'ready') && (
             <circle className="orb__core" cx="12" cy="12" r="2.5" />
           )}
         </svg>
@@ -815,6 +815,7 @@ export function Primitives() {
 
           <Spec label="Not working — the half nobody builds">
             <div style={{ display: 'grid', gap: 12 }}>
+              <Orb state="ready" label="Ready when you are" />
               <Orb state="blocked" label="Waiting for your answer" />
               <Orb state="queued" label="Queued behind 2 runs" time="~40s" />
               <Orb state="degraded" label="Running on the fallback model" />

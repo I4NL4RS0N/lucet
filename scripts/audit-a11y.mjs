@@ -412,6 +412,8 @@ function collectComponents() {
     'thread ending': '.lucet-thread__ended',
     'thread ending word (failed)': '.lucet-thread__ended[data-status="failed"] strong',
     'thread readonly chip': '.lucet-att--readonly .lucet-att__name',
+    /* A suggestion chip: the content tier carrying a whole prompt. */
+    'suggestion chip': '.lucet-chips__chip:not(:disabled)',
     /* The reasoning disclosure: the row in both dresses, and the working. */
     'reasoning summary': 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary',
     'reasoning thinking word': 'details.lucet-reasoning[data-streaming] .lucet-reasoning__summary',
@@ -446,7 +448,7 @@ function collectComponents() {
     return best
   }
   for (const el of document.querySelectorAll(
-    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary, .lucet-tool__row--summary',
+    '.lucet-prompt__tool, .lucet-prompt__model select, .lucet-prompt__att-remove, .lucet-prompt .lucet-button:not([disabled]), .lucet-codeblock__copy, .lucet-reasoning__summary, .lucet-tool__row--summary, .lucet-chips__chip:not(:disabled)',
   )) {
     const r = el.getBoundingClientRect()
     if (!r.width || !r.height) continue

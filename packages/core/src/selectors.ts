@@ -44,6 +44,18 @@ export function submitBlocker(state: SubmitBlockerInput): SubmitBlocker | null {
  * libraries never write these strings at all, which is why their send buttons
  * go grey without explanation.
  */
+/**
+ * When the conversation starters show: an empty, idle thread — the cold
+ * start. The moment anything exists (a turn arriving, a scenario running)
+ * they leave; suggestions are a way IN, not furniture. Follow-up chips
+ * after a response are the Action Surface's territory, not this rule's.
+ */
+export function suggestionsVisible(
+  state: Pick<ThreadState, 'suggestions' | 'turns' | 'status'>,
+): boolean {
+  return state.suggestions.length > 0 && state.turns.length === 0 && state.status === 'idle'
+}
+
 export function describeSubmitBlocker(blocker: SubmitBlocker): string {
   switch (blocker) {
     case 'locked':

@@ -6,7 +6,7 @@ import type { Clock } from './clock.js'
 import { systemClock } from './clock.js'
 import type { LoggedEvent, LucetEvent } from './events.js'
 import { createInitialState, reduce } from './reducer.js'
-import type { ModelOption, ThreadState } from './types.js'
+import type { ModelOption, Suggestion, ThreadState } from './types.js'
 
 export type Listener = (state: ThreadState, event: LoggedEvent) => void
 
@@ -23,11 +23,12 @@ export interface StoreOptions {
   clock?: Clock
   contextLimit?: number
   models?: readonly ModelOption[]
+  suggestions?: readonly Suggestion[]
 }
 
 export function createStore(options: StoreOptions): Store {
   const clock = options.clock ?? systemClock
-  let state = createInitialState(options.id, options.contextLimit, options.models)
+  let state = createInitialState(options.id, options.contextLimit, options.models, options.suggestions)
   const log: LoggedEvent[] = []
   const listeners = new Set<Listener>()
   let seq = 0

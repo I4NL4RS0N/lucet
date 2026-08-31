@@ -270,18 +270,34 @@ body {
 }
 .cfg__scroll::-webkit-scrollbar-track { background: transparent; }
 
-/* The empty thread: words, not void. A v1 answer — the designed empty state
-   is an open design question owned by this page (see todo). */
+/* The cold start: the product's real first state, designed. The orb at rest
+   is the face, its label is the greeting, the chips are ways in. */
 .cfg__empty {
   display: grid;
   place-content: center;
-  gap: 4px;
+  justify-items: center;
+  gap: 10px;
   text-align: center;
   min-block-size: 300px;
+  padding-inline: 24px;
   color: var(--lucet-muted-foreground);
   font-size: 13px;
 }
-.cfg__empty strong { color: var(--lucet-subtle-foreground); font-weight: 500; }
+.cfg__empty .lucet-orb-row {
+  flex-direction: column;
+  gap: 14px;
+}
+.cfg__empty .lucet-orb-row__label {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--lucet-foreground);
+}
+.cfg__empty-sub { max-inline-size: 40ch; }
+.cfg__empty .lucet-chips {
+  margin-block-start: 8px;
+  max-inline-size: 420px;
+}
 
 .cfg__composer {
   padding: 12px 16px 16px;

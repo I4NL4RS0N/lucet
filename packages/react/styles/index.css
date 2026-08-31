@@ -1050,6 +1050,23 @@
   rotate: -90deg;
 }
 
+/* READY: at rest and present — the cold start's face. The full ring stands
+   quiet and the core breathes slowly: presence without urgency, the one
+   state waiting for no one and nothing. Takes the accent like the working
+   states; the welcome is a brand-forward moment too. */
+.lucet-orb[data-state='ready'] { color: var(--lucet-primary); }
+.lucet-orb[data-state='ready'] circle.lucet-orb__arc { display: none; }
+.lucet-orb[data-state='ready'] circle.lucet-orb__track {
+  stroke: color-mix(in oklab, currentColor 55%, transparent);
+}
+.lucet-orb[data-state='ready'] circle.lucet-orb__core {
+  animation: lucet-orb-breathe 3.6s ease-in-out infinite;
+}
+@keyframes lucet-orb-breathe {
+  0%, 100% { opacity: 0.55; scale: 0.9; }
+  50%      { opacity: 1;    scale: 1.05; }
+}
+
 /* BLOCKED ON YOU: nothing rotates, on purpose. A spinning mark next to
    "waiting for your answer" says the machine is busy when the person is the
    bottleneck. It breathes and holds still. */
@@ -1565,4 +1582,52 @@
 @media (prefers-reduced-motion: reduce) {
   .lucet-md__link { transition: none; }
   .lucet-codeblock__copy { transition: none; }
+}
+
+/* ============================================================
+ * Suggestion chips — prompts made visible, on the cold start. They wear
+ * the composer's CONTENT tier (the white raised chip, same as an
+ * attachment): a suggestion is content in waiting, not an ambient tool
+ * and not the primary action.
+ * ============================================================ */
+
+.lucet-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--lucet-space-2);
+}
+
+.lucet-chips__chip {
+  min-block-size: 30px;
+  max-inline-size: 100%;
+  padding: 4px 14px;
+  border: 0;
+  border-radius: 999px;
+  background-color: var(--lucet-secondary);
+  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
+  color: var(--lucet-secondary-foreground);
+  font: inherit;
+  font-size: var(--lucet-text-sm);
+  text-align: start;
+  cursor: pointer;
+  transition:
+    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
+    box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+/* Opaque at rest, so hover MIXES the ink over the fill rather than veiling. */
+.lucet-chips__chip:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix), var(--lucet-secondary));
+}
+.lucet-chips__chip:active:not(:disabled) {
+  background-color: color-mix(in oklab, black var(--lucet-press-mix), var(--lucet-secondary));
+}
+.lucet-chips__chip:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.lucet-chips__chip:disabled { opacity: 0.55; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lucet-chips__chip { transition: none; }
 }

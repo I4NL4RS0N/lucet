@@ -150,3 +150,29 @@ describe('submit blockers', () => {
     }
   })
 })
+
+describe('suggestions — the cold start', () => {
+  const chips = [
+    { id: 'a', prompt: 'Summarise the three documents I shared.' },
+    { id: 'b', prompt: 'Turn my notes into a short plan.' },
+  ]
+  const fresh = () => createInitialState('t', 200_000, defaultModels, chips)
+
+  it('shows on an empty, idle thread and nowhere else', async () => {
+    const { suggestionsVisible } = await import('./selectors.js')
+    const s = fresh()
+    expect(suggestionsVisible(s)).toBe(true)
+    expect(suggestionsVisible({ ...s, status: 'streaming' })).toBe(false)
+    const withTurn = play(
+      [{ type: 'turn/submitted', turnId: 't1', versionId: 'v1', messageId: 'm1', text: 'hi', authorId: 'you', attachmentIds: [] }],
+      s,
+    )
+    expect(suggestionsVisible(withTurn)).toBe(false)
+    expect(suggestionsVisible(createInitialState('t'))).toBe(false)
+  })
+
+  it('reset keeps the suggestions — the cold start returns whole', () => {
+    const s = play([{ type: 'composer/changed', text: 'draft' }, { type: 'thread/reset' }], fresh())
+    expect(s.suggestions).toEqual(chips)
+  })
+})

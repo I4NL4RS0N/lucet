@@ -24,6 +24,8 @@ export type ActivityOrbState =
   | 'queued'
   | 'degraded'
   | 'down'
+  /** At rest and present: the cold start's face. A slow breath, no urgency. */
+  | 'ready'
 
 export interface ActivityOrbProps {
   state: ActivityOrbState
@@ -47,7 +49,7 @@ export function ActivityOrb({ state, label, time, size }: ActivityOrbProps) {
           <circle className="lucet-orb__track" cx="12" cy="12" r="9" />
           <circle className="lucet-orb__arc" cx="12" cy="12" r="9" />
           {state === 'thinking' && <circle className="lucet-orb__arc lucet-orb__arc2" cx="12" cy="12" r="9" />}
-          {(state === 'thinking' || state === 'blocked') && (
+          {(state === 'thinking' || state === 'blocked' || state === 'ready') && (
             <circle className="lucet-orb__core" cx="12" cy="12" r="2.5" />
           )}
         </svg>

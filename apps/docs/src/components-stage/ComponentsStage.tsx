@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet'
 import type { LucetEvent, ThreadState } from 'lucet'
-import { PromptInput, Thread } from 'lucet-react'
+import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
 
 /**
  * The components stage. Private, never deployed — the primitives page's
@@ -507,7 +507,46 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section n="05" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
+        <Section n="05" name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
+          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+            <div className="spec" style={{ inlineSize: '100%' }}>
+              <span className="spec__label">Ways in</span>
+              <div style={{ maxInlineSize: 460 }}>
+                <SuggestionChips
+                  suggestions={[
+                    { id: 's1', prompt: 'Summarise the three documents I shared.' },
+                    { id: 's2', prompt: 'Turn my notes into a short plan.' },
+                    { id: 's3', prompt: 'Which of these two plans is more likely to slip?' },
+                  ]}
+                  onPick={noop}
+                />
+              </div>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>
+                The chip is the prompt — one field in the contract, so what it says is what sends.
+                They show on an empty, idle thread and leave the moment the conversation exists.
+              </p>
+            </div>
+            <div className="spec" style={{ inlineSize: '100%' }}>
+              <span className="spec__label">Locked — another person’s turn</span>
+              <div style={{ maxInlineSize: 460 }}>
+                <SuggestionChips
+                  suggestions={[
+                    { id: 's1', prompt: 'Summarise the three documents I shared.' },
+                    { id: 's2', prompt: 'Turn my notes into a short plan.' },
+                  ]}
+                  onPick={noop}
+                  disabled
+                />
+              </div>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>
+                The single-writer lock reaches the chips too: while it is someone else’s turn,
+                a way in that would fail is not offered as live.
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        <Section n="06" name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
           <div className="stage">
             <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
               <PromptInput

@@ -3,7 +3,7 @@
  */
 
 import type { LucetEvent } from './events.js'
-import type { Message, MessagePart, ModelOption, ThreadState, Turn } from './types.js'
+import type { Message, MessagePart, ModelOption, Suggestion, ThreadState, Turn } from './types.js'
 
 export interface ReducerContext {
   readonly now: number
@@ -28,9 +28,11 @@ export function createInitialState(
   id: string,
   contextLimit = 200_000,
   models: readonly ModelOption[] = defaultModels,
+  suggestions: readonly Suggestion[] = [],
 ): ThreadState {
   return {
     id,
+    suggestions,
     turns: [],
     status: 'idle',
     composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [] },
@@ -77,7 +79,12 @@ export function reduce(
 ): ThreadState {
   switch (event.type) {
     case 'thread/reset':
-      return createInitialState(state.id, state.usage.contextLimit, state.model.options)
+      return createInitialState(
+        state.id,
+        state.usage.contextLimit,
+        state.model.options,
+        state.suggestions,
+      )
 
     case 'composer/changed':
       return { ...state, composer: { ...state.composer, text: event.text } }

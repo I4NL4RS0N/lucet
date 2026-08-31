@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createLucet, describeEvent } from 'lucet'
+import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible } from 'lucet'
+import type { Suggestion } from 'lucet'
 import {
+  ActivityOrb,
   LucetProvider,
   PromptInput,
+  SuggestionChips,
   Thread,
   useEventLog,
   useLucet,
@@ -30,6 +33,16 @@ const ACCENTS = [
   'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'green', 'teal', 'cyan', 'amber',
 ] as const
+
+/*
+ * The cold start's chips, built FROM the scenarios they fire: id and prompt
+ * come straight off the scenario, so what a chip says is exactly what runs
+ * — honest by construction, never by discipline.
+ */
+const SUGGESTIONS: readonly Suggestion[] = [happyPath, formatted, reasoning].map((s) => ({
+  id: s.id,
+  prompt: s.prompt ?? '',
+}))
 
 type View = 'full' | 'drawer' | 'mobile'
 
@@ -105,7 +118,13 @@ function EventLog() {
 }
 
 /** The running app itself: thread above, composer below. Container-agnostic. */
-function AppCore({ onReset }: { onReset?: (() => void) | undefined }) {
+function AppCore({
+  onReset,
+  onSuggest,
+}: {
+  onReset?: (() => void) | undefined
+  onSuggest?: ((suggestion: Suggestion) => void) | undefined
+}) {
   const lucet = useLucet()
   const state = useThread()
   const attachCount = useRef(0)
@@ -138,9 +157,24 @@ function AppCore({ onReset }: { onReset?: (() => void) | undefined }) {
 
       <div className="cfg__scroll" ref={scrollRef}>
         {state.turns.length === 0 ? (
+          /*
+           * The cold start, designed: the product's real first state. The
+           * orb at rest is the face, its label is the greeting, and the
+           * chips are ways in. This is the "empty & cold start" entry from
+           * the unhappy-states list, living where every visitor lands.
+           */
           <div className="cfg__empty">
-            <strong>Nothing here yet.</strong>
-            <span>Write something below, or click a state on the right and watch it happen.</span>
+            <ActivityOrb state="ready" label="Ready when you are." size="lg" />
+            <span className="cfg__empty-sub">
+              Ask anything below, or start from one of these.
+            </span>
+            {suggestionsVisible(state) ? (
+              <SuggestionChips
+                suggestions={state.suggestions}
+                disabled={state.composer.locked}
+                onPick={(s) => onSuggest?.(s)}
+              />
+            ) : null}
           </div>
         ) : (
           <Thread state={state} selfId="you" />
@@ -217,7 +251,7 @@ function MockDocument() {
 }
 
 export function App() {
-  const lucet = useMemo(() => createLucet(), [])
+  const lucet = useMemo(() => createLucet({ suggestions: SUGGESTIONS }), [])
   const [view, setView] = useState<View>('full')
   const [themeState, setThemeState] = useState<ThemeState>({
     theme: 'system',
@@ -241,22 +275,18 @@ export function App() {
   }
 
   /*
-   * Deep link: land someone straight in a state, in context. And with no
-   * link at all, the FIRST state fires itself: the page must arrive alive —
-   * a prompt sending, a response streaming — because nothing orients a
-   * first visitor faster than watching the thing happen. The row it came
-   * from is marked in the rail, so the cause is findable. (A splash screen
-   * was considered and refused: a door in front of a working stage.)
+   * Deep link: land someone straight in a state, in context. With no link,
+   * the arrival is the COLD START — greeting, suggestion chips, a thread
+   * waiting to begin — because that is the product's real first state, and
+   * "empty & cold start" is on the unhappy-states list precisely because
+   * nobody designs it. (An auto-fired scenario held this slot for one
+   * afternoon; it skipped the very state a first visit should demonstrate.)
    */
   useEffect(() => {
     if (booted.current) return
     booted.current = true
     const linked = readStateParam()
     if (linked && lucet.triggers.get(linked)) fire(linked)
-    else {
-      const first = lucet.triggers.list()[0]
-      if (first) fire(first.id)
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lucet])
 
@@ -384,19 +414,37 @@ export function App() {
 
           {view === 'full' ? (
             <section className="cfg__frame" aria-label="The running app">
-              <AppCore onReset={() => setActive(null)} />
+              <AppCore
+                onReset={() => setActive(null)}
+                onSuggest={(s) => {
+                  writeStateParam(s.id)
+                  fire(s.id)
+                }}
+              />
             </section>
           ) : view === 'drawer' ? (
             <section className="cfg__mock" aria-label="The running app, as a drawer">
               <MockDocument />
               <div className="cfg__drawer">
-                <AppCore onReset={() => setActive(null)} />
+                <AppCore
+                onReset={() => setActive(null)}
+                onSuggest={(s) => {
+                  writeStateParam(s.id)
+                  fire(s.id)
+                }}
+              />
               </div>
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">
               <div className="cfg__phone">
-                <AppCore onReset={() => setActive(null)} />
+                <AppCore
+                onReset={() => setActive(null)}
+                onSuggest={(s) => {
+                  writeStateParam(s.id)
+                  fire(s.id)
+                }}
+              />
               </div>
             </section>
           )}

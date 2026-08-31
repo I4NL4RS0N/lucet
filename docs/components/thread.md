@@ -55,8 +55,9 @@ continuity — and all of it yields to `prefers-reduced-motion`.
 
 - **Message actions** (copy the whole response, retry, feedback) — the
   Feedback Controls item.
-- **The empty thread** — owned by the Configurator home, where it is the
-  first thing every visitor sees.
+
+(The empty thread is no longer missing: the cold start is designed on the
+Configurator home — see [suggestion-chips.md](suggestion-chips.md).)
 
 (The asides are all real now: [reasoning.md](reasoning.md) and
 [tool-call.md](tool-call.md) own their rows; the thread only decides where

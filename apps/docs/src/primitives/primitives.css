@@ -1446,6 +1446,19 @@ code, .code {
 .orb circle.orb__core { stroke: none; fill: currentColor; }
 
 /* Blocked draws no arc at all -- see the note on that state. */
+/* READY: at rest and present — the cold start's face. Full quiet ring,
+   slow-breathing core; the accent, because the welcome is brand-forward. */
+.orb[data-state='ready'] { color: var(--solid); }
+.orb[data-state='ready'] circle.orb__arc { display: none; }
+.orb[data-state='ready'] circle.orb__track {
+  stroke: color-mix(in oklab, currentColor 55%, transparent);
+}
+.orb[data-state='ready'] circle.orb__core { animation: orb-breathe 3.6s ease-in-out infinite; }
+@keyframes orb-breathe {
+  0%, 100% { opacity: 0.55; scale: 0.9; }
+  50%      { opacity: 1;    scale: 1.05; }
+}
+
 .orb[data-state='blocked'] circle.orb__arc { display: none; }
 
 /* ---- working: the agent is doing something ---- */

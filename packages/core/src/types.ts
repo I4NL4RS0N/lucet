@@ -188,8 +188,23 @@ export interface UsageState {
   readonly projectedCostUsd: number | null
 }
 
+/**
+ * A suggestion is a PROMPT MADE VISIBLE — one field on purpose. A chip whose
+ * label differs from what it sends is a small lie at the exact moment trust
+ * is being established; here what you click is what sends, verbatim. (The
+ * agentic kind — chips that DO things — arrives with the Action Surface,
+ * where the two are visually separated because flattening them trains
+ * people to tap without reading.)
+ */
+export interface Suggestion {
+  readonly id: string
+  readonly prompt: string
+}
+
 export interface ThreadState {
   readonly id: string
+  /** Host-supplied conversation starters, shown while the thread is empty. */
+  readonly suggestions: readonly Suggestion[]
   readonly turns: readonly Turn[]
   readonly status: RuntimeStatus
   readonly composer: ComposerState
