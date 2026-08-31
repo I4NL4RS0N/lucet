@@ -152,10 +152,11 @@ body {
 
 .prim__title {
   text-wrap: balance;
-  font-size: 30px;
-  line-height: 1.15;
+  font-family: var(--cfg-display-font, inherit);
+  font-size: 36px;
+  line-height: 1.1;
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   margin: 0 0 10px;
 }
 

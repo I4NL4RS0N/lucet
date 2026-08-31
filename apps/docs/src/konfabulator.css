@@ -1502,3 +1502,39 @@ body {
   .cfg__scroll { animation: none; }
   .cfg__rail { animation: none; }
 }
+
+/* ============================================================
+ * THE COLD START ARRIVES. One orchestrated entrance on the empty home —
+ * the state the suggestion chips exist to design — and nowhere else:
+ * the atmosphere breathes in, the greeting rises, the composer follows,
+ * the chips land last. Four beats, ~600ms, then stillness; every other
+ * motion on the page is in-flow (streaming, orbs, the tick). Returning
+ * home via New thread replays it, because that IS the cold start again.
+ * ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  .cfg__empty:has(.cfg__composer--center) .cfg__atmo {
+    animation: cfg-breathe-in 640ms var(--lucet-ease-out) both;
+  }
+  .cfg__empty:has(.cfg__composer--center) .cfg__empty-mark,
+  .cfg__empty:has(.cfg__composer--center) .cfg__empty-hello,
+  .cfg__empty:has(.cfg__composer--center) .cfg__empty-sub {
+    animation: cfg-rise 360ms var(--lucet-ease-out) 60ms both;
+  }
+  .cfg__empty:has(.cfg__composer--center) .cfg__composer--center {
+    animation: cfg-rise 360ms var(--lucet-ease-out) 150ms both;
+  }
+  .cfg__empty:has(.cfg__composer--center) .lucet-chips {
+    animation: cfg-rise 360ms var(--lucet-ease-out) 240ms both;
+  }
+}
+@keyframes cfg-rise {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+@keyframes cfg-breathe-in {
+  from {
+    opacity: 0;
+  }
+}

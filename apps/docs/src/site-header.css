@@ -43,7 +43,18 @@
     0 1px 1px oklch(0 0 0 / 0.35),
     0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
-.cfg__name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+/* The docs chrome's display voice: Instrument Sans, loaded eagerly by
+   every shell. The components and the mock app stay on the visitor's
+   chosen body face — the chrome having a voice of its own is exactly
+   what keeps it from borrowing the specimens'. */
+:root { --cfg-display-font: 'Instrument Sans', 'Inter', ui-sans-serif, system-ui, sans-serif; }
+
+.cfg__name {
+  font-family: var(--cfg-display-font);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
 
 /* Site navigation: the header's right half. */
 .cfg__nav {
