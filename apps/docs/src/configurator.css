@@ -820,6 +820,13 @@ body {
   max-inline-size: 620px;
   margin-block-start: 14px;
 }
+/* The centre seat grows DOWN through the welcome, so it gets a lower
+   ceiling than the floor composer's 12em: four lines, then the field
+   scrolls inside itself — a long draft must never shove the menu off
+   the stage (Ian broke it; the cap unbreaks it). */
+.cfg__composer--center .lucet-prompt__field {
+  max-block-size: 6.4em;
+}
 
 /* ---- the rail: plain words that do things ---- */
 
