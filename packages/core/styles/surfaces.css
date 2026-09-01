@@ -30,7 +30,11 @@
   --lucet-surface-ground: oklch(1 0 0);
   --lucet-surface-raised: var(--lucet-neutral-0);
   --lucet-surface-overlay: var(--lucet-neutral-0);
-  --lucet-surface-sunken: var(--lucet-neutral-50);
+  /* A well must READ as a well. neutral-50 sat 1.5% off white — the
+     sidebar and every other recess vanished into the ground, and light
+     lost its layering while dark kept four distinct steps. One real
+     step down; the one-white-ground law is about the GROUND. */
+  --lucet-surface-sunken: var(--lucet-neutral-100);
   /* Half a step past neutral-200, with the neutral hue leaning in a touch
      harder: light's hairlines at 0.922 were nearly subliminal, and a page
      whose every line whispers reads sterile rather than calm (Ian's crit,

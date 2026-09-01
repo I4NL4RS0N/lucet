@@ -655,13 +655,16 @@ body {
   mask-image: linear-gradient(to bottom, black 45%, transparent 82%);
   /* The room fades up before the words arrive — light first. */
   animation: cfg-atmo-in 1400ms var(--lucet-ease-out) backwards;
-  /* Silk intensity is a THEME decision: over white a whisper is plenty,
-     but over the dark ground the same mix is a smudge — 006's band is
-     luminous, with a near-white core. Light keeps the core off. */
-  --cfg-silk-1: 26%;
-  --cfg-silk-2: 16%;
-  --cfg-silk-3: 12%;
-  --cfg-silk-core: 0%;
+  /* Silk intensity is a THEME decision — but "over white a whisper is
+     plenty" turned out to read as a printing artifact, not weather
+     (Ian's light-mode crit). Light now commits to the bloom: stronger
+     bands, and the core ON — the core mixes white into the primary, so
+     over a white ground it is a coloured heart, where dark's is a
+     bright one. */
+  --cfg-silk-1: 42%;
+  --cfg-silk-2: 26%;
+  --cfg-silk-3: 18%;
+  --cfg-silk-core: 55%;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) .cfg__atmo {
@@ -1559,4 +1562,33 @@ body {
   .cfg__empty { padding-inline: 0; }
   .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 14px; }
   .cfg__composer--center { margin-block-start: 8px; }
+}
+
+/* ============================================================
+ * THE STAGE LIFTS IN LIGHT. One white ground is the law — elevation is
+ * carried by ring and shadow, not by value — but the library's felt
+ * shadows are tuned for cards, and at window scale they read subliminal:
+ * frame, sidebar, and page sat at nearly the same value and the layering
+ * vanished (Ian's light crit). The host spends a deeper cast on its one
+ * big prop; dark keeps its own depth story untouched.
+ * ============================================================ */
+:root[data-theme='light'] .cfg__frame,
+:root[data-theme='light'] .cfg__mock,
+:root[data-theme='light'] .cfg__phone {
+  box-shadow:
+    var(--lucet-hairline-overlay),
+    0 1px 2px oklch(0 0 0 / 0.05),
+    0 10px 24px -12px oklch(0 0 0 / 0.14),
+    0 28px 56px -28px oklch(0 0 0 / 0.16);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) .cfg__frame,
+  :root:not([data-theme='dark']) .cfg__mock,
+  :root:not([data-theme='dark']) .cfg__phone {
+    box-shadow:
+      var(--lucet-hairline-overlay),
+      0 1px 2px oklch(0 0 0 / 0.05),
+      0 10px 24px -12px oklch(0 0 0 / 0.14),
+      0 28px 56px -28px oklch(0 0 0 / 0.16);
+  }
 }
