@@ -49,6 +49,11 @@ the principles, without the private positioning material. It is committed.
 
 Repeated here because they are easy to violate by reflex:
 
+- **Names are identity** — package names, the library name, public URLs. When
+  an instruction names something and you believe the name will fail, STOP and
+  surface the belief with its evidence. Never substitute a different name. A
+  blocked task with a stated reason is a good outcome; a shipped workaround is
+  not.
 - **No Tailwind dependency, anywhere.** Vanilla CSS with custom properties; token
   names map onto shadcn's CSS variable names.
 - **Not Storybook.** The docs site is one running interface with injected states,
