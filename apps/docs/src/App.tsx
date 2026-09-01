@@ -312,9 +312,14 @@ function AppCore({
   onSuggest,
   aside,
   chrome = 'window',
+  narration = 'live',
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
+  /** 'history' while the scripted opening plays: narration follows
+      initiation (the announcer's law) — the log fills silently and goes
+      live when the playback ends. */
+  narration?: 'live' | 'history'
   /* Each container wears its own head — a window has dots and the app's
      name; a container that brings its OWN chrome (the drawer's head, the
      phone's nav) takes `bare`. The thread never changes either way. */
@@ -465,6 +470,7 @@ function AppCore({
               </div>
             ) : (
               <Thread
+                narration={narration}
                 state={state}
                 selfId="you"
                 onRetry={(turnId) => void lucet.retry(turnId)}
@@ -807,6 +813,11 @@ export function App() {
      themselves when playback ends or is interrupted, and a strict-mode
      cleanup would strip them from the one live player. */
   const playbackStarted = useRef(false)
+  /* Mirrors the player: 'history' narration while it runs, 'live' the
+     moment it ends or is interrupted. Automation, reduced motion, and
+     repeat visits never enter playback, so they are 'live' from the
+     first frame. */
+  const [playing, setPlaying] = useState(playbackWanted)
   useEffect(() => {
     if (!playbackWanted || playbackStarted.current) return
     playbackStarted.current = true
@@ -824,6 +835,7 @@ export function App() {
     const finish = () => {
       if (done) return
       done = true
+      setPlaying(false)
       /* Fast-forward, never skip: the remaining events land as-is, so
          the resting state is exactly the seeded one. */
       for (let i = cursor + (inFlight ? 1 : 0); i < OPENER_EVENTS.length; i++) {
@@ -898,6 +910,7 @@ export function App() {
         else if (e.type === 'part/added' && e.part.kind === 'sources') await sleep(300)
       }
       done = true
+      setPlaying(false)
       cleanup()
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1120,6 +1133,7 @@ export function App() {
               aria-label="The running app"
             >
               <AppCore
+                narration={playing ? 'history' : 'live'}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)
@@ -1434,6 +1448,7 @@ export function App() {
                     </div>
                     {drawerPane === 'thread' ? (
                       <AppCore
+                        narration={playing ? 'history' : 'live'}
                         chrome="bare"
                                 onSuggest={(s) => {
                           writeStateParam(s.id)
@@ -1472,6 +1487,7 @@ export function App() {
                 />
                 {phonePane === 'thread' ? (
                   <AppCore
+                    narration={playing ? 'history' : 'live'}
                     chrome="bare"
                     onSuggest={(s) => {
                       writeStateParam(s.id)

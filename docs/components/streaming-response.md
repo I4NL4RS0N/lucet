@@ -63,6 +63,21 @@ inside the thread receives announcement *units* instead:
   table announces its header, then each row as the row completes;
 - headings announce whole, once their line ends, as "Heading: …".
 
+**Narration follows initiation.** The log narrates answers the person
+is waiting on. A stream the host scripted on its own — the
+Konfabulator's opening playback, any onboarding replay — is content
+arriving, not an answer arriving, and narrating it unprompted is the
+aural sibling of autoplay video. The escape hatch is also weaker than
+it looks: interrupt-on-any-key cannot be counted on in screen-reader
+browse mode, where virtual-cursor keys never reach the page. So
+`Thread` takes `narration="history"` for host-scripted streams: the
+log still fills — every unit present, readable at leisure — but
+carries no live role until the host flips it back, and a live region
+speaks only mutations, never its backlog, so going live announces
+nothing retroactively. Every user-initiated stream after that point
+narrates normally. (Reduced-motion users skip the playback entirely
+and are live from the first frame, as is all automation.)
+
 The unit plan is a pure core function with one tested invariant: **the plan
 for a prefix is a prefix of the plan.** Units never change and never reorder
 once emitted, so the renderer is a counter and a slice — no timers, no

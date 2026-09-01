@@ -45,6 +45,10 @@ export interface ThreadProps {
   onRestoreCommit?: ((turnId: string) => void) | undefined
   /** Return to latest (restore/exited); the banner's escape hatch. */
   onExitRestore?: (() => void) | undefined
+  /** 'history' holds the announcer's live role while a HOST-SCRIPTED
+      stream plays (narration follows initiation — see
+      ResponseAnnouncer); default 'live'. */
+  narration?: 'live' | 'history' | undefined
   state: ThreadState
   /** Matched against message authorIds; your own turns are labelled You. */
   selfId?: string | undefined
@@ -217,8 +221,24 @@ function MessageView({
  * rather than spelled ("Code, ts, 8 lines"). The plan's prefix invariant
  * (see packages/core/src/announce.ts) is what lets this be a counter and a
  * slice, with no timers: units only ever append.
+ *
+ * NARRATION FOLLOWS INITIATION. The log narrates answers the person is
+ * waiting on; a stream the host scripted on its own (a demo playback,
+ * an onboarding replay) is content arriving, not an answer arriving —
+ * and the interrupt-any-key escape cannot be counted on in
+ * screen-reader browse mode, where virtual-cursor keys never reach the
+ * page. So the host may set narration="history": the log still fills,
+ * readable at leisure, but carries no live role until the host flips
+ * it back — at which point only NEW units announce, because a live
+ * region speaks mutations, never its backlog.
  */
-function ResponseAnnouncer({ state }: { state: ThreadState }) {
+function ResponseAnnouncer({
+  state,
+  narration = 'live',
+}: {
+  state: ThreadState
+  narration?: 'live' | 'history'
+}) {
   const [units, setUnits] = useState<readonly string[]>([])
   const seen = useRef({ messageId: '', count: 0 })
 
@@ -255,7 +275,11 @@ function ResponseAnnouncer({ state }: { state: ThreadState }) {
   }, [state])
 
   return (
-    <div className="lucet-visually-hidden" role="log" aria-label="The response, as it arrives">
+    <div
+      className="lucet-visually-hidden"
+      role={narration === 'live' ? 'log' : undefined}
+      aria-label={narration === 'live' ? 'The response, as it arrives' : undefined}
+    >
       {units.map((unit, i) => (
         <p key={i}>{unit}</p>
       ))}
@@ -271,6 +295,7 @@ export function Thread({
   onRestore,
   onRestoreCommit,
   onExitRestore,
+  narration,
 }: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
   const sectionRef = useRef<HTMLElement | null>(null)
@@ -467,7 +492,7 @@ export function Thread({
           </article>
         )
       })}
-      <ResponseAnnouncer state={state} />
+      <ResponseAnnouncer state={state} narration={narration ?? 'live'} />
     </section>
   )
 }
