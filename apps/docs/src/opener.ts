@@ -13,6 +13,31 @@ import type { LucetEvent } from 'lucet'
    was a false claim, and the fix that keeps it true is opening BOTH
    on the same moment rather than maintaining a second scenario. */
 export const OPENER_EVENTS: readonly LucetEvent[] = [
+  /* The exchange BEFORE the one on show: mostly scrolled out at open,
+     the tail of its answer visible above the current user message. A
+     thread that claims to be mid-conversation and shows exactly one
+     exchange is a splash screen with extra steps; this one gives the
+     scroll region something honest to hold and the claim a witness. */
+  {
+    type: 'turn/submitted',
+    turnId: 't_prev',
+    versionId: 'v_prev',
+    messageId: 'pm_prev',
+    text: 'Which of the documents changed since last week?',
+    authorId: 'you',
+    attachmentIds: [],
+    retryOf: null,
+  },
+  { type: 'response/started', turnId: 't_prev', messageId: 'rm_prev' },
+  { type: 'part/added', messageId: 'rm_prev', part: { kind: 'text', id: 'rm_prev_x', text: '' } },
+  {
+    type: 'part/delta',
+    messageId: 'rm_prev',
+    partId: 'rm_prev_x',
+    delta:
+      'Two of the three. The vendor review picked up a revised delivery table on Friday — the procurement dates moved out by a week. The internal note added a paragraph on scope late Monday. The Q3 revision has not changed since it was filed; if you want, I can re-check all three against their sources before you circulate anything.',
+  },
+  { type: 'response/settled', messageId: 'rm_prev', status: 'complete', reason: null },
   {
     type: 'turn/submitted',
     turnId: 't_open',
