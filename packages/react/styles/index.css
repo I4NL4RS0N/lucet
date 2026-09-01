@@ -1952,6 +1952,15 @@
   margin-block-start: var(--lucet-space-3);
   padding-block-start: var(--lucet-space-3);
   border-block-start: 1px solid var(--lucet-border);
+  /* ONE TRUNCATION RULE for the whole block (review: three behaviors
+     in two rows at drawer width). The rule, by role: the TITLE never
+     wraps — it ellipsizes; the PATH is the first casualty, dropped
+     WHOLE below the width where it would ellipsize into noise
+     ("Plans / Qua…"); the FRESHNESS flag moves to its own line under
+     the title when the row cannot hold it inline, clock and words
+     staying together. Container queries, so the grammar follows the
+     block into any host column rather than reading the viewport. */
+  container-type: inline-size;
 }
 .lucet-sources__label {
   font-size: 10.5px;
@@ -2021,6 +2030,7 @@
   align-items: baseline;
   gap: 8px;
   min-inline-size: 0;
+  flex: 1;
 }
 /* The locator: pages, rows returned — the words of the receipt below. */
 .lucet-sources__where {
@@ -2028,7 +2038,13 @@
   color: var(--lucet-subtle-foreground);
   white-space: nowrap;
 }
-.lucet-sources__title { color: var(--lucet-subtle-foreground); }
+.lucet-sources__title {
+  color: var(--lucet-subtle-foreground);
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .lucet-sources__loc {
   font-size: var(--lucet-text-xs, 11.5px);
   color: var(--lucet-muted-foreground);
@@ -2043,6 +2059,21 @@
   gap: 6px;
   margin-inline-start: auto;
   font-size: var(--lucet-text-xs, 11.5px);
+  white-space: nowrap;
+}
+/* The grammar's two thresholds. Below 500: the path goes, whole. */
+@container (max-width: 500px) {
+  .lucet-sources__loc { display: none; }
+}
+/* Below 400: the flag takes its own line, aligned under the title
+   (chevron + glyph + gaps put the text column 38px in). */
+@container (max-width: 400px) {
+  .lucet-sources__row { flex-wrap: wrap; row-gap: 0; }
+  .lucet-sources__flag {
+    flex-basis: 100%;
+    margin-inline-start: 0;
+    padding-inline-start: 38px;
+  }
 }
 .lucet-sources__flag-glyph {
   flex: none;
