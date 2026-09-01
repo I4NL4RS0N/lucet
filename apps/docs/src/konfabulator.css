@@ -1743,13 +1743,22 @@ body {
   .cfg__layout { --cfg-chrome: 265px; }
 }
 
-/* Expressive took the floor's hairline with every other border, and the
-   composer read as part of the message. SUBSTITUTE, don't delete: in
-   the space-and-light strategy the deck separates by TINT — one step
-   into the well — with the region's own air doing the rest. */
-[data-expression='glass'] .cfg__floor {
-  background-color: var(--lucet-surface-sunken);
+/* The rest-only divider rule (see measureTail in App.tsx): when the
+   thread opens with no room for a legible tail line, the pair divider
+   above the current exchange does not paint — transparent, never
+   zero-width, so nothing moves. */
+.cfg__scroll[data-tail-sliver] .lucet-thread__pair + .lucet-thread__pair {
+  border-block-start-color: transparent;
 }
+
+/* NO GLASS FLOOR TINT — deliberately absent (close-out review). The
+   sunken-tint substitute for Paper's floor hairline drew a horizontal
+   value edge across the frame: a line, in the expression that forbids
+   lines. The floor sits at the card value, one plane with the thread,
+   and the RAISED COMPOSER alone separates the deck. If the deck ever
+   feels under-defined, the fix is the composer's elevation, never a
+   tint on the region around it. Paper keeps its floor hairline — that
+   is its grammar. */
 
 /* The drawer genuinely floats over the host page: in Glass it carries
    the sanctioned translucency and the FULL overlay material — lit top
@@ -1757,11 +1766,13 @@ body {
    the host page it covers. This is where the material argument is most
    defensible: the panel is over the page, so it looks like it. */
 [data-expression='glass'] .cfg__drawer {
-  /* 74%, not the panels' 86%: the drawer is the one surface with real
+  /* 81%, not the panels' 86%: the drawer is the one surface with real
      content behind it, and at 88% it was indistinguishable from opaque
-     — translucency claimed, never witnessed. The heavier blur keeps
-     what ghosts through as colour, never as legible text. */
-  background-color: color-mix(in oklab, var(--lucet-popover) 74%, transparent);
+     — translucency claimed, never witnessed. 81 is the highest mix at
+     which the witness (the chart and callout crossing the edge) still
+     reads in both themes; the heavier blur keeps what ghosts through
+     as colour, never as legible text. */
+  background-color: color-mix(in oklab, var(--lucet-popover) 81%, transparent);
   -webkit-backdrop-filter: blur(26px);
   backdrop-filter: blur(26px);
   box-shadow: var(--lucet-material-overlay);
