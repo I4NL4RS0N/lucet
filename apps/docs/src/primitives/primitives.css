@@ -2218,3 +2218,14 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
    systematic grid is the point, the dead air between rows was not. */
 .prim--ref .sec { margin-block-start: 56px; }
 .prim--ref .stage { padding: calc(28px * var(--lucet-density, 1)); }
+
+/* The trios are the page's controlled full-width moments (§5): three
+   sources columns at the 1140 grid gave each cell 313px, under the
+   truncation grammar's ~354px floor (the mobile width it is proven
+   at) — the row's own min-content squeezed 39px past the block. The
+   breakout buys every trio cell ~388px at desktop and clamps to the
+   viewport below it; the column collapse breakpoints still apply. */
+.prim--comp .stage--trio {
+  inline-size: min(1300px, calc(100vw - 64px));
+  margin-inline-start: calc((100% - min(1300px, 100vw - 64px)) / 2);
+}
