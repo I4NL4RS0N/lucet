@@ -40,6 +40,10 @@ body {
 /* ---- shell ---- */
 
 .cfg__layout {
+  /* ONE ceiling for the page's two objects: the frame and the rail cap
+     at the same height, so both columns end on the same line and the
+     composition settles instead of trailing off at unrelated depths. */
+  --cfg-stage-h: min(72vh, 760px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 36px;
@@ -82,7 +86,7 @@ body {
 .cfg__frame {
   display: flex;
   flex-direction: column;
-  block-size: min(72vh, 760px);
+  block-size: var(--cfg-stage-h, min(72vh, 760px));
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
@@ -622,11 +626,14 @@ body {
 .cfg__empty:has(.cfg__composer--center) .cfg__empty-gap { flex: 0 0 0; }
 .cfg__empty:has(.cfg__composer--center)::after {
   content: '';
-  flex: 1.7 1 0;
+  /* Eased from 1.7: at full frame height the old floor left ~200px of
+     void under the chips — the hero sat high, the content stopped
+     early, and the rest was nothing. Unhurried still, empty no more. */
+  flex: 1 1 0;
 }
 /* The home rides HIGHER still: its words start at the light's peak, not
    below it, and the extra floor is what makes the page feel unhurried. */
-.cfg__empty:has(.cfg__composer--center)::before { flex: 0.6 1 0; }
+.cfg__empty:has(.cfg__composer--center)::before { flex: 0.75 1 0; }
 /*
  * The atmosphere. Round one put the vibe in a hero orb; it read as a
  * low-budget object (Ian). Round two follows the lithos studies — silk
@@ -860,7 +867,10 @@ body {
 .cfg__rail {
   position: sticky;
   top: 24px;
-  max-block-size: calc(100vh - 48px);
+  /* Bottoms align: the rail and the frame carry the same 44px head
+     start in their columns, so equal caps end them on one line. The
+     rail's scroll and bottom fade carry whatever doesn't fit. */
+  max-block-size: min(var(--cfg-stage-h, 100vh), calc(100vh - 48px));
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-inline-end: 6px;
@@ -1591,4 +1601,19 @@ body {
       0 10px 24px -12px oklch(0 0 0 / 0.14),
       0 28px 56px -28px oklch(0 0 0 / 0.16);
   }
+}
+
+/* The full-page hero at hero scale. Container-scoped, not viewport-
+   scoped: the drawer and phone keep the smaller greeting that suits
+   their frames. */
+.cfg__frame .cfg__empty-hello {
+  font-size: 30px;
+  letter-spacing: -0.025em;
+}
+.cfg__frame .cfg__empty-sub {
+  font-size: 15px;
+}
+@media (max-width: 480px) {
+  .cfg__frame .cfg__empty-hello { font-size: 24px; }
+  .cfg__frame .cfg__empty-sub { font-size: 14px; }
 }
