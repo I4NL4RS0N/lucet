@@ -934,8 +934,18 @@ export function App() {
             <AppearancePrefs state={themeState} onChange={setThemeState} />
           </div>
 
+          {/* THE EXHIBIT WEARS THE AXIS; THE CHROME DOES NOT (decision,
+              2026-09-01): the docs page around the stage pins to Paper — a
+              constant instrument reading — and data-expression rides on
+              the app containers themselves. This also demonstrates the
+              axis as it ships: scoped to a subtree, the way a host
+              product would adopt it, not a whole-page mode. */}
           {view === 'full' ? (
-            <section className="cfg__frame cfg__frame--app" aria-label="The running app">
+            <section
+              className="cfg__frame cfg__frame--app"
+              data-expression={themeState.expression}
+              aria-label="The running app"
+            >
               <AppCore
                 onSuggest={(s) => {
                   writeStateParam(s.id)
@@ -1064,6 +1074,7 @@ export function App() {
             <section
               className="cfg__mock"
               data-drawer-mode={drawerMode}
+              data-expression={themeState.expression}
               aria-label="The running app, as a drawer"
             >
               {/* The host application's own chrome. The brand is REAL but
@@ -1268,7 +1279,7 @@ export function App() {
             </section>
           ) : (
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">
-              <div className="cfg__phone">
+              <div className="cfg__phone" data-expression={themeState.expression}>
                 <div className="cfg__phone-status" aria-hidden>
                   {/* Any time but Apple's 9:41 — the demo-time that reads as borrowed. */}
                   <span>10:24</span>

@@ -101,7 +101,11 @@ export function useApplyTheme({
     ;(window as { lucetThemeColor?: (theme: string) => void }).lucetThemeColor?.(theme)
     root.setAttribute('data-accent', accent)
     root.setAttribute('data-neutral', neutral)
-    root.setAttribute('data-expression', expression)
+    /* Expression is NOT stamped on the root: the docs chrome pins to
+       Paper, and each page stamps data-expression on its exhibits (the
+       Konfabulator's app containers; the labs' page root). The library
+       reads the attribute from any subtree root. */
+    root.removeAttribute('data-expression')
     if (radius === 'default') root.removeAttribute('data-radius')
     else root.setAttribute('data-radius', radius)
     root.setAttribute('data-scale', scale)

@@ -322,3 +322,33 @@
   --lucet-default-danger-solid-hover: oklch(0.48 0.19 22);
   --lucet-default-danger-solid-foreground: var(--lucet-neutral-0);
 }
+
+/*
+ * SCOPED EXPRESSION RE-DERIVATION. data-expression works on any subtree
+ * root, not only <html> — the Konfabulator pins its chrome to Paper and
+ * stamps the app containers, and a host product can do the same. But a
+ * custom property RESOLVES where it is declared: the bridge above
+ * computes --lucet-border on :root from :root's Paper values, and the
+ * already-resolved result inherits straight past a glass container's
+ * own tokens. (Found as a border divider reappearing inside a glass
+ * frame while every box-shadow hairline was correctly gone.)
+ *
+ * So the five chains whose formulas pass through expression-varying
+ * tokens — surface levels and the line — are re-derived at every
+ * expression scope. Formulas identical to the ones above, theme carried
+ * by the surface tokens themselves; on a page that stamps :root this
+ * block re-declares the same values and changes nothing.
+ */
+[data-expression] {
+  --lucet-default-background: var(--lucet-surface-ground);
+  --lucet-default-card: var(--lucet-surface-raised);
+  --lucet-default-popover: var(--lucet-surface-overlay);
+  --lucet-default-border: var(--lucet-line);
+  --lucet-default-input: color-mix(in oklab, var(--lucet-line), var(--lucet-foreground) 20%);
+
+  --lucet-background: var(--background, var(--lucet-default-background));
+  --lucet-card: var(--card, var(--lucet-default-card));
+  --lucet-popover: var(--popover, var(--lucet-default-popover));
+  --lucet-border: var(--border, var(--lucet-default-border));
+  --lucet-input: var(--input, var(--lucet-default-input));
+}

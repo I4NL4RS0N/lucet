@@ -708,7 +708,10 @@ export function ComponentsStage() {
   const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'monochrome' })
 
   return (
-    <div className="prim">
+    /* The lab rides the axis whole: its stage wells are part of the
+       specimen presentation. (The Konfabulator pins its chrome instead —
+       see App.tsx.) */
+    <div className="prim" data-expression={appearance.expression}>
       <SiteHeader page="components" />
 
       <main className="prim__main">

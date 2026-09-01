@@ -12,9 +12,10 @@
   root.setAttribute('data-theme', a.theme || 'dark')
   root.setAttribute('data-accent', a.accent || accent)
   root.setAttribute('data-neutral', a.neutral || 'accent')
-  // Material axis (renamed 2026-09-01): legacy stored values map across.
-  var expr = a.expression === 'expressive' ? 'glass' : a.expression === 'system' ? 'paper' : a.expression
-  if (expr === 'glass') root.setAttribute('data-expression', expr)
+  // The material axis is NOT stamped on the root: the docs chrome pins
+  // to Paper, and React stamps data-expression on the exhibits. Nothing
+  // expression-scoped paints before React, so there is no flash to beat.
+  // (ThemeControls still migrates legacy stored values on load.)
   if (a.radius && a.radius !== 'default') root.setAttribute('data-radius', a.radius)
   root.setAttribute('data-scale', a.scale || '100')
   root.setAttribute('data-typeface', a.typeface || 'inter')

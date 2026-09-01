@@ -1699,7 +1699,7 @@ body {
    composer read as part of the message. SUBSTITUTE, don't delete: in
    the space-and-light strategy the deck separates by TINT — one step
    into the well — with the region's own air doing the rest. */
-:root[data-expression='glass'] .cfg__floor {
+[data-expression='glass'] .cfg__floor {
   background-color: var(--lucet-surface-sunken);
 }
 
@@ -1708,7 +1708,7 @@ body {
    edge, rim, deep cast shadow — at the overlay tint, one step above
    the host page it covers. This is where the material argument is most
    defensible: the panel is over the page, so it looks like it. */
-:root[data-expression='glass'] .cfg__drawer {
+[data-expression='glass'] .cfg__drawer {
   background-color: color-mix(in oklab, var(--lucet-popover) 88%, transparent);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);

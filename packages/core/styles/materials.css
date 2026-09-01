@@ -81,7 +81,7 @@
 
 /* ---------- light + paper ---------- */
 :root,
-:root[data-expression='paper'] {
+[data-expression='paper'] {
   --lucet-edge-top: inset 0 0 0 0 transparent;
   --lucet-edge-bottom: inset 0 0 0 0 transparent;
   --lucet-hairline: 0 0 0 1px var(--lucet-border);
@@ -161,7 +161,7 @@
  * ============================================================ */
 
 /* ---------- light + glass ---------- */
-:root[data-expression='glass'] {
+[data-expression='glass'] {
   /* Strong, because in light mode the lit edge is the whole effect. */
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.9);
   /*
@@ -223,8 +223,9 @@
 /* ---------- dark + glass ---------- */
 /* @paired-begin dark-glass-media */
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) [data-expression='glass'],
   :root[data-expression='glass']:not([data-theme='light']) {
-    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.2);
+    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.28);
     --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
     /* NO LINES AT ALL: space and light do the separating (see the light
        block). The lit edge-top survives - it is light, not a line - and
@@ -232,8 +233,8 @@
        PRIMARY depth cue: shadow barely reads on a dark ground, so the
        lit top edge and rim do what the shade stack does in light. */
     --lucet-hairline: 0 0 0 0 transparent;
-    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.06);
-    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.09);
+    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.11);
+    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
     --lucet-default-border: transparent;
     --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
     --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
@@ -263,8 +264,9 @@
 /* @paired-end dark-glass-media */
 
 /* @paired-begin dark-glass-attr */
+:root[data-theme='dark'] [data-expression='glass'],
 :root[data-theme='dark'][data-expression='glass'] {
-  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.2);
+  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.28);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
   /* NO LINES AT ALL: space and light do the separating (see the light
      block). The lit edge-top survives - it is light, not a line - and
@@ -272,8 +274,8 @@
      PRIMARY depth cue: shadow barely reads on a dark ground, so the
      lit top edge and rim do what the shade stack does in light. */
   --lucet-hairline: 0 0 0 0 transparent;
-  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.06);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.09);
+  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.11);
+  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
   --lucet-default-border: transparent;
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
   --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);

@@ -426,7 +426,7 @@
  * part that would date it fastest if it were everywhere.
  * ============================================================ */
 
-:root[data-expression='glass'] .lucet-button[data-variant='primary'] {
+[data-expression='glass'] .lucet-button[data-variant='primary'] {
   /*
    * The ramp modulates the fill's own lightness and never overlays white,
    * because a white wash across the face lightens the surface under the label
@@ -439,14 +439,14 @@
   );
   border-color: transparent;
 }
-:root[data-expression='glass'] .lucet-button[data-variant='secondary'] {
+[data-expression='glass'] .lucet-button[data-variant='secondary'] {
   /* Transparent, never zero-width: Glass removes the LINE, not the
      space it occupied — border-width: 0 shrank the intrinsic box 2px
      and failed the overlay test on its first run. */
   border-color: transparent;
 }
 
-:root[data-expression='glass'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
+[data-expression='glass'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
   background-image: linear-gradient(
     180deg,
     oklch(from var(--lucet-primary-hover) calc(l + 0.025) c h),
@@ -454,7 +454,7 @@
   );
 }
 
-:root[data-expression='glass'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
+[data-expression='glass'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
   background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), var(--lucet-secondary));
 }
 
@@ -473,7 +473,7 @@
   transform: none;
 }
 
-:root[data-expression='glass'] .lucet-button:disabled {
+[data-expression='glass'] .lucet-button:disabled {
   /* No borders anywhere in Glass — a disabled control separates by its
      own dimmed value, not by a line. */
   box-shadow: none;
@@ -485,7 +485,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-expression='glass'] .lucet-button:active:not(:disabled) {
+  [data-expression='glass'] .lucet-button:active:not(:disabled) {
     transform: none;
   }
 }
@@ -2243,8 +2243,8 @@
    panel's own text; the high mix keeps every contrast pair honest.
    Floating surfaces take the OVERLAY value, not the card's: with no
    borders, a popover at the card's own tint would vanish against it. */
-:root[data-expression='glass'] .lucet-scope__panel,
-:root[data-expression='glass'] .lucet-budget__panel {
+[data-expression='glass'] .lucet-scope__panel,
+[data-expression='glass'] .lucet-budget__panel {
   background-color: color-mix(in oklab, var(--lucet-popover) 86%, transparent);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
@@ -2257,11 +2257,11 @@
    and the composer is the one you touch; they are exactly where the
    material should be doing visible work. Background and box-shadow
    only: the overlay gate holds geometry. */
-:root[data-expression='glass'] .lucet-tool {
+[data-expression='glass'] .lucet-tool {
   background-color: var(--lucet-popover);
   box-shadow: var(--lucet-material-raised);
 }
-:root[data-expression='glass'] .lucet-prompt {
+[data-expression='glass'] .lucet-prompt {
   background-color: var(--lucet-popover);
   box-shadow: var(--lucet-material-raised);
 }

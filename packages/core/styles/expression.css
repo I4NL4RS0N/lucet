@@ -44,7 +44,7 @@
  * Paper: ink on a surface. Quick, mechanical motion.
  * --------------------------------------------------------------- */
 :root,
-:root[data-expression='paper'] {
+[data-expression='paper'] {
   --lucet-duration-fast: 100ms;
   --lucet-duration-normal: 160ms;
   --lucet-duration-slow: 240ms;
@@ -55,7 +55,7 @@
 /* ---------------------------------------------------------------
  * Glass: physical surfaces. Slower, eased motion with weight.
  * --------------------------------------------------------------- */
-:root[data-expression='glass'] {
+[data-expression='glass'] {
   --lucet-duration-fast: 140ms;
   --lucet-duration-normal: 240ms;
   --lucet-duration-slow: 400ms;

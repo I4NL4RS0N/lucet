@@ -50,7 +50,7 @@
 }
 
 /* ---------- Light + Glass ---------- */
-:root[data-expression='glass'] {
+[data-expression='glass'] {
   /* The page recedes so cards can come forward. Nothing is pure white except
      the things that are meant to be picked up. The overlay steps a full tone
      BELOW the card: above white the only distinct direction is down — the
@@ -112,6 +112,7 @@
 
 /* ---------- Dark + Glass ---------- */
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) [data-expression='glass'],
   :root[data-expression='glass']:not([data-theme='light']) {
     /* A raised surface is LIGHTER than the ground, because that is how
        light works. The ladder is WIDE — the drama comes from the gap:
@@ -132,6 +133,7 @@
   }
 }
 
+:root[data-theme='dark'] [data-expression='glass'],
 :root[data-theme='dark'][data-expression='glass'] {
   /* See the media twin above: wide ladder, sunken 0.105 · ground 0.125 ·
      card 0.205 · overlay 0.269. */

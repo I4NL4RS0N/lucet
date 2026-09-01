@@ -239,7 +239,7 @@ export function Primitives() {
   const [seg, setSeg] = useState('all')
 
   return (
-    <div className="prim">
+    <div className="prim" data-expression={appearance.expression}>
       <SiteHeader page="primitives" />
 
       <main className="prim__main">
