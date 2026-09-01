@@ -251,7 +251,7 @@ export function Primitives() {
         <h1 className="prim__title">Primitives</h1>
         <p className="prim__lede">
           Every control the components will be built from, in every state.
-          Private page — this is where the look gets settled before anything is
+          The working surface where the look gets settled before anything is
           composed.
         </p>
 

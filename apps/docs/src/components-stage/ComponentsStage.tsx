@@ -7,7 +7,7 @@ import { SiteHeader } from '../components/SiteHeader'
 import { OPENER_EVENTS } from '../opener'
 
 /**
- * The components stage. Private, never deployed — the primitives page's
+ * The components stage. Public since 2026-09-01 — the primitives page's
  * method applied to composites.
  *
  * Every specimen's state is built by REPLAYING EVENTS through the real
@@ -729,8 +729,8 @@ export function ComponentsStage() {
         <p className="prim__lede">
           The components, in every state each one can be in — composed from
           the primitives, built by replaying real events through the real
-          reducer. Each specimen is a state, not a picture of one. Private
-          page.
+          reducer. Each specimen is a state, not a picture of one — the
+          working surface beside the primitives.
         </p>
 
         <Section name="The app, live" note="try it — type, attach, send, watch it answer">

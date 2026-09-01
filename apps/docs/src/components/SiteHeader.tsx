@@ -10,10 +10,15 @@ import type { ReactNode } from 'react'
  * before the nav through `children`.
  */
 
+/* All three pages are PUBLIC (ruling 2026-09-01). The labs began as
+   private working surfaces — the old dev flag hid them from the
+   production nav, and the single-input build never shipped their html
+   at all — but the first live look ruled they belong in the site:
+   the working surface is part of the argument. */
 const PAGES = [
-  { id: 'konfabulator', label: 'Konfabulator', href: '/', dev: false },
-  { id: 'components', label: 'Components', href: '/components.html', dev: true },
-  { id: 'primitives', label: 'Primitives', href: '/primitives.html', dev: true },
+  { id: 'konfabulator', label: 'Konfabulator', href: '/' },
+  { id: 'components', label: 'Components', href: '/components.html' },
+  { id: 'primitives', label: 'Primitives', href: '/primitives.html' },
 ] as const
 
 export type SitePage = (typeof PAGES)[number]['id']
@@ -67,7 +72,7 @@ export function SiteHeader({ page, children }: { page: SitePage; children?: Reac
             the one you are on wears the active ink. A nav that reshuffles
             itself per page makes the reader re-find everything. */}
         <nav className="cfg__nav" aria-label="Site">
-          {PAGES.filter((p) => !p.dev || import.meta.env.DEV).map((p) => (
+          {PAGES.map((p) => (
             <a
               className="cfg__navlink"
               key={p.id}

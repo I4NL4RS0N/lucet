@@ -1,0 +1,39 @@
+# NOT YET ACTIVE. This file is a draft — the .draft extension keeps it
+# inert. It exists so 0.2 can publish with provenance properly (OIDC
+# trusted publishing from CI), which a laptop publish cannot attest.
+#
+# To enable, Ian:
+#   1. On npmjs.com, for BOTH packages (lucet, lucet-react):
+#      Package → Settings → Trusted publisher → GitHub Actions →
+#      repository I4NL4RS0N/lucet, workflow release.yml.
+#      (Requires the packages to exist — after the first local publish.)
+#   2. Rename this file to release.yml and commit.
+#   3. Releases then run by pushing a changeset-versioned main and
+#      triggering this workflow manually (workflow_dispatch), or wire
+#      changesets/action later if wanted.
+#
+# No npm token is stored anywhere: OIDC mints a short-lived credential
+# per run, and --provenance links the published tarball to this exact
+# workflow run.
+
+name: Release
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run verify
+      - run: npm publish --provenance --workspace lucet
+      - run: npm publish --provenance --workspace lucet-react

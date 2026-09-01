@@ -443,24 +443,24 @@ function AppCore({
                   <i /><i /><i />
                 </div>
                 {/* The brand's GLYPH, not its tile — in every container's
-                    welcome, the way the reference's drawer wears its spark.
-                    The plated mark is chrome furniture and read as a sticker
-                    over the atmosphere; in open air the same ring-and-core
-                    geometry goes flat, in the page's own ink. */}
+                    welcome the identity rides in open air, so the plated
+                    tile would read as a sticker over the atmosphere. The
+                    Aquilo wind-crossbar A, flat, in the page's own ink:
+                    identity, not decoration — the one surface the mark
+                    sweep hadn't reached. */}
                 <span className="cfg__empty-mark" aria-hidden>
                   <svg viewBox="0 0 96 96">
-                    <circle
-                      cx="48"
-                      cy="49"
-                      r="24"
+                    <g
+                      transform="translate(18 12.25) scale(3)"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="7.6"
-                      strokeDasharray="112 39"
+                      strokeWidth="2.4"
                       strokeLinecap="round"
-                      transform="rotate(156 48 49)"
-                    />
-                    <circle cx="48" cy="49" r="9.5" fill="currentColor" />
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6.5 20 L12 4.5 L17.5 20" />
+                      <path d="M2.5 14.5 H15.55" />
+                    </g>
                   </svg>
                 </span>
                 <p className="cfg__empty-hello">How can I help?</p>
@@ -1083,7 +1083,10 @@ export function App() {
     if (booted.current) return
     booted.current = true
     const linked = readStateParam()
-    if (linked && lucet.triggers.get(linked)) fire(linked)
+    /* cold-start is the rail's own state, not a runtime scenario — the
+       registry check alone dropped it, so the URL the rail itself
+       writes for it could never reopen. */
+    if (linked && (linked === 'cold-start' || lucet.triggers.get(linked))) fire(linked)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lucet])
 
