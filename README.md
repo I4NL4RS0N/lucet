@@ -83,16 +83,28 @@ a test fails if a token is added to the CSS without being classified.
 
 ## Status
 
-The first components are real, audited, and running: streaming markdown,
-reasoning disclosure, tool calls with receipts, suggestion chips with the
-ask/do split, feedback controls, citations & sources with aging, and
-version marker + restore — demonstrated in one persistent interface
-across three honest containers (a full-page app, a drawer over a host
-application, a phone). All four of the thesis's surfaces are running:
-scope, versions, multiplayer, and budget.
-Both packages are on npm as of September 2026 —
-`lucet-core` and `lucet-react`, at 0.1.0. The bar for publishing was
-the same as the bar for everything else here.
+**Shipped, 0.1.0** — on npm as of September 2026. The event-sourced
+core: streaming, aborts, the tool lifecycle, versioning and
+restore-as-copy, scope, usage and budget projection, and the
+screen-reader announcement plan. The React layer: twelve baseline
+components with every state reachable — streaming markdown, reasoning
+disclosure, tool calls with receipts, suggestion chips with the ask/do
+split, feedback controls, citations & sources with aging, version
+marker + restore — demonstrated in one persistent interface across
+three honest containers (a full-page app, a drawer over a host
+application, a phone). All four of the thesis's surfaces run: scope,
+versions, multiplayer, budget. The bar for publishing was the same as
+the bar for everything else here.
+
+**Next** — one component at a time, each with its written rationale:
+
+- An approval/consent gate: the turn that cannot proceed until a human
+  says so, designed as a first-class state rather than a modal.
+- An agent task list: long-running work you can leave and return to,
+  with progress that admits what it doesn't know.
+
+Ten to twelve components done properly is the whole scope; these are
+the next two.
 
 ## Packages
 
