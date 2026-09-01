@@ -1,12 +1,12 @@
 /**
  * Lucet component styles.
  *
- * Vanilla CSS. Every value is a token from `lucet/styles.css`; there are no
+ * Vanilla CSS. Every value is a token from `lucet-core/styles.css`; there are no
  * literals in here except structural zeroes. If something needs a number that
  * is not a token, the token set is wrong, not this file.
  *
  * Import both:
- *   import 'lucet/styles.css'
+ *   import 'lucet-core/styles.css'
  *   import 'lucet-react/styles.css'
  */
 

@@ -20,7 +20,7 @@
  *
  * Import once, at the root of the host application:
  *
- *   import 'lucet/styles.css'
+ *   import 'lucet-core/styles.css'
  *
  * A project already running shadcn needs no configuration: every semantic token
  * falls back to shadcn's variable when the host defines one. See semantic.css

@@ -1,5 +1,8 @@
 # Lucet
 
+[![npm: lucet-core](https://img.shields.io/npm/v/lucet-core?style=flat&label=lucet-core)](https://www.npmjs.com/package/lucet-core)
+[![npm: lucet-react](https://img.shields.io/npm/v/lucet-react?style=flat&label=lucet-react)](https://www.npmjs.com/package/lucet-react)
+
 **AI interface patterns for what comes next.**
 
 An open-source library of AI interface components, built around the states real
@@ -61,8 +64,8 @@ way to share one declaration body across a media query and an attribute
 selector. Those copies drift silently, so a second audit reads every custom
 property down both paths and fails if they disagree.
 
-**Almost no dependencies.** `lucet` has none at all. `lucet-react` depends on
-`lucet` and takes React as a peer — nothing further. **No Tailwind**, anywhere — vanilla CSS with custom
+**Almost no dependencies.** `lucet-core` has none at all. `lucet-react` depends
+on `lucet-core` and takes React as a peer — nothing further. **No Tailwind**, anywhere — vanilla CSS with custom
 properties.
 
 **It drops into shadcn projects.** Every token in the semantic layer — the
@@ -87,15 +90,20 @@ version marker + restore — demonstrated in one persistent interface
 across three honest containers (a full-page app, a drawer over a host
 application, a phone). All four of the thesis's surfaces are running:
 scope, versions, multiplayer, and budget.
-Nothing is on npm yet, deliberately: the bar for
-publishing is the same as the bar for everything else here.
+Both packages are on npm as of September 2026 —
+`lucet-core` and `lucet-react`, at 0.1.0. The bar for publishing was
+the same as the bar for everything else here.
 
 ## Packages
 
 | Package | What it is |
 |---|---|
-| `lucet` | Framework-free headless core. All state logic, zero framework imports. |
-| `lucet-react` | Thin React bindings over the core. |
+| [`lucet-core`](https://www.npmjs.com/package/lucet-core) | Framework-free headless core. All state logic, zero framework imports. |
+| [`lucet-react`](https://www.npmjs.com/package/lucet-react) | Thin React bindings over the core. |
+
+```bash
+npm install lucet-core lucet-react
+```
 
 React today, adapters welcome, the core is yours to wrap.
 
