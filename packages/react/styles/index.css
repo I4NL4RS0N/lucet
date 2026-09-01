@@ -438,6 +438,12 @@
     oklch(from var(--lucet-primary) calc(l - 0.03) c h)
   );
   border-width: 0;
+}
+/* Roomier label padding, but NEVER on the square icon button: this
+   selector outguns [data-icon]'s padding reset, and 33px of padding in
+   a 36px button crushed the send arrow to nothing — a solid violet
+   block where the glyph should be. */
+:root[data-expression='expressive'] .lucet-button[data-variant='primary']:not([data-icon]) {
   padding-inline: var(--lucet-space-5);
 }
 
