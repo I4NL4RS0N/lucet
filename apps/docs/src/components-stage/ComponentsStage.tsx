@@ -782,8 +782,16 @@ export function ComponentsStage() {
         </p>
 
         <Section variant="hero" name="The app, live" note="try it — type, attach, send, watch it answer">
-          <div className="hero-app">
-            <Live />
+          <div className="hero-wrap">
+            <div className="hero-app">
+              <Live />
+            </div>
+            <p className="spec__note">
+              One exchange, replayed through the real reducer: the receipt
+              with its duration, the cited answer, the sources aging beneath
+              it — and the composer is live. Type into it; the runtime
+              answers.
+            </p>
           </div>
           <p className="hero-app__more">
             <a href="/">The complete application, every state on its rail — the Konfabulator</a>

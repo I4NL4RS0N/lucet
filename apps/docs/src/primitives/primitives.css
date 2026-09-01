@@ -2229,3 +2229,45 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   inline-size: min(1300px, calc(100vw - 64px));
   margin-inline-start: calc((100% - min(1300px, 100vw - 64px)) / 2);
 }
+
+/* Two-layer focus on the lab's accent-filled buttons — same rule as
+   the library's primary: the halo is the variant's own foreground. */
+.prim .btn--primary.is-focus {
+  box-shadow:
+    0 0 0 var(--focus-offset) var(--btn-fg),
+    0 0 0 1px oklch(0 0 0 / 0.18),
+    var(--cast-2);
+}
+.prim .btn--danger.is-focus {
+  box-shadow: 0 0 0 var(--focus-offset) var(--btn-fg);
+}
+
+/* P1 typography (filtered pass): annotations step UP one ink token —
+   they sat at the muted step beside 640px of specimen and read below
+   comfortable; measure capped at 44ch, line-height one step tighter.
+   Long section descriptors wrap beneath their headings. */
+.prim--comp .spec__note {
+  color: var(--ink-2);
+  max-inline-size: 44ch;
+  line-height: 1.45;
+}
+.prim--comp .sec__head { flex-wrap: wrap; }
+.prim--comp .sec__note { line-height: 1.45; }
+
+/* The hero's museum label: one quiet annotation in the right column,
+   aligned to the composer end of the specimen (P1). */
+.prim--comp .hero-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 720px) minmax(240px, 1fr);
+  column-gap: 48px;
+  align-items: end;
+}
+.prim--comp .hero-wrap .spec__note {
+  margin-block-end: 56px;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--lucet-line);
+}
+@media (max-width: 1080px) {
+  .prim--comp .hero-wrap { grid-template-columns: minmax(0, 1fr); }
+  .prim--comp .hero-wrap .spec__note { margin-block-end: 0; border-inline-start: 0; padding-inline-start: 0; }
+}

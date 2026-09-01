@@ -143,6 +143,18 @@
   outline-offset: var(--lucet-focus-offset);
 }
 
+/* Two-layer indicator on the accent-filled control (filtered pass):
+   ring-on-accent read as "double violet". The halo filling the offset
+   gap is the button's own FOREGROUND token — it contrasts the fill by
+   the text floor and separates the ring in every theme, for every
+   accent, with no accent-specific value. */
+.lucet-button[data-variant='primary']:focus-visible {
+  box-shadow:
+    0 0 0 var(--lucet-focus-offset) var(--lucet-primary-foreground),
+    var(--lucet-material-control),
+    var(--lucet-primary-glow);
+}
+
 /* ============================================================
  * Reasoning disclosure — the quote's grammar, because that is what it is:
  * the machine quoting its own working. The rail marks it as NOT the answer;

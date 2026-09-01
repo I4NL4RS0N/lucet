@@ -690,6 +690,57 @@ async function main() {
             `${where}  target "${t.label}" is ${t.w}x${t.h} (needs ${MIN_TARGET_PX}, 2.5.8)`,
           )
         }
+
+        /*
+         * FOCUS INDICATOR vs EVERY SURFACE IT LANDS ON (filtered pass).
+         * The is-focus specimens render the real focus styles statically,
+         * so the ring can be measured per accent per theme: the ring must
+         * clear 3:1 against the surface behind it, and where the two-layer
+         * halo applies (accent-filled variants), the halo must clear 3:1
+         * against the fill it separates the ring from.
+         */
+        const focusSpecs = await page.evaluate(() => {
+          const out = []
+          for (const el of document.querySelectorAll('.btn.is-focus, .field.is-focus')) {
+            const cs = getComputedStyle(el)
+            const bgs = []
+            let n = el.parentElement
+            while (n) {
+              bgs.push(getComputedStyle(n).backgroundColor)
+              n = n.parentElement
+            }
+            const haloVar = cs.getPropertyValue('--btn-fg').trim()
+            const isHaloed =
+              el.classList.contains('btn--primary') || el.classList.contains('btn--danger')
+            out.push({
+              label: [...el.classList].filter((c) => c !== 'is-focus').join('.'),
+              ring: cs.outlineColor,
+              fill: cs.backgroundColor,
+              behind: bgs,
+              halo: isHaloed && haloVar ? haloVar : null,
+            })
+          }
+          return out
+        })
+        for (const f of focusSpecs) {
+          checks++
+          const behindFlat = flattenBackground(f.behind)
+          const ringRatio = behindFlat === null ? null : contrastRatio(f.ring, behindFlat)
+          if (ringRatio !== null && ringRatio < AA_NON_TEXT) {
+            failures.push(
+              `${where}  focus ring on ${f.label}: ${ringRatio}:1 vs surface behind (needs ${AA_NON_TEXT}, 1.4.11)\n      ${f.ring} on ${behindFlat}`,
+            )
+          }
+          if (f.halo) {
+            checks++
+            const haloRatio = contrastRatio(f.halo, f.fill)
+            if (haloRatio !== null && haloRatio < AA_NON_TEXT) {
+              failures.push(
+                `${where}  focus halo on ${f.label}: ${haloRatio}:1 vs its fill (needs ${AA_NON_TEXT}, 1.4.11)\n      ${f.halo} on ${f.fill}`,
+              )
+            }
+          }
+        }
         }
       }
 

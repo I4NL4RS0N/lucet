@@ -258,6 +258,15 @@
   animation-timing-function: var(--lucet-ease-mass);
 }
 
+/* THE CONTROL ANSWERS ON THE PRESS FRAME (filtered pass). The dissolve
+   snapshots the whole page — the picker included — so the select's new
+   value was fading in WITH the material change, and the press read as
+   ~half a second late. The appearance cluster opts out: its new
+   snapshot lands on the first frame while the page crossfades. */
+.cfg__prefs { view-transition-name: lucet-appearance; }
+::view-transition-old(lucet-appearance) { animation: none; opacity: 0; }
+::view-transition-new(lucet-appearance) { animation: none; opacity: 1; }
+
 /* The control itself: `switch` treatment with a crisp pressed state —
    the dissolve begins from this press. */
 .cfg__prefs select:active {
