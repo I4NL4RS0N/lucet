@@ -321,7 +321,6 @@ function AppCore({
   onSuggest,
   aside,
   chrome = 'window',
-  home,
   compact,
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
@@ -333,7 +332,6 @@ function AppCore({
   /* The full page is a HOME, and homes follow the genre (Claude, ChatGPT,
      Le Chat): brand over the greeting, and the composer sits IN the page
      until the first turn exists, then moves to the floor. */
-  home?: boolean
   /* A tight container offers FEWER ways in — one per kind, so the Ask/Do
      split never collapses while the room breathes. Neither prompt list
      was cut and no preview grew taller: the host tunes suggestion count
@@ -345,33 +343,12 @@ function AppCore({
   const state = useThread()
   const attachCount = useRef(0)
   const scrollRef = useRef<HTMLDivElement>(null)
-  /* The rail's boundary grammar, on the welcome too: at tight sizes the
-     cold start can overflow the frame, and a card severed at the frame
-     edge with no cue says nothing exists below it. Overflow-aware, gone
-     the moment everything fits or a thread starts. */
-  const [welcomeMore, setWelcomeMore] = useState(false)
-  const checkWelcome = () => {
-    const el = scrollRef.current
-    setWelcomeMore(
-      state.turns.length === 0 && !!el && el.scrollHeight - el.scrollTop - el.clientHeight > 12,
-    )
-  }
-  useEffect(() => {
-    checkWelcome()
-    window.addEventListener('resize', checkWelcome)
-    return () => window.removeEventListener('resize', checkWelcome)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.turns.length])
 
   useEffect(() => {
     const el = scrollRef.current
     if (el && state.status !== 'idle') el.scrollTop = el.scrollHeight
   }, [state])
 
-  /* ONE composer, two seats: the home page seats it centre-stage until a
-     turn exists (the genre's grammar — Claude, ChatGPT, Le Chat); every
-     other moment it sits on the floor of the frame. */
-  const composerCentered = Boolean(home) && state.turns.length === 0
   const composerNode = (
             <PromptInput
               composer={state.composer}
@@ -441,7 +418,7 @@ function AppCore({
       <div className="cfg__app-body">
         {aside}
         <div className="cfg__app-main">
-          <div className="cfg__scroll" ref={scrollRef} onScroll={checkWelcome}>
+          <div className="cfg__scroll" ref={scrollRef}>
             {state.turns.length === 0 ? (
               /*
                * The cold start, designed: the product's real first state. The
@@ -482,24 +459,6 @@ function AppCore({
                 <span className="cfg__empty-sub">
                   Ask a question, or hand a task off.
                 </span>
-                <span className="cfg__empty-gap" aria-hidden />
-                {composerCentered ? (
-                  <div className="cfg__composer cfg__composer--center">{composerNode}</div>
-                ) : null}
-                {suggestionsVisible(state) ? (
-                  <SuggestionChips
-                    suggestions={
-                      compact
-                        ? (['ask', 'do'] as const).flatMap((k) => {
-                            const first = state.suggestions.find((s) => s.kind === k)
-                            return first ? [first] : []
-                          })
-                        : state.suggestions
-                    }
-                    disabled={state.composer.locked}
-                    onPick={(s) => onSuggest?.(s)}
-                  />
-                ) : null}
               </div>
             ) : (
               <Thread
@@ -513,23 +472,37 @@ function AppCore({
                 onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
               />
             )}
-            {welcomeMore ? (
-              <button
-                type="button"
-                className="cfg__rail-more cfg__scroll-more"
-                onClick={() => scrollRef.current?.scrollBy({ top: 200, behavior: 'smooth' })}
-              >
-                More
-                <svg viewBox="0 0 24 24" aria-hidden>
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-            ) : null}
           </div>
 
-          {composerCentered ? null : (
-            <div className="cfg__composer">{composerNode}</div>
-          )}
+          {/* THE FLOOR: the frame is a viewport (auto | 1fr | auto), and
+              this is the third row — composer anchored to the bottom edge,
+              suggestions below it, both on one centred measure. The empty
+              state stopped being a special case: the hero centres in the
+              1fr above, and adding a message cannot move this seat. */}
+          <div className="cfg__floor">
+            <div className="cfg__floor-in">
+              {/* Suggestions ABOVE the composer — the spec's own correctness
+                  test decides the order: the composer is bottom-anchored, so
+                  the chips' departure on the first message is absorbed by
+                  the 1fr above and the composer does not move a pixel. (Also
+                  claude.ai's grammar, which this pattern follows.) */}
+              {suggestionsVisible(state) ? (
+                <SuggestionChips
+                  suggestions={
+                    compact
+                      ? (['ask', 'do'] as const).flatMap((k) => {
+                          const first = state.suggestions.find((s) => s.kind === k)
+                          return first ? [first] : []
+                        })
+                      : state.suggestions
+                  }
+                  disabled={state.composer.locked}
+                  onPick={(s) => onSuggest?.(s)}
+                />
+              ) : null}
+              <div className="cfg__composer">{composerNode}</div>
+            </div>
+          </div>
         </div>
       </div>
     </>
@@ -950,7 +923,6 @@ export function App() {
           {view === 'full' ? (
             <section className="cfg__frame cfg__frame--app" aria-label="The running app">
               <AppCore
-                home
                 onSuggest={(s) => {
                   writeStateParam(s.id)
                   fire(s.id)

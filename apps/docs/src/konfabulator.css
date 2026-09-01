@@ -77,7 +77,14 @@ body {
   padding-block-start: 44px;
 }
 
+/* 768 KEEPS TWO COLUMNS: the rail is the argument, the sidebar is set
+   dressing (already dropped at 1100). The rail narrows; true stacking
+   waits for genuinely phone-ish widths. */
 @media (max-width: 900px) {
+  .cfg__layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 20px; }
+  .cfg__railcol { padding-inline-start: 20px; }
+}
+@media (max-width: 620px) {
   .cfg__layout { grid-template-columns: minmax(0, 1fr); }
   .cfg__railcol {
     border-inline-start: 0;
@@ -572,7 +579,10 @@ body {
      read as a mystery gradient.) */
   overflow-x: hidden;
   overscroll-behavior: contain;
-  --cfg-gutter: calc(24px * var(--lucet-density, 1));
+  /* ONE token bounds the content: inline padding here, and the floor's
+     three sides below, all var(--lucet-space-6) — so the density dial
+     and the expression axis move every gap together. */
+  --cfg-gutter: var(--lucet-space-6);
   /* 28px of headroom at the top: at 24 the first turn sat against the
      bar's hairline and the thread opened mid-thought. */
   padding: 28px var(--cfg-gutter) 12px;
@@ -641,33 +651,19 @@ body {
   color: var(--lucet-muted-foreground);
   font-size: 13px;
 }
-/* ONE rhythm for every container, tuned to the one that already looked
-   right (the phone): the words live in the atmosphere's crown — about
-   the upper third — and the menu sits by the floor. Crown headroom and
-   floor room split the free space 1 : 1.7 through explicit spacers; the
-   centred-composer home keeps its chips docked by zeroing the gap and
-   taking the floor room as ::after instead. */
+/* ONE rhythm for every container, by construction now: the frame is a
+   viewport (auto | 1fr | auto) and the hero simply CENTRES in the 1fr.
+   The old crown/floor spacer arithmetic — three independently tuned
+   flexes per container — dissolves; the slack has one owner. A slight
+   upward bias keeps the words near the light's peak. */
 .cfg__empty::before {
   content: '';
-  /* Eased from 1 so the words ride AT the light's peak in the floor-
-     composer containers too — the home's fix, transposed. */
-  flex: 0.7 1 0;
+  flex: 0.85 1 0;
 }
-.cfg__empty-gap {
-  display: block;
-  flex: 1.7 1 0;
-}
-.cfg__empty:has(.cfg__composer--center) .cfg__empty-gap { flex: 0 0 0; }
-.cfg__empty:has(.cfg__composer--center)::after {
+.cfg__empty::after {
   content: '';
-  /* Eased from 1.7: at full frame height the old floor left ~200px of
-     void under the chips — the hero sat high, the content stopped
-     early, and the rest was nothing. Unhurried still, empty no more. */
   flex: 1 1 0;
 }
-/* The home rides HIGHER still: its words start at the light's peak, not
-   below it, and the extra floor is what makes the page feel unhurried. */
-.cfg__empty:has(.cfg__composer--center)::before { flex: 0.75 1 0; }
 /*
  * The atmosphere. Round one put the vibe in a hero orb; it read as a
  * low-budget object (Ian). Round two follows the lithos studies — silk
@@ -825,43 +821,13 @@ body {
   line-height: 1.2;
 }
 .cfg__empty-sub { max-inline-size: 40ch; }
-.cfg__empty .lucet-chips {
-  /* Stretch-then-clamp gives the chips grid the definite width its
-     auto-fit column count needs (the old grid column did this job). */
-  align-self: stretch;
-  margin-inline: auto;
-  max-inline-size: min(100%, 560px);
-}
-/* The menu is its own stratum, not the composer's shadow: real air
-   between the input and the ways in (Ian — "too close"). */
-.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: calc(26px * var(--lucet-density, 1)); }
-
-/* Center-seated, the meter's panel opens DOWNWARD: above the composer sit
-   the greeting and the mock window's own chrome, and an app menu floating
-   over OS chrome reads as broken layering. Below is the suggestion field —
-   overlay room this seat actually owns. On the floor seat it opens upward
-   as everywhere else. */
-.cfg__composer--center .lucet-budget__panel {
-  inset-block-end: auto;
-  inset-block-start: calc(100% + 6px);
-  /* Downward here, so it arrives from above and grows from its top edge. */
-  --lucet-panel-from: -3px;
-  transform-origin: top;
-}
-/* Pinned menus breathe off the composer's border instead of sitting on
-   it — the same "too close" fix, at the floor. */
-.cfg__empty:not(:has(.cfg__composer--center)) .lucet-chips { margin-block-end: 12px; }
-/* The room lights, then three beats — greeting, invitation, ways in —
-   then stillness. Only the atmosphere keeps moving, slower than
-   attention. */
+/* The room lights, then the hero's beats; the floor rises last. */
 .cfg__empty > :not(.cfg__atmo) {
   animation: lucet-thread-arrive 320ms var(--lucet-ease-out) backwards;
 }
 .cfg__empty > :nth-child(2) { animation-delay: 80ms; }
 .cfg__empty > :nth-child(3) { animation-delay: 170ms; }
 .cfg__empty > :nth-child(4) { animation-delay: 260ms; }
-.cfg__empty > :nth-child(5) { animation-delay: 340ms; }
-.cfg__empty > :nth-child(6) { animation-delay: 380ms; }
 @media (prefers-reduced-motion: reduce) {
   .cfg__empty > *,
   .cfg__atmo,
@@ -870,25 +836,30 @@ body {
   }
 }
 
-.cfg__composer {
-  padding: 12px 16px 16px;
+/* THE FLOOR: the frame's third row. One token bounds the content on
+   three sides (below the composer, above the frame edge, left/right);
+   the only variable gap is the slack above, which the 1fr absorbs. The
+   composer and the suggestions share one centred measure — their edges
+   line up by construction. */
+.cfg__floor {
   border-block-start: 1px solid var(--lucet-border);
+  padding: calc(12px * var(--lucet-density, 1)) var(--cfg-content-gap, var(--lucet-space-6))
+    var(--cfg-content-gap, var(--lucet-space-6));
+  display: grid;
+  justify-items: center;
 }
-/* The centre seat: on the home's cold start the composer sits IN the
-   page (Claude, ChatGPT, Le Chat) and returns to the floor with the
-   first turn. */
-.cfg__composer--center {
-  padding: 0;
-  border-block-start: 0;
+.cfg__floor-in {
   inline-size: 100%;
   max-inline-size: calc(620px * var(--lucet-density, 1));
-  margin-block-start: calc(14px * var(--lucet-density, 1));
+  display: grid;
+  gap: var(--cfg-content-gap, var(--lucet-space-6));
 }
-/* The centre seat grows DOWN through the welcome, so it gets a lower
-   ceiling than the floor composer's 12em: four lines, then the field
-   scrolls inside itself — a long draft must never shove the menu off
-   the stage (Ian broke it; the cap unbreaks it). */
-.cfg__composer--center .lucet-prompt__field {
+.cfg__composer {
+  padding: 0;
+}
+/* A long draft must never shove the floor's menu out of the frame: four
+   lines, then the field scrolls inside itself. */
+.cfg__floor .lucet-prompt__field {
   max-block-size: 6.4em;
 }
 
@@ -1577,16 +1548,15 @@ body {
   .cfg__empty:has(.cfg__composer--center) .cfg__atmo {
     animation: cfg-breathe-in 640ms var(--lucet-ease-out) both;
   }
-  .cfg__empty:has(.cfg__composer--center) .cfg__empty-mark,
-  .cfg__empty:has(.cfg__composer--center) .cfg__empty-hello,
-  .cfg__empty:has(.cfg__composer--center) .cfg__empty-sub {
+  .cfg__empty .cfg__empty-mark,
+  .cfg__empty .cfg__empty-hello,
+  .cfg__empty .cfg__empty-sub {
     animation: cfg-rise 360ms var(--lucet-ease-out) 60ms both;
   }
-  .cfg__empty:has(.cfg__composer--center) .cfg__composer--center {
-    animation: cfg-rise 360ms var(--lucet-ease-out) 150ms both;
-  }
-  .cfg__empty:has(.cfg__composer--center) .lucet-chips {
-    animation: cfg-rise 360ms var(--lucet-ease-out) 240ms both;
+  /* The floor mounts once and never re-animates — the composer's seat
+     is permanent now, so this plays at app load only. */
+  .cfg__app-main:has(.cfg__empty) .cfg__floor {
+    animation: cfg-rise 360ms var(--lucet-ease-out) 180ms both;
   }
 }
 @keyframes cfg-rise {
@@ -1613,8 +1583,7 @@ body {
 @media (max-width: 480px) {
   .cfg__scroll { padding-inline: 14px; }
   .cfg__empty { padding-inline: 0; }
-  .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 14px; }
-  .cfg__composer--center { margin-block-start: 8px; }
+  .cfg__floor { padding-inline: 14px; }
 }
 
 /* ============================================================
@@ -1717,18 +1686,6 @@ body {
   text-overflow: ellipsis;
 }
 
-/* The welcome's More chip: sticky at the scroll floor, riding ABOVE the
-   bottom fade band so the cue itself is never dimmed by the mask. */
-.cfg__scroll-more {
-  position: sticky;
-  inset-block-end: 24px;
-  z-index: 3;
-  display: flex;
-  margin: -34px auto 10px;
-  inline-size: fit-content;
-  background-color: var(--lucet-card);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
-}
 
 @media (max-width: 560px) {
   .cfg__layout { --cfg-chrome: 265px; }
