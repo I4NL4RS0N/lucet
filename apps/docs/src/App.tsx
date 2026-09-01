@@ -703,6 +703,33 @@ function MockDocument({ page = 0 }: { page?: number }) {
         Three of the five workstreams are on schedule. The remaining two are
         blocked on the same review, which moved to Thursday.
       </p>
+      {/* The drawer's translucency needs a WITNESS: saturated furniture
+          its left edge crosses, so Glass visibly carries the colour
+          through the blurred pane while Paper's hard edge just covers
+          it. Plausible, not a test pattern — these bars are the
+          paragraph above, drawn. */}
+      <div className="cfg__mock-chart">
+        {(
+          [
+            ['Vendor onboarding', 72, 'ok'],
+            ['Template rollout', 64, 'ok'],
+            ['Venue and logistics', 55, 'ok'],
+            ['Budget revision', 38, 'blocked'],
+            ['Workstream review', 22, 'blocked'],
+          ] as const
+        ).map(([label, pct, tone]) => (
+          <div className="cfg__mock-chart-row" key={label}>
+            <span>{label}</span>
+            <span className="cfg__mock-track">
+              <i style={{ inlineSize: `${pct}%` }} data-tone={tone} />
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="cfg__mock-callout">
+        Review moved to Thursday. Both blocked workstreams wait on it; the
+        venue hold expires Friday.
+      </div>
       <p>
         Budget follows the revised figures from last month. Anything filed
         before Tuesday uses the previous template; everything after uses the

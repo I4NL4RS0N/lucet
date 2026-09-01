@@ -1122,6 +1122,54 @@ body {
 .cfg__mock-doc h3 { margin: 20px 0 8px; font-size: 14px; }
 .cfg__mock-doc p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.6; color: var(--lucet-subtle-foreground); }
 
+/* The host's own chart, and the drawer's witness: the panel's left edge
+   crosses these bars, so translucency has something to be translucent
+   over. Saturated literals on purpose — this is the host's palette,
+   not the library's accent, and at 88% mix over flat grey text the
+   drawer was indistinguishable from opaque. */
+/* Both witness blocks OUTSET past the text measure, the way real
+   documents set figures: the doc column ends 75px past the drawer's
+   edge, and a witness that only just reaches the pane dies in its
+   edge shadow. The frame clips whatever the outset overruns. */
+.cfg__mock-chart,
+.cfg__mock-callout { inline-size: calc(100% + 170px); }
+.cfg__mock-chart { display: grid; gap: 7px; margin-block: 16px 18px; }
+.cfg__mock-chart-row {
+  display: grid;
+  grid-template-columns: 138px 1fr;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--lucet-muted-foreground);
+}
+.cfg__mock-track {
+  display: block;
+  block-size: 8px;
+  border-radius: 999px;
+  background: var(--lucet-muted);
+  overflow: hidden;
+}
+.cfg__mock-track i {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: oklch(0.7 0.16 152);
+}
+.cfg__mock-track i[data-tone='blocked'] { background: oklch(0.76 0.15 70); }
+/* The louder half of the witness: the thin bars smear away under the
+   drawer's blur, but a solid tinted block keeps its colour through the
+   pane. Host palette again, host's own border grammar. */
+.cfg__mock-callout {
+  margin-block: 0 14px;
+  padding: 12px 14px;
+  border-inline-start: 3px solid oklch(0.76 0.15 70);
+  border-radius: 6px;
+  background: color-mix(in oklab, oklch(0.76 0.15 70) 26%, var(--lucet-card));
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--lucet-foreground);
+}
+
 /* The host application's chrome: what makes the drawer view an APP with
    an assistant instead of a document with a panel stuck on. The brand is
    deliberately nobody's — an abstract tile and a generic name — and the
@@ -1709,8 +1757,12 @@ body {
    the host page it covers. This is where the material argument is most
    defensible: the panel is over the page, so it looks like it. */
 [data-expression='glass'] .cfg__drawer {
-  background-color: color-mix(in oklab, var(--lucet-popover) 88%, transparent);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
+  /* 74%, not the panels' 86%: the drawer is the one surface with real
+     content behind it, and at 88% it was indistinguishable from opaque
+     — translucency claimed, never witnessed. The heavier blur keeps
+     what ghosts through as colour, never as legible text. */
+  background-color: color-mix(in oklab, var(--lucet-popover) 74%, transparent);
+  -webkit-backdrop-filter: blur(26px);
+  backdrop-filter: blur(26px);
   box-shadow: var(--lucet-material-overlay);
 }
