@@ -514,15 +514,16 @@ async function main() {
      * born yet -- "no caret" alone let the audit start measuring mid-
      * stream. The document plus no caret is only true after settle.
      */
-    /* The front door now opens mid-thread (2026-09-01), so ONE settled
-       document exists at first paint and 'a document with no caret' is
-       true before the seeded scenario has streamed at all — which is
-       exactly how this wait let the announcer check measure an empty
-       log. Wait for the SECOND pair's settled document: the seed's. */
+    /* The front door opens mid-thread (2026-09-01), so settled documents
+       exist at first paint — a pair count here breaks every time the
+       boot seed grows another exchange (it did: the count-of-2 wait
+       resolved against the seed alone and the announcer check measured
+       an empty log). Anchor on the SCENARIO's own content instead: the
+       formatted response is the only message with a table, so its
+       table plus no caret is only true after the live stream settles. */
     await page.waitForFunction(
       () =>
-        document.querySelectorAll('.lucet-thread__pair').length >= 2 &&
-        document.querySelectorAll('.lucet-md').length >= 2 &&
+        document.querySelector('.lucet-md table') &&
         !document.querySelector('.lucet-thread__caret'),
       { timeout: 15000 },
     )
