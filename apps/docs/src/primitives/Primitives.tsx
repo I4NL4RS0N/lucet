@@ -229,10 +229,12 @@ const FileGlyph = {
 }
 
 export function Primitives() {
-  /* The stored appearance wins; dark/monochrome is only the lab's resting
-     look, so primitives are judged without accent seduction until you
-     choose otherwise. */
-  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'monochrome' })
+  /* The stored appearance wins. The docs site is a host, and hosts choose
+     accents; booting with Violet selected is the demonstration, not an
+     exception — the library's own default stays monochrome. (Ruled
+     2026-09-01; monochrome remains one click away for judging primitives
+     without accent seduction.) */
+  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'violet' })
   const [checks, setChecks] = useState({ a: true, b: false })
   const [radio, setRadio] = useState('one')
   const [sw, setSw] = useState({ a: true, b: false })

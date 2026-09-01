@@ -304,6 +304,13 @@
 /* The outcome aligns under the NAME: past the mark on plain rows, past the
    chevron and the mark on disclosures. */
 .lucet-tool__row .lucet-tool__detail { margin-inline-start: 24px; }
+
+/* The live counter only: the width must hold still while it ticks. */
+.lucet-tool__elapsed {
+  font-family: var(--lucet-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: calc(var(--lucet-text-xs) - 0.5px);
+}
 .lucet-tool__row--summary .lucet-tool__detail { margin-inline-start: 37px; }
 .lucet-tool__row--summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .lucet-tool__row--summary:active { background-color: var(--lucet-press); }

@@ -2154,3 +2154,21 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
    specimen out of line with its siblings, and a sequence only reads
    as one motion when the three first bubbles sit level. */
 .prim--comp .stage--trio .spec__head { min-block-size: 40px; align-items: start; }
+
+/* Preview | Code reads as a control, quietly: a segmented track
+   behind the pair instead of two floating words. Surface deltas, not
+   border tokens, so the affordance survives Glass — and the selected
+   ring is an ink mix for the same reason. Targets hold 24px (2.5.8). */
+.prim--comp .spec__tabs {
+  padding: 2px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--lucet-foreground) 4%, transparent);
+}
+.prim--comp .spec__tabs button { min-block-size: 24px; }
+.prim--comp .spec__tabs button[aria-pressed='true'] {
+  background: var(--lucet-card);
+  box-shadow:
+    0 1px 2px oklch(0 0 0 / 0.16),
+    inset 0 0 0 1px color-mix(in oklab, var(--lucet-foreground) 8%, transparent);
+  color: var(--lucet-foreground);
+}

@@ -11,7 +11,7 @@
  * Three slots, not two:
  *
  *   --lucet-font-sans    chrome. Labels, buttons, meters, everything dense.
- *   --lucet-font-mono    code, tool names, ids.
+ *   --lucet-font-mono    code, receipt payloads, ids, ticking figures.
  *   --lucet-font-prose   the response body.
  *
  * The third exists because of the thesis. If the assistant's output really is

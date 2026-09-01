@@ -717,11 +717,20 @@ function Live() {
       }}
       onAttach={() => {
         // The host owns file IO; the stage fakes one honestly. Every third
-        // attachment fails, so the failure path stays one click away.
+        // attachment fails, so the failure path stays one click away. The
+        // names are Northbound's, not placeholders — content is part of
+        // the specimen.
         const n = attachCount + 1
         setAttachCount(n)
         const id = `live_${n}`
-        lucet.store.dispatch({ type: 'attachment/added', id, name: `document-${n}.pdf`, fileKind: 'document', sizeBytes: 240_000 })
+        const files = [
+          { name: 'carrier-onboarding-checklist.pdf', fileKind: 'document' as const },
+          { name: 'booth-floorplan-hall-b.png', fileKind: 'image' as const },
+          { name: 'report-template-v2.docx', fileKind: 'document' as const },
+          { name: 'q3-carrier-shortlist.xlsx', fileKind: 'document' as const },
+        ]
+        const f = files[(n - 1) % files.length]!
+        lucet.store.dispatch({ type: 'attachment/added', id, name: f.name, fileKind: f.fileKind, sizeBytes: 240_000 })
         setTimeout(() => {
           lucet.store.dispatch(
             n % 3 === 0
@@ -736,10 +745,12 @@ function Live() {
 }
 
 export function ComponentsStage() {
-  /* The stored appearance wins; dark/monochrome is only the lab's resting
-     look, so components are judged without accent seduction until you
-     choose otherwise. */
-  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'monochrome' })
+  /* The stored appearance wins. The docs site is a host, and hosts choose
+     accents; booting with Violet selected is the demonstration, not an
+     exception — the library's own default stays monochrome. (Ruled
+     2026-09-01; monochrome remains one click away for judging components
+     without accent seduction.) */
+  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'violet' })
 
   return (
     /* The lab rides the axis whole: its stage wells are part of the

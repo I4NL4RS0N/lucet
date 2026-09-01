@@ -65,7 +65,9 @@ function LiveElapsed() {
     const t = setInterval(() => setTenths(Math.floor((performance.now() - born) / 100)), 100)
     return () => clearInterval(t)
   }, [])
-  return <span className="lucet-tool__detail">{(tenths / 10).toFixed(1)}s</span>
+  /* Mono + tabular: a ticking counter in proportional digits wobbles in
+     width every tenth, and the eye reads the jitter as activity it isn't. */
+  return <span className="lucet-tool__detail lucet-tool__elapsed">{(tenths / 10).toFixed(1)}s</span>
 }
 
 function Receipt({ label, text }: { label: string; text: string }) {
