@@ -137,7 +137,10 @@
   --lucet-duration-fast: 120ms;
   --lucet-duration-normal: 200ms;
   --lucet-duration-slow: 320ms;
-  --lucet-ease-out: cubic-bezier(0.2, 0, 0, 1);
+  /* The original name for the mechanical curve; kept as an alias for
+     hosts. Library call sites use --lucet-ease, which rides the
+     expression axis (motion.css has the vocabulary). */
+  --lucet-ease-out: var(--lucet-ease-mechanical);
   --lucet-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /*

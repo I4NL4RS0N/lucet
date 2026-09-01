@@ -79,9 +79,9 @@
   cursor: pointer;
   white-space: nowrap;
   transition:
-    background var(--lucet-duration-fast) var(--lucet-ease-out),
-    border-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+    background var(--lucet-duration-fast) var(--lucet-ease),
+    border-color var(--lucet-duration-fast) var(--lucet-ease),
+    opacity var(--lucet-duration-fast) var(--lucet-ease);
 }
 
 .lucet-button[data-variant='primary'] {
@@ -171,8 +171,8 @@
   font-size: var(--lucet-text-sm);
   color: var(--lucet-muted-foreground);
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-reasoning__summary::-webkit-details-marker { display: none; }
 
@@ -184,7 +184,7 @@
   border-inline-end: 1.5px solid currentColor;
   border-block-end: 1.5px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-reasoning[open] > .lucet-reasoning__summary::before { transform: rotate(45deg); }
 
@@ -220,13 +220,39 @@
 
 .lucet-tool {
   margin: 0;
+  position: relative;
   inline-size: fit-content;
   max-inline-size: 100%;
   border-radius: var(--lucet-radius-control);
   background-color: var(--lucet-subtle);
-  box-shadow: var(--lucet-hairline);
   font-size: var(--lucet-text-sm);
   color: var(--lucet-subtle-foreground);
+}
+/* THE RECEIPT'S MATERIAL, on a pseudo so ELEVATE animates opacity and
+   never box-shadow (compositor discipline, motion.css). While the tool
+   genuinely runs the chip sits FLAT on the plane; on settle it lifts
+   to its resting material — in Glass the shadow and rim arrive over
+   duration-elevate, in Paper the hairline fades in at normal, which
+   reads as a snap. A chip that mounts already settled paints its
+   material on the first frame: transitions fire on change only. */
+.lucet-tool::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--lucet-hairline);
+  transition: opacity var(--lucet-duration-elevate) var(--lucet-ease);
+}
+.lucet-tool[data-status='running']::after,
+.lucet-tool[data-status='pending']::after {
+  opacity: 0;
+}
+/* The check (or the partial / failed mark — the same choreography, no
+   extra drama: a failure is an event like any other) lands with one
+   small `enter` when this instance watched the run settle. */
+.lucet-tool[data-arrived] .lucet-icon {
+  animation: lucet-enter var(--lucet-duration-normal) var(--lucet-ease);
 }
 
 /* Two lines, one register each: the head row (mark + name + word), then
@@ -252,7 +278,7 @@
 .lucet-tool__row--summary {
   cursor: pointer;
   list-style: none;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-tool__row--summary::-webkit-details-marker { display: none; }
 .lucet-tool__row--summary .lucet-tool__head::before {
@@ -263,7 +289,7 @@
   border-inline-end: 1.5px solid currentColor;
   border-block-end: 1.5px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-tool[open] > .lucet-tool__row--summary .lucet-tool__head::before { transform: rotate(45deg); }
 /* The outcome aligns under the NAME: past the mark on plain rows, past the
@@ -506,7 +532,7 @@
   border-radius: var(--lucet-radius-surface);
   box-shadow: var(--lucet-material-inset);
   padding: var(--lucet-space-2) var(--lucet-space-2) var(--lucet-space-2) var(--lucet-space-3);
-  transition: box-shadow var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: box-shadow var(--lucet-duration-fast) var(--lucet-ease);
 }
 
 /* The ring belongs to the SURFACE, not the textarea: the whole object is the
@@ -645,7 +671,7 @@
   background: none;
   color: inherit;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 /* 24px, DELIBERATELY not larger: chips sit a few pixels apart, and a wider
    pseudo would reach over the neighbouring chip's name -- the misclick this
@@ -702,8 +728,8 @@
   color: var(--lucet-muted-foreground);
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-prompt__tool::before {
   content: '';
@@ -840,10 +866,11 @@
   stroke: color-mix(in oklab, currentColor 55%, transparent);
 }
 .lucet-orb[data-state='ready'] circle.lucet-orb__core {
-  animation: lucet-orb-breathe 3.6s ease-in-out infinite;
+  /* STILL, deliberately (motion pass): ready means nothing is
+     happening, and nothing moves unless something happened. The loops
+     on thinking/working/streaming stay — they indicate ONGOING events,
+     which is the indicator exception in motion.css. */
 }
-@keyframes lucet-orb-breathe {
-  0%, 100% { opacity: 0.55; scale: 0.9; }
   50%      { opacity: 1;    scale: 1.05; }
 }
 
@@ -1008,7 +1035,7 @@
   pointer-events: none;
   opacity: 0;
   translate: -50% 4px;
-  transition: opacity 90ms ease-out, translate 90ms ease-out;
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease), translate var(--lucet-duration-fast) var(--lucet-ease);
 }
 
 .lucet-tipwrap:hover .lucet-tip,
@@ -1019,7 +1046,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lucet-tip { transition: opacity 90ms ease-out; translate: -50% 0; }
+  .lucet-tip { transition: opacity var(--lucet-duration-fast) var(--lucet-ease); translate: -50% 0; }
 }
 
 /* ============================================================
@@ -1039,7 +1066,7 @@
 }
 
 .lucet-thread__pair {
-  transition: opacity var(--lucet-duration-normal) var(--lucet-ease-out);
+  transition: opacity var(--lucet-duration-normal) var(--lucet-ease);
   display: grid;
   /* One step more than before: at space-5 the answer started before the
      prompt had landed. Belonging still reads — the between-turn beat is
@@ -1228,7 +1255,7 @@
 .lucet-tool,
 .lucet-reasoning,
 .lucet-thread__doc .lucet-md {
-  animation: lucet-thread-arrive 220ms var(--lucet-ease-out) backwards;
+  animation: lucet-thread-arrive var(--lucet-duration-normal) var(--lucet-ease) backwards;
 }
 @media (prefers-reduced-motion: reduce) {
   /* Literal duration, so the token collapse in motion.css never reaches
@@ -1271,8 +1298,8 @@
   font-size: var(--lucet-text-xs);
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-actions__btn svg {
   inline-size: 13px;
@@ -1314,7 +1341,7 @@
 }
 .lucet-actions__btn[aria-label='Not helpful'] { --lucet-pop-tilt: 12deg; }
 .lucet-actions__btn[data-pop] svg {
-  animation: lucet-thumb-pop 400ms var(--lucet-ease-out);
+  animation: lucet-thumb-pop var(--lucet-duration-normal) var(--lucet-ease);
   transform-origin: 45% 60%;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1323,7 +1350,7 @@
 
 .lucet-thread__pair:not([data-latest]) .lucet-actions {
   opacity: 0;
-  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-thread__pair:not([data-latest]):hover .lucet-actions,
 .lucet-thread__pair:not([data-latest]):focus-within .lucet-actions {
@@ -1415,7 +1442,7 @@
   text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
   text-underline-offset: 3px;
   border-radius: 2px;
-  transition: text-decoration-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: text-decoration-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-md__link:hover { text-decoration-color: currentColor; }
 .lucet-md__link:focus-visible {
@@ -1522,8 +1549,8 @@
   color: var(--lucet-muted-foreground);
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-codeblock__copy svg {
   inline-size: 13px;
@@ -1597,7 +1624,7 @@
    the screen reader hears the same thing in every state. */
 .lucet-thread__vmeta {
   opacity: 0;
-  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-thread__pair:hover .lucet-thread__vmeta,
 .lucet-thread__pair:focus-within .lucet-thread__vmeta {
@@ -1666,7 +1693,7 @@
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 /* The commit half of the banner's pair: same quiet control, its words
    do the emphasis. */
@@ -1708,8 +1735,8 @@
   cursor: pointer;
   list-style: none;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-scope__button::-webkit-details-marker { display: none; }
 .lucet-scope__button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
@@ -1757,11 +1784,11 @@
 .lucet-reasoning[open] > .lucet-reasoning__body,
 .lucet-tool[open] > * + *,
 .lucet-sources details[open] > * + * {
-  animation: lucet-disclose-in var(--lucet-duration-fast) var(--lucet-ease-out) backwards;
+  animation: lucet-disclose-in var(--lucet-duration-fast) var(--lucet-ease) backwards;
 }
 
 .lucet-scope__panel {
-  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease-out) backwards;
+  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease) backwards;
   transform-origin: bottom;
   position: absolute;
   inset-block-end: calc(100% + 6px);
@@ -1787,7 +1814,7 @@
   font-size: var(--lucet-text-sm);
   text-align: start;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-scope__row:hover { background-color: var(--lucet-hover); }
 .lucet-scope__row:focus-visible {
@@ -1844,7 +1871,6 @@
 
 /* Not its own positioning context: the PANEL anchors to the bar (below),
    so it can never overhang a container edge the trigger sits near. */
-.lucet-budget { }
 .lucet-budget__button {
   display: inline-flex;
   align-items: center;
@@ -1859,8 +1885,8 @@
   cursor: pointer;
   list-style: none;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-budget__button::-webkit-details-marker { display: none; }
 .lucet-budget__button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
@@ -1896,7 +1922,7 @@
   rotate: 45deg;
 }
 .lucet-budget__panel {
-  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease-out) backwards;
+  animation: lucet-panel-in var(--lucet-duration-normal) var(--lucet-ease) backwards;
   transform-origin: bottom;
   position: absolute;
   /* Anchored to the BAR, not the trigger: the trigger's seat moves per
@@ -1957,7 +1983,7 @@
   font-size: var(--lucet-text-sm);
   text-align: start;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-budget__row:hover { background-color: var(--lucet-hover); }
 .lucet-budget__row:focus-visible {
@@ -2104,7 +2130,7 @@
   cursor: pointer;
   list-style: none;
   border-radius: var(--lucet-radius-control);
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-sources__row--summary::-webkit-details-marker { display: none; }
 .lucet-sources__row--summary::before {
@@ -2116,7 +2142,7 @@
   border-inline-end: 1.5px solid currentColor;
   border-block-end: 1.5px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-source[open] > .lucet-sources__row--summary::before { transform: rotate(45deg); }
 .lucet-sources__row--summary:hover { background-color: var(--lucet-hover); }
@@ -2304,7 +2330,7 @@
   line-height: 1.35;
   text-align: start;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 /* The menu's lines: under EVERY row, the last included. The sources and
    the history rule lines between rows only — but those lists live inside
@@ -2360,7 +2386,7 @@
   stroke-linejoin: round;
   color: var(--lucet-muted-foreground);
   opacity: 0.6;
-  transition: translate var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: translate var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-chips__chip:hover:not(:disabled) .lucet-chips__chev { translate: 2px 0; }
 /* Opaque at rest, so hover MIXES the ink over the fill rather than veiling. */
@@ -2401,6 +2427,8 @@
    only: the overlay gate holds geometry. */
 [data-expression='glass'] .lucet-tool {
   background-color: var(--lucet-popover);
+}
+[data-expression='glass'] .lucet-tool::after {
   box-shadow: var(--lucet-material-raised);
 }
 [data-expression='glass'] .lucet-prompt {

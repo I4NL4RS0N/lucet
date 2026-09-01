@@ -178,7 +178,7 @@ body {
   translate: calc(-100% - 26px) 0;
   visibility: hidden;
   transition:
-    translate var(--lucet-duration-normal) var(--lucet-ease-out),
+    translate var(--lucet-duration-normal) var(--lucet-ease),
     visibility 0s var(--lucet-duration-normal);
 }
 .cfg__side-hot {
@@ -204,7 +204,7 @@ body {
   translate: 0 0;
   visibility: visible;
   transition:
-    translate var(--lucet-duration-normal) var(--lucet-ease-out),
+    translate var(--lucet-duration-normal) var(--lucet-ease),
     visibility 0s;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -320,8 +320,8 @@ body {
   font-size: 13px;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__side-new svg {
   inline-size: 13px;
@@ -390,8 +390,8 @@ body {
   font-size: 12.5px;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__stage-reset:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__stage-reset:disabled { opacity: 0.45; cursor: default; }
@@ -545,8 +545,8 @@ body {
   color: var(--lucet-muted-foreground);
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__reset::before {
   content: '';
@@ -706,7 +706,14 @@ body {
      where texture would only fight their hairlines (Ian). */
   mask-image: linear-gradient(to bottom, black 45%, transparent 82%);
   /* The room fades up before the words arrive — light first. */
-  animation: cfg-atmo-in 1400ms var(--lucet-ease-out) backwards;
+  /* PRE-VOCABULARY CHOREOGRAPHY (noted, per the motion pass): the
+     cold-start entrance (atmo fade, breathe-in, rise) predates the
+     named motions and keeps literal durations. It reports a real
+     event — the empty thread arriving — runs once, and is killed
+     under reduced motion. The silk layers beneath it are STATIC now:
+     their infinite drift was ambient decoration on an idle screen,
+     which the organising rule bans. */
+  animation: cfg-atmo-in 1400ms var(--lucet-ease) backwards;
   /* Silk intensity is a THEME decision — but "over white a whisper is
      plenty" turned out to read as a printing artifact, not weather
      (Ian's light-mode crit). Light now commits to the bloom: stronger
@@ -764,7 +771,6 @@ body {
       color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-1), transparent),
       transparent
     );
-  animation: cfg-silk-drift 26s ease-in-out infinite alternate;
 }
 .cfg__atmo i:nth-child(2) {
   inset-inline-start: 2%;
@@ -776,7 +782,6 @@ body {
     color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-2), transparent),
     transparent
   );
-  animation: cfg-silk-drift 37s ease-in-out infinite alternate-reverse;
 }
 .cfg__atmo i:nth-child(3) {
   inset-inline-end: -8%;
@@ -788,7 +793,6 @@ body {
     color-mix(in oklab, var(--lucet-primary) var(--cfg-silk-3), transparent),
     transparent
   );
-  animation: cfg-silk-sway 44s ease-in-out infinite alternate;
 }
 /* The grain: a fine dot lattice in the page's own ink, masked to live
    only where the light is. Near-subliminal on purpose — tooth, not
@@ -804,14 +808,6 @@ body {
 }
 @keyframes cfg-atmo-in {
   from { opacity: 0; }
-}
-@keyframes cfg-silk-drift {
-  from { transform: translateX(-3.5%) rotate(-1.6deg) scaleY(0.92); }
-  to { transform: translateX(3.5%) rotate(1.2deg) scaleY(1.06); }
-}
-@keyframes cfg-silk-sway {
-  from { transform: translateY(-12px) rotate(2deg); }
-  to { transform: translateY(10px) rotate(-1.5deg); }
 }
 
 /* The home's mark, over the greeting — the genre's grammar: a flat
@@ -838,7 +834,7 @@ body {
 .cfg__empty-sub { max-inline-size: 40ch; }
 /* The room lights, then the hero's beats; the floor rises last. */
 .cfg__empty > :not(.cfg__atmo) {
-  animation: lucet-thread-arrive 320ms var(--lucet-ease-out) backwards;
+  animation: lucet-thread-arrive var(--lucet-duration-normal) var(--lucet-ease) backwards;
 }
 .cfg__empty > :nth-child(2) { animation-delay: 80ms; }
 .cfg__empty > :nth-child(3) { animation-delay: 170ms; }
@@ -989,8 +985,8 @@ body {
   text-align: start;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__trigger:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__trigger:active:not(:disabled) { background-color: var(--lucet-press); }
@@ -1031,8 +1027,8 @@ body {
   stroke-width: 1.8;
   color: var(--lucet-muted-foreground);
   transition:
-    translate var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    translate var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__trigger:hover:not(:disabled) .cfg__trigger-play {
   color: var(--lucet-foreground);
@@ -1087,8 +1083,8 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__views button:hover:not([aria-pressed='true']) { background-color: var(--lucet-hover); color: var(--lucet-subtle-foreground); }
 .cfg__views button[aria-pressed='true'] {
@@ -1225,8 +1221,8 @@ body {
   font-size: 12.5px;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__mock-tabs button:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__mock-tabs button:focus-visible {
@@ -1251,8 +1247,8 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__askai:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__askai:focus-visible {
@@ -1330,7 +1326,7 @@ body {
   box-shadow: var(--lucet-shade-3);
   /* It ARRIVES like a drawer: from the right edge, one motion, done.
      The shadow rides along, so the light stays honest on the way in. */
-  animation: cfg-drawer-in 320ms var(--lucet-ease-out);
+  animation: cfg-drawer-in var(--lucet-duration-normal) var(--lucet-ease);
 }
 @keyframes cfg-drawer-in {
   from { transform: translateX(calc(100% + 32px)); }
@@ -1371,8 +1367,8 @@ body {
   cursor: pointer;
   list-style: none;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__dmenu summary::-webkit-details-marker { display: none; }
 .cfg__dmenu summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
@@ -1416,8 +1412,8 @@ body {
   text-align: start;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__dmenu-row:hover:not(:disabled) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__dmenu-row:focus-visible {
@@ -1477,7 +1473,7 @@ body {
      (Ian), the title tells the truth to anyone who lingers, and
      aria-hidden already keeps the fiction away from the reader. */
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__history-row:hover { background-color: var(--lucet-hover); }
 .cfg__history-row:hover svg { opacity: 0.85; }
@@ -1502,7 +1498,7 @@ body {
   /* Present, but quiet: dressing must never weigh what real content
      weighs. Sharpens with the row's hover. */
   opacity: 0.55;
-  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
@@ -1562,7 +1558,7 @@ body {
   font: inherit;
   font-size: 12px;
   cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__aside select:hover { background-color: var(--lucet-hover); }
 .cfg__aside select:focus-visible {
@@ -1581,7 +1577,7 @@ body {
   color: var(--lucet-muted-foreground);
   cursor: pointer;
   list-style: none;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__log summary::-webkit-details-marker { display: none; }
 /* Two words and a caret: the standard disclosure grammar says the rest. */
@@ -1593,7 +1589,7 @@ body {
   border-inline-end: 1.5px solid currentColor;
   border-block-end: 1.5px solid currentColor;
   transform: rotate(-45deg);
-  transition: transform var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: transform var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__log[open] summary::before { transform: rotate(45deg); }
 .cfg__log summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
@@ -1634,17 +1630,17 @@ body {
  * ============================================================ */
 @media (prefers-reduced-motion: no-preference) {
   .cfg__empty:has(.cfg__composer--center) .cfg__atmo {
-    animation: cfg-breathe-in 640ms var(--lucet-ease-out) both;
+    animation: cfg-breathe-in 640ms var(--lucet-ease) both;
   }
   .cfg__empty .cfg__empty-mark,
   .cfg__empty .cfg__empty-hello,
   .cfg__empty .cfg__empty-sub {
-    animation: cfg-rise 360ms var(--lucet-ease-out) 60ms both;
+    animation: cfg-rise 360ms var(--lucet-ease) 60ms both;
   }
   /* The floor mounts once and never re-animates — the composer's seat
      is permanent now, so this plays at app load only. */
   .cfg__app-main:has(.cfg__empty) .cfg__floor {
-    animation: cfg-rise 360ms var(--lucet-ease-out) 180ms both;
+    animation: cfg-rise 360ms var(--lucet-ease) 180ms both;
   }
 }
 @keyframes cfg-rise {

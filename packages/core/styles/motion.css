@@ -1,4 +1,87 @@
 /**
+ * Motion.
+ *
+ * THE ORGANISING RULE, the way the light source is written into
+ * materials.css:
+ *
+ *   MOTION IS EVIDENCE. NOTHING MOVES UNLESS SOMETHING HAPPENED.
+ *   PAPER MOVES LIKE A MECHANISM. GLASS MOVES LIKE A MASS.
+ *
+ * Every motion decision must be derivable from those two sentences.
+ * The first rules out idle loops, ambient shimmer, and decoration —
+ * the reference libraries fake liveness with CSS loops; this library
+ * has a real runtime, so motion only ever reports a real event. The
+ * second gives each expression its character at identical
+ * choreography: Paper is quick, mechanical, no overshoot, done; Glass
+ * is slower, eased, arrives with weight and settles — restraint, not
+ * spring physics.
+ *
+ * THE VOCABULARY — a component picks a named motion; it does not
+ * compose its own, for the same reason it does not compose its own
+ * shadow stack:
+ *
+ *   switch    state changes on controls (hover, press, toggle,
+ *             selection). duration-fast, colour/opacity only.
+ *   enter     something joining the plane (a message, a chip, a badge,
+ *             a panel). duration-normal, transform + opacity; the
+ *             travel is single-digit pixels — arrival is felt, not
+ *             watched. exit is the same motion reversed.
+ *   elevate   a change in height: a surface gaining or losing its
+ *             material. duration-elevate (normal in Paper, where a
+ *             hairline snaps and the fade is nearly invisible; slow in
+ *             Glass, where shadow and rim arrive as the object lifts).
+ *             Compositor discipline: never transition box-shadow —
+ *             render the material on a pseudo-element and animate its
+ *             OPACITY.
+ *
+ * THE READOUT RULE. Readouts move with the data; motion marks the
+ * threshold, not the tracking. The budget bar and the ≈ projection
+ * update instantly as typing changes them — they are instruments, not
+ * events. The threshold crossing (caution arriving) is the event, and
+ * it gets `switch`.
+ *
+ * THE INDICATOR EXCEPTION. A continuous indicator of an ONGOING event
+ * (the activity orb while the runtime is genuinely thinking or
+ * fetching, the caret while text is genuinely streaming) may loop —
+ * it is reporting something that is still happening, which is the
+ * rule, not an exception to it. Indicator loops run linear at their
+ * own periods and stop the moment the event settles.
+ *
+ * Call sites use --lucet-duration-* and --lucet-ease and never know
+ * which expression is active; the axis (expression.css) resolves both.
+ */
+
+:root {
+  /* Mechanical: standard decelerate, no personality. (The token
+     --lucet-ease-out is this curve's original name and remains as an
+     alias; new call sites say what they mean.) */
+  --lucet-ease-mechanical: cubic-bezier(0.2, 0, 0, 1);
+  /* Mass: a longer decelerate with a soft settle — most of the travel
+     happens early, the last tenth eases out over the tail. No term
+     past 1: weight, never bounce. */
+  --lucet-ease-mass: cubic-bezier(0.3, 0.9, 0.3, 1);
+  /* The axis token. Paper's value; the glass block in expression.css
+     re-points it. */
+  --lucet-ease: var(--lucet-ease-mechanical);
+
+  /* The expression flip is a MATERIAL event, so it moves like Glass in
+     both directions — a constant, not the active expression's slow
+     (the chrome is pinned to Paper and would otherwise time the
+     dissolve mechanically). */
+  --lucet-duration-flip: 400ms;
+}
+
+/* The enter primitive: opacity and single-digit travel. Reversed, it
+   is exit. Keyframed (not a transition) so elements that MOUNT — a
+   check mark landing, a badge arriving, a banner — can use it. */
+@keyframes lucet-enter {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+/**
  * Reduced motion, applied last.
  *
  * Imported at the END of the token set on purpose. The expression layer
@@ -6,8 +89,12 @@
  * ties on specificity and LOSES on source order: the preference was being
  * silently overridden for anyone who set it, in both expressions.
  *
- * Motion is a preference, not a flourish. Durations collapse here once, rather
- * than being guarded at every call site.
+ * Motion is a preference, not a flourish. THE ONE POLICY: durations
+ * collapse to zero here, once — every tokened transition and keyframe
+ * becomes an instant or opacity-only change with no per-component
+ * guarding. Indicator loops and pre-vocabulary keyframes that carry
+ * literal durations keep their own kill blocks beside their
+ * definitions; everything else inherits this.
  */
 
 @media (prefers-reduced-motion: reduce) {
@@ -18,5 +105,7 @@
     --lucet-duration-fast: 0ms;
     --lucet-duration-normal: 0ms;
     --lucet-duration-slow: 0ms;
+    --lucet-duration-elevate: 0ms;
+    --lucet-duration-flip: 0ms;
   }
 }

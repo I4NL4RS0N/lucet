@@ -84,7 +84,7 @@
   --focus-w: var(--lucet-focus-width);
   --focus-offset: var(--lucet-focus-offset);
 
-  --fast: var(--lucet-duration-fast) var(--lucet-ease-out);
+  --fast: var(--lucet-duration-fast) var(--lucet-ease);
 }
 
 /* ==========================================================================

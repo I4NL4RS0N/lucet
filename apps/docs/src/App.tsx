@@ -772,11 +772,135 @@ export function App() {
      reducer's law — a conversation is not a refund); the stage reset
      re-seeds it, because that button means "fresh demo", not "new
      thread". */
+  /* THE OPENING PLAYBACK (motion pass): the site has a real scripted
+     runtime, so on FIRST arrival the frozen mid-thread plays itself
+     into being — six-odd seconds of the real events at real pace, then
+     genuine stillness. Playback is a PATH to the resting state, never
+     a different destination: it dispatches the same OPENER_EVENTS the
+     instant seed does, so the settled page is byte-identical and every
+     audit and capture stays valid. Skipped for: deep links (they own
+     the opening), automation (audits and captures must not wait —
+     ?playback=1 overrides for the recording), reduced motion, repeat
+     visits this session, and every Reset. */
+  const playbackWanted = useMemo(() => {
+    try {
+      const q = new URLSearchParams(window.location.search)
+      if (q.has('state')) return false
+      if (q.has('playback')) return true
+      if (navigator.webdriver) return false
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+      return window.sessionStorage.getItem('lucet-konf-played') === null
+    } catch {
+      return false
+    }
+  }, [])
   const lucet = useMemo(() => {
     const instance = createLucet({ suggestions: SUGGESTIONS })
     instance.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
-    for (const e of OPENER_EVENTS) instance.store.dispatch(e)
+    if (!playbackWanted) for (const e of OPENER_EVENTS) instance.store.dispatch(e)
     return instance
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  /* Run-once across StrictMode's doubled effects: the ref survives the
+     simulated remount, so the player and its listeners install exactly
+     once. No effect cleanup on purpose — the listeners remove
+     themselves when playback ends or is interrupted, and a strict-mode
+     cleanup would strip them from the one live player. */
+  const playbackStarted = useRef(false)
+  useEffect(() => {
+    if (!playbackWanted || playbackStarted.current) return
+    playbackStarted.current = true
+    try {
+      window.sessionStorage.setItem('lucet-konf-played', '1')
+    } catch {
+      /* storage may be unavailable; playback still runs once */
+    }
+    let done = false
+    let cursor = 0
+    /* True while the event AT cursor is mid-flight (a streaming delta,
+       a running tool): the loop's own tail completes it exactly once,
+       so fast-forward must not re-dispatch it. */
+    let inFlight = false
+    const finish = () => {
+      if (done) return
+      done = true
+      /* Fast-forward, never skip: the remaining events land as-is, so
+         the resting state is exactly the seeded one. */
+      for (let i = cursor + (inFlight ? 1 : 0); i < OPENER_EVENTS.length; i++) {
+        lucet.store.dispatch(OPENER_EVENTS[i]!)
+      }
+      cleanup()
+    }
+    const cleanup = () => {
+      window.removeEventListener('pointerdown', finish, true)
+      window.removeEventListener('keydown', finish, true)
+    }
+    window.addEventListener('pointerdown', finish, true)
+    window.addEventListener('keydown', finish, true)
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+    void (async () => {
+      await sleep(700)
+      for (; cursor < OPENER_EVENTS.length && !done; ) {
+        const e = OPENER_EVENTS[cursor]!
+        if (e.type === 'part/added' && e.part.kind === 'tool') {
+          /* The receipt runs for real: the running part first, the
+             true settle after its honest 1.4s. The seed's part arrives
+             already-succeeded, so running + tool/settled reproduces it
+             exactly; on interrupt the settle still lands (once). */
+          inFlight = true
+          const part = e.part
+          lucet.store.dispatch({
+            type: 'part/added',
+            messageId: e.messageId,
+            part: { ...part, status: 'running', detail: null, result: null },
+          })
+          await sleep(1400)
+          lucet.store.dispatch({
+            type: 'tool/settled',
+            messageId: e.messageId,
+            partId: part.id,
+            status: 'succeeded',
+            detail: part.detail ?? '',
+            result: part.result,
+          })
+          inFlight = false
+          cursor++
+          continue
+        }
+        if (e.type === 'part/delta') {
+          /* Stream the answer word by word through the same event the
+             runtime uses; on interrupt the remainder lands whole. */
+          inFlight = true
+          const words = e.delta.match(/\S+\s*/g) ?? [e.delta]
+          let sent = 0
+          for (const w of words) {
+            if (done) break
+            lucet.store.dispatch({ type: 'part/delta', messageId: e.messageId, partId: e.partId, delta: w })
+            sent += w.length
+            await sleep(22)
+          }
+          if (sent < e.delta.length)
+            lucet.store.dispatch({
+              type: 'part/delta',
+              messageId: e.messageId,
+              partId: e.partId,
+              delta: e.delta.slice(sent),
+            })
+          inFlight = false
+          cursor++
+          continue
+        }
+        lucet.store.dispatch(e)
+        cursor++
+        if (e.type === 'turn/submitted') await sleep(550)
+        else if (e.type === 'response/started') await sleep(380)
+        else if (e.type === 'response/settled') await sleep(650)
+        else if (e.type === 'part/added' && e.part.kind === 'sources') await sleep(300)
+      }
+      done = true
+      cleanup()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [view, setView] = useState<View>('full')
   /* The site's resting look: dark, violet — but a choice made ANYWHERE on

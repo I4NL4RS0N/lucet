@@ -79,7 +79,7 @@
   font-size: 13px;
   text-decoration: none;
   text-underline-offset: 4px;
-  transition: color var(--lucet-duration-fast) var(--lucet-ease-out);
+  transition: color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__navlink-gh {
   inline-size: 14px;
@@ -155,8 +155,8 @@
   text-transform: capitalize;
   cursor: pointer;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__prefs select:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__prefs select:focus-visible {
@@ -178,8 +178,8 @@
   cursor: pointer;
   list-style: none;
   transition:
-    background-color var(--lucet-duration-fast) var(--lucet-ease-out),
-    color var(--lucet-duration-fast) var(--lucet-ease-out);
+    background-color var(--lucet-duration-fast) var(--lucet-ease),
+    color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__more summary::-webkit-details-marker { display: none; }
 .cfg__more summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
@@ -244,4 +244,22 @@
     flex-basis: 100%;
     gap: 4px 14px;
   }
+}
+
+/* THE EXPRESSION FLIP (motion pass): a cross-dissolve over the whole
+   page. Both snapshots are pixel-aligned — the geometry gate holds
+   Paper and Glass to identical boxes — so the crossfade reads as a
+   pure material change: nothing may move, and if anything slides it
+   is a layout bug, not an animation bug. The flip is a material event,
+   so it times like Glass in both directions. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--lucet-duration-flip);
+  animation-timing-function: var(--lucet-ease-mass);
+}
+
+/* The control itself: `switch` treatment with a crisp pressed state —
+   the dissolve begins from this press. */
+.cfg__prefs select:active {
+  background-color: var(--lucet-press);
 }

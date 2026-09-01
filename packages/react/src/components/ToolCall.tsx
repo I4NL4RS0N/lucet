@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ToolStatus } from 'lucet'
 import { ActivityOrb } from './ActivityOrb.js'
 import { StateIcon } from './StateIcon.js'
@@ -52,6 +53,21 @@ const WORD: Partial<Record<ToolStatus, string>> = {
   partial: 'Partly done',
 }
 
+/* The elapsed readout while the tool genuinely runs: it times the real
+   event as it actually elapses (the mock scheduler sleeps real time),
+   and on settle the runtime's own receipt (`detail`) replaces it — the
+   counter stops at the truth, never at a fake. The readout rule holds:
+   this tracks, it does not animate. */
+function LiveElapsed() {
+  const [tenths, setTenths] = useState(0)
+  useEffect(() => {
+    const born = performance.now()
+    const t = setInterval(() => setTenths(Math.floor((performance.now() - born) / 100)), 100)
+    return () => clearInterval(t)
+  }, [])
+  return <span className="lucet-tool__detail">{(tenths / 10).toFixed(1)}s</span>
+}
+
 function Receipt({ label, text }: { label: string; text: string }) {
   return (
     <div className="lucet-tool__io">
@@ -64,6 +80,15 @@ function Receipt({ label, text }: { label: string; text: string }) {
 }
 
 export function ToolCall({ name, status, detail, args, result, defaultOpen }: ToolCallProps) {
+  /* Settling is an EVENT only when this instance actually watched the
+     run: a chip that mounts already settled (the boot seed, a restored
+     copy) arrives still — motion is evidence, and nothing happened
+     here. The flag gates the check-mark's enter; the elevate rides the
+     status change itself (a transition fires only on change, so a
+     settled mount never animates). */
+  const watchedRunning = useRef(false)
+  if (status === 'running') watchedRunning.current = true
+  const arrived = watchedRunning.current && status !== 'running'
   /*
    * Two lines, one register each: the first says WHO (mark, name, and the
    * status word when it must be spoken); the second says WHAT CAME OF IT,
@@ -84,7 +109,11 @@ export function ToolCall({ name, status, detail, args, result, defaultOpen }: To
           </>
         )}
       </span>
-      {detail ? <span className="lucet-tool__detail">{detail}</span> : null}
+      {status === 'running' ? (
+        <LiveElapsed />
+      ) : detail ? (
+        <span className="lucet-tool__detail">{detail}</span>
+      ) : null}
     </>
   )
 
@@ -98,14 +127,19 @@ export function ToolCall({ name, status, detail, args, result, defaultOpen }: To
   // No payload, no disclosure: a plain row that promises nothing.
   if (!args && !result) {
     return (
-      <div className="lucet-tool" data-status={status}>
+      <div className="lucet-tool" data-status={status} data-arrived={arrived || undefined}>
         <div className="lucet-tool__row">{head}</div>
       </div>
     )
   }
 
   return (
-    <details className="lucet-tool" data-status={status} open={defaultOpen || undefined}>
+    <details
+      className="lucet-tool"
+      data-status={status}
+      data-arrived={arrived || undefined}
+      open={defaultOpen || undefined}
+    >
       <summary className="lucet-tool__row lucet-tool__row--summary">{head}</summary>
       <div className="lucet-tool__body">{receipt}</div>
     </details>

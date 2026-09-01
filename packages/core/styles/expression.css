@@ -48,6 +48,10 @@
   --lucet-duration-fast: 100ms;
   --lucet-duration-normal: 160ms;
   --lucet-duration-slow: 240ms;
+  /* elevate: in Paper a hairline snaps — the fade rides normal and is
+     nearly invisible, which is the point. */
+  --lucet-duration-elevate: var(--lucet-duration-normal);
+  --lucet-ease: var(--lucet-ease-mechanical);
 
   --lucet-primary-glow: none;
 }
@@ -59,6 +63,9 @@
   --lucet-duration-fast: 140ms;
   --lucet-duration-normal: 240ms;
   --lucet-duration-slow: 400ms;
+  /* elevate: shadow and rim arrive as the object lifts. */
+  --lucet-duration-elevate: var(--lucet-duration-slow);
+  --lucet-ease: var(--lucet-ease-mass);
 
   /* The one glow: light under the primary action. Tied to the accent,
      so a greyscale default stays greyscale. */

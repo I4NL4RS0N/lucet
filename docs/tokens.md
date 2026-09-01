@@ -79,7 +79,15 @@ reading as one row.
 ### Motion
 
 - `--lucet-duration-instant`, `--lucet-duration-fast`, `--lucet-duration-normal`, `--lucet-duration-slow`
-- `--lucet-ease-out`, `--lucet-ease-in-out`
+- `--lucet-duration-elevate` — the elevate motion's own clock: normal in
+  Paper (a hairline snaps), slow in Glass (shadow and rim arrive)
+- `--lucet-duration-flip` — the expression cross-dissolve; a material
+  event's constant, timed like Glass in both directions
+- `--lucet-ease` — THE axis token: mechanical under Paper, mass under
+  Glass; call sites use this and never know which expression is active
+- `--lucet-ease-mechanical`, `--lucet-ease-mass` — the two named curves
+  (motion.css states the vocabulary and the organising rule)
+- `--lucet-ease-out` (alias of mechanical, kept for hosts), `--lucet-ease-in-out`
 
 These collapse to zero under `prefers-reduced-motion`. They are declared in
 `motion.css`, which is imported last, because an earlier file re-declaring a

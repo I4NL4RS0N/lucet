@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { loadAppearance, saveAppearance } from '../lib/appearance'
 
 /**
@@ -239,10 +240,30 @@ export function useAppearance(fallback: {
   useEffect(() => {
     saveAppearance(state)
   }, [state])
-  const update = useCallback(
-    (patch: Partial<ThemeState>) => setState((prev) => ({ ...prev, ...patch })),
-    [],
-  )
+  const update = useCallback((patch: Partial<ThemeState>) => {
+    /* THE EXPRESSION FLIP is the one moment no reference library can
+       have: geometry is locked, so Paper and Glass can cross-dissolve
+       with nothing moving — the whole material world changes while
+       every element holds its position. A material event moves like
+       Glass in both directions (duration-flip at ease-mass; the
+       ::view-transition rules live in site-header.css). The dissolve
+       starts from the control's own change event — no beat. Browsers
+       without View Transitions, and reduced motion, get the instant
+       swap: instant is a legitimate rendering of the same event. */
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
+    const flips = 'expression' in patch
+    if (
+      flips &&
+      typeof doc.startViewTransition === 'function' &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      doc.startViewTransition(() => {
+        flushSync(() => setState((prev) => ({ ...prev, ...patch })))
+      })
+      return
+    }
+    setState((prev) => ({ ...prev, ...patch }))
+  }, [])
   return [state, update]
 }
 
