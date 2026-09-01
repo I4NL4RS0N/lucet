@@ -11,14 +11,16 @@ import type { Suggestion } from 'lucet'
  *    thread (the core's `suggestionsVisible` owns the rule) — and leave the
  *    moment the conversation exists. Chips that linger become decoration,
  *    and decoration that sends prompts is a misclick farm.
- * 3. ASK AND DO, APART. Two kinds, drawn apart: `ask` is turn-by-turn —
- *    a question, words back, cheap. `do` is a commission — the agent goes
- *    and works. BOTH only send their words (the chip never touches a
- *    system itself; the agent does the doing), but flattening them trains
- *    people to tap without reading, so each kind gets its own labelled
- *    labelled, DESCRIBED group. Per-row kind glyphs were tried and cut:
- *    once the labels said the difference out loud, the icons were
- *    reinforcement that had outlived its job.
+ * 3. ASK AND DO, APART - BY WEIGHT, NOT BY BADGE. `ask` is turn-by-turn:
+ *    a question, words back, cheap - a light row. `do` is a commission -
+ *    the agent goes and works - so its row is a BOUNDED CARD stating its
+ *    cost before the tap: what it will touch (`effect`) and how long
+ *    (`durationHint`), in the host's words. Two identical lists under
+ *    different eyebrows was exactly the flattening the brief calls a
+ *    safety failure. Per-row kind glyphs and accents were tried and cut
+ *    (twice): the difference is structural weight and stated cost, not
+ *    decoration. Both kinds still only send their words verbatim; once
+ *    a commission runs, Stop on the composer is the path out.
  * 4. THE TOGGLE IS THE CONFIG. A group exists only while it has
  *    suggestions: populate ask, do, both, or neither, and the layout
  *    follows. No boolean props to desynchronise from the data. Kindless
@@ -57,7 +59,14 @@ function Chip({
       disabled={disabled || undefined}
       onClick={() => onPick(suggestion)}
     >
-      <span className="lucet-chips__text">{suggestion.prompt}</span>
+      <span className="lucet-chips__text">
+        {suggestion.prompt}
+        {suggestion.effect || suggestion.durationHint ? (
+          <span className="lucet-chips__cost">
+            {[suggestion.effect, suggestion.durationHint].filter(Boolean).join(' · ')}
+          </span>
+        ) : null}
+      </span>
       {/* One chevron for both kinds — per-kind trailing glyphs were
           tried (a run-triangle on do-rows) and cut, the second such cut:
           the trailing slot is the WAY-IN affordance, and the way in is

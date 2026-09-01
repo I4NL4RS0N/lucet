@@ -17,19 +17,23 @@ Prompts made visible, on the cold start.
   and decoration that sends prompts is a misclick farm. Follow-up chips
   after a response are a different pattern with different stakes; they
   arrive with the Action Surface.
-- **Ask and Do, apart.** Two kinds, drawn apart: `ask` is turn-by-turn —
-  a question, words back, cheap. `do` is a commission — the agent goes and
-  works. Both still only send their words (the chip itself never touches a
-  system; the agent does the doing), but flattening the two trains people
-  to tap without reading, so each kind gets its own labelled group — the label carrying a short
-  descriptor ("Answers, in the thread" / "Work handed off and run"),
-  because two bare words let the split blur — and its
-  own glyph: a speech square asks, the little agent does — shape alone,
-  one ink for both (an accent on `do` was tried and cut: two colours in
-  one list read as inconsistency, not meaning). An earlier draft of
-  this position banished `do` to a future Action Surface entirely; the
-  revision is that the *split* was the law, not the banishment — chips
-  that merely commission work belong here, and controls that execute
+- **Ask and Do, apart — by weight, not by badge.** `ask` is turn-by-turn:
+  a question, words back, cheap — a light divider row. `do` is a
+  commission — the agent goes and works — so its row is a BOUNDED CARD
+  that states its cost before the tap: what it will touch
+  (`Suggestion.effect`) and how long (`Suggestion.durationHint`), in the
+  host's own words. Both kinds still only send their words verbatim (the
+  chip never touches a system; the agent does the doing), but two
+  identical lists under different eyebrow labels was exactly the
+  flattening the brief calls a safety failure — it trains people to tap
+  without reading. Badges were tried on the way here and cut twice: a
+  per-kind glyph, then an accent on `do` (two colours in one list read
+  as inconsistency, not meaning). The surviving rule: the difference is
+  structural weight and stated cost, never decoration. Once a
+  commission runs, Stop on the composer is the path out. An earlier
+  draft banished `do` to a future Action Surface entirely; the revision
+  is that the *split* was the law, not the banishment — chips that
+  merely commission work belong here, and controls that execute
   directly still do not.
 - **The toggle is the config.** A group exists only while it has
   suggestions: populate ask, do, both, or neither, and the layout follows.
@@ -47,7 +51,12 @@ Prompts made visible, on the cold start.
   its job. A trailing distinction (the rail's run-triangle on do-rows)
   was tried next and cut too — the second cut of the same idea, which
   makes it a position: the trailing slot is the way-in affordance, the
-  way in is identical for both kinds, and the WORDS carry the kind
+  way in is identical for both kinds, and the WORDS carry the kind.
+  The do-card is not this cut coming back: what was cut was four raised
+  cards competing with the composer for OBJECT status, and decoration
+  standing in for meaning. The card returned only for commissions, only
+  below the composer, and only carrying information — the cost line is
+  what earns the border
   ("Run by the agent").
 - **The lock reaches the chips.** While it is another person's turn, a way
   in that would fail is not offered as live: chips disable under the same
@@ -69,9 +78,10 @@ the very state a first visit should demonstrate.
 - **English copy is hardcoded** — the Ask/Do group labels and their descriptions. A labels escape hatch is
   deferred until a real host shows which strings it must own;
   freezing a copy API speculatively would freeze the wrong one.
-- **Direct-execution controls** (labels apart from prompts, duration and
-  stop affordances, effects without a turn) — still the Action Surface.
-  The `kind` split landed here first and is the seam it will build on.
+- **Direct-execution controls** (labels apart from prompts, per-action
+  stop, effects without a turn) — still the Action Surface. The `kind`
+  split and the cost line (`effect` + `durationHint`) landed here
+  first and are the seam it will build on.
 - **Follow-up suggestions after a response** — same pattern, different
   moment; needs its own visibility rule and restraint.
 - **Host-side dynamic suggestions** (varying by page or scope) — the

@@ -865,8 +865,8 @@ export function ComponentsStage() {
                   suggestions={[
                     { id: 's1', prompt: 'Summarise the three documents I shared.', kind: 'ask' },
                     { id: 's3', prompt: 'Which of these two plans is more likely to slip?', kind: 'ask' },
-                    { id: 's2', prompt: 'Turn my notes into a short plan.', kind: 'do' },
-                    { id: 's4', prompt: 'Check the three sources I flagged.', kind: 'do' },
+                    { id: 's2', prompt: 'Turn my notes into a short plan.', kind: 'do', effect: 'Creates a page in Plans', durationHint: '~2 min' },
+                    { id: 's4', prompt: 'Check the three sources I flagged.', kind: 'do', effect: 'Reads 3 flagged sources', durationHint: '~1 min' },
                   ]}
                   onPick={noop}
                 />

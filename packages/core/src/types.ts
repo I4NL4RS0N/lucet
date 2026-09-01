@@ -307,6 +307,15 @@ export interface Suggestion {
    * draws it. Omitted, the chip renders in a single unlabelled list.
    */
   readonly kind?: 'ask' | 'do'
+  /**
+   * What the commission will touch, in the host's words ("Creates pages
+   * in Plans"). Meaningful on `do` — the brief's rule is that an agentic
+   * action states its effect before it is tapped, because a do-chip that
+   * looks like an ask-chip trains people to tap without reading.
+   */
+  readonly effect?: string
+  /** Expected duration, in the host's words ("~2 min"). */
+  readonly durationHint?: string
 }
 
 export interface ThreadState {

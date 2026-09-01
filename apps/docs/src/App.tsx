@@ -42,15 +42,17 @@ const ACCENTS = [
  */
 const SUGGESTIONS: readonly Suggestion[] = (
   [
-    [happyPath, 'ask'],
-    [reasoning, 'ask'],
-    [formatted, 'do'],
-    [toolSuccess, 'do'],
+    [happyPath, 'ask', undefined, undefined],
+    [reasoning, 'ask', undefined, undefined],
+    [formatted, 'do', 'Creates pages in Plans', '~2 min'],
+    [toolSuccess, 'do', 'Reads the flagged sources', '~1 min'],
   ] as const
-).map(([s, kind]) => ({
+).map(([s, kind, effect, durationHint]) => ({
   id: s.id,
   prompt: s.prompt ?? '',
   kind,
+  ...(effect === undefined ? {} : { effect }),
+  ...(durationHint === undefined ? {} : { durationHint }),
 }))
 
 type View = 'full' | 'drawer' | 'mobile'

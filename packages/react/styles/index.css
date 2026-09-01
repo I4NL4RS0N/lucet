@@ -2189,6 +2189,27 @@
   block-size: 1px;
   background-color: var(--lucet-border);
 }
+/* THE WEIGHT IS THE SPLIT. An ask row stays a light divider row; a do
+   row is a bounded card — raised a step, hairline, its own air — with
+   its cost stated under the words. Two identical lists under different
+   eyebrows was the flattening the brief calls a safety failure; the
+   card is the safety affordance, not decoration. */
+.lucet-chips__chip[data-kind='do'] {
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-raised);
+  padding: calc(8px * var(--lucet-density, 1)) calc(10px * var(--lucet-density, 1));
+  margin-block-end: calc(6px * var(--lucet-density, 1));
+}
+.lucet-chips__chip[data-kind='do']::after { content: none; }
+.lucet-chips__chip[data-kind='do']:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--lucet-hover) 60%, var(--lucet-card));
+}
+.lucet-chips__cost {
+  display: block;
+  margin-block-start: 2px;
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-subtle-foreground);
+}
 .lucet-chips__text {
   flex: 1;
   min-inline-size: 0;
