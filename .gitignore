@@ -56,3 +56,6 @@ scratch/
 docs/design-brief.md
 docs/todo.md
 shots/
+.agents/
+.claude/skills/
+skills-lock.json
