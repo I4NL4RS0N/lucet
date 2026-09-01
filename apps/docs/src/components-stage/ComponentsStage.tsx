@@ -378,7 +378,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
           status: 'partial',
           detail: '2 of 3 sources returned. Timed out on the third.',
           args: '{ "query": "sources flagged this week", "limit": 3 }',
-          result: '{ "returned": 2, "timed_out": ["vendor quote"], "retryable": true }',
+          result: '{ "returned": 2, "timed_out": ["carrier quote"], "retryable": true }',
         },
         reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
       }),
@@ -388,7 +388,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
     label: 'A tool that failed, with nothing to show',
     note: 'No result came back, so there is no receipt to open on that side — and no payload at all means no chevron: a disclosure over an empty body is a dead promise, and this library has shipped its last one.',
     events: [
-      ...turn(1, 'Check the vendor quote.', {
+      ...turn(1, 'Check the carrier quote.', {
         tool: {
           name: 'Searched the documents',
           status: 'failed',
@@ -562,7 +562,7 @@ const CORE_FIXTURES: readonly Fixture[] = [
 const SCOPE_LADDER = [
   { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
   { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
-  { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+  { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
 ]
 
 const SCOPE_FIXTURES: readonly Fixture[] = [

@@ -48,9 +48,4 @@ React today, adapters welcome, the core is yours to wrap.
 **https://lucet.design** — one persistent interface with a state
 trigger rail; click a state and it happens in the running thread.
 
-<!-- SLOT: UNIVERSE — if the demo universe is renamed (product name,
-     page names, document titles), the docs screenshots and copy
-     referenced above update in the same pass; nothing else in this
-     file depends on it. -->
-
 MIT.

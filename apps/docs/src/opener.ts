@@ -35,7 +35,7 @@ export const OPENER_EVENTS: readonly LucetEvent[] = [
     messageId: 'rm_prev',
     partId: 'rm_prev_x',
     delta:
-      'Two of the three. The vendor review picked up a revised delivery table on Friday — the procurement dates moved out by a week. The internal note added a paragraph on scope late Monday. The Q3 revision has not changed since it was filed; if you want, I can re-check all three against their sources before you circulate anything.',
+      'Two of the three. The carrier review picked up a revised delivery table on Friday — the procurement dates moved out by a week. The internal note added a paragraph on scope late Monday. The Q3 revision has not changed since it was filed; if you want, I can re-check all three against their sources before you circulate anything.',
   },
   { type: 'response/settled', messageId: 'rm_prev', status: 'complete', reason: null },
   {
@@ -59,7 +59,7 @@ export const OPENER_EVENTS: readonly LucetEvent[] = [
       status: 'succeeded',
       detail: '1.4s',
       args: '{ "scope": "attachments", "count": 3 }',
-      result: '{ "read": ["vendor-review", "internal-note", "q3-revision"] }',
+      result: '{ "read": ["carrier-review", "internal-note", "q3-revision"] }',
     },
   },
   { type: 'part/added', messageId: 'rm_open', part: { kind: 'text', id: 'rm_open_x', text: '' } },
@@ -68,7 +68,7 @@ export const OPENER_EVENTS: readonly LucetEvent[] = [
     messageId: 'rm_open',
     partId: 'rm_open_x',
     delta:
-      'All three point at the same schedule risk, though they disagree on the cause. The vendor review attributes it to procurement [1]; the internal note blames scope [2]; the Q3 revision hedges between the two.',
+      'All three point at the same schedule risk, though they disagree on the cause. The carrier review attributes it to procurement [1]; the internal note blames scope [2]; the Q3 revision hedges between the two.',
   },
   {
     type: 'part/added',
@@ -79,7 +79,7 @@ export const OPENER_EVENTS: readonly LucetEvent[] = [
       sources: [
         {
           id: 'src-vendor',
-          title: 'Vendor review',
+          title: 'Carrier review',
           location: 'Reports / Procurement',
           sourceKind: 'document',
           status: 'ok',

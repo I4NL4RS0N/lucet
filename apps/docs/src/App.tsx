@@ -65,30 +65,30 @@ type View = 'full' | 'drawer' | 'mobile'
  */
 const MOCK_PAGES = [
   {
-    tab: 'Page 1',
+    tab: 'Plans',
     doc: 'Quarterly planning',
     ladder: [
       { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
       { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
-      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
     ],
   },
   {
-    tab: 'Page 2',
+    tab: 'Reports',
     doc: 'Reports review',
     ladder: [
       { id: 'page', label: 'This page', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 },
       { id: 'section', label: 'Reports', summary: 'Everything filed under Reports', itemCount: 9 },
-      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
     ],
   },
   {
-    tab: 'Page 3',
-    doc: 'Library index',
+    tab: 'Carriers',
+    doc: 'Carrier directory',
     ladder: [
-      { id: 'page', label: 'This page', summary: 'Library index — the catalogue itself', itemCount: 1 },
-      { id: 'section', label: 'Library', summary: 'Everything filed under Library', itemCount: 27 },
-      { id: 'all', label: 'Everything', summary: 'All of Application Name', itemCount: 48 },
+      { id: 'page', label: 'This page', summary: 'Carrier directory — the directory itself', itemCount: 1 },
+      { id: 'section', label: 'Carriers', summary: 'Everything filed under Carriers', itemCount: 27 },
+      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
     ],
   },
 ] as const
@@ -419,7 +419,7 @@ function AppCore({
              APPLICATION. (A live thread-title version was tried here and
              read as odd chrome — the conversation's name belongs to inner
              surfaces, and the phone header will take it.) */}
-          <span className="cfg__frame-title">Application Name</span>
+          <span className="cfg__frame-title">Aquilo</span>
         </div>
       )}
 
@@ -519,8 +519,14 @@ function AppCore({
   )
 }
 
-/** The B2 orb-ring tile — the mark Lucet tried on and set aside. The
- * fake universe's ONE brand: every container is the same product. */
+/** THE AQUILO MARK on the universe's ONE tile: a geometric A whose
+ * crossbar overshoots left as a single wind stroke. The plate and its
+ * sheen stay from the B2 treatment; only the glyph changed. Set
+ * dressing, one colour — the mark wears the tile's own hardware ink
+ * (the literal the orb-ring wore before it), because the plate is
+ * always dark and inheriting the theme's ink would go illegible in
+ * light. Every container shows the same product, so both tiles are
+ * this one component. */
 function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
   return (
     <svg className="cfg__mock-logo" viewBox="0 0 96 96">
@@ -535,33 +541,23 @@ function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
           <stop offset="0.38" stopColor="#fff" stopOpacity="0.02" />
           <stop offset="0.62" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
-        <radialGradient id={`${idp}-h`}>
-          <stop offset="0" stopColor="#fff" stopOpacity="0.4" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id={`${idp}-c`}>
-          <stop offset="0.6" stopColor="#fff" />
-          <stop offset="1" stopColor="#DDE0EC" />
-        </radialGradient>
         <clipPath id={`${idp}-k`}>
           <rect width="96" height="96" rx="27" />
         </clipPath>
       </defs>
       <rect width="96" height="96" rx="27" fill={`url(#${idp}-p)`} />
       <g clipPath={`url(#${idp}-k)`}>
-        <circle cx="48" cy="49" r="26" fill={`url(#${idp}-h)`} />
-        <circle
-          cx="48"
-          cy="49"
-          r="24"
+        <g
+          transform="translate(18 12.25) scale(3)"
           fill="none"
           stroke="#F4F5FB"
-          strokeWidth="7.6"
-          strokeDasharray="112 39"
+          strokeWidth="2.4"
           strokeLinecap="round"
-          transform="rotate(156 48 49)"
-        />
-        <circle cx="48" cy="49" r="9.5" fill={`url(#${idp}-c)`} />
+          strokeLinejoin="round"
+        >
+          <path d="M6.5 20 L12 4.5 L17.5 20" />
+          <path d="M2.5 14.5 H15.55" />
+        </g>
         <rect width="96" height="96" rx="27" fill={`url(#${idp}-s)`} />
       </g>
     </svg>
@@ -597,7 +593,7 @@ function MockHistory() {
       <div className="cfg__history-group">Earlier</div>
       {(
         [
-          ['Compare the two vendor quotes', 'Tue · 16:02'],
+          ['Compare the two carrier quotes', 'Tue · 16:02'],
           ['Rename the workstreams', 'Mon · 11:30'],
           ['Last week\u2019s review notes', 'Fri · 15:45'],
         ] as const
@@ -657,7 +653,7 @@ function PhoneNav({
         ) ||
         /* An empty thread is the APP'S home screen, so the app's name —
            the title becomes a conversation's only once one exists. */
-        'Application Name'
+        'Aquilo'
   return (
     <div className="cfg__frame-bar cfg__phone-bar">
       <details className="cfg__dmenu">
@@ -720,7 +716,7 @@ function MockDocument({ page = 0 }: { page?: number }) {
   return (
     <div className="cfg__mock-doc" aria-hidden>
       <div className="cfg__mock-nav">
-        <span>Application Name</span>
+        <span>Aquilo</span>
         <span className="cfg__mock-sep">/</span>
         <span>{p.tab}</span>
         <span className="cfg__mock-sep">/</span>
@@ -739,9 +735,9 @@ function MockDocument({ page = 0 }: { page?: number }) {
       <div className="cfg__mock-chart">
         {(
           [
-            ['Vendor onboarding', 72, 'ok'],
-            ['Template rollout', 64, 'ok'],
-            ['Venue and logistics', 55, 'ok'],
+            ['Carrier onboarding', 72, 'ok'],
+            ['Report-template rollout', 64, 'ok'],
+            ['Booth and logistics', 55, 'ok'],
             ['Budget revision', 38, 'blocked'],
             ['Workstream review', 22, 'blocked'],
           ] as const
@@ -1161,7 +1157,7 @@ export function App() {
                     <span className="cfg__side-brand">
                       <span className="cfg__side-brand-id" aria-hidden>
                         <MockBrandMark />
-                        <span className="cfg__side-brand-name">Application Name</span>
+                        <span className="cfg__side-brand-name">Northbound</span>
                       </span>
                       <button
                         type="button"
@@ -1205,7 +1201,7 @@ export function App() {
                       <div className="cfg__side-row" data-active>Quarterly planning</div>
                       <div className="cfg__side-row">Draft the kickoff note</div>
                       <div className="cfg__side-group">Earlier</div>
-                      <div className="cfg__side-row">Compare the two vendor quotes</div>
+                      <div className="cfg__side-row">Compare the two carrier quotes</div>
                       <div className="cfg__side-row">Rename the workstreams</div>
                       <div className="cfg__side-row">Last week&rsquo;s review notes</div>
                     </div>
@@ -1267,7 +1263,7 @@ export function App() {
               aria-label="The running app, as a drawer"
             >
               {/* The host application's own chrome. The brand is REAL but
-                  nobody's — the B2 orb-ring tile Lucet itself tried on and
+                  nobody's — the Aquilo wind-stroke A on the plated tile Lucet
                   set aside — and the words say what they are: a name-shaped
                   hole and three page-shaped holes. One control is live. */}
               {/* TWO layers, not one: the OS's window (traffic lights and
@@ -1287,7 +1283,7 @@ export function App() {
               <div className="cfg__mock-bar">
                 <span className="cfg__mock-brand" aria-hidden>
                   <MockBrandMark />
-                  Application Name
+                  Aquilo
                 </span>
                 {/* REAL navigation now: clicking a page moves the ground
                     under the scope, and the scope follows — saying so.

@@ -155,7 +155,7 @@ body {
   display: flex;
   flex-direction: column;
   /* Floored at content: the rail exists to show thread titles, and 215
-     is where 'Compare the two vendor quotes' renders whole (the dial in
+     is where 'Compare the two carrier quotes' renders whole (the dial in
      the calc is the future density axis; constant 1 today). */
   inline-size: max(215px, calc(208px * var(--lucet-density, 1)));
   flex-shrink: 0;
@@ -1191,7 +1191,7 @@ body {
   font-weight: 600;
   letter-spacing: -0.01em;
 }
-/* The B2 tile: the orb-ring mark Lucet tried on and set aside — real
+/* The B2 tile, now wearing the Aquilo wind-stroke A — real
    enough to sell the host, and deliberately nobody's. */
 .cfg__mock-logo {
   inline-size: 20px;
