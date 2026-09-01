@@ -1097,10 +1097,13 @@
 }
 
 /* Quiet separators between pairs: the structure Ian asked the marker to be.
-   The hairline sits in the middle of real air, not instead of it. */
+   The hairline sits in the middle of real air, not instead of it. A
+   CONTENT RULE (--lucet-line, not --lucet-border): history's
+   punctuation survives Glass — chrome borders zero, punctuation
+   doesn't (expression.css). */
 .lucet-thread__pair + .lucet-thread__pair {
   padding-block-start: var(--lucet-space-8);
-  border-block-start: 1px solid var(--lucet-border);
+  border-block-start: 1px solid var(--lucet-line);
 }
 /* The separator rule (Thread.tsx): when the preceding message is
    entirely out of view — including under the host's scroll fade — the
@@ -1487,7 +1490,11 @@
   opacity: 0.6;
 }
 
-.lucet-md__rule { margin: var(--lucet-space-1) 0; border: 0; border-block-start: 1px solid var(--lucet-border); }
+/* CONTENT RULES, not chrome borders (expression.css states the
+   position): the horizontal rule and the table grid are punctuation
+   inside the document, so they draw in BOTH expressions —
+   --lucet-line, never --lucet-border. */
+.lucet-md__rule { margin: var(--lucet-space-1) 0; border: 0; border-block-start: 1px solid var(--lucet-line); }
 
 /* Tables: hairline grid, header on the muted step. Wide tables scroll
    inside their own keyboard-reachable region — the document never scrolls
@@ -1518,7 +1525,7 @@
   background-color: var(--lucet-muted);
   color: var(--lucet-foreground);
 }
-.lucet-md__table td { border-block-start: 1px solid var(--lucet-border); }
+.lucet-md__table td { border-block-start: 1px solid var(--lucet-line); }
 .lucet-md__table [data-align='right'] { text-align: end; }
 .lucet-md__table [data-align='center'] { text-align: center; }
 

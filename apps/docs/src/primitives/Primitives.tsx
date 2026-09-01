@@ -617,7 +617,7 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section name="Separator" note="drawn with the border token, so every line on the page matches">
+        <Section name="Separator" note="a content rule, not a chrome border — punctuation survives both expressions; chrome lines zero in Glass">
           <Spec label="Default">
             <div style={{ inlineSize: 260 }}><hr className="sep" /></div>
           </Spec>

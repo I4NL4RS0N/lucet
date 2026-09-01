@@ -35,6 +35,25 @@
  * else's product and should be quiet unless they have a reason not to
  * be.
  *
+ * CONTENT RULES ARE NOT CHROME BORDERS — the two kinds of line, and
+ * why Glass zeroes only one of them. A CHROME BORDER is architecture:
+ * the boundary of a container or control (a panel's edge, a field's
+ * ring, a divider between regions). Glass separates architecture with
+ * tint, light, and elevation, so chrome borders — everything consuming
+ * --lucet-border — go transparent. A CONTENT RULE is punctuation: a
+ * typographic mark INSIDE the document (a table's grid, a horizontal
+ * rule, the thread's between-exchanges separator, the Separator
+ * primitive). Removing punctuation deletes meaning rather than
+ * restyling it — the recurring Glass failure was losing content, not
+ * lines — so content rules consume --lucet-line, which both
+ * expressions keep. The split existed in the tokens all along
+ * (--lucet-default-border DERIVES from --lucet-line; Glass zeroes the
+ * derivation, never the source) but call sites picked between them by
+ * accident; now the choice is the position: border for chrome, line
+ * for punctuation. The no-borders checks govern the chrome set —
+ * --lucet-border consumers — and a visible content rule in Glass is
+ * correct, not a leak.
+ *
  * This file owns the axis's NON-MATERIAL residue only: motion feel and
  * the one sanctioned glow. Depth and translucency live in
  * materials.css; colour lives in surfaces.css and accents.css.

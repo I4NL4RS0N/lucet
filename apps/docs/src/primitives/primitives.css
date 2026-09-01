@@ -1141,7 +1141,13 @@ button.avatar:disabled,
  * arrives token by token is most of what this library renders.
  * ========================================================================== */
 
-.sep { block-size: 1px; inline-size: 100%; background: var(--line); border: 0; }
+/* A CONTENT RULE, not a chrome border: the separator is punctuation,
+   so it points at --lucet-line directly (the lab's --line alias maps
+   to the CHROME token, which Glass rightly zeroes — that mapping is
+   correct for chrome and was silently emptying this specimen). Strong
+   remains the system's strong line (--lucet-input), visible in both
+   expressions because it derives from the line, not the border. */
+.sep { block-size: 1px; inline-size: 100%; background: var(--lucet-line); border: 0; }
 .sep--strong { background: var(--line-strong); }
 
 /*
