@@ -1544,3 +1544,19 @@ body {
     opacity: 0;
   }
 }
+
+/* ============================================================
+ * THE REAL 320. The mock phone container always had its narrow manners;
+ * the SITE at a genuinely narrow viewport did not: the scroll region and
+ * the welcome each padded 24px — 96px of a 320px viewport spent before
+ * content — so the composer squeezed to 150px and its bar stacked one
+ * control per row. At true phone widths the welcome yields its inner
+ * gutter (the scroll region's own is enough) and the rhythm tightens so
+ * the cold start fits the frame.
+ * ============================================================ */
+@media (max-width: 480px) {
+  .cfg__scroll { padding-inline: 14px; }
+  .cfg__empty { padding-inline: 0; }
+  .cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 14px; }
+  .cfg__composer--center { margin-block-start: 8px; }
+}

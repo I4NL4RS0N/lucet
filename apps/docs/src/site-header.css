@@ -228,3 +228,20 @@
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
+
+/* At true phone widths the one-row header ran 149px past the edge with
+   no way to reach the nav. It wraps instead: brand row, then the nav
+   flowing to as many rows as it needs — every link reachable, no
+   hamburger machinery for four links. */
+@media (max-width: 560px) {
+  .cfg__bar-in {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .cfg__nav {
+    flex-wrap: wrap;
+    margin-inline-start: 0;
+    flex-basis: 100%;
+    gap: 4px 14px;
+  }
+}
