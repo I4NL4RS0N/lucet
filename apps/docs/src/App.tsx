@@ -14,6 +14,7 @@ import {
 import { AppearancePrefs, useAppearance } from './components/ThemeControls'
 import { SiteHeader } from './components/SiteHeader'
 import { readStateParam, writeStateParam } from './lib/deep-link'
+import { OPENER_EVENTS } from './opener'
 
 /**
  * The Konfabulator: the app IS the page.
@@ -93,83 +94,8 @@ const MOCK_PAGES = [
 ] as const
 
 
-/* THE FRONT DOOR OPENS MID-THREAD (review): a splash proves you can
-   centre a headline; a settled turn shows a tool call with its receipt
-   and duration, a cited answer, and a freshness signal — three
-   differentiators visible in the first second, and the rail has
-   something to act on. Seeded synchronously so the first paint already
-   has it. The cold start stays a STATE — in the rail, under Baseline,
-   where the unhappy-states list always put it. */
-const OPENER_EVENTS: readonly LucetEvent[] = [
-  {
-    type: 'turn/submitted',
-    turnId: 't_open',
-    versionId: 'v_open',
-    messageId: 'pm_open',
-    text: 'Summarise the three documents I shared.',
-    authorId: 'you',
-    attachmentIds: [],
-    retryOf: null,
-  },
-  { type: 'response/started', turnId: 't_open', messageId: 'rm_open' },
-  {
-    type: 'part/added',
-    messageId: 'rm_open',
-    part: {
-      kind: 'tool',
-      id: 'rm_open_t',
-      name: 'Read 3 documents',
-      status: 'succeeded',
-      detail: '1.4s',
-      args: '{ "scope": "attachments", "count": 3 }',
-      result: '{ "read": ["vendor-review", "internal-note", "q3-revision"] }',
-    },
-  },
-  { type: 'part/added', messageId: 'rm_open', part: { kind: 'text', id: 'rm_open_x', text: '' } },
-  {
-    type: 'part/delta',
-    messageId: 'rm_open',
-    partId: 'rm_open_x',
-    delta:
-      'All three point at the same schedule risk, though they disagree on the cause. The vendor review attributes it to procurement [1]; the internal note blames scope [2]; the Q3 revision hedges between the two.',
-  },
-  {
-    type: 'part/added',
-    messageId: 'rm_open',
-    part: {
-      kind: 'sources',
-      id: 'rm_open_s',
-      sources: [
-        {
-          id: 'src-vendor',
-          title: 'Vendor review',
-          location: 'Reports / Procurement',
-          sourceKind: 'document',
-          status: 'ok',
-          note: null,
-          detail: 'Pages 2\u20133',
-          trace: '{ "pages": [2, 3], "passage": "Procurement lead times moved the critical path." }',
-        },
-        {
-          id: 'src-note',
-          title: 'Internal note',
-          location: 'Plans / Quarterly',
-          sourceKind: 'document',
-          status: 'stale',
-          note: 'Last checked 6 days ago',
-          detail: 'Whole note',
-          trace: '{ "passage": "Scope grew twice without a date change." }',
-        },
-      ],
-    },
-  },
-  { type: 'response/settled', messageId: 'rm_open', status: 'complete', reason: null },
-  { type: 'composer/unlocked' },
-  {
-    type: 'usage/changed',
-    patch: { threadTokens: 1_840, contextTokens: 1_840, threadCostUsd: 0.0276, monthlySpentUsd: 6.2676 },
-  },
-]
+/* The mid-thread opener lives in opener.ts, shared with the components
+   page's "The app, live" section so both open on the same moment. */
 
 const MONTH_SEED = { monthlyBudgetUsd: 10, monthlySpentUsd: 6.24 } as const
 
@@ -206,24 +132,21 @@ function TriggerRail({
   const [tab, setTab] = useState<'state' | 'feature'>('state')
   /* THE UNBREAKABLE UNIT (review rule): a group heading and its first
      item never separate. If the resting fold would land between them,
-     the whole group goes below the line — the fade widens to cover it —
-     and the cue COUNTS what's out ("1 more in Sources"). The last
-     visible thing is always a partially-faded item, never a heading
-     with nothing under it. */
+     the fade widens until the orphaned heading is fully covered — the
+     last visible thing is always a partially-faded item, never a
+     heading with nothing under it. (The counting chip that used to
+     ride this measurement is gone: the fade alone already signals
+     overflow, which is why the chip was dropped.) */
   const flowRef = useRef<HTMLDivElement | null>(null)
-  const [more, setMore] = useState<{ count: number; group: string | null } | null>(null)
-  const checkMore = () => {
+  const checkFold = () => {
     const el = flowRef.current
     if (!el) return
-    if (el.scrollHeight - el.scrollTop - el.clientHeight <= 8) {
+    const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight <= 8
+    if (atEnd || el.scrollTop > 4) {
+      /* Scrolled, or nothing below: the rest-only rule — orphan
+         covering applies at the resting position, the default fade
+         everywhere else. */
       el.style.removeProperty('--fade-bottom')
-      setMore(null)
-      return
-    }
-    if (el.scrollTop > 4) {
-      /* Scrolling: the orphan-covering extra reverts (rest-only rule),
-         but the chip persists, so its 44px void band persists with it. */
-      el.style.setProperty('--fade-bottom', '44px')
       return
     }
     const cTop = el.getBoundingClientRect().top
@@ -237,24 +160,8 @@ function TriggerRail({
       const firstBottom = (first ?? head).getBoundingClientRect().bottom - cTop
       if (foldY > headTop - 6 && foldY < firstBottom + 4) safeFold = Math.min(safeFold, headTop - 6)
     }
-    /* The chip lives in the bottom band, so whenever it will show the
-       band must be VOID: the fade floors at 44px (chip + air), and
-       grows further when an orphaned heading needs covering. */
-    const fadePx = Math.max(44, safeFold < foldY ? Math.round(foldY - safeFold + 18) : 0)
-    el.style.setProperty('--fade-bottom', `${fadePx}px`)
-    let count = 0
-    const hiddenGroups = new Set<string>()
-    for (const g of el.querySelectorAll('.cfg__group')) {
-      const name = g.querySelector('.cfg__group-name')?.textContent ?? ''
-      for (const r of g.querySelectorAll('.cfg__trigger')) {
-        const rr = r.getBoundingClientRect()
-        if (rr.top - cTop + rr.height / 2 > safeFold) {
-          count++
-          hiddenGroups.add(name)
-        }
-      }
-    }
-    setMore(count === 0 ? null : { count, group: hiddenGroups.size === 1 ? [...hiddenGroups][0]! : null })
+    if (safeFold < foldY) el.style.setProperty('--fade-bottom', `${Math.round(foldY - safeFold + 18)}px`)
+    else el.style.removeProperty('--fade-bottom')
   }
   const kindOf = (id: string | null) =>
     groups.flatMap((g) => g.scenarios).find((s) => s.id === id)?.kind ?? 'state'
@@ -265,9 +172,9 @@ function TriggerRail({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active])
   useEffect(() => {
-    checkMore()
-    window.addEventListener('resize', checkMore)
-    return () => window.removeEventListener('resize', checkMore)
+    checkFold()
+    window.addEventListener('resize', checkFold)
+    return () => window.removeEventListener('resize', checkFold)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
@@ -329,7 +236,7 @@ function TriggerRail({
       {/* Only the GROUPS scroll: the tabs and Reset are the panel's fixed
           head, the way the event log is its fixed floor. The flow lives
           inside the nav so the fade mask can never dim the controls. */}
-      <div className="cfg__rail-flow" ref={flowRef} onScroll={checkMore}>
+      <div className="cfg__rail-flow" ref={flowRef} onScroll={checkFold}>
       {shown.map((group) => (
         <section className="cfg__group" key={group.group}>
           <h3 className="cfg__group-name">{group.group}</h3>
@@ -367,23 +274,6 @@ function TriggerRail({
         </section>
       ))}
       </div>
-      {/* ABSOLUTE over the flow, outside its mask: in flow it was an
-          oscillator (its height changed the fold that summoned it);
-          inside the flow it was masked by the very fade it rode. Out
-          here it takes no height and no fade — and the measurement
-          guarantees the band beneath it is always faded void. */}
-      {more ? (
-        <button
-          type="button"
-          className="cfg__rail-more cfg__rail-more--overlay"
-          onClick={() => flowRef.current?.scrollBy({ top: 220, behavior: 'smooth' })}
-        >
-          {more.group ? `${more.count} more in ${more.group}` : `${more.count} more`}
-          <svg viewBox="0 0 24 24" aria-hidden>
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-      ) : null}
     </nav>
   )
 }

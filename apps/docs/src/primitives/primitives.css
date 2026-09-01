@@ -170,28 +170,13 @@ body {
 
 /* ---- a section, and its stage ---- */
 
-.sec { margin-block-start: 64px; counter-increment: sec; }
-
-/*
- * Section numbers come from a CSS counter, on the project's own rule:
- * derived, never flagged. Delete a section and the sequence closes behind
- * it instead of leaving a hole for a careful reader to find.
- */
-.prim { counter-reset: sec; }
-.sec__n::before { content: counter(sec, decimal-leading-zero); }
+.sec { margin-block-start: 64px; }
 
 .sec__head {
   display: flex;
   align-items: baseline;
   gap: calc(12px * var(--lucet-density, 1));
   margin-block-end: calc(16px * var(--lucet-density, 1));
-}
-
-.sec__n {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--ink-3);
-  letter-spacing: 0.06em;
 }
 
 .sec__name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }

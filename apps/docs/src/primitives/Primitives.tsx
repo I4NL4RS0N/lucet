@@ -35,7 +35,6 @@ function Section({
   return (
     <section className="sec">
       <header className="sec__head">
-        <span className="sec__n" aria-hidden="true" />
         <h2 className="sec__name">{name}</h2>
         <span className="sec__note">{note}</span>
       </header>

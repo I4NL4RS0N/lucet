@@ -1103,7 +1103,11 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-block-size: 620px;
+  /* ONE STAGE HEIGHT for all three containers: min-block-size here let
+     the host document set its own depth, so switching tabs rocked the
+     whole composition (~70px between containers). The frame's ceiling
+     is the mock's ceiling. */
+  block-size: var(--cfg-stage-h, min(72vh, 760px));
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-material-overlay);
@@ -1451,13 +1455,16 @@ body {
 }
 .cfg__drawer .cfg__scroll { block-size: auto; flex: 1; }
 
-/* Mobile view: the same app, in a hand. */
-.cfg__phone-stage { display: grid; justify-content: center; padding-block: 8px; }
+/* Mobile view: the same app, in a hand. The wrapper adds no height:
+   the phone tops and bottoms on the same stage line as the frame. */
+.cfg__phone-stage { display: grid; justify-content: center; }
 .cfg__phone {
   display: flex;
   flex-direction: column;
   inline-size: 390px;
-  block-size: 700px;
+  /* The same stage line as the other two containers — the phone's
+     height is the stage's, only its width is the device's. */
+  block-size: var(--cfg-stage-h, min(72vh, 760px));
   background: var(--lucet-card);
   border-radius: 28px;
   box-shadow: var(--lucet-material-overlay);
@@ -1674,41 +1681,6 @@ body {
   gap: 4px;
 }
 
-/* The More chip: shown only while states sit below the fold, gone the
-   moment they don't. An affordance, not decoration — it scrolls. */
-.cfg__rail-more {
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-block-start: 2px;
-  min-block-size: 24px; /* 2.5.8 floor */
-  padding: 3px 10px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  box-shadow: var(--lucet-hairline);
-  color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: var(--lucet-text-xs);
-  cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
-}
-.cfg__rail-more:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.cfg__rail-more:focus-visible {
-  outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: var(--lucet-focus-offset);
-}
-.cfg__rail-more svg {
-  inline-size: 11px;
-  block-size: 11px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 /* The brand name yields before the toggle ever overlaps it: any host
    name longer than the rail is an ellipsis, not a collision. */
 .cfg__side-brand-name {
@@ -1721,21 +1693,6 @@ body {
 
 @media (max-width: 560px) {
   .cfg__layout { --cfg-chrome: 265px; }
-}
-
-/* The rail's counting cue: absolute over the flow's floor, OUTSIDE the
-   flow's mask, floating in the faded band the measurement guarantees
-   beneath it. */
-.cfg__rail-more--overlay {
-  position: absolute;
-  inset-block-end: 10px;
-  inset-inline-start: 50%;
-  translate: -50% 0;
-  z-index: 3;
-  inline-size: max-content;
-  display: flex;
-  background-color: var(--lucet-card);
-  box-shadow: var(--lucet-material-control);
 }
 
 /* Expressive took the floor's hairline with every other border, and the

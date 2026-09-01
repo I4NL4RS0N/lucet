@@ -4,6 +4,7 @@ import type { LucetEvent, ThreadState } from 'lucet'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
 import { AppearancePrefs, useAppearance } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
+import { OPENER_EVENTS } from '../opener'
 
 /**
  * The components stage. Private, never deployed — the primitives page's
@@ -632,7 +633,6 @@ function Section({ name, note, children }: { name: string; note: string; childre
   return (
     <section className="sec">
       <header className="sec__head">
-        <span className="sec__n" aria-hidden="true" />
         <h2 className="sec__name">{name}</h2>
         <span className="sec__note">{note}</span>
       </header>
@@ -643,7 +643,14 @@ function Section({ name, note, children }: { name: string; note: string; childre
 
 /** One live composer on a real store, mock runtime and all. */
 function Live() {
-  const lucet = useMemo(() => createLucet({ threadId: 'stage_live' }), [])
+  /* Seeded with the SAME mid-thread moment the Konfabulator opens on
+     (opener.ts): the section is titled "The app, live", and a heading
+     over a bare composer made that a false claim. */
+  const lucet = useMemo(() => {
+    const instance = createLucet({ threadId: 'stage_live' })
+    for (const e of OPENER_EVENTS) instance.store.dispatch(e)
+    return instance
+  }, [])
   const [state, setState] = useState(lucet.getState())
   const [attachCount, setAttachCount] = useState(0)
   useEffect(() => lucet.subscribe(() => setState(lucet.getState())), [lucet])
