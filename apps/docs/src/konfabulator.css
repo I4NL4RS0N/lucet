@@ -123,7 +123,9 @@ body {
 .cfg__side {
   display: flex;
   flex-direction: column;
-  inline-size: calc(208px * var(--lucet-density, 1));
+  /* Floored: at System density the raw dial (177px) no longer fit the
+     brand row, and the collapse toggle sat on top of the name. */
+  inline-size: max(184px, calc(208px * var(--lucet-density, 1)));
   flex-shrink: 0;
   padding: calc(12px * var(--lucet-density, 1)) 10px;
   border-inline-end: 1px solid var(--lucet-border);
@@ -1676,4 +1678,13 @@ body {
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* The brand name yields before the toggle ever overlaps it: any host
+   name longer than the rail is an ellipsis, not a collision. */
+.cfg__side-brand-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

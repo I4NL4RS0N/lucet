@@ -910,7 +910,7 @@ export function App() {
                     <span className="cfg__side-brand">
                       <span className="cfg__side-brand-id" aria-hidden>
                         <MockBrandMark />
-                        Application Name
+                        <span className="cfg__side-brand-name">Application Name</span>
                       </span>
                       <button
                         type="button"
