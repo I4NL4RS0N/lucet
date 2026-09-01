@@ -30,7 +30,35 @@ The price before you spend it: the model picker grown into the meter.
   of the month no longer covers the projection on the selected model.
   The note names the cheapest model that still fits — which is already
   a priced row in the same panel, one click away. A meter with no exit
-  is just anxiety.
+  is just anxiety. Both threshold states are triggers in the States
+  rail's COST group — a designed state nobody can trigger is
+  indistinguishable from an undesigned one, and these two went
+  unreviewed for exactly that reason until they joined the rail.
+- **Tone marks state relative to a limit, never raw magnitude.** A
+  price is an attribute; crossing a budget is a state. Colouring cheap
+  green and capable red would impose a value judgment the system cannot
+  know, make choosing a stronger model feel like an error, and dilute
+  what danger means everywhere else. The figures stay ink; the
+  threshold wears the tone — glyph and words with it, never colour
+  alone. The states audit pins this: no tone colour on any figure, row,
+  or model option by magnitude, in either theme, at rest or in
+  caution.
+- **A bar needs a denominator.** The month ledger was three figures the
+  reader had to compute into a proportion — the one place in the
+  component where a graphic carries what text cannot. The month row
+  wears a thin proportion bar: track in the inset grammar, record fill
+  at neutral ink strength, and the projection as a LIGHTER extension —
+  the ≈ semantics drawn, an estimate never solid. Caution ink arrives
+  only via the same booleans that set the chip's state, so the bar
+  cannot disagree with the trigger. The figures stay beside it in full
+  (1.4.1: the bar never carries the information alone). The thread row
+  has no limit, so it has no proportion to draw, so it has no bar.
+- **The panel states; the rationale teaches.** "The window re-sends
+  each turn" is a good sentence that was rendered on every open. The
+  projection line keeps the token count; the coupling explanation
+  lives in the row's title and here: the context window re-sends with
+  every turn, which is why long threads cost more per turn — budget
+  and context are two meters that couple without conflating.
 - **Spent is a wall with words, in caution, not danger.** When
   `monthlySpentUsd` crosses `monthlyBudgetUsd` the composer stops via a
   `'budget'` submit blocker — a limit arrived, nothing failed. The turn

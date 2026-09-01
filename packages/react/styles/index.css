@@ -1981,9 +1981,28 @@
 }
 .lucet-budget__fig {
   margin-inline-start: auto;
-  font-variant-numeric: tabular-nums;
   color: var(--lucet-subtle-foreground);
   font-size: var(--lucet-text-xs);
+}
+/* THE FIGURE GRAMMAR, shared: every priced or counted figure sets in
+   tabular numerals so columns of numbers read as columns — the budget
+   panel, the chip's price, the tool receipt's duration, the scope
+   counts, and any future priced row join the same rule rather than
+   re-declaring it. */
+.lucet-budget__fig,
+.lucet-budget__price,
+.lucet-tool__detail,
+.lucet-scope__count {
+  font-variant-numeric: tabular-nums;
+}
+/* THREE REGISTERS at a squint: the projection is the component's
+   thesis (price before you spend it), so its figure takes the primary
+   register; the model rows keep the working middle; the ledger stays
+   quiet — records, not decisions. */
+.lucet-budget__next .lucet-budget__fig {
+  font-size: var(--lucet-text-sm);
+  color: var(--lucet-foreground);
+  font-weight: 500;
 }
 .lucet-budget__row-note { font-size: var(--lucet-text-xs); }
 .lucet-budget__ledger {
@@ -1999,6 +2018,36 @@
   display: flex;
   gap: calc(12px * var(--lucet-density, 1));
   justify-content: space-between;
+}
+/* The meter's bar: track in the inset grammar (a recess, not an
+   object), record fill at neutral ink strength, and the projection as
+   a LIGHTER extension — the ≈ semantics drawn: an estimate is never
+   solid. Caution ink arrives only via data-state, which the component
+   sets from the same booleans as the chip — the bar cannot disagree
+   with the trigger. */
+.lucet-budget__bar {
+  position: relative;
+  display: block;
+  block-size: 3px;
+  border-radius: 999px;
+  background-color: var(--lucet-muted);
+  box-shadow: var(--lucet-inset-hair);
+  overflow: hidden;
+}
+.lucet-budget__bar i {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+}
+.lucet-budget__bar-fill { background-color: var(--lucet-muted-foreground); }
+.lucet-budget__bar-proj {
+  background-color: var(--lucet-muted-foreground);
+  opacity: 0.35;
+}
+.lucet-budget__bar[data-state] .lucet-budget__bar-fill,
+.lucet-budget__bar[data-state] .lucet-budget__bar-proj {
+  background-color: var(--lucet-tone-caution-foreground);
 }
 
 /* ============================================================

@@ -654,7 +654,12 @@ export const multiplayer = defineScenario({
 
 
 /*
- * BUDGET — the price before you spend it.
+ * COST — the price before you spend it. A STATE group, not a feature
+ * (brief §6, "Cost & latency signaling"): these lived on the Features
+ * tab and no state review ever reached them — a designed state nobody
+ * can trigger is indistinguishable from an undesigned one, so they sit
+ * in the States rail now, wired through the runtime like every other
+ * trigger.
  *
  * Every tool can tell you what you spent. The meter's job is the other
  * direction: the projected price of the NEXT turn, on each model, beside
@@ -666,9 +671,8 @@ export const multiplayer = defineScenario({
 
 export const budgetLow = defineScenario({
   id: 'budget-low',
-  label: 'The next turn may not fit',
-  group: 'Budget',
-  kind: 'feature',
+  label: 'Budget caution',
+  group: 'Cost',
   description:
     'The month is nearly spent and the thread is heavy, so the projected price of the next turn on the current model no longer fits what remains. The meter says so \u2014 and prices the model that still fits, one click away.',
   prompt: 'Compare the two proposals and recommend one.',
@@ -691,9 +695,8 @@ export const budgetLow = defineScenario({
 
 export const budgetSpent = defineScenario({
   id: 'budget-spent',
-  label: 'The month runs out',
-  group: 'Budget',
-  kind: 'feature',
+  label: 'Budget spent',
+  group: 'Cost',
   description:
     'This turn itself crosses the line: its cost lands on the ledger and the composer stops with words, not a grey button. The block is derived from the numbers \u2014 nothing was flagged.',
   prompt: 'Summarise where the project stands.',
@@ -712,27 +715,39 @@ export const budgetSpent = defineScenario({
   ],
 })
 
+/*
+ * THE RAIL LEADS WITH THE ARGUMENT. The stage at rest is already the
+ * baseline demo — a complete cited answer, a successful tool call,
+ * freshness, feedback — so a rail that leads with BASELINE spends its
+ * top slot duplicating the stage while the fold cuts differentiators
+ * off the bottom. Group order is insertion order, so the array IS the
+ * argument: boundaries, tools, failures, service, cost, freshness —
+ * the states the stage cannot show at rest — and the table stakes
+ * filed last, which is what the brief calls them. Contrast pairs
+ * (success beside partial failure) stay adjacent inside their group;
+ * ids never move, so deep links hold.
+ */
 export const builtInScenarios: readonly Scenario[] = [
-  happyPath,
-  formatted,
-  reasoning,
-  toolSuccess,
-  toolPartialFailure,
   refusal,
   lowConfidence,
+  toolSuccess,
+  toolPartialFailure,
   interrupted,
   rateLimit,
   degradedModel,
   serviceDown,
+  budgetLow,
+  budgetSpent,
   staleData,
   citedResponse,
   sourceUpdated,
   sourceGone,
+  happyPath,
+  formatted,
+  reasoning,
   scopeLadder,
   scopeMoved,
   versionHistory,
   restoreVersion,
   multiplayer,
-  budgetLow,
-  budgetSpent,
 ]

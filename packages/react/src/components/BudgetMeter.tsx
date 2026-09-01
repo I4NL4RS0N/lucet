@@ -94,14 +94,17 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
       </summary>
       <div className="lucet-budget__panel">
         {projection ? (
-          <div className="lucet-budget__next">
+          <div
+            className="lucet-budget__next"
+            /* The teaching lives here and in the rationale, not on every
+               open: the panel states, the title explains on demand. */
+            title="The context window re-sends with every turn, which is why long threads cost more per turn"
+          >
             <span className="lucet-budget__next-head">
               <span>Next turn on {selected.label}</span>
               <span className="lucet-budget__fig">≈{usd(projection.costUsd)}</span>
             </span>
-            <span className="lucet-budget__why">
-              ≈{tok(projection.tokens)} tokens — the window re-sends each turn
-            </span>
+            <span className="lucet-budget__why">≈{tok(projection.tokens)} tokens</span>
           </div>
         ) : null}
         {caution && remaining !== null ? (
@@ -127,12 +130,15 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
             >
               <span className="lucet-budget__row-head">
                 <span className="lucet-budget__row-label">{option.label}</span>
+                <span className="lucet-budget__fig">{p ? `≈${usd(p.costUsd)}` : '—'}</span>
+                {/* Check TRAILING — the site's one menu grammar (the
+                    drawer menu and the scope ladder both end the row
+                    with the mark; a third order would be an invention). */}
                 {option.id === selected.id ? (
                   <svg className="lucet-budget__check" viewBox="0 0 24 24" aria-hidden>
                     <path d="M5 12.5l4.5 4.5L19 7.5" />
                   </svg>
                 ) : null}
-                <span className="lucet-budget__fig">{p ? `≈${usd(p.costUsd)}` : '—'}</span>
               </span>
               {option.note ? <span className="lucet-budget__row-note">{option.note}</span> : null}
             </button>
@@ -147,13 +153,42 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
               </span>
             </span>
             {usage.monthlyBudgetUsd !== null && remaining !== null ? (
-              <span className="lucet-budget__ledger-row">
-                <span>This month</span>
-                <span className="lucet-budget__fig">
-                  {usd(usage.monthlySpentUsd)} of {usd(usage.monthlyBudgetUsd)}
-                  {spent ? ' — spent' : ` · ${usd(remaining)} left`}
+              <>
+                <span className="lucet-budget__ledger-row">
+                  <span>This month</span>
+                  <span className="lucet-budget__fig">
+                    {usd(usage.monthlySpentUsd)} of {usd(usage.monthlyBudgetUsd)}
+                    {spent ? ' — spent' : ` · ${usd(remaining)} left`}
+                  </span>
                 </span>
-              </span>
+                {/* THE METER: the one place a graphic carries what text
+                    cannot — three figures as one proportion. The bar is
+                    aria-hidden and the figures stay beside it in full
+                    (1.4.1: never the bar alone). The month row has a
+                    denominator, so it gets a bar; the thread row has
+                    none, so it never does. Caution rides the SAME
+                    booleans as the chip — one source of truth. */}
+                <span
+                  className="lucet-budget__bar"
+                  data-state={spent ? 'spent' : caution ? 'caution' : undefined}
+                  aria-hidden
+                >
+                  {projection ? (
+                    <i
+                      className="lucet-budget__bar-proj"
+                      style={{
+                        inlineSize: `${Math.min(100, ((usage.monthlySpentUsd + projection.costUsd) / usage.monthlyBudgetUsd) * 100).toFixed(2)}%`,
+                      }}
+                    />
+                  ) : null}
+                  <i
+                    className="lucet-budget__bar-fill"
+                    style={{
+                      inlineSize: `${Math.min(100, (usage.monthlySpentUsd / usage.monthlyBudgetUsd) * 100).toFixed(2)}%`,
+                    }}
+                  />
+                </span>
+              </>
             ) : null}
           </div>
         ) : null}

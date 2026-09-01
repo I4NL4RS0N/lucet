@@ -31,7 +31,7 @@
  */
 import { spawn } from 'node:child_process'
 import { chromium } from 'playwright'
-import { flattenBackground, oklabLightness } from './contrast.mjs'
+import { contrastRatio, flattenBackground, oklabLightness } from './contrast.mjs'
 
 const DEV_PORT = 4344
 const URL_ARG = process.argv[2] ?? process.env.AUDIT_URL ?? null
@@ -576,6 +576,128 @@ async function main() {
           ? 'actions: no recorded verdict on the stage (a fixture must replay feedback/given)'
           : 'actions: the pressed verdict must keep a silhouette, not just an ink change (1.4.1)',
       )
+    /*
+     * THE COST STATES, reached through the runtime (review: the meter's
+     * caution and spent states were designed, built — and unreachable
+     * from the States rail, so no review ever saw them). Both fire as
+     * deep links and must DERIVE: real usage through the real
+     * projection, never a flagged chip. The magnitude rule rides along:
+     * tone colour marks state relative to a limit, never raw price —
+     * so at rest no figure may wear the caution ink, and in caution
+     * only the threshold surfaces may.
+     */
+    for (const theme of ['dark', 'light']) {
+      await page.emulateMedia({ colorScheme: theme })
+      for (const [state, expected] of [
+        ['budget-low', 'caution'],
+        ['budget-spent', 'spent'],
+      ]) {
+        await page.goto(url.replace('primitives.html', `index.html?state=${state}`))
+        await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
+        await page.waitForFunction(
+          () =>
+            document.querySelector('.lucet-budget__button') &&
+            !document.querySelector('.lucet-thread__caret') &&
+            ![...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Stop'),
+          { timeout: 20000 },
+        )
+        const meter = await page.evaluate((exp) => {
+          const chips = [...document.querySelectorAll('.lucet-budget')].filter(
+            (c) => c.getBoundingClientRect().width > 0,
+          )
+          const chip = chips[0]
+          if (!chip) return null
+          const summary = chip.querySelector('.lucet-budget__button')
+          chip.open = true
+          const note = chip.querySelector('.lucet-budget__note')?.textContent ?? ''
+          const bar = chip.querySelector('.lucet-budget__bar')
+          const fill = chip.querySelector('.lucet-budget__bar-fill')
+          const figs = [...chip.querySelectorAll('.lucet-budget__fig')].map(
+            (f) => getComputedStyle(f).color,
+          )
+          const caution = getComputedStyle(document.documentElement).getPropertyValue('color')
+          const probe = document.createElement('i')
+          probe.style.color = 'var(--lucet-tone-caution-foreground)'
+          document.body.appendChild(probe)
+          const cautionColor = getComputedStyle(probe).color
+          probe.remove()
+          const out = {
+            chipState: summary?.getAttribute('data-state') ?? null,
+            mark: !!chip.querySelector('.lucet-budget__mark'),
+            note,
+            barState: bar?.getAttribute('data-state') ?? null,
+            fillColor: fill ? getComputedStyle(fill).backgroundColor : null,
+            trackColor: bar ? getComputedStyle(bar).backgroundColor : null,
+            figs,
+            cautionColor,
+          }
+          chip.open = false
+          return out
+        }, expected)
+        checks++
+        if (!meter) {
+          failures.push(`cost states (${theme}/${state}): no visible budget chip found`)
+          continue
+        }
+        if (meter.chipState !== expected)
+          failures.push(`cost states (${theme}/${state}): chip data-state is ${meter.chipState}, expected ${expected}`)
+        checks++
+        if (!meter.mark) failures.push(`cost states (${theme}/${state}): the triangle mark is missing — colour alone is not a state`)
+        if (state === 'budget-low') {
+          checks++
+          if (!/still fits/.test(meter.note))
+            failures.push(`cost states (${theme}/${state}): the caution note names no exit (got "${meter.note}")`)
+        }
+        checks++
+        if (meter.barState !== expected)
+          failures.push(`cost states (${theme}/${state}): the bar disagrees with the chip (${meter.barState} vs ${expected})`)
+        checks++
+        if (meter.fillColor && meter.trackColor) {
+          const ratio = contrastRatio(meter.fillColor, meter.trackColor)
+          if (ratio < 3)
+            failures.push(`cost states (${theme}/${state}): bar fill vs track is ${ratio.toFixed(2)}:1 — 1.4.11 needs 3:1`)
+        } else failures.push(`cost states (${theme}/${state}): bar or fill missing from the ledger`)
+        checks++
+        if (meter.figs.some((c) => c === meter.cautionColor))
+          failures.push(`cost states (${theme}/${state}): a figure wears the caution ink — tone marks the threshold, never magnitude`)
+      }
+
+      /* At rest: no threshold state, no tone anywhere on the meter. */
+      await page.goto(url.replace('primitives.html', 'index.html'))
+      await page.waitForFunction(
+        () => document.querySelector('.lucet-budget__button') && !document.querySelector('.lucet-thread__caret'),
+        { timeout: 20000 },
+      )
+      const rest = await page.evaluate(() => {
+        const chips = [...document.querySelectorAll('.lucet-budget')].filter(
+          (c) => c.getBoundingClientRect().width > 0,
+        )
+        const chip = chips[0]
+        if (!chip) return null
+        chip.open = true
+        const probe = document.createElement('i')
+        probe.style.color = 'var(--lucet-tone-caution-foreground)'
+        document.body.appendChild(probe)
+        const cautionColor = getComputedStyle(probe).color
+        probe.remove()
+        const out = {
+          chipState: chip.querySelector('.lucet-budget__button')?.getAttribute('data-state') ?? null,
+          barState: chip.querySelector('.lucet-budget__bar')?.getAttribute('data-state') ?? null,
+          tinted: [...chip.querySelectorAll('.lucet-budget__fig, .lucet-budget__price, .lucet-budget__row')].some(
+            (el) => getComputedStyle(el).color === cautionColor,
+          ),
+        }
+        chip.open = false
+        return out
+      })
+      checks++
+      if (!rest) failures.push(`magnitude audit (${theme}): no budget chip at rest`)
+      else if (rest.chipState !== null || rest.barState !== null || rest.tinted)
+        failures.push(
+          `magnitude audit (${theme}): tone colour at rest (chip ${rest.chipState}, bar ${rest.barState}, tinted ${rest.tinted})`,
+        )
+    }
+
   } finally {
     await browser.close()
     dev?.kill()
@@ -588,7 +710,7 @@ async function main() {
     console.error('')
     process.exit(1)
   }
-  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas, tooltip arrival) across two pages, both themes, ${ACCENTS.length + 1} accents.`)
+  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas, tooltip arrival, cost thresholds) across two pages, both themes, ${ACCENTS.length + 1} accents.`)
 }
 
 main()
