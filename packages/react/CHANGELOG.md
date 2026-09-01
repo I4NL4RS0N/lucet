@@ -1,4 +1,4 @@
-# lucet-react
+# @lucet/react
 
 ## 0.1.0
 

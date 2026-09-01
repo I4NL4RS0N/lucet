@@ -15,7 +15,7 @@ import type { IconName } from './StateIcon'
  * Ours is the fallback, exactly as our palette is the fallback when a shadcn
  * host defines none.
  *
- *   import { Icons } from 'lucet-react'
+ *   import { Icons } from '@lucet/react'
  *   import { OctagonX, TriangleAlert } from 'lucide-react'
  *
  *   <Icons.Provider icons={{ down: OctagonX, degraded: TriangleAlert }}>

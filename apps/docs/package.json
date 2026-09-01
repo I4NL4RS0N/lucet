@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "lucet": "*",
-    "lucet-react": "*",
+    "@lucet/core": "*",
+    "@lucet/react": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

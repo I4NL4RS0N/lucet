@@ -5,7 +5,7 @@
  * in the `lucet` core so other framework wrappers stay small.
  *
  * Styles are a separate import, so a host can take the behaviour without the
- * look:  import 'lucet-react/styles.css'
+ * look:  import '@lucet/react/styles.css'
  */
 
 export { LucetProvider, useLucet } from './context.js'
@@ -53,4 +53,4 @@ export type { StateIconProps, IconName } from './components/StateIcon.js'
 export { ToolCall } from './components/ToolCall.js'
 export type { ToolCallProps } from './components/ToolCall.js'
 
-export { VERSION } from 'lucet'
+export { VERSION } from '@lucet/core'

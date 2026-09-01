@@ -3,7 +3,7 @@
 # trusted publishing from CI), which a laptop publish cannot attest.
 #
 # To enable, Ian:
-#   1. On npmjs.com, for BOTH packages (lucet, lucet-react):
+#   1. On npmjs.com, for BOTH packages (@lucet/core, @lucet/react):
 #      Package → Settings → Trusted publisher → GitHub Actions →
 #      repository I4NL4RS0N/lucet, workflow release.yml.
 #      (Requires the packages to exist — after the first local publish.)
@@ -35,5 +35,5 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run verify
-      - run: npm publish --provenance --workspace lucet
-      - run: npm publish --provenance --workspace lucet-react
+      - run: npm publish --provenance --workspace @lucet/core
+      - run: npm publish --provenance --workspace @lucet/react

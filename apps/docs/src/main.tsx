@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
-import 'lucet/styles.css'
-import 'lucet-react/styles.css'
+import '@lucet/core/styles.css'
+import '@lucet/react/styles.css'
 import './konfabulator.css'
 
 const el = document.getElementById('root')

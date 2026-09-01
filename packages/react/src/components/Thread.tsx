@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { announcementPlan } from 'lucet'
-import type { Message, MessagePart, ThreadState } from 'lucet'
+import { announcementPlan } from '@lucet/core'
+import type { Message, MessagePart, ThreadState } from '@lucet/core'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'

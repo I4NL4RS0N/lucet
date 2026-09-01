@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
-import type { LoggedEvent, ThreadState, TriggerGroup } from 'lucet'
+import type { LoggedEvent, ThreadState, TriggerGroup } from '@lucet/core'
 import { useLucet } from './context.js'
 
 export function useThread(): ThreadState {

@@ -4,8 +4,8 @@
   "commit": false,
   "fixed": [
     [
-      "lucet",
-      "lucet-react"
+      "@lucet/core",
+      "@lucet/react"
     ]
   ],
   "linked": [],

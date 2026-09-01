@@ -1,4 +1,4 @@
-import type { Suggestion } from 'lucet'
+import type { Suggestion } from '@lucet/core'
 
 /**
  * Suggestion chips: prompts made visible. The positions:

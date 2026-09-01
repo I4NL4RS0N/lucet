@@ -1,4 +1,4 @@
-import type { LucetEvent } from 'lucet'
+import type { LucetEvent } from '@lucet/core'
 
 /* THE FRONT DOOR OPENS MID-THREAD (review): a splash proves you can
    centre a headline; a settled turn shows a tool call with its receipt

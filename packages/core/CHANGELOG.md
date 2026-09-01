@@ -1,4 +1,4 @@
-# lucet
+# @lucet/core
 
 ## 0.1.0
 

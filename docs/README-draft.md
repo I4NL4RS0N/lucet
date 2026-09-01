@@ -36,11 +36,11 @@ living outside the conversation, and they don't.
 ## Install
 
 ```
-npm install lucet lucet-react
+npm install @lucet/core @lucet/react
 ```
 
-`lucet` is the framework-free core: an event-sourced store, a pure
-total reducer, an injectable clock. `lucet-react` is the thin binding.
+`@lucet/core` is the framework-free core: an event-sourced store, a pure
+total reducer, an injectable clock. `@lucet/react` is the thin binding.
 React today, adapters welcome, the core is yours to wrap.
 
 ## Docs

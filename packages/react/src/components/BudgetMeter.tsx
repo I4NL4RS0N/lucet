@@ -1,6 +1,6 @@
-import { projectNextTurn } from 'lucet'
+import { projectNextTurn } from '@lucet/core'
 import { useMenuGrammar } from '../menu-grammar.js'
-import type { ModelState, TurnProjection, UsageState } from 'lucet'
+import type { ModelState, TurnProjection, UsageState } from '@lucet/core'
 
 /**
  * Budget Meter: the price before you spend it. The positions:
