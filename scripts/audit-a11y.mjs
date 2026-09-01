@@ -514,8 +514,16 @@ async function main() {
      * born yet -- "no caret" alone let the audit start measuring mid-
      * stream. The document plus no caret is only true after settle.
      */
+    /* The front door now opens mid-thread (2026-09-01), so ONE settled
+       document exists at first paint and 'a document with no caret' is
+       true before the seeded scenario has streamed at all — which is
+       exactly how this wait let the announcer check measure an empty
+       log. Wait for the SECOND pair's settled document: the seed's. */
     await page.waitForFunction(
-      () => document.querySelector('.lucet-md') && !document.querySelector('.lucet-thread__caret'),
+      () =>
+        document.querySelectorAll('.lucet-thread__pair').length >= 2 &&
+        document.querySelectorAll('.lucet-md').length >= 2 &&
+        !document.querySelector('.lucet-thread__caret'),
       { timeout: 15000 },
     )
 
@@ -744,10 +752,13 @@ async function main() {
     /* ~15 text pairs x 44 combos, calibrated after the group-chat change
        removed the author line from self-only home threads. */
     /* ~24 text samples + targets per combo with the formatted-response seed
-       (recalibrated 2026-08-31 when the markdown surfaces joined the sweep);
-       the floor sits low enough to forgive a removed element or two and high
-       enough that a vanished document or dead seed cannot pass. */
-    if (mainChecks < 900) {
+       (recalibrated 2026-08-31 when the markdown surfaces joined the sweep;
+       again 2026-09-01 when the front door opened mid-thread and the cold
+       start became a rail state — the splash's chips and hero left the
+       boot page, and 865 is the new honest count). The floor sits low
+       enough to forgive a removed element or two and high enough that a
+       vanished document or dead seed cannot pass. */
+    if (mainChecks < 820) {
       throw new Error(
         `the Konfabulator pass collected only ${mainChecks} elements across 44 combos -- ` +
           'its selectors and the page have drifted apart',

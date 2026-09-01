@@ -26,7 +26,7 @@
     "audit:a11y": "npm run build && node scripts/audit-a11y.mjs",
     "audit:parity": "npm run build && node scripts/audit-theme-parity.mjs",
     "audit:states": "node scripts/audit-states.mjs",
-    "verify": "npm run build && npm run typecheck && npm run test && node scripts/audit-a11y.mjs && node scripts/audit-theme-parity.mjs && node scripts/audit-states.mjs"
+    "verify": "npm run build && npm run typecheck && npm test && node scripts/audit-a11y.mjs && node scripts/audit-theme-parity.mjs && node scripts/audit-states.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
