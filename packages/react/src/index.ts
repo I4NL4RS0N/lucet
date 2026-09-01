@@ -1,5 +1,5 @@
 /**
- * lucet-react
+ * @lucet/react
  *
  * React bindings for Lucet. Presentation and hooks only. All state logic lives
  * in the `lucet` core so other framework wrappers stay small.

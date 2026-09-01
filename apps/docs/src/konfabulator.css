@@ -10,7 +10,7 @@
  * beside the thing they change.
  *
  * Everything here is page shell. The components inside the frame carry their
- * own styles from lucet-react; every value below is a token.
+ * own styles from @lucet/react; every value below is a token.
  */
 
 @import './site-header.css';
