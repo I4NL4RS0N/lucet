@@ -66,7 +66,11 @@
      engages, but the cool, warm and accent greys doubled to quadrupled the
      tint and the wells turned visibly cream on the white ground (Ian).
      Harmony is the greys agreeing with the accent, not wearing it. */
-  --lucet-default-muted: oklch(0.966 min(calc(var(--lucet-neutral-c) * 2), 0.009) var(--lucet-neutral-h));
+  /* x1, not x2 (the lavender-composer fix): doubled chroma on the
+     frame's largest well read blue-violet at the default 264 hue and
+     accent-stained under Violet. The well is carried by its lightness
+     step; the hue may only whisper. */
+  --lucet-default-muted: oklch(0.966 min(var(--lucet-neutral-c), 0.009) var(--lucet-neutral-h));
   --lucet-default-muted-foreground: var(--lucet-neutral-600);
   /*
    * The quiet surface, and in light it was barely a surface at all: 0.985
@@ -77,7 +81,9 @@
    * 0.945 keeps the well 0.04 below the 0.985 page, so a genuine recess (a
    * code block, a segmented track) still reads as one.
    */
-  --lucet-default-subtle: oklch(0.955 min(calc(var(--lucet-neutral-c) * 2), 0.009) var(--lucet-neutral-h));
+  /* x1, same fix as muted below: the doubled chroma stained every
+     light chip the accent's way. */
+  --lucet-default-subtle: oklch(0.955 min(var(--lucet-neutral-c), 0.009) var(--lucet-neutral-h));
   /* One step darker than before: the reference light modes are INK-FORWARD
      — near-black text carrying the hierarchy, secondary text rare and
      still firm. A page of 0.37-lightness grey text reads weak, not calm. */

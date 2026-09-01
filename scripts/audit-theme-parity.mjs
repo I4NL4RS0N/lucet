@@ -128,8 +128,7 @@ async function main() {
     probe.remove()
     return out
   }
-  const DISTINCT_NAMES = [...new Set(DISTINCT.flatMap(([a, b, , base]) => [a, b, base]).filter(Boolean))]
-
+  
   /*
    * SURFACES ARE NOT ON THIS LIST, and that is deliberate.
    *
@@ -161,6 +160,25 @@ async function main() {
     ['--lucet-card', '--lucet-surface-sunken', 0.06],
     ['--lucet-background', '--lucet-surface-sunken', 0.015],
   ]
+
+  /* ...AND PAPER'S DARK SHELL RIDES THE SAME LAW (quality pass,
+   * 2026-09-01): the window has to read as a window, so page-level
+   * adjacent pairs get floors in dark Paper too. LIGHT Paper is the
+   * documented exception — one white ground by the ink-forward law,
+   * the frame carved by ring and felt shadow, not by value. */
+  const PAPER_DARK_DISTINCT = [
+    ['--lucet-background', '--lucet-card', 0.04],
+    ['--lucet-card', '--lucet-surface-sunken', 0.035],
+  ]
+
+  /* Union of every pair list: the resolver must know a name to paint it.
+     (The glass shell pairs failed as `undefined` the first time they were
+     actually exercised — see below.) */
+  const RESOLVE_NAMES = [...new Set([
+    ...DISTINCT.flatMap(([a, b, , base]) => [a, b, base]),
+    ...GLASS_DISTINCT.flatMap(([a, b]) => [a, b]),
+    ...PAPER_DARK_DISTINCT.flatMap(([a, b]) => [a, b]),
+  ].filter(Boolean))]
 
 
 
@@ -198,9 +216,14 @@ async function main() {
           const viaAttribute = await page.evaluate(dumpTokens)
           // Resolved HERE, while the attribute path is live: the pairs are
           // judged against the same state the dump describes.
+          /* Once per theme x EXPRESSION (at the first accent): gating this
+             on expression === EXPRESSIONS[0] meant the whole pair section
+             ran only under Paper — the glass shell floors were declared,
+             reported in the pass message, and never executed. An audit
+             that prints an unexercised claim is worse than no audit. */
           const resolvedDistinct =
-            accent === ACCENTS[0] && expression === EXPRESSIONS[0]
-              ? await page.evaluate(resolveDistinctColors, DISTINCT_NAMES)
+            accent === ACCENTS[0]
+              ? await page.evaluate(resolveDistinctColors, RESOLVE_NAMES)
               : null
 
           // Path B: the OS preference, with no attribute to override it.
@@ -210,12 +233,18 @@ async function main() {
 
           if (resolvedDistinct) {
             const resolved = resolvedDistinct
-            for (const [a, b, min] of expression === 'glass' ? GLASS_DISTINCT : []) {
+            const shellPairs =
+              expression === 'glass'
+                ? GLASS_DISTINCT
+                : theme === 'dark'
+                  ? PAPER_DARK_DISTINCT
+                  : []
+            for (const [a, b, min] of shellPairs) {
               const la = oklabLightness(flattenBackground([resolved[a], 'rgb(255, 255, 255)']))
               const lb = oklabLightness(flattenBackground([resolved[b], 'rgb(255, 255, 255)']))
               const delta = la !== null && lb !== null ? Math.abs(la - lb) : null
               if (delta === null || delta < min - 0.0005) {
-                roleFailures.push({ theme: `${theme}/glass`, a, b, av: resolved[a], bv: resolved[b], delta: delta?.toFixed(3) ?? 'n/a', min })
+                roleFailures.push({ theme: `${theme}/${expression}`, a, b, av: resolved[a], bv: resolved[b], delta: delta?.toFixed(3) ?? 'n/a', min })
               }
             }
             for (const [a, b, min, base] of DISTINCT) {
@@ -290,7 +319,7 @@ async function main() {
     process.exit(1)
   }
   console.log(
-    `Role distinctness passed: ${DISTINCT.length} pairs apart in both themes; ${GLASS_DISTINCT.length} glass surface steps read without borders.`,
+    `Role distinctness passed: ${DISTINCT.length} pairs apart in both themes; ${GLASS_DISTINCT.length} glass and ${PAPER_DARK_DISTINCT.length} dark-paper surface steps hold.`,
   )
 }
 

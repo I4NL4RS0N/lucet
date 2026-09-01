@@ -78,7 +78,13 @@
      * and the reason the old dark theme had no room for any of the material work
      * to show. Ground moves up so the surfaces above it have somewhere to go.
      */
-    --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    /* 0.152, one step deeper (the quality pass): at 0.165 the frame's
+       card (0.205) barely separated from the page and dark shadow is
+       illegible on dark — the window did not read as a window. The
+       ramp is set as one system: ground 0.152 < sunken 0.157 < card
+       0.205 < overlay 0.235, page-level pairs audited below the same
+       way the glass ladder is. */
+    --lucet-surface-ground: oklch(0.152 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
     --lucet-surface-overlay: var(--lucet-neutral-850);
     /* One GENTLE step below the ground — matching light's 1.5% recess.
@@ -100,7 +106,8 @@
    * and the reason the old dark theme had no room for any of the material work
    * to show. Ground moves up so the surfaces above it have somewhere to go.
    */
-  --lucet-surface-ground: oklch(0.165 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* One step deeper — see the media twin's ramp note. */
+  --lucet-surface-ground: oklch(0.152 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
   --lucet-surface-overlay: var(--lucet-neutral-850);
   /* One GENTLE step below the ground — see the media twin's note. */
