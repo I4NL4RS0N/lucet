@@ -328,11 +328,12 @@ export function Primitives() {
         <Section name="Input" note="a field is inset where a control is raised">
           <Spec label="All states">
             <StateRow
-              render={(cls) => (
+              render={(cls, label) => (
                 <input
                   className={`field ${cls}`}
                   style={{ inlineSize: 150 }}
                   defaultValue="Weekly report"
+                  aria-label={`Weekly report — ${label || 'default'}`}
                   disabled={cls === 'is-disabled'}
                   readOnly
                 />
@@ -349,14 +350,15 @@ export function Primitives() {
             <textarea
               className="field"
               style={{ inlineSize: 340 }}
+              aria-label="Draft — default"
               defaultValue="Summarise the attached documents and list anything still unresolved."
             />
           </Spec>
           <Spec label="Focus">
-            <textarea className="field is-focus" style={{ inlineSize: 340 }} defaultValue="Focused." />
+            <textarea className="field is-focus" style={{ inlineSize: 340 }} aria-label="Draft — focus" defaultValue="Focused." />
           </Spec>
           <Spec label="Disabled">
-            <textarea className="field" style={{ inlineSize: 340 }} defaultValue="Unavailable." disabled />
+            <textarea className="field" style={{ inlineSize: 340 }} aria-label="Draft — disabled" defaultValue="Unavailable." disabled />
           </Spec>
         </Section>
 
@@ -366,7 +368,11 @@ export function Primitives() {
               {STATES.map(({ cls, label }) => (
                 <div className="states__cell" key={label}>
                   <label className={`select ${cls}`} style={{ inlineSize: 132 }}>
-                    <select defaultValue="a" disabled={cls === 'is-disabled'}>
+                    <select
+                      defaultValue="a"
+                      aria-label={`Tone — ${label || 'default'}`}
+                      disabled={cls === 'is-disabled'}
+                    >
                       <option value="a">Balanced</option>
                       <option value="b">Concise</option>
                     </select>
@@ -381,14 +387,14 @@ export function Primitives() {
               <label className="select" style={{ inlineSize: 190 }}>
                 {/* Generic on purpose. A library that ships one vendor's model
                     names reads as built for that vendor. */}
-                <select defaultValue="auto">
+                <select defaultValue="auto" aria-label="Model">
                   <option value="auto">Auto model</option>
                   <option value="fast">Fast model</option>
                   <option value="deep">Deep reasoning</option>
                 </select>
               </label>
               <label className="select" style={{ inlineSize: 150 }}>
-                <select defaultValue="thread">
+                <select defaultValue="thread" aria-label="Search scope">
                   <option value="thread">This thread</option>
                   <option value="all">All threads</option>
                 </select>
@@ -403,7 +409,13 @@ export function Primitives() {
               {STATES.map(({ cls, label }) => (
                 <div className="states__cell" key={label}>
                   <label className={`check ${cls}`}>
-                    <input type="checkbox" defaultChecked disabled={cls === 'is-disabled'} readOnly />
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      aria-label={`Checkbox — ${label || 'default'}`}
+                      disabled={cls === 'is-disabled'}
+                      readOnly
+                    />
                     <span className="check__box" />
                   </label>
                   <span className="states__label">{label}</span>
@@ -441,7 +453,13 @@ export function Primitives() {
               {STATES.map(({ cls, label }) => (
                 <div className="states__cell" key={label}>
                   <label className={`check ${cls}`}>
-                    <input type="radio" defaultChecked disabled={cls === 'is-disabled'} readOnly />
+                    <input
+                      type="radio"
+                      defaultChecked
+                      aria-label={`Radio — ${label || 'default'}`}
+                      disabled={cls === 'is-disabled'}
+                      readOnly
+                    />
                     <span className="check__box check__box--round" />
                   </label>
                   <span className="states__label">{label}</span>
@@ -472,7 +490,13 @@ export function Primitives() {
               {STATES.map(({ cls, label }) => (
                 <div className="states__cell" key={label}>
                   <label className={`switch ${cls}`}>
-                    <input type="checkbox" defaultChecked disabled={cls === 'is-disabled'} readOnly />
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      aria-label={`Switch — ${label || 'default'}`}
+                      disabled={cls === 'is-disabled'}
+                      readOnly
+                    />
                     <span className="switch__track"><span className="switch__knob" /></span>
                   </label>
                   <span className="states__label">{label}</span>
@@ -507,11 +531,11 @@ export function Primitives() {
                   </label>
                 ))}
               </div>
-              <div className="seg" aria-hidden>
+              <div className="seg" aria-hidden inert>
                 <label className="is-hover"><input type="radio" readOnly /><span>Hovered</span></label>
                 <label><input type="radio" defaultChecked readOnly /><span>Selected</span></label>
               </div>
-              <div className="seg" aria-hidden>
+              <div className="seg" aria-hidden inert>
                 <label className="is-focus"><input type="radio" defaultChecked readOnly /><span>Focused</span></label>
                 <label><input type="radio" readOnly /><span>Other</span></label>
               </div>
