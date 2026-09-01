@@ -1,0 +1,5 @@
+# This site is meant to be found.
+User-agent: *
+Allow: /
+
+Sitemap: https://lucet.design/sitemap.xml

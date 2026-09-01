@@ -11,7 +11,16 @@
 
 # This site is meant to be found. No noindex header, no robots exclusion.
 
+# Pretty paths resolve; everything unknown gets the site's own 404
+# (public/404.html — Netlify serves it automatically once no catch-all
+# swallows misses). The old /* -> /index.html 200 made every typo
+# silently render the Konfabulator and made a real 404 impossible.
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  from = "/components"
+  to = "/components.html"
+  status = 301
+
+[[redirects]]
+  from = "/primitives"
+  to = "/primitives.html"
+  status = 301
