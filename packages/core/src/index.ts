@@ -65,6 +65,10 @@ export interface Lucet {
    * composer with the original turn; the words are what travel again.
    */
   retry(turnId: string): Promise<void>
+  /** Commit a restore: a NEW version of the named turn lands at the end
+      of the thread (restore is a copy — nothing is deleted), and any
+      preview view returns to latest. */
+  restore(turnId: string): void
   /** Force a named state, in context, without resetting the thread. */
   trigger(id: string): Promise<void>
   /** Stop the current response. What already arrived stays. */
@@ -181,6 +185,19 @@ export function createLucet(options: LucetOptions = {}): Lucet {
         return run({ ...rest, prompt: text, steps: recovery }, { retryOf: turnId })
       }
       return run(submitScenario(text), { retryOf: turnId })
+    },
+
+    restore(turnId) {
+      const source = store.getState().turns.find((t) => t.id === turnId)
+      if (!source) throw new Error(`Unknown turn: ${turnId}`)
+      store.dispatch({
+        type: 'turn/restored',
+        turnId: nextId('turn'),
+        versionId: nextId('v'),
+        promptMessageId: nextId('msg'),
+        responseMessageId: nextId('msg'),
+        restoreOf: turnId,
+      })
     },
 
     trigger(id) {

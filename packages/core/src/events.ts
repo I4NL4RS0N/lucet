@@ -78,6 +78,16 @@ export type LucetEvent =
   | { type: 'restore/entered'; turnId: string }
   | { type: 'restore/exited' }
   | {
+      /** Restore commits as a COPY: a new version of the restored turn
+          lands at the end of the thread; nothing is deleted. */
+      type: 'turn/restored'
+      turnId: string
+      versionId: string
+      promptMessageId: string
+      responseMessageId: string
+      restoreOf: string
+    }
+  | {
       /** The host installs or replaces the scope ladder. */
       type: 'scope/configured'
       levels: readonly ScopeLevel[]
@@ -180,7 +190,9 @@ export function describeEvent(event: LucetEvent): string {
           ? 'Marked unhelpful'
           : 'Feedback taken back'
     case 'restore/entered':
-      return 'Viewing a restored state'
+      return 'Viewing an earlier version'
+    case 'turn/restored':
+      return 'Restored an earlier version — the thread continues from it'
     case 'restore/exited':
       return 'Returned to latest'
     case 'scope/configured':

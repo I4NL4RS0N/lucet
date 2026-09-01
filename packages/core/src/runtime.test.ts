@@ -221,6 +221,56 @@ describe('feedback and retry', () => {
   })
 })
 
+describe('restore is a copy, never a rollback', () => {
+  it('walks back, forward, and back again; the store only grows', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('happy-path')
+    const v1 = lucet.getState().turns.at(-1)!
+    await lucet.retry(v1.id)
+    const v2 = lucet.getState().turns.at(-1)!
+    expect(lucet.getState().turns).toHaveLength(2)
+
+    /* Preview touches nothing but the view flag. */
+    lucet.store.dispatch({ type: 'restore/entered', turnId: v1.id })
+    expect(lucet.getState().restoredFrom).toBe(v1.id)
+    expect(lucet.getState().turns).toHaveLength(2)
+
+    /* BACK: commit restores v1 as a new version; nothing is deleted and
+       the preview view clears. */
+    lucet.restore(v1.id)
+    const afterBack = lucet.getState()
+    expect(afterBack.restoredFrom).toBeNull()
+    expect(afterBack.turns).toHaveLength(3)
+    const v3 = afterBack.turns.at(-1)!
+    expect(v3.restoreOf).toBe(v1.id)
+    expect(v3.retryOf).toBeNull()
+    const text = (t: typeof v1) =>
+      t.response?.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('') ?? ''
+    expect(text(v3)).toBe(text(v1))
+    expect(afterBack.turns.map((t) => t.id)).toContain(v2.id)
+
+    /* FORWARD: the later version is still there and still restorable. */
+    lucet.restore(v2.id)
+    const afterForward = lucet.getState()
+    expect(afterForward.turns).toHaveLength(4)
+    expect(afterForward.turns.at(-1)!.restoreOf).toBe(v2.id)
+    expect(text(afterForward.turns.at(-1)!)).toBe(text(v2))
+
+    /* BACK AGAIN: every version reachable after every restore. */
+    lucet.restore(v1.id)
+    const finalState = lucet.getState()
+    expect(finalState.turns).toHaveLength(5)
+    for (const t of [v1, v2, v3]) {
+      expect(finalState.turns.map((x) => x.id)).toContain(t.id)
+    }
+    /* New ids everywhere on the copy: feedback and announce address the
+       new messages, never the source's. */
+    const copy = finalState.turns.at(-1)!
+    expect(copy.prompt.id).not.toBe(v1.prompt.id)
+    expect(copy.response?.id).not.toBe(v1.response?.id)
+  })
+})
+
 describe('scope control', () => {
   it('the ladder installs, the selection acts, and reset keeps the host config', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })

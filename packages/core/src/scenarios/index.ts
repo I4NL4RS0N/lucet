@@ -590,7 +590,7 @@ export const versionHistory = defineScenario({
   group: 'Versions',
   kind: 'feature',
   description:
-    'Every prompt is a commit. A retry is the same words as a NEW version — and the old one says so instead of vanishing.',
+    'Asking again makes a NEW version of the same words — and the older one stays in the thread instead of vanishing.',
   prompt: 'Tighten the summary to three sentences.',
   steps: [
     { type: 'wait', ms: 300 },
@@ -613,7 +613,7 @@ export const restoreVersion = defineScenario({
   group: 'Versions',
   kind: 'feature',
   description:
-    'The thread IS the version history: walk back to an earlier commit, see later turns set aside, return to latest.',
+    'The thread IS the version history: preview an earlier version, see later turns set aside, then return — or restore it, which only ever adds.',
   prompt: 'Tighten the summary to three sentences.',
   steps: [
     { type: 'wait', ms: 300 },

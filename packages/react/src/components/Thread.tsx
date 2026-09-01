@@ -37,10 +37,13 @@ import { ToolCall } from './ToolCall.js'
  */
 
 export interface ThreadProps {
-  /** Walk the view back to this commit (restore/entered). Offered on
+  /** Preview the thread as of this version (restore/entered). Offered on
       settled, non-latest turns while not already viewing the past. */
   onRestore?: ((turnId: string) => void) | undefined
-  /** Return to latest (restore/exited); the banner's one way forward. */
+  /** Commit the previewed restore: a NEW version of that turn lands at
+      the end of the thread. Restore is a copy — nothing is deleted. */
+  onRestoreCommit?: ((turnId: string) => void) | undefined
+  /** Return to latest (restore/exited); the banner's escape hatch. */
   onExitRestore?: (() => void) | undefined
   state: ThreadState
   /** Matched against message authorIds; your own turns are labelled You. */
@@ -260,7 +263,15 @@ function ResponseAnnouncer({ state }: { state: ThreadState }) {
   )
 }
 
-export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRestore }: ThreadProps) {
+export function Thread({
+  state,
+  selfId,
+  onRetry,
+  onFeedback,
+  onRestore,
+  onRestoreCommit,
+  onExitRestore,
+}: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
   const sectionRef = useRef<HTMLElement | null>(null)
   /* THE SEPARATOR RULE (review): no container ever renders a separator
@@ -301,13 +312,41 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
     for (const pair of section.querySelectorAll('.lucet-thread__pair')) io.observe(pair)
     return () => io.disconnect()
   }, [state.turns.length])
-  /* Version arithmetic: a turn is SUPERSEDED when a later commit retries
-     it. Markers appear only where history is non-linear — a plain thread
-     stays plain. */
-  const supersededBy = new Map<string, number>()
-  state.turns.forEach((t, i) => {
-    if (t.retryOf) supersededBy.set(t.retryOf, i)
-  })
+  /* THE BADGE SPEAKS WORDS; NUMBERS DEMOTE TO METADATA. A version's
+     badge says what happened, in the reader's language: Retried and
+     Restored name how a version came to be; Current marks a badged
+     newest version with no creation word. Ordinals ("2nd version of
+     this prompt") survive only as per-lineage metadata, revealed on
+     hover/focus — the store's global ids stay internal. Markers appear
+     only where history is non-linear; a plain thread stays plain. */
+  const lineageRoot = (t: (typeof state.turns)[number]): string => {
+    let cur = t
+    for (;;) {
+      const parentId = cur.retryOf ?? cur.restoreOf
+      if (!parentId) return cur.id
+      const parent = state.turns.find((x) => x.id === parentId)
+      if (!parent) return parentId
+      cur = parent
+    }
+  }
+  const lineages = new Map<string, string[]>()
+  for (const t of state.turns) {
+    const root = lineageRoot(t)
+    const list = lineages.get(root) ?? []
+    list.push(t.id)
+    lineages.set(root, list)
+  }
+  const versionFacts = (t: (typeof state.turns)[number]) => {
+    const family = lineages.get(lineageRoot(t)) ?? [t.id]
+    if (family.length < 2) return null
+    const ordinal = family.indexOf(t.id) + 1
+    const newest = family[family.length - 1] === t.id
+    const born = t.restoreOf ? 'restored' : t.retryOf ? 'retried' : 'asked'
+    const word = t.restoreOf ? 'Restored' : t.retryOf ? 'Retried' : newest ? 'Current' : null
+    const ord = ordinal === 1 ? '1st' : ordinal === 2 ? '2nd' : ordinal === 3 ? '3rd' : `${ordinal}th`
+    const meta = `${newest ? 'current · ' : ''}${ord} version of this prompt · ${born}`
+    return { word, meta, newest }
+  }
   const restoredIndex = state.restoredFrom
     ? state.turns.findIndex((t) => t.id === state.restoredFrom)
     : -1
@@ -337,13 +376,14 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
         const settled =
           response !== null && response.status !== 'streaming' && response.status !== 'pending'
         const index = state.turns.indexOf(turn)
-        const superseded = supersededBy.has(turn.id)
+        const facts = versionFacts(turn)
         const aside = restoredIndex >= 0 && index > restoredIndex
         return (
           <article
             className="lucet-thread__pair"
             key={turn.id}
             data-latest={turn.id === last?.id || undefined}
+            data-version-old={(facts && !facts.newest) || undefined}
             data-aside={aside || undefined}
             /* Set-aside turns leave the page for EVERYONE while the view
                is restored: inert removes them from pointer and tab order,
@@ -354,14 +394,15 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
             }}
             aria-hidden={aside || undefined}
           >
-            {superseded || turn.retryOf ? (
-              <div className="lucet-thread__vrow" data-superseded={superseded || undefined}>
-                <code className="lucet-thread__version">v{index + 1}</code>
-                <span>
-                  {superseded
-                    ? `superseded by v${(supersededBy.get(turn.id) ?? 0) + 1}`
-                    : 'same words, new commit'}
-                </span>
+            {facts ? (
+              /* The word badge, then the ordinal as hover/focus metadata.
+                 The metadata span keeps its layout space at rest
+                 (opacity, not display), so revealing it moves nothing. */
+              <div className="lucet-thread__vrow">
+                {facts.word ? (
+                  <span className="lucet-thread__vbadge">{facts.word}</span>
+                ) : null}
+                <span className="lucet-thread__vmeta">{facts.meta}</span>
               </div>
             ) : null}
             <MessageView
@@ -382,7 +423,7 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
                         onFeedback ? (verdict) => onFeedback(response.id, verdict) : undefined
                       }
                       onRestore={
-                        onRestore && turn.id !== last?.id && restoredIndex < 0
+                        onRestore && !(facts?.newest ?? turn.id === last?.id) && restoredIndex < 0
                           ? () => onRestore(turn.id)
                           : undefined
                       }
@@ -392,22 +433,33 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
               />
             ) : null}
             {restoredIndex === index ? (
-              /* The seam where history diverges: the banner sits right
-                 after the commit being viewed, counts what it set aside,
-                 and offers the one way forward. role=status announces the
-                 mode change without stealing focus. */
+              /* PREVIEW, THEN COMMIT — the banner is the introduction:
+                 it states where you are and what both options do, in the
+                 words the announce layer uses. role=status announces the
+                 mode change without stealing focus. Restore only ever
+                 adds, and the banner's commit says so by its phrasing. */
               <div className="lucet-thread__restored" role="status">
                 <svg className="lucet-thread__restored-glyph" viewBox="0 0 24 24" aria-hidden>
                   <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
                 </svg>
                 <span>
-                  Viewing the thread as of <code className="lucet-thread__version">v{index + 1}</code>
-                  {' — '}
-                  {setAside} later {setAside === 1 ? 'turn' : 'turns'} set aside.
+                  Viewing an earlier version — {setAside} later{' '}
+                  {setAside === 1 ? 'turn is' : 'turns are'} set aside, not deleted.
                 </span>
                 {onExitRestore ? (
                   <button type="button" className="lucet-thread__return" onClick={onExitRestore}>
                     Return to latest
+                  </button>
+                ) : null}
+                {onRestoreCommit ? (
+                  <button
+                    type="button"
+                    className="lucet-thread__return"
+                    data-commit
+                    title="Bring this version back as the newest — everything stays"
+                    onClick={() => onRestoreCommit(turn.id)}
+                  >
+                    Restore this version
                   </button>
                 ) : null}
               </div>

@@ -236,6 +236,7 @@ export function reduce(
         index: state.turns.length,
         versionId: event.versionId,
         retryOf: event.retryOf,
+        restoreOf: null,
         prompt,
         response: null,
       }
@@ -384,5 +385,39 @@ export function reduce(
 
     case 'restore/exited':
       return { ...state, restoredFrom: null }
+
+    case 'turn/restored': {
+      /*
+       * RESTORE IS A COPY, NEVER A ROLLBACK (brief §16.2, resolved:
+       * neither branch nor discard). The restored turn's prompt and
+       * settled response return as a NEW version at the end of the
+       * thread; every later version stays in place and stays
+       * restorable, in both directions. The worst case of this event
+       * is zero: the store only ever grows.
+       */
+      const source = state.turns.find((t) => t.id === event.restoreOf)
+      if (!source) return state
+      const reid = (m: Message, id: string): Message => ({
+        ...m,
+        id,
+        parts: m.parts.map((p, i) => ({ ...p, id: `${id}_p${i + 1}` })),
+        feedback: null,
+        createdAt: ctx.now,
+      })
+      const turn: Turn = {
+        id: event.turnId,
+        index: state.turns.length,
+        versionId: event.versionId,
+        retryOf: null,
+        restoreOf: source.id,
+        prompt: reid(source.prompt, event.promptMessageId),
+        response: source.response ? reid(source.response, event.responseMessageId) : null,
+      }
+      return {
+        ...state,
+        turns: [...state.turns, turn],
+        restoredFrom: null,
+      }
+    }
   }
 }

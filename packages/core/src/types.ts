@@ -176,9 +176,18 @@ export interface Turn {
    * Set when this turn is a RETRY of an earlier one: same words, new
    * commit. Every prompt is a commit, and a retry is not an exception to
    * that law — it is a new turn that knows its ancestor, which is exactly
-   * what Version Marker + Restore will need.
+   * what Version Marker + Restore needs.
    */
   readonly retryOf: string | null
+  /**
+   * Set when this turn was created by RESTORING an earlier one: restore
+   * is a copy, never a rollback. The restored turn's content returns as
+   * a new version at the end of the thread, every later version stays,
+   * and the link points at what was restored. History is linear and
+   * total — nothing branches, nothing is discarded (brief §16.2,
+   * resolved).
+   */
+  readonly restoreOf: string | null
   readonly prompt: Message
   readonly response: Message | null
 }

@@ -340,7 +340,16 @@ function AppCore({
        at Expressive density the turn's tail (sources, the freshness
        badge, the actions row — two differentiators and the controls)
        sat below the fold looking deleted. */
-    if (el && state.turns.length > 0) el.scrollTop = el.scrollHeight
+    if (!el || state.turns.length === 0) return
+    if (state.restoredFrom) {
+      /* In preview, the previewed turn and its banner hold the view:
+         this effect fires on every state change, and slamming to the
+         bottom scrolled the reader away from the choice they had just
+         made (the banner rendered off-screen). */
+      el.querySelector('.lucet-thread__restored')?.scrollIntoView({ block: 'nearest' })
+    } else {
+      el.scrollTop = el.scrollHeight
+    }
   }, [state])
 
   const composerNode = (
@@ -463,6 +472,7 @@ function AppCore({
                   lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
                 }
                 onRestore={(turnId) => lucet.store.dispatch({ type: 'restore/entered', turnId })}
+                onRestoreCommit={(turnId) => lucet.restore(turnId)}
                 onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
               />
             )}

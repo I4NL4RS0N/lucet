@@ -1196,9 +1196,20 @@
 .lucet-thread__ended[data-status='interrupted'] .lucet-icon {
   color: var(--lucet-state-interrupted-foreground);
 }
+/* BOUNDARIES DON'T TAKE THE ACCENT. The refusal LEAD is plain
+   foreground in both themes: the info tone rides the accent family,
+   and in light the lead read brand-coloured — a refusal is a state,
+   not an alarm, and never inherits the host's brand colour. The
+   notice surface keeps its info tint (that decision stands); only the
+   spoken lead goes plain. The glyph takes its step of presence from
+   STROKE, not colour or size — one step only: a refusal that shouts
+   at distance would contradict the calm-boundary position. */
 .lucet-thread__ended[data-status='refused'] strong,
 .lucet-thread__ended[data-status='refused'] .lucet-icon {
-  color: var(--lucet-state-refused-foreground);
+  color: var(--lucet-foreground);
+}
+.lucet-thread__ended[data-status='refused'] .lucet-icon {
+  stroke-width: 2.75;
 }
 
 /*
@@ -1567,14 +1578,53 @@
   font-size: var(--lucet-text-xs);
   color: var(--lucet-muted-foreground);
 }
-.lucet-thread__version {
-  padding: 1px 6px;
+/* The badge speaks words, not arithmetic: Current, Retried, Restored.
+   Muted foreground on the quiet chip — versioning is bookkeeping, not
+   status, so no tone colour anywhere on it. */
+.lucet-thread__vbadge {
+  padding: 1px 8px;
   border-radius: 999px;
   box-shadow: var(--lucet-hairline);
   background-color: var(--lucet-muted);
-  font-family: var(--lucet-font-mono);
   font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   color: var(--lucet-subtle-foreground);
+}
+/* The ordinal, demoted to metadata: present in layout and in the
+   accessibility tree at rest (opacity, never display), revealed to the
+   eye on the pair's hover or focus — so revealing it moves nothing and
+   the screen reader hears the same thing in every state. */
+.lucet-thread__vmeta {
+  opacity: 0;
+  transition: opacity var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.lucet-thread__pair:hover .lucet-thread__vmeta,
+.lucet-thread__pair:focus-within .lucet-thread__vmeta {
+  opacity: 1;
+}
+
+/* AFFORDANCES FOLLOW ATTENTION. A version with a newer sibling recedes
+   at rest: text one step of muted ink, actions at ghost weight — never
+   disabled, never removed, never a wholesale veil. Hover or focus
+   returns full strength. The recede is a state, not an animation: the
+   same rights exist at rest and under the pointer. */
+.lucet-thread__pair[data-version-old] .lucet-thread__text,
+.lucet-thread__pair[data-version-old] .lucet-md {
+  color: var(--lucet-subtle-foreground);
+}
+.lucet-thread__pair[data-version-old] .lucet-actions {
+  opacity: 0.55;
+}
+.lucet-thread__pair[data-version-old]:hover .lucet-thread__text,
+.lucet-thread__pair[data-version-old]:focus-within .lucet-thread__text,
+.lucet-thread__pair[data-version-old]:hover .lucet-md,
+.lucet-thread__pair[data-version-old]:focus-within .lucet-md {
+  color: inherit;
+}
+.lucet-thread__pair[data-version-old]:hover .lucet-actions,
+.lucet-thread__pair[data-version-old]:focus-within .lucet-actions {
+  opacity: 1;
 }
 /* Set aside: still there, visibly the past. Inert + aria-hidden are set
    by the component; the veil here is only the visible half. */
@@ -1617,6 +1667,12 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+/* The commit half of the banner's pair: same quiet control, its words
+   do the emphasis. */
+.lucet-thread__return[data-commit] {
+  color: var(--lucet-foreground);
+  font-weight: 550;
 }
 .lucet-thread__return:hover { background-color: var(--lucet-hover); }
 .lucet-thread__return:focus-visible {

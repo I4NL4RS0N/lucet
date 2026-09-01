@@ -76,7 +76,7 @@ export function suggestionsVisible(
 export function describeSubmitBlocker(blocker: SubmitBlocker): string {
   switch (blocker) {
     case 'restored':
-      return 'Viewing a restored state — return to latest to continue'
+      return 'Viewing an earlier version — return to latest to continue'
     case 'locked':
       return 'A response is being written — yours will send next'
     case 'service-down':

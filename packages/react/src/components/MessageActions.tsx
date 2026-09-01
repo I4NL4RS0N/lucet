@@ -110,11 +110,16 @@ export function MessageActions({ message, onRetry, onFeedback, onRestore }: Mess
       ) : null}
 
       {onRestore ? (
-        <button type="button" className="lucet-actions__btn" onClick={onRestore}>
+        <button
+          type="button"
+          className="lucet-actions__btn"
+          title="Go back to this version — nothing is deleted"
+          onClick={onRestore}
+        >
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
           </svg>
-          Restore
+          Restore this version
         </button>
       ) : null}
 

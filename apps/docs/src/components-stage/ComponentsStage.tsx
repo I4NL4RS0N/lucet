@@ -307,13 +307,13 @@ const VERSION_EVENTS = [
 
 const VERSIONS_FIXTURES: readonly Fixture[] = [
   {
-    label: 'Superseded, and it says so',
-    note: 'Every prompt is a commit: the retry carries the same words as v2, and v1 wears its marker instead of vanishing.',
+    label: 'An earlier version, and it says so',
+    note: 'Asking again makes a new version of the same words: the retried one wears its word, the earlier one recedes instead of vanishing — hover it for the ordinal.',
     events: (VERSION_EVENTS),
   },
   {
-    label: 'The restored view',
-    note: 'Walking back to v1: later turns set aside — dimmed, inert, hidden from the reader — and the banner offers the one way forward.',
+    label: 'The preview',
+    note: 'Viewing an earlier version: later turns set aside — dimmed, inert, skipped by the reader — and the banner states both ways out. Restoring only ever adds.',
     events: ([...VERSION_EVENTS, { type: 'restore/entered' as const, turnId: 't1' }]),
   },
 ]
@@ -856,7 +856,7 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section name="Version marker + restore" note="every prompt is a commit; the thread is the version history">
+        <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
           <div className="stage" style={{ display: 'grid', gap: 34 }}>
             {VERSIONS_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
