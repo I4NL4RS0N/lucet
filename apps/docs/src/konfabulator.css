@@ -1733,3 +1733,11 @@ body {
   background-color: var(--lucet-card);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
 }
+
+/* Expressive took the floor's hairline with every other border, and the
+   composer read as part of the message. SUBSTITUTE, don't delete: in
+   the space-and-light strategy the deck separates by TINT — one step
+   into the well — with the region's own air doing the rest. */
+:root[data-expression='expressive'] .cfg__floor {
+  background-color: var(--lucet-surface-sunken);
+}

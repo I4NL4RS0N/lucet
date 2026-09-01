@@ -435,7 +435,12 @@ function AppCore({
 
   useEffect(() => {
     const el = scrollRef.current
-    if (el && state.status !== 'idle') el.scrollTop = el.scrollHeight
+    /* A chat opens at its LATEST message — including the boot-seeded
+       opener. Guarded on status alone, the thread rested at the TOP, and
+       at Expressive density the turn's tail (sources, the freshness
+       badge, the actions row — two differentiators and the controls)
+       sat below the fold looking deleted. */
+    if (el && state.turns.length > 0) el.scrollTop = el.scrollHeight
   }, [state])
 
   const composerNode = (
