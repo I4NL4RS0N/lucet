@@ -161,7 +161,7 @@
   align-items: center;
   gap: var(--lucet-space-2);
   inline-size: fit-content;
-  min-block-size: 28px;
+  min-block-size: calc(28px * var(--lucet-density, 1));
   /* The veil needs shoulders; the rail alignment must not move. */
   padding-inline: var(--lucet-space-2);
   margin-inline-start: calc(-1 * var(--lucet-space-2));
@@ -236,7 +236,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 3px;
+  gap: calc(3px * var(--lucet-density, 1));
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-control);
 }
@@ -244,7 +244,7 @@
   display: flex;
   align-items: center;
   gap: var(--lucet-space-2);
-  min-block-size: 20px;
+  min-block-size: calc(20px * var(--lucet-density, 1));
 }
 
 /* Only a row with a receipt behind it is a control, and only it gets the
@@ -558,9 +558,9 @@
 .lucet-att {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--lucet-density, 1));
   block-size: 26px;
-  padding-inline: 8px 4px;
+  padding-inline: calc(8px * var(--lucet-density, 1)) calc(4px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-control);
   background-color: var(--lucet-secondary);
   box-shadow: var(--lucet-hairline-raised);
@@ -999,8 +999,8 @@
   inset-block-end: 100%;
   inset-inline-start: 50%;
   z-index: 5;
-  margin-block-end: 4px;
-  padding: 5px 9px;
+  margin-block-end: calc(4px * var(--lucet-density, 1));
+  padding: calc(5px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: calc(var(--lucet-radius-control) - 2px);
   background-color: var(--lucet-solid);
   color: var(--lucet-solid-foreground);
@@ -1178,7 +1178,7 @@
 }
 .lucet-thread__ended .lucet-icon {
   flex: none;
-  margin-block-start: 3px;
+  margin-block-start: calc(3px * var(--lucet-density, 1));
 }
 /* Every ending is TRIPLE-CODED — silhouette, colour, word — and the colour
    maps to a universal meaning: red broke, amber cut short, blue declined
@@ -1240,14 +1240,14 @@
 .lucet-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: calc(2px * var(--lucet-density, 1));
   margin-block-start: var(--lucet-space-1);
 }
 .lucet-actions__btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-block-size: 26px;
+  gap: calc(6px * var(--lucet-density, 1));
+  min-block-size: calc(26px * var(--lucet-density, 1));
   padding-inline: var(--lucet-space-2);
   border: 0;
   border-radius: var(--lucet-radius-control);
@@ -1387,7 +1387,7 @@
 .lucet-md__code {
   font-family: var(--lucet-font-mono);
   font-size: 0.865em;
-  padding: 1px 5px;
+  padding: 1px calc(5px * var(--lucet-density, 1));
   border-radius: calc(var(--lucet-radius-control) - 2px);
   background-color: var(--lucet-hover);
 }
@@ -1479,7 +1479,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--lucet-space-2);
-  min-block-size: 36px;
+  min-block-size: calc(36px * var(--lucet-density, 1));
   padding: var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-1) var(--lucet-space-3);
   border-block-end: 1px solid var(--lucet-border);
 }
@@ -1497,8 +1497,8 @@
 .lucet-codeblock__copy {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-block-size: 26px;
+  gap: calc(6px * var(--lucet-density, 1));
+  min-block-size: calc(26px * var(--lucet-density, 1));
   padding-inline: var(--lucet-space-2);
   border: 0;
   border-radius: var(--lucet-radius-control);
@@ -1559,13 +1559,13 @@
 .lucet-thread__vrow {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: calc(7px * var(--lucet-density, 1));
   justify-content: flex-end;
   font-size: var(--lucet-text-xs);
   color: var(--lucet-muted-foreground);
 }
 .lucet-thread__version {
-  padding: 1px 6px;
+  padding: 1px calc(6px * var(--lucet-density, 1));
   border-radius: 999px;
   box-shadow: var(--lucet-hairline);
   background-color: var(--lucet-muted);
@@ -1581,7 +1581,7 @@
 .lucet-thread__restored {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: calc(9px * var(--lucet-density, 1));
   margin-block-start: var(--lucet-space-3);
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-control);
@@ -1602,8 +1602,8 @@
 }
 .lucet-thread__return {
   margin-inline-start: auto;
-  min-block-size: 26px;
-  padding-inline: 10px;
+  min-block-size: calc(26px * var(--lucet-density, 1));
+  padding-inline: calc(10px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
@@ -1639,9 +1639,9 @@
 .lucet-scope__button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-block-size: 30px;
-  padding: 5px 9px;
+  gap: calc(6px * var(--lucet-density, 1));
+  min-block-size: calc(30px * var(--lucet-density, 1));
+  padding: calc(5px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
   color: var(--lucet-subtle-foreground);
@@ -1709,17 +1709,17 @@
   inset-inline-start: 0;
   z-index: 30;
   display: grid;
-  gap: 2px;
+  gap: calc(2px * var(--lucet-density, 1));
   min-inline-size: 260px;
-  padding: 6px;
+  padding: calc(6px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
 }
 .lucet-scope__row {
   display: grid;
-  gap: 2px;
-  padding: 7px 9px;
+  gap: calc(2px * var(--lucet-density, 1));
+  padding: calc(7px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;
@@ -1738,12 +1738,12 @@
 .lucet-scope__row-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--lucet-density, 1));
 }
 .lucet-scope__row-label { color: var(--lucet-foreground); font-weight: 500; }
 /* The count wears the version chip's grammar: a fact in a small pill. */
 .lucet-scope__count {
-  padding: 0 6px;
+  padding: 0 calc(6px * var(--lucet-density, 1));
   border-radius: 999px;
   box-shadow: var(--lucet-hairline);
   background-color: var(--lucet-muted);
@@ -1789,9 +1789,9 @@
 .lucet-budget__button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-block-size: 30px;
-  padding: 5px 9px;
+  gap: calc(6px * var(--lucet-density, 1));
+  min-block-size: calc(30px * var(--lucet-density, 1));
+  padding: calc(5px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
   color: var(--lucet-muted-foreground);
@@ -1849,26 +1849,26 @@
   inset-inline-end: 0;
   z-index: 30;
   display: grid;
-  gap: 2px;
+  gap: calc(2px * var(--lucet-density, 1));
   min-inline-size: min(264px, 100%);
   max-inline-size: 100%;
-  padding: 6px;
+  padding: calc(6px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
 }
 .lucet-budget__next {
   display: grid;
-  gap: 2px;
-  padding: 7px 9px 8px;
+  gap: calc(2px * var(--lucet-density, 1));
+  padding: calc(7px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1)) calc(8px * var(--lucet-density, 1));
   /* The head of the receipt, parted from the rows it prices. */
   border-block-end: 1px solid var(--lucet-border);
-  margin-block-end: 4px;
+  margin-block-end: calc(4px * var(--lucet-density, 1));
 }
 .lucet-budget__next-head {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: calc(12px * var(--lucet-density, 1));
   justify-content: space-between;
   color: var(--lucet-foreground);
   font-size: var(--lucet-text-sm);
@@ -1880,7 +1880,7 @@
 }
 .lucet-budget__note {
   margin: 0 0 4px;
-  padding: 6px 9px;
+  padding: calc(6px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: var(--lucet-radius-control);
   background-color: var(--lucet-tone-caution-surface);
   color: var(--lucet-tone-caution-foreground);
@@ -1889,7 +1889,7 @@
 .lucet-budget__row {
   display: grid;
   gap: 1px;
-  padding: 6px 9px;
+  padding: calc(6px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;
@@ -1908,7 +1908,7 @@
 .lucet-budget__row-head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--lucet-density, 1));
 }
 .lucet-budget__row-label { color: var(--lucet-foreground); font-weight: 500; }
 .lucet-budget__check {
@@ -1929,16 +1929,16 @@
 .lucet-budget__row-note { font-size: var(--lucet-text-xs); }
 .lucet-budget__ledger {
   display: grid;
-  gap: 4px;
-  margin-block-start: 4px;
-  padding: 8px 9px 6px;
+  gap: calc(4px * var(--lucet-density, 1));
+  margin-block-start: calc(4px * var(--lucet-density, 1));
+  padding: calc(8px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1)) calc(6px * var(--lucet-density, 1));
   border-block-start: 1px solid var(--lucet-border);
   font-size: var(--lucet-text-xs);
   color: var(--lucet-subtle-foreground);
 }
 .lucet-budget__ledger-row {
   display: flex;
-  gap: 12px;
+  gap: calc(12px * var(--lucet-density, 1));
   justify-content: space-between;
 }
 
@@ -1976,9 +1976,9 @@
 .lucet-sources__row {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-block-size: 34px;
-  padding: 5px 4px;
+  gap: calc(9px * var(--lucet-density, 1));
+  min-block-size: calc(34px * var(--lucet-density, 1));
+  padding: calc(5px * var(--lucet-density, 1)) calc(4px * var(--lucet-density, 1));
   font-size: var(--lucet-text-sm);
 }
 /* The disclosure grammar, verbatim from the tool call: chevron first,
@@ -2022,7 +2022,7 @@
 .lucet-sources__body {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: calc(8px * var(--lucet-density, 1));
   min-inline-size: 0;
 }
 /* The locator: pages, rows returned — the words of the receipt below. */
@@ -2043,7 +2043,7 @@
 .lucet-sources__flag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--lucet-density, 1));
   margin-inline-start: auto;
   font-size: var(--lucet-text-xs, 11.5px);
 }
@@ -2074,9 +2074,9 @@
    receipt on the page. */
 .lucet-sources__io {
   display: grid;
-  gap: 5px;
+  gap: calc(5px * var(--lucet-density, 1));
   min-inline-size: 0;
-  padding: 2px 4px 8px 22px;
+  padding: calc(2px * var(--lucet-density, 1)) calc(4px * var(--lucet-density, 1)) calc(8px * var(--lucet-density, 1)) calc(22px * var(--lucet-density, 1));
 }
 .lucet-sources__io-label {
   font-size: var(--lucet-text-xs);
@@ -2132,8 +2132,8 @@
 .lucet-chips__head {
   display: flex;
   align-items: baseline;
-  gap: 7px;
-  padding-inline: 8px;
+  gap: calc(7px * var(--lucet-density, 1));
+  padding-inline: calc(8px * var(--lucet-density, 1));
 }
 .lucet-chips__label {
   font-size: 10.5px;
@@ -2150,12 +2150,12 @@
 .lucet-chips__chip {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
-  min-block-size: 30px;
+  gap: calc(9px * var(--lucet-density, 1));
+  min-block-size: calc(30px * var(--lucet-density, 1));
   max-inline-size: 100%;
   /* 8px inline: the text keeps clear of the veil's rounded edge, and
      the heads below share the inset — the history pane's grammar. */
-  padding: 5px 8px;
+  padding: calc(5px * var(--lucet-density, 1)) calc(8px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--lucet-radius-control);
   background: none;

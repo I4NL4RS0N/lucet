@@ -60,7 +60,7 @@
    */
   --lucet-scale: 1;
   --lucet-space-base: 0.25rem;
-  --lucet-space-unit: calc(var(--lucet-space-base) * var(--lucet-scale));
+  --lucet-space-unit: calc(var(--lucet-space-base) * var(--lucet-scale) * var(--lucet-density, 1));
   --lucet-space-0: 0;
   --lucet-space-1: calc(var(--lucet-space-unit) * 1);
   --lucet-space-2: calc(var(--lucet-space-unit) * 2);

@@ -128,8 +128,8 @@ body {
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 32px;
+  gap: calc(12px * var(--lucet-density, 1));
+  padding: calc(14px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1));
   background: color-mix(in oklab, var(--page) 82%, transparent);
   backdrop-filter: blur(12px);
   border-block-end: 1px solid var(--line);
@@ -147,7 +147,7 @@ body {
 .prim__main {
   max-inline-size: 940px;
   margin: 0 auto;
-  padding: 56px 32px 160px;
+  padding: calc(56px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(160px * var(--lucet-density, 1));
 }
 
 .prim__title {
@@ -183,8 +183,8 @@ body {
 .sec__head {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  margin-block-end: 16px;
+  gap: calc(12px * var(--lucet-density, 1));
+  margin-block-end: calc(16px * var(--lucet-density, 1));
 }
 
 .sec__n {
@@ -207,13 +207,13 @@ body {
   background: var(--sunken);
   border-radius: var(--r-panel);
   box-shadow: var(--ring-1);
-  padding: 32px;
+  padding: calc(32px * var(--lucet-density, 1));
   /* Light overrides below: the well is a dark-mode idea. */
   display: flex;
   flex-wrap: wrap;
   /* Hugs its content. Centring left the taller specs floating in dead air. */
   align-items: flex-start;
-  gap: 26px;
+  gap: calc(26px * var(--lucet-density, 1));
 }
 
 /*
@@ -242,12 +242,12 @@ body {
   align-items: center;
   justify-content: space-between;
   inline-size: 100%;
-  gap: 12px;
+  gap: calc(12px * var(--lucet-density, 1));
 }
 .spec__tabs { display: inline-flex; gap: 2px; }
 .spec__tabs button {
-  min-block-size: 26px;
-  padding-inline: 9px;
+  min-block-size: calc(26px * var(--lucet-density, 1));
+  padding-inline: calc(9px * var(--lucet-density, 1));
   border: 0;
   border-radius: 6px;
   background: none;
@@ -270,7 +270,7 @@ body {
 }
 .spec__code pre {
   margin: 0;
-  padding: 14px 16px;
+  padding: calc(14px * var(--lucet-density, 1)) calc(16px * var(--lucet-density, 1));
   max-block-size: 380px;
   overflow-y: auto;
   border-radius: 10px;
@@ -290,8 +290,8 @@ body {
   position: absolute;
   inset-block-start: 8px;
   inset-inline-end: 8px;
-  min-block-size: 26px;
-  padding-inline: 9px;
+  min-block-size: calc(26px * var(--lucet-density, 1));
+  padding-inline: calc(9px * var(--lucet-density, 1));
   border: 0;
   border-radius: 6px;
   background: var(--lucet-card);
@@ -342,9 +342,9 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: calc(7px * var(--lucet-density, 1));
   block-size: 32px;
-  padding-inline: 13px;
+  padding-inline: calc(13px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--r-control);
   background-color: var(--btn-bg);
@@ -374,7 +374,7 @@ body {
   inset-inline-start: 50%;
   translate: -50% -50%;
   min-inline-size: 100%;
-  min-block-size: 40px;
+  min-block-size: calc(40px * var(--lucet-density, 1));
   inline-size: 100%;
 }
 
@@ -474,7 +474,7 @@ body {
 .field {
   inline-size: 100%;
   block-size: 32px;
-  padding-inline: 11px;
+  padding-inline: calc(11px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--r-control);
   background-color: var(--field);
@@ -529,8 +529,8 @@ body {
 
 textarea.field {
   block-size: auto;
-  min-block-size: 78px;
-  padding-block: 9px;
+  min-block-size: calc(78px * var(--lucet-density, 1));
+  padding-block: calc(9px * var(--lucet-density, 1));
   resize: vertical;
   line-height: 1.55;
 }
@@ -541,7 +541,7 @@ textarea.field {
   appearance: none;
   inline-size: 100%;
   block-size: 32px;
-  padding-inline: 11px 30px;
+  padding-inline: calc(11px * var(--lucet-density, 1)) calc(30px * var(--lucet-density, 1));
   border: 0;
   border-radius: var(--r-control);
   background-color: var(--raised);
@@ -793,8 +793,8 @@ textarea.field {
 
 .seg {
   display: inline-flex;
-  padding: 3px;
-  gap: 2px;
+  padding: calc(3px * var(--lucet-density, 1));
+  gap: calc(2px * var(--lucet-density, 1));
   border-radius: 11px;
   background-color: var(--sunken);
   box-shadow: var(--ring-1), var(--inset-hair);
@@ -805,7 +805,7 @@ textarea.field {
 
 .seg span {
   display: block;
-  padding: 0 12px;
+  padding: 0 calc(12px * var(--lucet-density, 1));
   line-height: 26px;
   border-radius: 8px;
   font-size: 12.5px;
@@ -860,9 +860,9 @@ textarea.field {
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: calc(6px * var(--lucet-density, 1));
   block-size: 23px;
-  padding-inline: 7px 9px;
+  padding-inline: calc(7px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: 7px;
   background-color: var(--raised);
   box-shadow: var(--ring-1);
@@ -953,8 +953,8 @@ button.avatar:disabled,
   inset-block-end: 100%;
   inset-inline-start: 50%;
   z-index: 5;
-  margin-block-end: 4px;
-  padding: 5px 9px;
+  margin-block-end: calc(4px * var(--lucet-density, 1));
+  padding: calc(5px * var(--lucet-density, 1)) calc(9px * var(--lucet-density, 1));
   border-radius: 7px;
   /*
    * INVERTED, the one deliberately theme-crossing surface. A raised grey chip
@@ -984,7 +984,7 @@ button.avatar:disabled,
 
 .menu {
   inline-size: 210px;
-  padding: 5px;
+  padding: calc(5px * var(--lucet-density, 1));
   border-radius: var(--r-surface);
   background-color: var(--raised);
   box-shadow: var(--lit), var(--ring-3), var(--cast-3);
@@ -993,8 +993,8 @@ button.avatar:disabled,
 .menu__item {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 0 9px;
+  gap: calc(9px * var(--lucet-density, 1));
+  padding: 0 calc(9px * var(--lucet-density, 1));
   line-height: 28px;
   border-radius: 7px;
   font-size: 13px;
@@ -1025,7 +1025,7 @@ button.avatar:disabled,
 .dialog {
   inline-size: 100%;
   max-inline-size: 380px;
-  padding: 20px;
+  padding: calc(20px * var(--lucet-density, 1));
   border-radius: var(--r-panel);
   background-color: var(--surface);
   box-shadow: var(--lit), var(--ring-3), var(--cast-3);
@@ -1098,7 +1098,7 @@ button.avatar:disabled,
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 7px;
+  gap: calc(7px * var(--lucet-density, 1));
 }
 
 .states__label {
@@ -1143,7 +1143,7 @@ kbd, .kbd {
   justify-content: center;
   min-inline-size: 20px;
   block-size: 20px;
-  padding-inline: 5px;
+  padding-inline: calc(5px * var(--lucet-density, 1));
   border-radius: 5px;
   background-color: var(--raised);
   box-shadow: var(--ring-2), var(--lit), 0 1px 0 oklch(0 0 0 / 0.25);
@@ -1199,10 +1199,10 @@ kbd, .kbd {
 .disc__head {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: calc(9px * var(--lucet-density, 1));
   inline-size: 100%;
-  min-block-size: 38px;
-  padding-inline: 12px;
+  min-block-size: calc(38px * var(--lucet-density, 1));
+  padding-inline: calc(12px * var(--lucet-density, 1));
   border: 0;
   border-radius: inherit;
   background: none;
@@ -1242,7 +1242,7 @@ kbd, .kbd {
    * outdented past its own heading, which read as a misalignment rather than
    * a hierarchy. 4px of air below the head so the text does not hug the bar.
    */
-  padding: 4px 12px 13px 28px;
+  padding: calc(4px * var(--lucet-density, 1)) calc(12px * var(--lucet-density, 1)) calc(13px * var(--lucet-density, 1)) calc(28px * var(--lucet-density, 1));
   font-size: 13px;
   line-height: 1.6;
   color: var(--ink-2);
@@ -1254,7 +1254,7 @@ kbd, .kbd {
    CodeBlock and receipt rendered on the stage, painting per-line pills
    through their blocks. */
 code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__code *), .code {
-  padding: 1.5px 5px;
+  padding: calc(1.5px * var(--lucet-density, 1)) calc(5px * var(--lucet-density, 1));
   border-radius: 5px;
   background-color: var(--sunken);
   box-shadow: var(--ring-1);
@@ -1272,13 +1272,13 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .codeblock__bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--lucet-density, 1));
   /*
    * 38px, matching the disclosure head, and the same reason: a 26px button in
    * a 34px bar left 4px of clearance, which read as the button jammed against
    * both edges. 6px of air and a 10px inset from the trailing edge.
    */
-  padding: 0 10px 0 12px;
+  padding: 0 calc(10px * var(--lucet-density, 1)) 0 calc(12px * var(--lucet-density, 1));
   block-size: 38px;
   border-block-end: 1px solid var(--line);
   font-size: 12px;
@@ -1288,7 +1288,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 
 .codeblock pre {
   margin: 0;
-  padding: 12px;
+  padding: calc(12px * var(--lucet-density, 1));
   overflow-x: auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12.5px;
@@ -1323,7 +1323,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .prose li + li { margin-block-start: 0.35em; }
 .prose blockquote {
   margin-inline: 0;
-  padding-inline-start: 14px;
+  padding-inline-start: calc(14px * var(--lucet-density, 1));
   border-inline-start: 2px solid var(--line-strong);
   color: var(--ink-3);
 }
@@ -1728,7 +1728,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: calc(8px * var(--lucet-density, 1));
   min-inline-size: 0;
 }
 
@@ -1736,14 +1736,14 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .atts--grid .att {
   inline-size: 68px;
   flex-direction: column;
-  gap: 5px;
+  gap: calc(5px * var(--lucet-density, 1));
 }
 .atts--grid .att .media { inline-size: 68px; aspect-ratio: 1; }
 
 /* ---- inline ---- */
 .atts--inline .att {
   block-size: 26px;
-  padding-inline: 7px 5px;
+  padding-inline: calc(7px * var(--lucet-density, 1)) calc(5px * var(--lucet-density, 1));
   border-radius: 7px;
   background-color: var(--raised);
   box-shadow: var(--ring-2);
@@ -1753,7 +1753,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 
 /* ---- list ---- */
 .atts--list .att {
-  padding: 6px 6px 6px 8px;
+  padding: calc(6px * var(--lucet-density, 1)) calc(6px * var(--lucet-density, 1)) calc(6px * var(--lucet-density, 1)) calc(8px * var(--lucet-density, 1));
   border-radius: var(--r-control);
   transition: background-color var(--fast);
 }
@@ -1934,7 +1934,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .table { inline-size: 100%; border-collapse: collapse; font-size: 13px; }
 
 .table th {
-  padding: 0 10px 8px;
+  padding: 0 calc(10px * var(--lucet-density, 1)) calc(8px * var(--lucet-density, 1));
   text-align: start;
   font-size: 11px;
   font-weight: 500;
@@ -1945,7 +1945,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 }
 
 .table td {
-  padding: 9px 10px;
+  padding: calc(9px * var(--lucet-density, 1)) calc(10px * var(--lucet-density, 1));
   border-block-start: 1px solid var(--line);
   color: var(--ink-2);
   vertical-align: middle;
@@ -1974,6 +1974,6 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .prim__controls {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
-  margin-block-end: 4px;
+  gap: calc(6px * var(--lucet-density, 1));
+  margin-block-end: calc(4px * var(--lucet-density, 1));
 }

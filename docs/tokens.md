@@ -119,7 +119,9 @@ Do not build on these.
 - `--lucet-surface-ground`, `--lucet-surface-raised`, `--lucet-surface-overlay`, `--lucet-surface-sunken` — feed the semantic layer.
 - `--lucet-edge-top`, `--lucet-edge-bottom`, `--lucet-hairline`, `--lucet-hairline-raised`, `--lucet-hairline-overlay`, `--lucet-shade-#`, `--lucet-inset-hair`, `--lucet-inset-shallow`, `--lucet-inset-deep`, `--lucet-gloss` — the primitives the materials are built from. The ring family ramps with elevation and the inset family is chosen by the size of the recess; both are assembled for you by the four materials.
 - `--lucet-shadow-color`, `--lucet-shadow-alpha`, `--lucet-primary-glow`
-- `--lucet-space-base`, `--lucet-space-unit` — the spacing scale's own arithmetic.
+- `--lucet-space-base`, `--lucet-space-unit`, `--lucet-density` — the spacing
+  scale's own arithmetic; density is the expression axis's interior-space dial,
+  reached through `data-expression`, not set directly.
 - `--lucet-radius-root`, `--lucet-radius-control-inner` — derived; the nested-radius rule computes them.
 - `--lucet-font-system`, `--lucet-font-mono-system` — the fallback stacks behind the typeface slots.
 - `--lucet-line` — the raw line colour behind `--lucet-border`.

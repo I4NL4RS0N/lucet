@@ -18,6 +18,13 @@
  * --------------------------------------------------------------- */
 :root,
 :root[data-expression='system'] {
+  /* DENSITY is the half of this axis that was missing: radius, leading,
+     and glow flipped while every padding and gap sat frozen in literal
+     pixels, so the two expressions read as one design with a decoration
+     toggle. Interior space (component padding, gaps, row heights) now
+     multiplies through this dial. System runs tighter than the drawn
+     reference; Expressive runs a fifth looser. */
+  --lucet-density: 0.95;
   --lucet-space-base: 0.25rem;
   /* 8px, the dominant radius in the reference. 6px falls out as the md step. */
   --lucet-radius-base: 0.5rem;
@@ -39,6 +46,7 @@
  * radius, and material rather than by effects.
  * --------------------------------------------------------------- */
 :root[data-expression='expressive'] {
+  --lucet-density: 1.2;
   --lucet-space-base: 0.34375rem;
   /*
    * Softer than System, and that is the whole difference: the roles are derived
