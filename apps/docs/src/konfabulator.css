@@ -63,10 +63,16 @@ body {
      margins were considered and resisted: they would squeeze the rail
      and treat the symptom. */
   grid-template-columns: minmax(0, 820px) 300px;
-  gap: calc(72px * var(--lucet-density, 1));
+  /* The PAGE SHELL does not ride the density dial (review): scaling the
+     page's own paddings up at Expressive built bigger elements and
+     handed them a smaller box — the frame lost ~85px and its Sources
+     rows wrapped into the fold, and the drawer's host page lost the
+     breadcrumb behind it. The dial is for interior space; the shell is
+     the site's, and it holds still. */
+  gap: 64px;
   max-inline-size: 1200px;
   margin: 0 auto;
-  padding: calc(48px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(80px * var(--lucet-density, 1));
+  padding: 48px 28px 80px;
   align-items: start;
 }
 
