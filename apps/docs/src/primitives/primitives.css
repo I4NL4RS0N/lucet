@@ -2007,3 +2007,150 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   gap: 6px;
   margin-block-end: 4px;
 }
+
+/* ================================================================
+ * THE COMPONENTS PAGE'S COMPOSITION (crit pass, 2026-09-01).
+ * Scoped to .prim--comp so the primitives page keeps its grammar
+ * untouched. Three container tiers, deliberately, so the page has
+ * tempo instead of one repeated rectangle:
+ *
+ *   1. The live app FLOATS on the page — no well, no frame. The UI
+ *      is the object; the page is its room.
+ *   2. State matrices sit on open RAILS: rows separated by content
+ *      rules (--line), the note hung beside the specimen as a
+ *      museum label. Lines are Paper's grammar; a box that only
+ *      held a column and its vacancy was not.
+ *   3. Sequences and grids keep the stage WELL, which now earns its
+ *      rectangle by holding a composition — duets (before/after,
+ *      locked/queued) and trios (the receipt lifecycle, a citation
+ *      aging through time).
+ *
+ * The main column widens to 1140px here; every text measure stays
+ * capped (lede 62ch, notes 40ch, rail demos 640px), so the width
+ * goes to composition, never to line length. */
+
+.prim--comp .prim__main { max-inline-size: 1140px; }
+
+.prim--comp .sec { margin-block-start: 96px; }
+.prim--comp .sec__head { margin-block-end: 22px; }
+.prim--comp .sec__name { font-size: 17px; letter-spacing: -0.014em; }
+
+/* Tier 1 — the hero floats. */
+.prim--comp .sec--hero { margin-block-start: 48px; }
+.prim--comp .hero-app { max-inline-size: 720px; padding-block: 8px 16px; }
+
+/* Tier 2 — the rail. The .stage well is reset in every theme (the
+   light-mode surface override is declared at higher specificity, so
+   both paths are named here). */
+.prim--comp .stage--rail,
+:root[data-theme='light'] .prim--comp .stage--rail {
+  display: grid;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 0;
+}
+.prim--comp .stage--rail > .spec {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) minmax(220px, 1fr);
+  grid-template-areas: 'head head' 'demo note';
+  column-gap: 48px;
+  row-gap: 12px;
+  align-items: start;
+  padding-block: 30px 34px;
+  border-block-start: 1px solid var(--lucet-line);
+}
+.prim--comp .stage--rail > .spec:first-child {
+  border-block-start: 0;
+  padding-block-start: 4px;
+}
+.prim--comp .stage--rail .spec__head { grid-area: head; }
+.prim--comp .stage--rail .spec__demo,
+.prim--comp .stage--rail .spec__code { grid-area: demo; }
+.prim--comp .stage--rail .spec__note {
+  grid-area: note;
+  /* The museum label holds beside a tall specimen instead of
+     scrolling away beneath it. */
+  position: sticky;
+  top: 72px;
+  font-size: 13px;
+  line-height: 1.55;
+  max-inline-size: 40ch;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--lucet-line);
+}
+
+/* Tier 3 — wells that hold a composition. */
+.prim--comp .stage--duet,
+.prim--comp .stage--trio {
+  display: grid;
+  gap: 30px 36px;
+  align-items: start;
+}
+.prim--comp .stage--duet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.prim--comp .stage--trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.prim--comp .stage--duet .spec__demo,
+.prim--comp .stage--trio .spec__demo { max-inline-size: none; }
+
+/* The showcase row: spans the well, note hung as the label. */
+.prim--comp .spec--band {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 640px) minmax(220px, 1fr);
+  grid-template-areas: 'head head' 'demo note';
+  column-gap: 48px;
+  row-gap: 12px;
+  align-items: start;
+  border-block-start: 1px solid var(--lucet-line);
+  padding-block-start: 28px;
+}
+.prim--comp .spec--band .spec__head { grid-area: head; }
+.prim--comp .spec--band .spec__demo,
+.prim--comp .spec--band .spec__code { grid-area: demo; }
+.prim--comp .spec--band .spec__note {
+  grid-area: note;
+  font-size: 13px;
+  line-height: 1.55;
+  max-inline-size: 40ch;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--lucet-line);
+}
+
+/* The narrow-page collapse: rails and bands stack; trios step down
+   through two columns; duets give up at the same fold the stage
+   grammar always used. Nothing may clip — the overflow rule. */
+@media (max-width: 1080px) {
+  .prim--comp .stage--trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prim--comp .stage--rail > .spec,
+  .prim--comp .spec--band {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'head' 'demo' 'note';
+  }
+  .prim--comp .stage--rail .spec__note,
+  .prim--comp .spec--band .spec__note {
+    position: static;
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+}
+@media (max-width: 860px) {
+  .prim--comp .stage--duet,
+  .prim--comp .stage--trio { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Specimen labels drop the caps here: thirty specimens of shouting
+   micro-labels drowned the section voices. The label is a quiet
+   title; the section name carries the register. */
+.prim--comp .spec__label {
+  text-transform: none;
+  letter-spacing: -0.006em;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--ink-2);
+}
+
+/* Trio cells share a baseline: a two-line label was pushing its
+   specimen out of line with its siblings, and a sequence only reads
+   as one motion when the three first bubbles sit level. */
+.prim--comp .stage--trio .spec__head { min-block-size: 40px; align-items: start; }

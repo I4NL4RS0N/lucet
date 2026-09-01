@@ -94,18 +94,22 @@ function Example({
   note,
   code,
   max,
+  variant,
   children,
 }: {
   label: string
   note: string
   code: string
   max?: number
+  /** Composition role on the components page: 'band' spans a well's full
+      width with the note as a hanging label — the section's showcase row. */
+  variant?: 'band'
   children: React.ReactNode
 }) {
   const [view, setView] = useState<'preview' | 'code'>('preview')
   const [copied, setCopied] = useState(false)
   return (
-    <div className="spec spec--wide">
+    <div className={variant ? `spec spec--wide spec--${variant}` : 'spec spec--wide'}>
       <div className="spec__head">
         <span className="spec__label">{label}</span>
         <div className="spec__tabs" role="group" aria-label="View as">
@@ -323,6 +327,58 @@ const VERSIONS_FIXTURES: readonly Fixture[] = [
   },
 ]
 
+/* The receipt lifecycle, staged as one horizontal sequence: running,
+   partly returned, failed. Partial is the differentiator — succeeded-or-
+   failed is the lie that lets a product answer from two thirds of the
+   data — so the three truths stand side by side where the progression
+   reads at a glance. */
+const TOOL_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'A tool at work',
+    note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run.',
+    events: [
+      ...turn(1, 'Check the three sources I flagged.', {
+        tool: {
+          name: 'Searching the documents',
+          status: 'running',
+          args: '{ "query": "sources flagged this week", "limit": 3 }',
+        },
+        settle: 'streaming',
+      }),
+    ],
+  },
+  {
+    label: 'A tool, partly returned',
+    note: 'The differentiator. Partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it.',
+    events: [
+      ...turn(1, 'Check the three sources I flagged.', {
+        tool: {
+          name: 'Searched the documents',
+          status: 'partial',
+          detail: '2 of 3 sources returned. Timed out on the third.',
+          args: '{ "query": "sources flagged this week", "limit": 3 }',
+          result: '{ "returned": 2, "timed_out": ["carrier quote"], "retryable": true }',
+        },
+        reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
+      }),
+    ],
+  },
+  {
+    label: 'A tool that failed, with nothing to show',
+    note: 'No result came back, so there is no receipt to open on that side — no payload means no chevron: a disclosure over an empty body is a dead promise, and this library has shipped its last one.',
+    events: [
+      ...turn(1, 'Check the carrier quote.', {
+        tool: {
+          name: 'Searched the documents',
+          status: 'failed',
+          detail: 'The source did not respond.',
+        },
+        reply: 'I could not check it — the source did not respond. Ask again and I will retry.',
+      }),
+    ],
+  },
+]
+
 const THREAD_FIXTURES: readonly Fixture[] = [
   {
     label: 'A finished turn, attachments and all',
@@ -351,50 +407,6 @@ const THREAD_FIXTURES: readonly Fixture[] = [
       ...turn(1, 'Summarise the meeting notes.', {
         reply: 'Three decisions were made. The first covers the',
         settle: 'streaming',
-      }),
-    ],
-  },
-  {
-    label: 'A tool at work',
-    note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run.',
-    events: [
-      ...turn(1, 'Check the three sources I flagged.', {
-        tool: {
-          name: 'Searching the documents',
-          status: 'running',
-          args: '{ "query": "sources flagged this week", "limit": 3 }',
-        },
-        settle: 'streaming',
-      }),
-    ],
-  },
-  {
-    label: 'A tool, partly returned',
-    note: 'The differentiator. Succeeded-or-failed is the lie that lets a product answer from two thirds of the data — partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it.',
-    events: [
-      ...turn(1, 'Check the three sources I flagged.', {
-        tool: {
-          name: 'Searched the documents',
-          status: 'partial',
-          detail: '2 of 3 sources returned. Timed out on the third.',
-          args: '{ "query": "sources flagged this week", "limit": 3 }',
-          result: '{ "returned": 2, "timed_out": ["carrier quote"], "retryable": true }',
-        },
-        reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
-      }),
-    ],
-  },
-  {
-    label: 'A tool that failed, with nothing to show',
-    note: 'No result came back, so there is no receipt to open on that side — and no payload at all means no chevron: a disclosure over an empty body is a dead promise, and this library has shipped its last one.',
-    events: [
-      ...turn(1, 'Check the carrier quote.', {
-        tool: {
-          name: 'Searched the documents',
-          status: 'failed',
-          detail: 'The source did not respond.',
-        },
-        reply: 'I could not check it — the source did not respond. Ask again and I will retry.',
       }),
     ],
   },
@@ -549,6 +561,12 @@ const CORE_FIXTURES: readonly Fixture[] = [
     note: 'Nothing can send right now, and it says so. Your draft stays in the box. (A merely slow service never blocks you.)',
     events: ([type('Is anything getting through?'), { type: 'service/changed', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' }]),
   },
+  {
+    label: 'Streaming — Send becomes Stop',
+    note: 'While it writes, Send becomes Stop — hover Stop for what it does. The field stays open for the next thought.',
+    events: ([{ type: 'composer/locked', by: 'you' }]),
+    streaming: true,
+  },
 ]
 
 /*
@@ -634,9 +652,20 @@ const MULTI_FIXTURES: readonly Fixture[] = [
   },
 ]
 
-function Section({ name, note, children }: { name: string; note: string; children: React.ReactNode }) {
+function Section({
+  name,
+  note,
+  variant,
+  children,
+}: {
+  name: string
+  note: string
+  /** 'hero' floats its content directly on the page — no stage well. */
+  variant?: 'hero'
+  children: React.ReactNode
+}) {
   return (
-    <section className="sec">
+    <section className={variant ? `sec sec--${variant}` : 'sec'}>
       <header className="sec__head">
         <h2 className="sec__name">{name}</h2>
         <span className="sec__note">{note}</span>
@@ -716,7 +745,7 @@ export function ComponentsStage() {
     /* The lab rides the axis whole: its stage wells are part of the
        specimen presentation. (The Konfabulator pins its chrome instead —
        see App.tsx.) */
-    <div className="prim" data-expression={appearance.expression}>
+    <div className="prim prim--comp" data-expression={appearance.expression}>
       <SiteHeader page="components" />
 
       <main className="prim__main">
@@ -733,14 +762,27 @@ export function ComponentsStage() {
           working surface beside the primitives.
         </p>
 
-        <Section name="The app, live" note="try it — type, attach, send, watch it answer">
-          <div className="spec__demo spec__demo--breathe" style={{ '--demo-max': '620px' } as React.CSSProperties}>
+        <Section variant="hero" name="The app, live" note="try it — type, attach, send, watch it answer">
+          <div className="hero-app">
             <Live />
           </div>
         </Section>
 
+        <Section
+          name="Tool calls — the receipt lifecycle"
+          note="running, partly returned, failed — the receipt tells the truth at every stage"
+        >
+          <div className="stage stage--trio">
+            {TOOL_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
         <Section name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
-          <div className="stage stage--flow">
+          <div className="stage stage--duet">
             {CORE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -765,7 +807,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
-          <div className="stage stage--flow">
+          <div className="stage stage--duet">
             {SCOPE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -792,9 +834,9 @@ export function ComponentsStage() {
           name="Budget meter — the price before you spend it"
           note="the projected price of the next turn, on every model, before you commit — and the month it lands in"
         >
-          <div className="stage stage--flow">
-            {BUDGET_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
+          <div className="stage stage--duet">
+            {BUDGET_FIXTURES.map((f, i) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560} {...(i === 2 ? { variant: 'band' as const } : {})}>
                   <PromptInput
                     composer={stateOf(f).composer}
                     model={stateOf(f).model}
@@ -818,7 +860,7 @@ export function ComponentsStage() {
           name="Prompt input — multiplayer"
           note="one thread, several people, one turn at a time"
         >
-          <div className="stage stage--flow">
+          <div className="stage stage--duet">
             {MULTI_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -842,7 +884,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Thread — every ending" note="a response is never simply loading or done">
-          <div className="stage stage--flow stage--flow-roomy">
+          <div className="stage stage--rail">
             {THREAD_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -852,7 +894,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
-          <div className="stage stage--flow stage--flow-roomy">
+          <div className="stage stage--trio">
             {SOURCES_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -862,7 +904,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
-          <div className="stage stage--flow stage--flow-roomy">
+          <div className="stage stage--duet">
             {VERSIONS_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -872,7 +914,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
-          <div className="stage stage--flow">
+          <div className="stage stage--duet">
             <div className="spec spec--wide">
               <span className="spec__label">Ways in</span>
               <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '460px' } as React.CSSProperties}>
@@ -907,25 +949,6 @@ export function ComponentsStage() {
                 The single-writer lock reaches the chips too: while it is someone else’s turn,
                 a way in that would fail is not offered as live.
               </p>
-            </div>
-          </div>
-        </Section>
-
-        <Section name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
-          <div className="stage">
-            <div className="spec__demo" style={{ '--demo-max': '560px' } as React.CSSProperties}>
-              <PromptInput
-                composer={play([{ type: 'composer/locked', by: 'you' }]).composer}
-                model={play([]).model}
-                service={play([]).service}
-                selfId="you"
-                streaming
-                onStop={noop}
-                onChange={noop}
-                onSubmit={noop}
-                onModelChange={noop}
-                onRemoveAttachment={noop}
-              />
             </div>
           </div>
         </Section>

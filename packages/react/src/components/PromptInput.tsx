@@ -431,7 +431,7 @@ export function PromptInput({
             </button>
           ) : null}
           {streaming && onStop ? (
-            <span className="lucet-tipwrap">
+            <span className="lucet-tipwrap" data-tip-align="end">
               <button
                 type="button"
                 className="lucet-button"

@@ -61,9 +61,9 @@ const COMPONENT_PROBES = [
   { sec: 'Prompt input — every state', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
   { sec: 'Prompt input — every state', hover: '.lucet-prompt__att [aria-label^="Remove"]', part: 'chip remove', bg: true },
   { sec: 'Prompt input — multiplayer', hover: 'button.lucet-button:not([disabled])', part: 'queue button' },
-  { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap button', part: 'stop button' },
+  { sec: 'Prompt input — every state', hover: '.lucet-tipwrap button', part: 'stop button' },
   /* The tooltip must ARRIVE: hover the wrap, watch the tip's opacity. */
-  { sec: 'Prompt input — streaming', hover: '.lucet-tipwrap', probe: '.lucet-tip', part: 'stop tooltip appears' },
+  { sec: 'Prompt input — every state', hover: '.lucet-tipwrap', probe: '.lucet-tip', part: 'stop tooltip appears' },
   /* The reasoning row is a real control now; its veil must land like any
      other. (Its predecessor was a dead div that said "expand".) */
   { sec: 'Thread — every ending', hover: 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary', part: 'reasoning summary', bg: true },

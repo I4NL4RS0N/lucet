@@ -1054,8 +1054,21 @@
   transition-duration: 130ms;
 }
 
+/* A tip on an inline-end control grows leftward instead: centred, its
+   idle box hung past the last button and widened the page on narrow
+   hosts. The invisible tooltip must never be the widest thing on the
+   page. */
+.lucet-tipwrap[data-tip-align='end'] .lucet-tip {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  translate: 0 4px;
+}
+.lucet-tipwrap[data-tip-align='end']:hover .lucet-tip,
+.lucet-tipwrap[data-tip-align='end']:focus-within .lucet-tip { translate: 0 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .lucet-tip { transition: opacity var(--lucet-duration-fast) var(--lucet-ease); translate: -50% 0; }
+  .lucet-tipwrap[data-tip-align='end'] .lucet-tip { translate: 0 0; }
 }
 
 /* ============================================================
