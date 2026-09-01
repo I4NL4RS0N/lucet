@@ -1,25 +1,59 @@
 # lucet-react
 
-React bindings for [`lucet`](https://www.npmjs.com/package/lucet).
+React bindings for [`lucet`](https://www.npmjs.com/package/lucet) —
+AI interface components for the states real AI features actually hit.
 
-**Status: not ready. This is a name placeholder at `0.0.1`.**
-There is no stable API yet, and what is here will change. Please do not build
-on it. Watch [the repository](https://github.com/I4NL4RS0N/lucet) for the first
-real release.
+The core is framework-free; this package is the thin React layer:
+components (Thread, PromptInput, ToolCall, Sources, ScopeControl,
+BudgetMeter, and the rest), hooks, and a provider. All state logic
+stays in the core.
 
-## What this will be
+## Install
 
-The thin React half of Lucet, an open-source library of AI interface components
-built around the states most libraries skip: refusals, interruptions, rate
-limits, stale answers, silent downgrades to a cheaper model.
+```
+npm install lucet lucet-react
+```
 
-All state logic lives in `lucet`; this package stays thin. Styling is vanilla
-CSS with custom properties — **no Tailwind dependency** — and the token names
-map onto shadcn's CSS variable names, so setting the bare shadcn name works
-without knowing Lucet exists. Icons ship as a slot with an overridable default,
-not as a hard dependency.
+## The smallest real example
 
-WCAG 2.2 AA is enforced on every component by an audit that drives a real
-browser in CI.
+```tsx
+import { createLucet } from 'lucet'
+import { LucetProvider, Thread, PromptInput, useThread } from 'lucet-react'
+import 'lucet/styles.css'
+import 'lucet-react/styles.css'
 
-MIT licensed. Bundled icon paths derive from Lucide (ISC) — see `NOTICE`.
+const lucet = createLucet()
+
+function Chat() {
+  const state = useThread()
+  return (
+    <>
+      <Thread state={state} selfId="you" onRetry={(id) => lucet.retry(id)} />
+      <PromptInput
+        composer={state.composer}
+        model={state.model}
+        service={state.service}
+        selfId="you"
+        onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
+        onSubmit={() => lucet.submit(state.composer.text)}
+      />
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <LucetProvider value={lucet}>
+      <Chat />
+    </LucetProvider>
+  )
+}
+```
+
+Refusals, interruptions, partial tool failures, stale sources, version
+restore, budget caution — each renders as a designed state with its
+own silhouette, not an improvised error path.
+
+Docs, every state on a running page: **https://lucet.design**
+
+MIT.

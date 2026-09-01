@@ -2,24 +2,48 @@
 
 Framework-free state logic for AI interface components.
 
-**Status: not ready. This is a name placeholder at `0.0.1`.**
-There is no stable API yet, and what is here will change. Please do not build
-on it. Watch [the repository](https://github.com/I4NL4RS0N/lucet) for the first
-real release.
+Most component libraries ship the happy path. `lucet` is built around
+the states real AI features actually hit — refusals, interruptions,
+rate limits, partial tool failures, stale citations, a spent budget —
+as first-class, reachable, reproducible states.
 
-## What this will be
+The core is an event-sourced store with a pure, total reducer and an
+injectable clock. Every state in the docs is produced by replaying
+real events, never by flags. It has no framework imports.
 
-Lucet is an open-source library of AI interface components. The argument is that
-the hard part of an AI interface is not the happy path — it is the refusal, the
-interruption, the rate limit, the stale answer, the silent downgrade to a
-cheaper model. Most component libraries ship the happy path and leave the rest
-to you.
+React today, adapters welcome, the core is yours to wrap.
 
-`lucet` is the headless half: an event-sourced store with a pure, total reducer
-and an injectable clock, so every state is reachable and reproducible. It has no
-framework imports. `lucet-react` is the thin React binding over it.
+## Install
 
-Accessibility is a requirement rather than a pass at the end: WCAG 2.2 AA is
-enforced on every component by an audit that drives a real browser in CI.
+```
+npm install lucet
+```
 
-MIT licensed.
+## The smallest real example
+
+```ts
+import { createLucet } from 'lucet'
+
+const lucet = createLucet()
+lucet.subscribe(() => {
+  const { turns, status } = lucet.getState()
+  render(turns, status) // your renderer — lucet-react is one
+})
+
+await lucet.submit('Summarise the three documents I shared.')
+// The response streams through the store as events: text deltas,
+// tool lifecycle, settlement. Interrupt it, retry it, restore an
+// earlier version — every path is an ordinary event.
+```
+
+Tokens ship at `lucet/styles.css` — vanilla CSS custom properties,
+mapped onto shadcn's variable names, with light/dark themes and the
+Paper/Glass material axis at identical geometry.
+
+## Where the thinking lives
+
+Every component has a written rationale, and the docs run the real
+runtime: **https://lucet.design** — the argument itself is in the
+[thesis](https://github.com/I4NL4RS0N/lucet/blob/main/docs/thesis.md).
+
+MIT.
