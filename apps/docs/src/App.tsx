@@ -792,9 +792,11 @@ export function App() {
     try {
       const q = new URLSearchParams(window.location.search)
       if (q.has('state')) return false
+      /* Reduced motion beats the force flag: it is an accessibility
+         preference, and a recording rig never sets it. */
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
       if (q.has('playback')) return true
       if (navigator.webdriver) return false
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
       return window.sessionStorage.getItem('lucet-konf-played') === null
     } catch {
       return false
