@@ -308,6 +308,23 @@ function AppCore({
   const state = useThread()
   const attachCount = useRef(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+  /* The rail's boundary grammar, on the welcome too: at tight sizes the
+     cold start can overflow the frame, and a card severed at the frame
+     edge with no cue says nothing exists below it. Overflow-aware, gone
+     the moment everything fits or a thread starts. */
+  const [welcomeMore, setWelcomeMore] = useState(false)
+  const checkWelcome = () => {
+    const el = scrollRef.current
+    setWelcomeMore(
+      state.turns.length === 0 && !!el && el.scrollHeight - el.scrollTop - el.clientHeight > 12,
+    )
+  }
+  useEffect(() => {
+    checkWelcome()
+    window.addEventListener('resize', checkWelcome)
+    return () => window.removeEventListener('resize', checkWelcome)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.turns.length])
 
   useEffect(() => {
     const el = scrollRef.current
@@ -387,7 +404,7 @@ function AppCore({
       <div className="cfg__app-body">
         {aside}
         <div className="cfg__app-main">
-          <div className="cfg__scroll" ref={scrollRef}>
+          <div className="cfg__scroll" ref={scrollRef} onScroll={checkWelcome}>
             {state.turns.length === 0 ? (
               /*
                * The cold start, designed: the product's real first state. The
@@ -459,6 +476,18 @@ function AppCore({
                 onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
               />
             )}
+            {welcomeMore ? (
+              <button
+                type="button"
+                className="cfg__rail-more cfg__scroll-more"
+                onClick={() => scrollRef.current?.scrollBy({ top: 200, behavior: 'smooth' })}
+              >
+                More
+                <svg viewBox="0 0 24 24" aria-hidden>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            ) : null}
           </div>
 
           {composerCentered ? null : (

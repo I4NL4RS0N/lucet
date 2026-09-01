@@ -48,7 +48,13 @@ body {
      whitespace and read as nothing. On ~1010px+ viewports everything
      now sits visible at rest, still settled; shorter viewports get the
      explicit More affordance below. */
-  --cfg-stage-h: min(84vh, 920px);
+  --cfg-stage-h: min(calc(100dvh - var(--cfg-chrome, 190px)), 920px);
+  /* What sits above the stage: header + stage bar + breathing room. The
+     ceiling subtracts it so the frame's bottom always lands INSIDE the
+     viewport — a frame cut by the viewport's edge is a severed card
+     with no cue, where the frame's own scroll has a fade and a More
+     chip. The wrapped phone header spends more. */
+  --cfg-chrome: 190px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: calc(36px * var(--lucet-density, 1));
@@ -129,7 +135,10 @@ body {
      name + reserved toggle track. The density story for the sidebar
      lives in the expressive direction (+94px); System tightens the rest
      of the shell harder than this one rail. */
-  inline-size: max(198px, calc(208px * var(--lucet-density, 1)));
+  /* Floored at content: the rail exists to show thread titles, and 215
+     is where 'Compare the two vendor quotes' renders whole. The density
+     story for this rail is the expressive direction (+88px). */
+  inline-size: max(215px, calc(208px * var(--lucet-density, 1)));
   flex-shrink: 0;
   padding: calc(12px * var(--lucet-density, 1)) 10px;
   border-inline-end: 1px solid var(--lucet-border);
@@ -310,7 +319,8 @@ body {
 }
 .cfg__side-group {
   margin-block: 16px 4px;
-  padding-inline: 9px;
+  /* Tracks the rows' text indent (rail 10 + row 5). */
+  padding-inline: 5px;
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -318,7 +328,13 @@ body {
   color: var(--lucet-muted-foreground);
 }
 .cfg__side-row {
-  padding: 6px 9px;
+  /* Full rail width, one padding level: rows were losing 19px a side to
+     stacked insets (rail padding + row padding), truncating titles at
+     ~20 characters. The row bleeds across the rail's inline padding and
+     carries the inset itself, so the hover pill spans edge to edge —
+     the sidebar grammar, not the drawer's. */
+  margin-inline: -10px;
+  padding: 6px 3px 6px 15px;
   border-radius: var(--lucet-radius-control);
   font-size: 13px;
   color: var(--lucet-muted-foreground);
@@ -1698,4 +1714,21 @@ body {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* The welcome's More chip: sticky at the scroll floor, riding ABOVE the
+   bottom fade band so the cue itself is never dimmed by the mask. */
+.cfg__scroll-more {
+  position: sticky;
+  inset-block-end: 24px;
+  z-index: 3;
+  display: flex;
+  margin: -34px auto 10px;
+  inline-size: fit-content;
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
+}
+
+@media (max-width: 560px) {
+  .cfg__layout { --cfg-chrome: 265px; }
 }
