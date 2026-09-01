@@ -671,7 +671,7 @@ function MockHistory() {
       <div className="cfg__history-group">Today</div>
       {(
         [
-          ['Quarterly planning', 'Today · 9:41'],
+          ['Quarterly planning', 'Today · 10:24'],
           ['Draft the kickoff note', 'Today · 8:12'],
         ] as const
       ).map(([t, d]) => (
@@ -1380,7 +1380,8 @@ export function App() {
             <section className="cfg__phone-stage" aria-label="The running app, on a phone">
               <div className="cfg__phone">
                 <div className="cfg__phone-status" aria-hidden>
-                  <span>9:41</span>
+                  {/* Any time but Apple's 9:41 — the demo-time that reads as borrowed. */}
+                  <span>10:24</span>
                   <span className="cfg__phone-island" />
                   <span className="cfg__phone-pills">
                     <i /><i />
