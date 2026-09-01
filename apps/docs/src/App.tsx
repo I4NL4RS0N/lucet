@@ -321,7 +321,6 @@ function AppCore({
   onSuggest,
   aside,
   chrome = 'window',
-  compact,
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
@@ -337,7 +336,6 @@ function AppCore({
      was cut and no preview grew taller: the host tunes suggestion count
      per surface, which is the contract's toggle-is-the-config law doing
      its job. */
-  compact?: boolean
 }) {
   const lucet = useLucet()
   const state = useThread()
@@ -488,14 +486,14 @@ function AppCore({
                   claude.ai's grammar, which this pattern follows.) */}
               {suggestionsVisible(state) ? (
                 <SuggestionChips
-                  suggestions={
-                    compact
-                      ? (['ask', 'do'] as const).flatMap((k) => {
-                          const first = state.suggestions.find((s) => s.kind === k)
-                          return first ? [first] : []
-                        })
-                      : state.suggestions
-                  }
+                  /* ONE-TO-ONE (review): two-versus-two read as a four-item
+                     menu; one plain row against one bordered card carrying
+                     its cost reads as a claim about two kinds of action.
+                     Same design work, more of the point visible. */
+                  suggestions={(['ask', 'do'] as const).flatMap((k) => {
+                    const first = state.suggestions.find((s) => s.kind === k)
+                    return first ? [first] : []
+                  })}
                   disabled={state.composer.locked}
                   onPick={(s) => onSuggest?.(s)}
                 />
@@ -782,6 +780,19 @@ export function App() {
      rail, whose own :hover peek rule then held it at translate 0 — the
      rail never retracted, it just swapped into the floating skin. */
   const [peekArmed, setPeekArmed] = useState(false)
+  /* Below 1100 the sidebar used to display:none — unreachable, and the
+     collapsed state is itself worth showing (review). It now COLLAPSES:
+     the floating toggle and the edge peek stay, and the person can pin
+     it open even here. */
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1100px)')
+    const apply = () => {
+      if (mq.matches) setSideOpen(false)
+    }
+    apply()
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [])
   const [drawerMode, setDrawerMode] = useState<'over' | 'push' | 'floating'>('over')
   /* The floating panel DRAGS — by its bar, the way every floating panel
      has ever dragged. Position is a preference, not a function: nothing
@@ -1237,7 +1248,6 @@ export function App() {
                     {drawerPane === 'thread' ? (
                       <AppCore
                         chrome="bare"
-                        compact
                                 onSuggest={(s) => {
                           writeStateParam(s.id)
                           fire(s.id)
@@ -1275,7 +1285,6 @@ export function App() {
                 {phonePane === 'thread' ? (
                   <AppCore
                     chrome="bare"
-                    compact
                     onSuggest={(s) => {
                       writeStateParam(s.id)
                       fire(s.id)

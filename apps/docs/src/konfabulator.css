@@ -411,9 +411,9 @@ body {
 
 /* The demo page itself gets narrow before the phone view does; below the
    comfortable width the room folds away and the thread keeps the stage. */
-@media (max-width: 1100px) {
-  .cfg__side { display: none; }
-}
+/* No display:none breakpoint for the sidebar: at narrow viewports it
+   auto-collapses (React watches the same 1100px line), keeping the
+   floating toggle and the edge peek — reachable, and honestly shown. */
 
 /* The thread at a reading measure: an application centers its column
    instead of running text to the chrome. The welcome keeps full bleed —
