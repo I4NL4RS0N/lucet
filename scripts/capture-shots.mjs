@@ -119,7 +119,18 @@ async function main() {
         /* Belt over the reduced-motion braces: literal-duration animations
            (the caret blink on the streaming fixture) die outright. */
         await page.addStyleTag({
-          content: '*, *::before, *::after { animation: none !important; transition: none !important; }',
+          content: [
+            '*, *::before, *::after { animation: none !important; transition: none !important; }',
+            /* Scroll-DRIVEN animations are position-based, not time-based:
+               deterministic, and they carry the scroll-fade cue the review
+               needs to see. The blanket kill above must not erase them. */
+            '@supports (animation-timeline: scroll()) {',
+            '  .cfg__scroll, .cfg__rail-flow {',
+            '    animation: cfg-scroll-fade linear both !important;',
+            '    animation-timeline: scroll(self block) !important;',
+            '  }',
+            '}',
+          ].join('\n'),
         })
         await page.evaluate(() => document.fonts.ready)
         await page.waitForTimeout(150)

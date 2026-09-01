@@ -554,7 +554,7 @@ body {
 
 @supports (animation-timeline: scroll()) {
   .cfg__scroll,
-  .cfg__rail {
+  .cfg__rail-flow {
     animation: cfg-scroll-fade linear both;
     animation-timeline: scroll(self block);
   }
@@ -868,18 +868,25 @@ body {
   position: sticky;
   top: 24px;
   /* Bottoms align: the rail and the frame carry the same 44px head
-     start in their columns, so equal caps end them on one line. The
-     rail's scroll and bottom fade carry whatever doesn't fit. */
+     start in their columns, so equal caps end them on one line. Inside,
+     the rail is a PANEL WITH PARTS: the states flow scrolls in the
+     middle wearing the house scroll fade, and the event log pins at the
+     floor — the one thing a silent scroll edge must never swallow. */
   max-block-size: min(var(--cfg-stage-h, 100vh), calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+.cfg__rail-flow {
+  flex: 1;
+  min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-inline-end: 6px;
-  /* The bottom fade eats padding, never the last row: the event log must
-     read at full ink when the rail has nothing to hide. */
-  padding-block-end: 24px;
+  /* The bottom fade eats padding, never the last row. */
+  padding-block-end: 20px;
   display: grid;
   gap: 4px;
-  font-size: 13px;
   --fade: 18px;
   /* At rest the top is CLEAR — the title must not sit under a fade it has
      not earned. The scroll-driven animation adds the top fade exactly when
@@ -892,14 +899,14 @@ body {
     transparent 100%
   );
 }
-.cfg__rail::-webkit-scrollbar { inline-size: 10px; }
-.cfg__rail::-webkit-scrollbar-thumb {
+.cfg__rail-flow::-webkit-scrollbar { inline-size: 10px; }
+.cfg__rail-flow::-webkit-scrollbar-thumb {
   border: 3px solid transparent;
   border-radius: 999px;
   background-clip: content-box;
   background-color: var(--lucet-input);
 }
-.cfg__rail::-webkit-scrollbar-track { background: transparent; }
+.cfg__rail-flow::-webkit-scrollbar-track { background: transparent; }
 
 /* The thesis's two halves as TABS at the top of the rail — States and
    Features — wearing the page's segmented-control grammar. Full-width so
@@ -1432,7 +1439,8 @@ body {
 /* ---- tucked: appearance, then the event log ---- */
 
 .cfg__aside {
-  margin-block-start: 14px;
+  flex: none;
+  margin-block-start: 10px;
   padding-block-start: 12px;
   border-block-start: 1px solid var(--lucet-border);
   display: grid;

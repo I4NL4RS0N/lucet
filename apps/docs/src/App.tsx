@@ -1221,16 +1221,22 @@ export function App() {
 
         <div className="cfg__railcol">
           <div className="cfg__rail">
-            <TriggerRail
-              active={active}
-              firing={firing}
-              onFire={fire}
-              onReset={() => {
-                lucet.reset()
-                lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
-                setActive(null)
-              }}
-            />
+            {/* The rail is a PANEL with parts: the states flow scrolls in
+                the middle (with the house scroll fade as its cue), and the
+                event log pins at the floor — always visible, never lost
+                below a silent scroll edge. */}
+            <div className="cfg__rail-flow">
+              <TriggerRail
+                active={active}
+                firing={firing}
+                onFire={fire}
+                onReset={() => {
+                  lucet.reset()
+                  lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
+                  setActive(null)
+                }}
+              />
+            </div>
             <div className="cfg__aside">
               <EventLog />
             </div>
