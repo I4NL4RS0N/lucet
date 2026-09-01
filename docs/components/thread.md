@@ -3,6 +3,26 @@
 Turns, rendered from the contract: every prompt paired with what came back,
 including the ways it came back wrong.
 
+## The three registers
+
+Three registers. The document (the assistant's answer) has no
+container — the thread is its surface. The utterance (a person's
+prompt) is a surface — separated by tint, findable while scrolling,
+never elevated. The object (the tool receipt) is the one thing above
+the plane — raised, operable, and alone at that height, which is what
+makes its elevation mean something.
+
+If every message rose, nothing would float. Elevation is spent on
+exactly one register so the reader can trust what height means.
+
+Material never encodes identity: another person's bubble is the same
+utterance surface as yours — position, avatar, and the tail corner
+carry whose it is. The utterance tint derives from the plane itself
+(five percent of ink mixed into the card), so it steps truly in all
+four theme-and-expression cells; it once borrowed the secondary
+CONTROL token, whose pure-white light value assumes a ring and cast
+the bubble doesn't wear, and the light-cell utterance was invisible.
+
 ## The positions
 
 - **The response is a document, not a bubble.** The assistant's output is the

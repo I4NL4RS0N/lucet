@@ -698,6 +698,88 @@ async function main() {
         )
     }
 
+    /*
+     * THE THREAD'S REGISTERS + THE LAB STAGE (register pass). Three
+     * assertions per theme x expression cell:
+     *   1. bubble-vs-plane — the utterance is a SURFACE: its tint must
+     *      step >= 0.03 L from the thread plane (it rendered white on
+     *      white in the light cells when it borrowed the control
+     *      token);
+     *   2. the receipt is the ONLY elevated object in the thread — no
+     *      bubble carries a material box-shadow, the receipt's pseudo
+     *      does;
+     *   3. stage-vs-page on the primitives lab — the well must step
+     *      >= 0.03 from the ground (dark Glass had 0.02 and no ring).
+     */
+    for (const theme of ['dark', 'light']) {
+      await page.emulateMedia({ colorScheme: theme })
+      await page.goto(url.replace('primitives.html', 'index.html'))
+      await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
+      await page.waitForSelector('.lucet-thread__prompt', { timeout: 15000 })
+      for (const expression of ['paper', 'glass']) {
+        await page.evaluate((e) => {
+          for (const el of document.querySelectorAll('[data-expression]')) el.setAttribute('data-expression', e)
+        }, expression)
+        await page.waitForTimeout(60)
+        const reg = await page.evaluate(() => {
+          const frame = document.querySelector('.cfg__frame')
+          const bubble = frame.querySelector('.lucet-thread__prompt')
+          const plane = getComputedStyle(frame).backgroundColor
+          const tools = [...frame.querySelectorAll('.lucet-tool')]
+          return {
+            bubble: getComputedStyle(bubble).backgroundColor,
+            plane,
+            bubbleShadow: getComputedStyle(bubble).boxShadow,
+            toolMaterial: tools.length
+              ? getComputedStyle(tools[0], '::after').boxShadow
+              : null,
+          }
+        })
+        checks++
+        const dl = Math.abs(
+          oklabLightness(flattenBackground([reg.bubble, reg.plane, 'rgb(255,255,255)'])) -
+            oklabLightness(flattenBackground([reg.plane, 'rgb(255,255,255)'])),
+        )
+        if (dl < 0.03 - 0.0005)
+          failures.push(`registers (${theme}/${expression}): bubble-vs-plane is ${dl.toFixed(3)} L — the utterance must read as a surface (>= 0.03)`)
+        checks++
+        if (reg.bubbleShadow !== 'none')
+          failures.push(`registers (${theme}/${expression}): the utterance wears material (${reg.bubbleShadow}) — elevation belongs to the receipt alone`)
+        checks++
+        if (!reg.toolMaterial || reg.toolMaterial === 'none')
+          failures.push(`registers (${theme}/${expression}): the receipt's material pseudo is missing — nothing is elevated`)
+      }
+
+      /* the lab stage */
+      await page.goto(url)
+      await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
+      await page.waitForSelector('.stage', { timeout: 15000 })
+      for (const expression of ['paper', 'glass']) {
+        await page.evaluate((e) => document.querySelector('.prim')?.setAttribute('data-expression', e), expression)
+        await page.waitForTimeout(60)
+        const lab = await page.evaluate(() => ({
+          stage: getComputedStyle(document.querySelector('.stage')).backgroundColor,
+          stageRing: getComputedStyle(document.querySelector('.stage')).boxShadow,
+          pageBg: getComputedStyle(document.querySelector('.prim')).backgroundColor,
+          bodyBg: getComputedStyle(document.body).backgroundColor,
+        }))
+        checks++
+        const ground = lab.pageBg === 'rgba(0, 0, 0, 0)' ? lab.bodyBg : lab.pageBg
+        if (expression === 'glass') {
+          /* Glass separates with value: the well needs its own step. */
+          const dls = Math.abs(
+            oklabLightness(flattenBackground([lab.stage, ground, 'rgb(255,255,255)'])) -
+              oklabLightness(flattenBackground([ground, 'rgb(255,255,255)'])),
+          )
+          if (dls < 0.03 - 0.0005)
+            failures.push(`lab stage (${theme}/glass): stage-vs-page is ${dls.toFixed(3)} L — the well needs its own step (>= 0.03)`)
+        } else if (lab.stageRing === 'none') {
+          /* Paper separates with a line: the ring must exist. */
+          failures.push(`lab stage (${theme}/paper): the stage ring is gone — Paper's grammar is the line`)
+        }
+      }
+    }
+
   } finally {
     await browser.close()
     dev?.kill()

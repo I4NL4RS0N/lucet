@@ -17,6 +17,10 @@
 
   --page: var(--lucet-background);
   --sunken: var(--lucet-subtle);
+  /* The stage's own well value: everywhere else --sunken serves small
+     recesses; the stage is the page-scale well, and dark Glass needs
+     it deeper (override below). */
+  --stage-well: var(--sunken);
   --surface: var(--lucet-card);
   --raised: var(--lucet-secondary);
   --field: var(--lucet-muted);
@@ -170,6 +174,25 @@ body {
 
 /* ---- a section, and its stage ---- */
 
+/* THE STAGE IN DARK GLASS (lab pass): ring-1 is transparent by the
+   no-lines law, which left a 0.145 well on a 0.125 ground — specimens
+   floated in an undifferentiated field. The well takes its own value,
+   a full stride below the ground, the surface grammar's move — never
+   a border, never a resurrected ring. Light Glass holds as shipped
+   (the white stage and its cast carry the edge — confirmed from the
+   captures, both lab pages) and Paper keeps its hairline. */
+:root[data-theme='dark'] [data-expression='glass'].prim,
+:root[data-theme='dark'][data-expression='glass'] .prim {
+  --stage-well: oklch(0.09 var(--lucet-neutral-c) var(--lucet-neutral-h));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) [data-expression='glass'].prim,
+  :root:not([data-theme='light'])[data-expression='glass'] .prim {
+    --stage-well: oklch(0.09 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  }
+}
+
+
 .sec { margin-block-start: 64px; }
 
 .sec__head {
@@ -189,7 +212,7 @@ body {
  * with the things standing on it.
  */
 .stage {
-  background: var(--sunken);
+  background: var(--stage-well);
   border-radius: var(--r-panel);
   box-shadow: var(--ring-1);
   padding: calc(32px * var(--lucet-density, 1));
@@ -217,6 +240,22 @@ body {
 .stage .spec { gap: 9px; }
 
 .stage--cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); align-items: start; }
+/* THE LAB'S LAYOUT VOCABULARY — the twenty style objects that hardcoded
+   geometry on the page whose thesis is that tokens are load-bearing,
+   retired into named classes. Per-fixture widths arrive as a custom
+   property (--demo-max) set at the call site; everything else is the
+   shared grammar. */
+.stage--flow { display: grid; gap: 26px; }
+.stage--flow-roomy { gap: 34px; }
+.spec--wide { inline-size: 100%; }
+.spec__demo { inline-size: 100%; max-inline-size: var(--demo-max, 640px); }
+.spec__demo--breathe { padding-block: 8px; }
+/* --fit keeps the old shrink-to-fit behaviour where the demo sized to
+   its content under the cap (the chip specimens); the default fills. */
+.spec__demo--fit { inline-size: fit-content; }
+.demo-flow { display: grid; gap: 20px; }
+.spec__note { margin: 0; font-size: 12px; color: var(--ink-3); max-inline-size: 56ch; }
+
 .stage--tight { padding: 22px; }
 
 .spec { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }

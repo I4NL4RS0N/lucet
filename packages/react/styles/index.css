@@ -1135,8 +1135,19 @@
 
 
 
-/* The prompt: a raised surface, narrower than the response. What you said is
-   the smaller thing on the page; what came back is the artefact. */
+/* THE UTTERANCE REGISTER: a surface, not an object. The thread has
+   three registers — the document (the answer) has no container, the
+   utterance (a person's prompt) is a tinted surface, findable while
+   scrolling and never elevated, and the object (the tool receipt) is
+   the one thing above the plane. The tint derives from the plane
+   itself — five percent of ink mixed into the card — so it lands
+   darker-than-plane in light and lighter in dark, a real step in all
+   four theme-and-expression cells. (It borrowed --lucet-secondary
+   before: a CONTROL token whose pure-white light value assumes the
+   ring and cast controls wear — on the bare bubble it rendered white
+   on white, and the light-cell utterance was invisible.) Narrower
+   than the response: what you said is the smaller thing on the page;
+   what came back is the artefact. */
 .lucet-thread__prompt {
   display: grid;
   gap: var(--lucet-space-2);
@@ -1147,7 +1158,7 @@
   max-inline-size: min(46ch, 88%);
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-surface);
-  background-color: var(--lucet-secondary);
+  background-color: color-mix(in oklab, var(--lucet-foreground) 5%, var(--lucet-card));
 }
 /* The TAIL CORNER: the speech bubble's tail, reduced to one anchored
    corner — squared toward the speaker, so the bubble points at whoever
@@ -1156,9 +1167,12 @@
 .lucet-thread__turn[data-self] .lucet-thread__prompt {
   border-end-end-radius: 4px;
 }
+/* Material never encodes identity: another person's bubble is the
+   SAME utterance surface — position, avatar, and the tail corner
+   carry whose it is. (It wore material-control once; beside the
+   promoted receipt the seam showed.) */
 .lucet-thread__turn[data-role='user']:not([data-self]) .lucet-thread__prompt {
   border-end-start-radius: 4px;
-  box-shadow: var(--lucet-material-control);
 }
 .lucet-thread__prompt .lucet-thread__text {
   margin: 0;

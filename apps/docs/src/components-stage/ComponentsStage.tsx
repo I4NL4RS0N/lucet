@@ -105,7 +105,7 @@ function Example({
   const [view, setView] = useState<'preview' | 'code'>('preview')
   const [copied, setCopied] = useState(false)
   return (
-    <div className="spec" style={{ inlineSize: '100%' }}>
+    <div className="spec spec--wide">
       <div className="spec__head">
         <span className="spec__label">{label}</span>
         <div className="spec__tabs" role="group" aria-label="View as">
@@ -122,7 +122,12 @@ function Example({
         </div>
       </div>
       {view === 'preview' ? (
-        <div style={{ inlineSize: '100%', maxInlineSize: max ?? 640 }}>{children}</div>
+        <div
+          className="spec__demo"
+          style={max === undefined ? undefined : ({ '--demo-max': `${max}px` } as React.CSSProperties)}
+        >
+          {children}
+        </div>
       ) : (
         <div className="spec__code">
           <button
@@ -145,7 +150,7 @@ function Example({
           </pre>
         </div>
       )}
-      <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>{note}</p>
+      <p className="spec__note">{note}</p>
     </div>
   )
 }
@@ -656,7 +661,7 @@ function Live() {
   useEffect(() => lucet.subscribe(() => setState(lucet.getState())), [lucet])
 
   return (
-    <div style={{ display: 'grid', gap: 20 }}>
+    <div className="demo-flow">
       <Thread
         state={state}
         selfId="you"
@@ -729,13 +734,13 @@ export function ComponentsStage() {
         </p>
 
         <Section name="The app, live" note="try it — type, attach, send, watch it answer">
-          <div style={{ maxInlineSize: 620, paddingBlock: 8 }}>
+          <div className="spec__demo spec__demo--breathe" style={{ '--demo-max': '620px' } as React.CSSProperties}>
             <Live />
           </div>
         </Section>
 
         <Section name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
-          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+          <div className="stage stage--flow">
             {CORE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -760,7 +765,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
-          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+          <div className="stage stage--flow">
             {SCOPE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -787,7 +792,7 @@ export function ComponentsStage() {
           name="Budget meter — the price before you spend it"
           note="the projected price of the next turn, on every model, before you commit — and the month it lands in"
         >
-          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+          <div className="stage stage--flow">
             {BUDGET_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -813,7 +818,7 @@ export function ComponentsStage() {
           name="Prompt input — multiplayer"
           note="one thread, several people, one turn at a time"
         >
-          <div className="stage" style={{ display: 'grid', gap: 26 }}>
+          <div className="stage stage--flow">
             {MULTI_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -837,7 +842,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Thread — every ending" note="a response is never simply loading or done">
-          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+          <div className="stage stage--flow stage--flow-roomy">
             {THREAD_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -847,7 +852,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
-          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+          <div className="stage stage--flow stage--flow-roomy">
             {SOURCES_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -857,7 +862,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
-          <div className="stage" style={{ display: 'grid', gap: 34 }}>
+          <div className="stage stage--flow stage--flow-roomy">
             {VERSIONS_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -867,10 +872,10 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
-          <div className="stage" style={{ display: 'grid', gap: 26 }}>
-            <div className="spec" style={{ inlineSize: '100%' }}>
+          <div className="stage stage--flow">
+            <div className="spec spec--wide">
               <span className="spec__label">Ways in</span>
-              <div style={{ maxInlineSize: 460 }}>
+              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '460px' } as React.CSSProperties}>
                 <SuggestionChips
                   suggestions={[
                     { id: 's1', prompt: 'Summarise the three documents I shared.', kind: 'ask' },
@@ -881,14 +886,14 @@ export function ComponentsStage() {
                   onPick={noop}
                 />
               </div>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>
+              <p className="spec__note">
                 The chip is the prompt — one field in the contract, so what it says is what sends.
                 They show on an empty, idle thread and leave the moment the conversation exists.
               </p>
             </div>
-            <div className="spec" style={{ inlineSize: '100%' }}>
+            <div className="spec spec--wide">
               <span className="spec__label">Locked — another person’s turn</span>
-              <div style={{ maxInlineSize: 460 }}>
+              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '460px' } as React.CSSProperties}>
                 <SuggestionChips
                   suggestions={[
                     { id: 's1', prompt: 'Summarise the three documents I shared.' },
@@ -898,7 +903,7 @@ export function ComponentsStage() {
                   disabled
                 />
               </div>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', maxInlineSize: '56ch' }}>
+              <p className="spec__note">
                 The single-writer lock reaches the chips too: while it is someone else’s turn,
                 a way in that would fail is not offered as live.
               </p>
@@ -908,7 +913,7 @@ export function ComponentsStage() {
 
         <Section name="Prompt input — streaming" note="while it writes, Send becomes Stop — hover Stop for what it does">
           <div className="stage">
-            <div style={{ inlineSize: '100%', maxInlineSize: 560 }}>
+            <div className="spec__demo" style={{ '--demo-max': '560px' } as React.CSSProperties}>
               <PromptInput
                 composer={play([{ type: 'composer/locked', by: 'you' }]).composer}
                 model={play([]).model}

@@ -32,6 +32,24 @@
  *  - a live paragraph's text from its first pipe onward — the one stretch
  *    that can be re-read as a table when a delimiter row arrives, so those
  *    words wait until the reading is settled.
+ *
+ * NARRATION FOLLOWS INITIATION — the layer's rule for WHEN, not only
+ * HOW. The log narrates answers the person is waiting on. A stream the
+ * host scripted on its own (a demo playback, an onboarding replay) is
+ * content arriving, not an answer arriving — narrating it unprompted is
+ * the aural sibling of autoplay video, and the interrupt-any-key escape
+ * cannot be counted on in screen-reader browse mode, where virtual-
+ * cursor keys never reach the page. So the renderer takes a narration
+ * mode from the host ('live' | 'history'): under 'history' the log
+ * still fills — every unit present, readable at leisure — but carries
+ * no live role until the host flips it back, and a live region speaks
+ * only mutations, never its backlog. The same rule will govern the
+ * cases still ahead: whether a collaborator's concurrent stream
+ * narrates to you (they initiated it, you did not — likely 'history'
+ * plus a status ping), and any host replay feature. Decide those from
+ * this sentence, not case by case. (First applied to the Konfabulator's
+ * opening playback; the a11y write-up lives in
+ * docs/components/streaming-response.md.)
  */
 
 import { parseMarkdown, plainTextOfInline } from './markdown.js'

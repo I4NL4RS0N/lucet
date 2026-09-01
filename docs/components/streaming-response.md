@@ -63,7 +63,10 @@ inside the thread receives announcement *units* instead:
   table announces its header, then each row as the row completes;
 - headings announce whole, once their line ends, as "Heading: …".
 
-**Narration follows initiation.** The log narrates answers the person
+**Narration follows initiation** (the announce layer's own stated
+rule — `packages/core/src/announce.ts` carries it alongside the unit
+grammar, where future cases will look for it). The log narrates
+answers the person
 is waiting on. A stream the host scripted on its own — the
 Konfabulator's opening playback, any onboarding replay — is content
 arriving, not an answer arriving, and narrating it unprompted is the
