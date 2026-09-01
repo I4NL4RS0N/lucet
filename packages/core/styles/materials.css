@@ -6,9 +6,20 @@
  * buttons a fifth, panels something else again. Depth has to be a shared
  * vocabulary or it reads as accident.
  *
+ * THE LIGHT SOURCE, stated once so every value below is derived, not
+ * picked: one light, directly above the surface and slightly in front of
+ * it. Highlights land on TOP edges and nowhere else; shadows fall
+ * STRAIGHT DOWN, growing larger and softer with height; neither ever
+ * changes direction or hue between elevations. A shadow that points
+ * sideways, or a rim that brightens at the bottom, is a bug by this
+ * sentence alone.
+ *
  * Four materials, and a component picks one rather than composing its own:
  *
  *   flat     content that sits ON a surface. Notices, tool calls. A line only.
+ *            (In Glass, tool calls are PROMOTED to raised: the receipt is
+ *            the one distinct object in the thread, and Glass says so
+ *            with elevation where Paper said so with a hairline.)
  *   control  anything you press. Buttons, selects, segments, chips.
  *   raised   surfaces that float above the ground. Panels, cards, composer.
  *   overlay  surfaces above those. Drawers, popovers, menus.
@@ -28,8 +39,12 @@
  *
  * The RING scales with elevation: --lucet-hairline, -raised, -overlay. A higher
  * surface catches more light along its edge, so height becomes legible without
- * adding a shadow layer. In System the three are equal on purpose -- a flat
- * system that ramps its edges is just an inconsistent flat system.
+ * adding a shadow layer. In Paper the three are equal on purpose -- a flat
+ * system that ramps its edges is just an inconsistent flat system. In Glass
+ * the plain hairline is transparent (that slot is Paper's border grammar)
+ * while raised and overlay carry the RIM LIGHT: a whisper of white around
+ * the silhouette, the edge catching the light. It is light, not a line --
+ * it brightens with elevation and never resolves to a drawn border.
  *
  * The INSET scales with the size of the recess: --lucet-inset-hair, -shallow,
  * -deep. This one is not an refinement, it is a bug fix. Components had each
@@ -61,25 +76,16 @@
  */
 
 /* ============================================================
- * SYSTEM. Depth is a line. Nothing floats, so nothing is glossy.
+ * PAPER. Depth is a line. Nothing floats, so nothing is glossy.
  * ============================================================ */
 
-/* ---------- light + system ---------- */
-/*
- * DECIDED 2026-08-30: the settled primitives look IS the System expression.
- * System is the default (no attribute) and the reference look every component
- * is designed against. Expressive's deltas below still describe the previous
- * component era -- gloss and glow tuned for surfaces that have since been
- * redesigned -- and get reconciled PER COMPONENT as each is rebuilt, not in
- * one speculative pass. Both expressions stay in the audit matrix throughout,
- * so the reconciliation cannot drift unmeasured.
- */
+/* ---------- light + paper ---------- */
 :root,
 :root[data-expression='paper'] {
   --lucet-edge-top: inset 0 0 0 0 transparent;
   --lucet-edge-bottom: inset 0 0 0 0 transparent;
   --lucet-hairline: 0 0 0 1px var(--lucet-border);
-  /* Equal by design: System is flat. */
+  /* Equal by design: Paper is flat. */
   --lucet-hairline-raised: var(--lucet-hairline);
   --lucet-hairline-overlay: var(--lucet-hairline);
 
@@ -117,7 +123,7 @@
   --lucet-gloss: none;
 }
 
-/* ---------- dark + system ---------- */
+/* ---------- dark + paper ---------- */
 /* @paired-begin dark-system-media */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-expression='glass']) {
@@ -147,7 +153,7 @@
 /* @paired-end dark-system-attr */
 
 /* ============================================================
- * EXPRESSIVE. Light comes from above and surfaces have thickness.
+ * GLASS. Light comes from above and surfaces have thickness.
  *
  * The gloss is a short vertical ramp on the FILL, never a white wash across
  * the face: a face overlay lightens the surface under its own label and costs
@@ -165,13 +171,14 @@
    * edge triple-darkens it and reads as a smudge rather than as thickness.
    */
   --lucet-edge-bottom: inset 0 0 0 0 transparent;
-  /* NO LINES AT ALL: Expressive separates with space and light. Surface
-     boundaries come from tint steps and the shade stack; a hairline here
-     would be System's tool in Expressive's hand. The border token goes
-     with them. */
+  /* NO LINES AT ALL: Glass separates with light. The plain hairline and
+     the border token go transparent — they are Paper's border grammar.
+     The raised and overlay slots become the RIM LIGHT instead: white at
+     the silhouette, brightening with elevation. Against the recessed
+     ground it reads as the edge catching the light, not as a rule. */
   --lucet-hairline: 0 0 0 0 transparent;
-  --lucet-hairline-raised: 0 0 0 0 transparent;
-  --lucet-hairline-overlay: 0 0 0 0 transparent;
+  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.55);
+  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.8);
   --lucet-default-border: transparent;
 
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.1);
@@ -217,13 +224,16 @@
 /* @paired-begin dark-glass-media */
 @media (prefers-color-scheme: dark) {
   :root[data-expression='glass']:not([data-theme='light']) {
-    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
+    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.2);
     --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
     /* NO LINES AT ALL: space and light do the separating (see the light
-       block). The lit edge-top survives - it is light, not a line. */
+       block). The lit edge-top survives - it is light, not a line - and
+       the raised/overlay slots carry the rim light. In dark it is the
+       PRIMARY depth cue: shadow barely reads on a dark ground, so the
+       lit top edge and rim do what the shade stack does in light. */
     --lucet-hairline: 0 0 0 0 transparent;
-    --lucet-hairline-raised: 0 0 0 0 transparent;
-    --lucet-hairline-overlay: 0 0 0 0 transparent;
+    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.06);
+    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.09);
     --lucet-default-border: transparent;
     --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
     --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
@@ -254,13 +264,16 @@
 
 /* @paired-begin dark-glass-attr */
 :root[data-theme='dark'][data-expression='glass'] {
-  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
+  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.2);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
   /* NO LINES AT ALL: space and light do the separating (see the light
-     block). The lit edge-top survives - it is light, not a line. */
+     block). The lit edge-top survives - it is light, not a line - and
+     the raised/overlay slots carry the rim light. In dark it is the
+     PRIMARY depth cue: shadow barely reads on a dark ground, so the
+     lit top edge and rim do what the shade stack does in light. */
   --lucet-hairline: 0 0 0 0 transparent;
-  --lucet-hairline-raised: 0 0 0 0 transparent;
-  --lucet-hairline-overlay: 0 0 0 0 transparent;
+  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.06);
+  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.09);
   --lucet-default-border: transparent;
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
   --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);

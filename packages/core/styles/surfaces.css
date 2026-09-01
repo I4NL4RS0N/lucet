@@ -5,14 +5,17 @@
  * disagreement is the axis. Splitting it out keeps the argument in one file
  * instead of scattered across theme overrides.
  *
- *   System      the ground is the paper. Surfaces sit flat on it and are
- *               separated by a hairline. High contrast, no drama, reads well at
- *               density and survives being embedded in someone else's app.
+ *   Paper   the ground is the paper. Surfaces sit flat on it and are
+ *           separated by a hairline. Close values, told apart by rules —
+ *           the NARROW range is the point, and it survives being embedded
+ *           in someone else's app.
  *
- *   Expressive  the ground is recessed and surfaces float above it. Light comes
- *               from above, so a raised surface is lighter in dark mode and
- *               brighter than the page in light mode. Depth is shadow; the
- *               border nearly disappears.
+ *   Glass   the ground recedes and surfaces float above it. With no
+ *           borders anywhere, EVERY surface level must be a value wide
+ *           enough to read on its own: if a boundary needs a line to be
+ *           legible, the tint step is wrong — fix the step, not the line.
+ *           The two expressions must differ here, not converge: Paper's
+ *           ladder is deliberately tight, Glass's deliberately wide.
  *
  * All four combinations are written out. It is verbose, but a reader can see
  * every surface decision without resolving a cascade in their head.
@@ -49,14 +52,16 @@
 /* ---------- Light + Glass ---------- */
 :root[data-expression='glass'] {
   /* The page recedes so cards can come forward. Nothing is pure white except
-     the things that are meant to be picked up. The overlay steps a half-tone
-     BELOW the card: with no borders, every surface level must be a distinct
-     value (the Glass rule), and above white the only distinct direction is
-     down — the shadow and translucency carry the floating. */
-  --lucet-surface-ground: var(--lucet-neutral-150);
+     the things that are meant to be picked up. The overlay steps a full tone
+     BELOW the card: above white the only distinct direction is down — the
+     shadow, the lit edge, and translucency carry the floating.
+       ground 0.925 · sunken 0.9 · overlay 0.97 · card 1.0
+     Ground sits BELOW the old n150 so a white card is unmistakably lifted
+     (delta 0.075), and the well is a real well under it. */
+  --lucet-surface-ground: oklch(0.925 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-0);
-  --lucet-surface-overlay: var(--lucet-neutral-50);
-  --lucet-surface-sunken: var(--lucet-neutral-200);
+  --lucet-surface-overlay: var(--lucet-neutral-100);
+  --lucet-surface-sunken: oklch(0.9 var(--lucet-neutral-c) var(--lucet-neutral-h));
   /* Depth is carried by shadow, so the line is nearly gone. */
   --lucet-line: oklch(0.87 0 0 / 0.5);
   --lucet-shadow-color: 0 0 0;
@@ -108,15 +113,19 @@
 /* ---------- Dark + Glass ---------- */
 @media (prefers-color-scheme: dark) {
   :root[data-expression='glass']:not([data-theme='light']) {
-    /* Lifted off black. A raised surface is LIGHTER than the ground, because
-       that is how light works, and near-black grounds leave nowhere to go. */
-    /* Near-black ground, surfaces lifted clear of it. Deeper than System, not
-       lighter: the drama comes from the gap between ground and surface, not
-       from raising the floor. */
-    --lucet-surface-ground: oklch(0.155 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    /* A raised surface is LIGHTER than the ground, because that is how
+       light works. The ladder is WIDE — the drama comes from the gap:
+         sunken 0.105 · ground 0.125 · card 0.205 · overlay 0.269
+       The first cut kept Paper's raised/overlay values and only nudged
+       the ground (0.155 vs 0.165) — dark Glass was the flattest of the
+       four combinations, near-indistinguishable from dark Paper at a
+       glance. Ground drops well clear of the card and the overlay jumps
+       to n800, so a popover, chip, or drawer is a visibly lighter object
+       and not a shadow with no ground to fall on. */
+    --lucet-surface-ground: oklch(0.125 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
-    --lucet-surface-overlay: var(--lucet-neutral-850);
-    --lucet-surface-sunken: oklch(0.135 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-surface-overlay: var(--lucet-neutral-800);
+    --lucet-surface-sunken: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-line: oklch(0.42 0.006 264 / 0.4);
     --lucet-shadow-color: 0 0 0;
     --lucet-shadow-alpha: 0.6;
@@ -124,10 +133,12 @@
 }
 
 :root[data-theme='dark'][data-expression='glass'] {
-  --lucet-surface-ground: oklch(0.155 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* See the media twin above: wide ladder, sunken 0.105 · ground 0.125 ·
+     card 0.205 · overlay 0.269. */
+  --lucet-surface-ground: oklch(0.125 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
-  --lucet-surface-overlay: var(--lucet-neutral-850);
-  --lucet-surface-sunken: oklch(0.135 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-surface-overlay: var(--lucet-neutral-800);
+  --lucet-surface-sunken: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-line: oklch(0.42 0.006 264 / 0.4);
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.6;

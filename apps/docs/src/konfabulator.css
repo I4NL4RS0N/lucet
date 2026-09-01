@@ -125,7 +125,7 @@ body {
   max-inline-size: 820px;
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
   overflow: hidden;
 }
 
@@ -173,7 +173,7 @@ body {
   inset-block: 10px;
   inset-inline-start: 10px;
   border-radius: var(--lucet-radius-panel);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
   border-inline-end: 0;
   translate: calc(-100% - 26px) 0;
   visibility: hidden;
@@ -1091,7 +1091,7 @@ body {
 .cfg__views button[aria-pressed='true'] {
   background-color: var(--lucet-secondary);
   color: var(--lucet-foreground);
-  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
+  box-shadow: var(--lucet-material-control);
 }
 .cfg__views button:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
@@ -1106,7 +1106,7 @@ body {
   min-block-size: 620px;
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
   overflow: hidden;
 }
 
@@ -1254,7 +1254,7 @@ body {
   inset-inline-end: 12px;
   border-inline-start: 0;
   border-radius: var(--lucet-radius-panel);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
 }
 /* Floating drags by its bar: the hand says so, and touch-action clears
    the gesture for the pointer (the bar's buttons still tap fine). */
@@ -1344,7 +1344,7 @@ body {
   padding: 5px;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-overlay, var(--lucet-card));
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
 }
 .cfg__dmenu-row {
   display: flex;
@@ -1460,7 +1460,7 @@ body {
   block-size: 700px;
   background: var(--lucet-card);
   border-radius: 28px;
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
   overflow: hidden;
 }
 .cfg__phone .cfg__scroll {
@@ -1735,7 +1735,7 @@ body {
   inline-size: max-content;
   display: flex;
   background-color: var(--lucet-card);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
+  box-shadow: var(--lucet-material-control);
 }
 
 /* Expressive took the floor's hairline with every other border, and the
@@ -1747,9 +1747,13 @@ body {
 }
 
 /* The drawer genuinely floats over the host page: in Glass it carries
-   the sanctioned translucency, and the breadcrumb ghosts through. */
+   the sanctioned translucency and the FULL overlay material — lit top
+   edge, rim, deep cast shadow — at the overlay tint, one step above
+   the host page it covers. This is where the material argument is most
+   defensible: the panel is over the page, so it looks like it. */
 :root[data-expression='glass'] .cfg__drawer {
-  background-color: color-mix(in oklab, var(--lucet-card) 88%, transparent);
+  background-color: color-mix(in oklab, var(--lucet-popover) 88%, transparent);
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
+  box-shadow: var(--lucet-material-overlay);
 }

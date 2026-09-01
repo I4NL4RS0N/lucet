@@ -150,9 +150,16 @@ async function main() {
    * complement of the exception above, checked only under
    * data-expression=glass, both themes.
    */
+  /* The minimums grew with the ladder (the "make Glass commit" pass):
+   * the first cut proved 0.012 steps EXIST but not that they READ, and
+   * dark Glass sat nearly on Paper's values. These floors encode the
+   * widened ladder — page, well, card, and overlay each a stride apart —
+   * so a future tweak cannot quietly converge the two expressions. */
   const GLASS_DISTINCT = [
-    ['--lucet-background', '--lucet-card', 0.012],
-    ['--lucet-card', '--lucet-popover', 0.012],
+    ['--lucet-background', '--lucet-card', 0.05],
+    ['--lucet-card', '--lucet-popover', 0.025],
+    ['--lucet-card', '--lucet-surface-sunken', 0.06],
+    ['--lucet-background', '--lucet-surface-sunken', 0.015],
   ]
 
 

@@ -1116,7 +1116,7 @@
 }
 .lucet-thread__turn[data-role='user']:not([data-self]) .lucet-thread__prompt {
   border-end-start-radius: 4px;
-  box-shadow: var(--lucet-hairline-raised), var(--lucet-shade-1);
+  box-shadow: var(--lucet-material-control);
 }
 .lucet-thread__prompt .lucet-thread__text {
   margin: 0;
@@ -1711,7 +1711,7 @@
   padding: 6px;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
 }
 .lucet-scope__row {
   display: grid;
@@ -1852,7 +1852,7 @@
   padding: 6px;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  box-shadow: var(--lucet-material-overlay);
 }
 .lucet-budget__next {
   display: grid;
@@ -2240,10 +2240,28 @@
 /* GLASS FLOATS. Slight translucency only where something genuinely
    floats over content — the composer's panels — never as decoration on
    in-flow elements. The blur keeps content behind from fighting the
-   panel's own text; the high mix keeps every contrast pair honest. */
+   panel's own text; the high mix keeps every contrast pair honest.
+   Floating surfaces take the OVERLAY value, not the card's: with no
+   borders, a popover at the card's own tint would vanish against it. */
 :root[data-expression='glass'] .lucet-scope__panel,
 :root[data-expression='glass'] .lucet-budget__panel {
-  background-color: color-mix(in oklab, var(--lucet-card) 86%, transparent);
+  background-color: color-mix(in oklab, var(--lucet-popover) 86%, transparent);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+}
+
+/* GLASS OBJECTS. Paper tells the tool receipt and the composer apart
+   from the page with a hairline and a well; Glass makes them objects
+   ABOVE the thread plane — one surface step up, lit top edge, rim,
+   cast shadow. The receipt is the one distinct object in the thread
+   and the composer is the one you touch; they are exactly where the
+   material should be doing visible work. Background and box-shadow
+   only: the overlay gate holds geometry. */
+:root[data-expression='glass'] .lucet-tool {
+  background-color: var(--lucet-popover);
+  box-shadow: var(--lucet-material-raised);
+}
+:root[data-expression='glass'] .lucet-prompt {
+  background-color: var(--lucet-popover);
+  box-shadow: var(--lucet-material-raised);
 }
