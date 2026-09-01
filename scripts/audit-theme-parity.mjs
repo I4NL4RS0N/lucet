@@ -26,7 +26,7 @@ import { spawn } from 'node:child_process'
 import { chromium } from 'playwright'
 import { flattenBackground, oklabLightness } from './contrast.mjs'
 
-const EXPRESSIONS = ['system', 'expressive']
+const EXPRESSIONS = ['paper', 'glass']
 const ACCENTS = [
   'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',
@@ -143,7 +143,17 @@ async function main() {
    * So the rule is scoped to what is universally true: an INTERACTION state
    * must differ from the state it acts on. A hover that computes to its own
    * resting colour is broken in every expression, at every elevation.
+   *
+   * ...AND IN GLASS, SURFACES ARE ON THE LIST (addendum, 2026-09-01, the
+   * Paper/Glass axis). Glass has no borders: adjacent surface levels
+   * separate by value or they do not separate at all. The exact
+   * complement of the exception above, checked only under
+   * data-expression=glass, both themes.
    */
+  const GLASS_DISTINCT = [
+    ['--lucet-background', '--lucet-card', 0.012],
+    ['--lucet-card', '--lucet-popover', 0.012],
+  ]
 
 
 
@@ -193,6 +203,14 @@ async function main() {
 
           if (resolvedDistinct) {
             const resolved = resolvedDistinct
+            for (const [a, b, min] of expression === 'glass' ? GLASS_DISTINCT : []) {
+              const la = oklabLightness(flattenBackground([resolved[a], 'rgb(255, 255, 255)']))
+              const lb = oklabLightness(flattenBackground([resolved[b], 'rgb(255, 255, 255)']))
+              const delta = la !== null && lb !== null ? Math.abs(la - lb) : null
+              if (delta === null || delta < min - 0.0005) {
+                roleFailures.push({ theme: `${theme}/glass`, a, b, av: resolved[a], bv: resolved[b], delta: delta?.toFixed(3) ?? 'n/a', min })
+              }
+            }
             for (const [a, b, min, base] of DISTINCT) {
               const av = viaAttribute[a]
               const bv = viaAttribute[b]
@@ -265,7 +283,7 @@ async function main() {
     process.exit(1)
   }
   console.log(
-    `Role distinctness passed: ${DISTINCT.length} pairs stay apart in both themes.`,
+    `Role distinctness passed: ${DISTINCT.length} pairs apart in both themes; ${GLASS_DISTINCT.length} glass surface steps read without borders.`,
   )
 }
 

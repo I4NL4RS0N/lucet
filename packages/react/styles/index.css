@@ -426,7 +426,7 @@
  * part that would date it fastest if it were everywhere.
  * ============================================================ */
 
-:root[data-expression='expressive'] .lucet-button[data-variant='primary'] {
+:root[data-expression='glass'] .lucet-button[data-variant='primary'] {
   /*
    * The ramp modulates the fill's own lightness and never overlays white,
    * because a white wash across the face lightens the surface under the label
@@ -437,21 +437,16 @@
     oklch(from var(--lucet-primary) calc(l + 0.025) c h),
     oklch(from var(--lucet-primary) calc(l - 0.03) c h)
   );
-  border-width: 0;
+  border-color: transparent;
 }
-/* Roomier label padding, but NEVER on the square icon button: this
-   selector outguns [data-icon]'s padding reset, and 33px of padding in
-   a 36px button crushed the send arrow to nothing — a solid violet
-   block where the glyph should be. */
-:root[data-expression='expressive'] .lucet-button[data-variant='primary']:not([data-icon]) {
-  padding-inline: var(--lucet-space-5);
-}
-
-:root[data-expression='expressive'] .lucet-button[data-variant='secondary'] {
-  border-width: 0;
+:root[data-expression='glass'] .lucet-button[data-variant='secondary'] {
+  /* Transparent, never zero-width: Glass removes the LINE, not the
+     space it occupied — border-width: 0 shrank the intrinsic box 2px
+     and failed the overlay test on its first run. */
+  border-color: transparent;
 }
 
-:root[data-expression='expressive'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
+:root[data-expression='glass'] .lucet-button[data-variant='primary']:hover:not(:disabled) {
   background-image: linear-gradient(
     180deg,
     oklch(from var(--lucet-primary-hover) calc(l + 0.025) c h),
@@ -459,7 +454,7 @@
   );
 }
 
-:root[data-expression='expressive'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
+:root[data-expression='glass'] .lucet-button[data-variant='secondary']:hover:not(:disabled) {
   background-color: color-mix(in oklab, var(--lucet-foreground) var(--lucet-hover-mix-strong), var(--lucet-secondary));
 }
 
@@ -478,8 +473,10 @@
   transform: none;
 }
 
-:root[data-expression='expressive'] .lucet-button:disabled {
-  box-shadow: var(--lucet-hairline);
+:root[data-expression='glass'] .lucet-button:disabled {
+  /* No borders anywhere in Glass — a disabled control separates by its
+     own dimmed value, not by a line. */
+  box-shadow: none;
   background-image: none;
 }
 
@@ -487,14 +484,8 @@
   .lucet-button:active:not(:disabled) { transform: none; }
 }
 
-@supports (corner-shape: squircle) {
-  :root[data-expression='expressive'] .lucet-button {
-    corner-shape: squircle;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  :root[data-expression='expressive'] .lucet-button:active:not(:disabled) {
+  :root[data-expression='glass'] .lucet-button:active:not(:disabled) {
     transform: none;
   }
 }
@@ -2244,4 +2235,15 @@
   .lucet-chips__chev {
     transition: none;
   }
+}
+
+/* GLASS FLOATS. Slight translucency only where something genuinely
+   floats over content — the composer's panels — never as decoration on
+   in-flow elements. The blur keeps content behind from fighting the
+   panel's own text; the high mix keeps every contrast pair honest. */
+:root[data-expression='glass'] .lucet-scope__panel,
+:root[data-expression='glass'] .lucet-budget__panel {
+  background-color: color-mix(in oklab, var(--lucet-card) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }

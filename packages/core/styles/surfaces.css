@@ -18,7 +18,7 @@
  * every surface decision without resolving a cascade in their head.
  */
 
-/* ---------- Light + System (default) ---------- */
+/* ---------- Light + Paper (default) ---------- */
 :root {
   /* WHITE, by the ink-forward law. Two greyed grounds were tried first —
      0.985 (flat: 1.5% from the cards) and 0.972 (better, still a grey
@@ -46,13 +46,16 @@
   --lucet-shadow-alpha: 0.06;
 }
 
-/* ---------- Light + Expressive ---------- */
-:root[data-expression='expressive'] {
+/* ---------- Light + Glass ---------- */
+:root[data-expression='glass'] {
   /* The page recedes so cards can come forward. Nothing is pure white except
-     the things that are meant to be picked up. */
+     the things that are meant to be picked up. The overlay steps a half-tone
+     BELOW the card: with no borders, every surface level must be a distinct
+     value (the Glass rule), and above white the only distinct direction is
+     down — the shadow and translucency carry the floating. */
   --lucet-surface-ground: var(--lucet-neutral-150);
   --lucet-surface-raised: var(--lucet-neutral-0);
-  --lucet-surface-overlay: var(--lucet-neutral-0);
+  --lucet-surface-overlay: var(--lucet-neutral-50);
   --lucet-surface-sunken: var(--lucet-neutral-200);
   /* Depth is carried by shadow, so the line is nearly gone. */
   --lucet-line: oklch(0.87 0 0 / 0.5);
@@ -60,7 +63,7 @@
   --lucet-shadow-alpha: 0.09;
 }
 
-/* ---------- Dark + System ---------- */
+/* ---------- Dark + Paper ---------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     /*
@@ -102,9 +105,9 @@
   --lucet-shadow-alpha: 0.5;
 }
 
-/* ---------- Dark + Expressive ---------- */
+/* ---------- Dark + Glass ---------- */
 @media (prefers-color-scheme: dark) {
-  :root[data-expression='expressive']:not([data-theme='light']) {
+  :root[data-expression='glass']:not([data-theme='light']) {
     /* Lifted off black. A raised surface is LIGHTER than the ground, because
        that is how light works, and near-black grounds leave nowhere to go. */
     /* Near-black ground, surfaces lifted clear of it. Deeper than System, not
@@ -120,7 +123,7 @@
   }
 }
 
-:root[data-theme='dark'][data-expression='expressive'] {
+:root[data-theme='dark'][data-expression='glass'] {
   --lucet-surface-ground: oklch(0.155 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
   --lucet-surface-overlay: var(--lucet-neutral-850);

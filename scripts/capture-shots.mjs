@@ -10,16 +10,16 @@
  * THE MATRIX — one variable at a time from a single baseline, not the
  * cross-product (36+ shots per page, most telling nothing):
  *
- *   baseline    dark  · system     · violet     · 1440
- *   theme       light · system     · violet     · 1440   (flip theme)
- *   expression  dark  · expressive · violet     · 1440   (flip expression)
- *   accent      dark  · system     · monochrome · 1440   (flip accent)
- *   tablet      dark  · system     · violet     ·  768   (flip viewport)
- *   phone       dark  · system     · violet     ·  320   (flip viewport)
+ *   baseline    dark  · paper      · violet     · 1440
+ *   theme       light · paper     · violet     · 1440   (flip theme)
+ *   expression  dark  · glass      · violet     · 1440   (flip expression)
+ *   accent      dark  · paper      · monochrome · 1440   (flip accent)
+ *   tablet      dark  · paper      · violet     ·  768   (flip viewport)
+ *   phone       dark  · paper      · violet     ·  320   (flip viewport)
  *
  * The baseline is the site's resting look (dark/violet). Every variant
  * differs from it in exactly one axis, so any visual difference in a pair
- * of shots is attributable to that axis. Light/expressive/monochrome at
+ * of shots is attributable to that axis. Light/glass/monochrome at
  * other widths, or combined, are deliberately not captured.
  *
  * Appearance is set by writing `lucet-docs-appearance` into localStorage
@@ -27,7 +27,7 @@
  * script reads. No screenshot-only query API.
  *
  * Long pages are captured PER SECTION (.sec), named to sort:
- *   primitives__01-button__dark-system-1440.png
+ *   primitives__01-button__dark-paper-1440.png
  * The accent token appears in the name only when it is the flipped axis.
  * The Konfabulator is one screen, so it gets one viewport shot per combo.
  *
@@ -44,20 +44,20 @@ const DEV_PORT = 4346
 const OUT = 'shots'
 
 const COMBOS = [
-  { name: 'dark-system-1440', theme: 'dark', expression: 'system', accent: 'violet', width: 1440 },
-  { name: 'light-system-1440', theme: 'light', expression: 'system', accent: 'violet', width: 1440 },
-  { name: 'dark-expressive-1440', theme: 'dark', expression: 'expressive', accent: 'violet', width: 1440 },
-  { name: 'dark-system-1440-monochrome', theme: 'dark', expression: 'system', accent: 'monochrome', width: 1440 },
-  { name: 'dark-system-768', theme: 'dark', expression: 'system', accent: 'violet', width: 768 },
-  { name: 'dark-system-320', theme: 'dark', expression: 'system', accent: 'violet', width: 320 },
+  { name: 'dark-paper-1440', theme: 'dark', expression: 'paper', accent: 'violet', width: 1440 },
+  { name: 'light-paper-1440', theme: 'light', expression: 'paper', accent: 'violet', width: 1440 },
+  { name: 'dark-glass-1440', theme: 'dark', expression: 'glass', accent: 'violet', width: 1440 },
+  { name: 'dark-paper-1440-monochrome', theme: 'dark', expression: 'paper', accent: 'monochrome', width: 1440 },
+  { name: 'dark-paper-768', theme: 'dark', expression: 'paper', accent: 'violet', width: 768 },
+  { name: 'dark-paper-320', theme: 'dark', expression: 'paper', accent: 'violet', width: 320 },
   /* The expression matrix in full: an axis that only reads on desktop
      is not one, and light is where Expressive has the least to work
      with (spec: verify both expressions at three widths, both themes). */
-  { name: 'light-expressive-1440', theme: 'light', expression: 'expressive', accent: 'violet', width: 1440 },
-  { name: 'dark-expressive-768', theme: 'dark', expression: 'expressive', accent: 'violet', width: 768 },
-  { name: 'dark-expressive-320', theme: 'dark', expression: 'expressive', accent: 'violet', width: 320 },
-  { name: 'light-expressive-768', theme: 'light', expression: 'expressive', accent: 'violet', width: 768 },
-  { name: 'light-expressive-320', theme: 'light', expression: 'expressive', accent: 'violet', width: 320 },
+  { name: 'light-glass-1440', theme: 'light', expression: 'glass', accent: 'violet', width: 1440 },
+  { name: 'dark-glass-768', theme: 'dark', expression: 'glass', accent: 'violet', width: 768 },
+  { name: 'dark-glass-320', theme: 'dark', expression: 'glass', accent: 'violet', width: 320 },
+  { name: 'light-glass-768', theme: 'light', expression: 'glass', accent: 'violet', width: 768 },
+  { name: 'light-glass-320', theme: 'light', expression: 'glass', accent: 'violet', width: 320 },
 ]
 
 const PAGES = [
@@ -70,10 +70,10 @@ const PAGES = [
    three widths and the review needs to see all of them in both
    expressions. Views are React state, so each shot clicks the switcher. */
 const KONF_APPEARANCES = [
-  { name: 'dark-system', theme: 'dark', expression: 'system' },
-  { name: 'light-system', theme: 'light', expression: 'system' },
-  { name: 'dark-expressive', theme: 'dark', expression: 'expressive' },
-  { name: 'light-expressive', theme: 'light', expression: 'expressive' },
+  { name: 'dark-paper', theme: 'dark', expression: 'paper' },
+  { name: 'light-paper', theme: 'light', expression: 'paper' },
+  { name: 'dark-glass', theme: 'dark', expression: 'glass' },
+  { name: 'light-glass', theme: 'light', expression: 'glass' },
 ]
 const KONF_VIEWS = ['Full page', 'Drawer', 'Mobile']
 

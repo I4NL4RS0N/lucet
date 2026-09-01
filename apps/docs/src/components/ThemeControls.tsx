@@ -67,7 +67,11 @@ export type Neutral = (typeof NEUTRALS)[number]
 export type Radius = (typeof RADII)[number]
 export type Scale = (typeof SCALES)[number]
 export type Typeface = (typeof TYPEFACES)[number]
-export type Expression = 'system' | 'expressive'
+export type Expression = 'paper' | 'glass'
+const LEGACY_EXPRESSION: Record<string, Expression | undefined> = {
+  system: 'paper',
+  expressive: 'glass',
+}
 
 export interface ThemeState {
   theme: Theme
@@ -177,7 +181,7 @@ export function ThemeControls({
       <Select
         name="Expression"
         value={expression}
-        options={['system', 'expressive'] as const}
+        options={['paper', 'glass'] as const}
         onSelect={(v) => onChange({ expression: v })}
       />{' '}
       <Select
@@ -219,7 +223,9 @@ export function useAppearance(fallback: {
       theme: (stored.theme as Theme) ?? fallback.theme,
       accent: (stored.accent as Accent) ?? fallback.accent,
       neutral: (stored.neutral as Neutral) ?? 'accent',
-      expression: (stored.expression as Expression) ?? 'system',
+      /* Legacy migration: the axis was renamed from system/expressive to
+         paper/glass when it became a material axis (2026-09-01). */
+      expression: (LEGACY_EXPRESSION[stored.expression ?? ''] ?? (stored.expression as Expression)) ?? 'paper',
       radius: (stored.radius as Radius) ?? 'default',
       scale: (stored.scale as Scale) ?? '100',
       typeface: (stored.typeface as Typeface) ?? 'inter',
@@ -312,7 +318,7 @@ export function AppearancePrefs({
         <div className="cfg__more-panel">
           {(
             [
-              ['Expression', 'expression', ['system', 'expressive'], undefined],
+              ['Expression', 'expression', ['paper', 'glass'], undefined],
               [
                 'Greys',
                 'neutral',

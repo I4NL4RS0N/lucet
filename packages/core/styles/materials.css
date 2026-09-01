@@ -75,7 +75,7 @@
  * so the reconciliation cannot drift unmeasured.
  */
 :root,
-:root[data-expression='system'] {
+:root[data-expression='paper'] {
   --lucet-edge-top: inset 0 0 0 0 transparent;
   --lucet-edge-bottom: inset 0 0 0 0 transparent;
   --lucet-hairline: 0 0 0 1px var(--lucet-border);
@@ -120,7 +120,7 @@
 /* ---------- dark + system ---------- */
 /* @paired-begin dark-system-media */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']):not([data-expression='expressive']) {
+  :root:not([data-theme='light']):not([data-expression='glass']) {
     --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
     --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.3);
     --lucet-shade-3: 0 2px 4px oklch(0 0 0 / 0.45), 0 8px 20px oklch(0 0 0 / 0.5);
@@ -134,7 +134,7 @@
 /* @paired-end dark-system-media */
 
 /* @paired-begin dark-system-attr */
-:root[data-theme='dark']:not([data-expression='expressive']) {
+:root[data-theme='dark']:not([data-expression='glass']) {
   --lucet-shade-1: 0 1px 1px oklch(0 0 0 / 0.3);
   --lucet-shade-2: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 6px oklch(0 0 0 / 0.3);
   --lucet-shade-3: 0 2px 4px oklch(0 0 0 / 0.45), 0 8px 20px oklch(0 0 0 / 0.5);
@@ -154,8 +154,8 @@
  * contrast, while an edge highlight costs nothing.
  * ============================================================ */
 
-/* ---------- light + expressive ---------- */
-:root[data-expression='expressive'] {
+/* ---------- light + glass ---------- */
+:root[data-expression='glass'] {
   /* Strong, because in light mode the lit edge is the whole effect. */
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.9);
   /*
@@ -213,10 +213,10 @@
   --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.75), oklch(1 0 0 / 0.15) 48%, oklch(1 0 0 / 0) 100%);
 }
 
-/* ---------- dark + expressive ---------- */
-/* @paired-begin dark-expressive-media */
+/* ---------- dark + glass ---------- */
+/* @paired-begin dark-glass-media */
 @media (prefers-color-scheme: dark) {
-  :root[data-expression='expressive']:not([data-theme='light']) {
+  :root[data-expression='glass']:not([data-theme='light']) {
     --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
     --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
     /* NO LINES AT ALL: space and light do the separating (see the light
@@ -250,10 +250,10 @@
     --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
   }
 }
-/* @paired-end dark-expressive-media */
+/* @paired-end dark-glass-media */
 
-/* @paired-begin dark-expressive-attr */
-:root[data-theme='dark'][data-expression='expressive'] {
+/* @paired-begin dark-glass-attr */
+:root[data-theme='dark'][data-expression='glass'] {
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
   /* NO LINES AT ALL: space and light do the separating (see the light
@@ -286,4 +286,4 @@
   --lucet-material-inset: inset 0 1px 2px oklch(0 0 0 / 0.4), var(--lucet-hairline);
   --lucet-gloss: linear-gradient(180deg, oklch(1 0 0 / 0.09), oklch(1 0 0 / 0.02) 48%, oklch(1 0 0 / 0) 100%);
 }
-/* @paired-end dark-expressive-attr */
+/* @paired-end dark-glass-attr */

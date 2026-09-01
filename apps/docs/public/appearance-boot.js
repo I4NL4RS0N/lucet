@@ -12,7 +12,9 @@
   root.setAttribute('data-theme', a.theme || 'dark')
   root.setAttribute('data-accent', a.accent || accent)
   root.setAttribute('data-neutral', a.neutral || 'accent')
-  if (a.expression === 'expressive') root.setAttribute('data-expression', a.expression)
+  // Material axis (renamed 2026-09-01): legacy stored values map across.
+  var expr = a.expression === 'expressive' ? 'glass' : a.expression === 'system' ? 'paper' : a.expression
+  if (expr === 'glass') root.setAttribute('data-expression', expr)
   if (a.radius && a.radius !== 'default') root.setAttribute('data-radius', a.radius)
   root.setAttribute('data-scale', a.scale || '100')
   root.setAttribute('data-typeface', a.typeface || 'inter')

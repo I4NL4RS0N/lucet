@@ -12,8 +12,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   :root,
-  :root[data-expression='system'],
-  :root[data-expression='expressive'] {
+  :root[data-expression='paper'],
+  :root[data-expression='glass'] {
     --lucet-duration-instant: 0ms;
     --lucet-duration-fast: 0ms;
     --lucet-duration-normal: 0ms;

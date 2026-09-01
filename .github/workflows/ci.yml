@@ -51,6 +51,8 @@ jobs:
         run: node scripts/audit-theme-parity.mjs
       - name: State audit
         run: node scripts/audit-states.mjs
+      - name: Expression geometry audit
+        run: node scripts/audit-expression-geometry.mjs
 
       # The two audits above check what states LOOK like. This one drives a
       # real pointer and checks that states ARRIVE: dead hovers, disabled

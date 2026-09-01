@@ -154,15 +154,9 @@ body {
 .cfg__side {
   display: flex;
   flex-direction: column;
-  /* Floored: at System density the raw dial (177px) no longer fit the
-     brand row, and the collapse toggle sat on top of the name. */
-  /* Floored where the brand row's geometry balances: mark + full default
-     name + reserved toggle track. The density story for the sidebar
-     lives in the expressive direction (+94px); System tightens the rest
-     of the shell harder than this one rail. */
   /* Floored at content: the rail exists to show thread titles, and 215
-     is where 'Compare the two vendor quotes' renders whole. The density
-     story for this rail is the expressive direction (+88px). */
+     is where 'Compare the two vendor quotes' renders whole (the dial in
+     the calc is the future density axis; constant 1 today). */
   inline-size: max(215px, calc(208px * var(--lucet-density, 1)));
   flex-shrink: 0;
   padding: calc(12px * var(--lucet-density, 1)) 10px;
@@ -1748,6 +1742,14 @@ body {
    composer read as part of the message. SUBSTITUTE, don't delete: in
    the space-and-light strategy the deck separates by TINT — one step
    into the well — with the region's own air doing the rest. */
-:root[data-expression='expressive'] .cfg__floor {
+:root[data-expression='glass'] .cfg__floor {
   background-color: var(--lucet-surface-sunken);
+}
+
+/* The drawer genuinely floats over the host page: in Glass it carries
+   the sanctioned translucency, and the breadcrumb ghosts through. */
+:root[data-expression='glass'] .cfg__drawer {
+  background-color: color-mix(in oklab, var(--lucet-card) 88%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }

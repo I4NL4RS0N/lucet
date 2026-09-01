@@ -48,7 +48,7 @@ function declarationsIn(marker) {
 
 const PAIRS = [
   ['dark-system-media', 'dark-system-attr'],
-  ['dark-expressive-media', 'dark-expressive-attr'],
+  ['dark-glass-media', 'dark-glass-attr'],
 ]
 
 describe('materials.css paired dark blocks', () => {
@@ -62,8 +62,8 @@ describe('materials.css paired dark blocks', () => {
     })
   }
 
-  it('the expressive dark pair keeps the contact shadow, which is what drifted', () => {
-    for (const marker of ['dark-expressive-media', 'dark-expressive-attr']) {
+  it('the glass dark pair keeps the contact shadow, which is what drifted', () => {
+    for (const marker of ['dark-glass-media', 'dark-glass-attr']) {
       const shade1 = declarationsIn(marker).get('--lucet-shade-1')
       expect(shade1, `${marker} --lucet-shade-1`).toMatch(/^0 0\.5px 0 /)
     }

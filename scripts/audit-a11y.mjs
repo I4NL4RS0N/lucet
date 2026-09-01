@@ -23,7 +23,7 @@ import { chromium } from 'playwright'
 import { AA_NON_TEXT, AA_TEXT, MIN_TARGET_PX, contrastRatio, flattenBackground } from './contrast.mjs'
 
 const THEMES = ['light', 'dark']
-const EXPRESSIONS = ['system', 'expressive']
+const EXPRESSIONS = ['paper', 'glass']
 const ACCENTS = [
   'monochrome', 'slate', 'blue', 'indigo', 'violet', 'magenta',
   'rose', 'amber', 'green', 'teal', 'cyan',

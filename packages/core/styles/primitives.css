@@ -59,6 +59,11 @@
    * whole thing is.
    */
   --lucet-scale: 1;
+  /* The density dial: wired through structural space and the shell,
+     currently CONSTANT — expression stopped driving it when the axis
+     became material (Paper/Glass, identical geometry). Reserved for a
+     future data-density attribute. */
+  --lucet-density: 1;
   --lucet-space-base: 0.25rem;
   --lucet-space-unit: calc(var(--lucet-space-base) * var(--lucet-scale) * var(--lucet-density, 1));
   --lucet-space-0: 0;
