@@ -110,14 +110,25 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     steps: defaultReply,
   })
 
+  /* Which scenario a turn came from, so a retry can play the scenario's
+     own recovery instead of the generic reply. A weak map by turn id,
+     filled after each run that created a turn. */
+  const turnScenarios = new Map<string, Scenario>()
+
   async function run(scenario: Scenario, meta?: { retryOf?: string }): Promise<void> {
     controller?.abort()
     const own = new AbortController()
     controller = own
+    const turnsBefore = store.getState().turns.length
     try {
       await runtime.run(scenario, own.signal, meta)
     } finally {
       if (controller === own) controller = null
+    }
+    const turnsNow = store.getState().turns
+    if (turnsNow.length > turnsBefore) {
+      const born = turnsNow[turnsNow.length - 1]
+      if (born) turnScenarios.set(born.id, scenario)
     }
 
     /*
@@ -161,6 +172,14 @@ export function createLucet(options: LucetOptions = {}): Lucet {
         return Promise.reject(new Error(`Unknown turn: ${turnId}`))
       }
       const text = turn.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('\n')
+      /* A failure whose text says "ask again and I will retry" made a
+         promise; the scenario's recovery steps are the runtime keeping
+         it. Same words, new version — only the outcome differs. */
+      const source = turnScenarios.get(turnId)
+      if (source?.recovery) {
+        const { recovery, ...rest } = source
+        return run({ ...rest, prompt: text, steps: recovery }, { retryOf: turnId })
+      }
       return run(submitScenario(text), { retryOf: turnId })
     },
 

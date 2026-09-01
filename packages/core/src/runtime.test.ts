@@ -194,6 +194,31 @@ describe('feedback and retry', () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await expect(lucet.retry('nope')).rejects.toThrow('Unknown turn')
   })
+
+  it('retry keeps a scenario recovery promise: the partial failure completes', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('tool-partial-failure')
+    const failed = lucet.getState().turns.at(-1)!
+    const failedTool = failed.response?.parts.find((p) => p.kind === 'tool')
+    expect(failedTool && failedTool.kind === 'tool' ? failedTool.status : null).toBe('partial')
+
+    await lucet.retry(failed.id)
+    const { turns } = lucet.getState()
+    const recovered = turns.at(-1)!
+    expect(recovered.retryOf).toBe(failed.id)
+    const tool = recovered.response?.parts.find((p) => p.kind === 'tool')
+    expect(tool && tool.kind === 'tool' ? tool.status : null).toBe('succeeded')
+    expect(recovered.response?.status).toBe('complete')
+    const text = recovered.response?.parts.find((p) => p.kind === 'text')
+    expect(text && text.kind === 'text' ? text.text : '').toContain('full picture')
+
+    /* The recovery does not chain: retrying the RECOVERED turn plays
+       the generic reply, not the recovery again. */
+    await lucet.retry(recovered.id)
+    const third = lucet.getState().turns.at(-1)!
+    const thirdTool = third.response?.parts.find((p) => p.kind === 'tool')
+    expect(thirdTool).toBeUndefined()
+  })
 })
 
 describe('scope control', () => {

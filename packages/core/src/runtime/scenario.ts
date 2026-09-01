@@ -89,6 +89,14 @@ export interface Scenario {
       name makes the turn arrive from someone else in the shared thread. */
   readonly author?: string
   readonly steps: readonly Step[]
+  /**
+   * What retrying this turn plays. A failure that tells the user "ask
+   * again and I will retry" is making a promise, and the runtime keeps
+   * it: Ask again on a turn born from this scenario runs these steps
+   * (same prompt, new version) instead of the generic reply. Absent,
+   * a retry gets the default.
+   */
+  readonly recovery?: readonly Step[]
 }
 
 export function defineScenario(scenario: Scenario): Scenario {

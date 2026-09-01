@@ -159,6 +159,26 @@ export const toolPartialFailure = defineScenario({
     },
     { type: 'complete' },
   ],
+  /* The promise in the text above, kept: the retry re-runs only the
+     timed-out source and completes the picture. */
+  recovery: [
+    { type: 'wait', ms: 250 },
+    {
+      type: 'tool',
+      name: 'Retried the vendor quote',
+      ms: 1100,
+      outcome: 'succeeded',
+      detail: '1 source returned',
+      args: '{ "query": "vendor quote", "limit": 1 }',
+      result: '{ "returned": 1, "timed_out": [] }',
+    },
+    {
+      type: 'say',
+      text: 'The vendor quote came back this time, and it has changed too — its totals moved with the revised delivery table. All three of your flagged sources are now confirmed current as of this check; you are looking at the full picture.',
+    },
+    { type: 'usage', tokens: 410, costUsd: 0.0061 },
+    { type: 'complete' },
+  ],
 })
 
 export const refusal = defineScenario({
