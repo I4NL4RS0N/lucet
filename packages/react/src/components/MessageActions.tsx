@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Message } from '@lucet/core'
+import type { Message } from 'lucet-core'
 
 /**
  * Feedback controls: what you can DO with a settled response. The positions:

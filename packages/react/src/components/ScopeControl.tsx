@@ -1,4 +1,4 @@
-import type { ScopeState } from '@lucet/core'
+import type { ScopeState } from 'lucet-core'
 import { useMenuGrammar } from '../menu-grammar.js'
 
 /**

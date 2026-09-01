@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible, toolSuccess } from '@lucet/core'
-import type { LucetEvent, Suggestion } from '@lucet/core'
+import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible, toolSuccess } from 'lucet-core'
+import type { LucetEvent, Suggestion } from 'lucet-core'
 import {
   LucetProvider,
   PromptInput,
@@ -10,7 +10,7 @@ import {
   useLucet,
   useThread,
   useTriggerGroups,
-} from '@lucet/react'
+} from 'lucet-react'
 import { AppearancePrefs, useAppearance } from './components/ThemeControls'
 import { SiteHeader } from './components/SiteHeader'
 import { readStateParam, writeStateParam } from './lib/deep-link'

@@ -1,6 +1,6 @@
 import { createContext, createElement, useContext } from 'react'
 import type { ReactNode } from 'react'
-import type { Lucet } from '@lucet/core'
+import type { Lucet } from 'lucet-core'
 
 const LucetContext = createContext<Lucet | null>(null)
 

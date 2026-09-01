@@ -1,8 +1,8 @@
-# @lucet/core
+# lucet-core
 
 Framework-free state logic for AI interface components.
 
-Most component libraries ship the happy path. `@lucet/core` is built around
+Most component libraries ship the happy path. `lucet-core` is built around
 the states real AI features actually hit — refusals, interruptions,
 rate limits, partial tool failures, stale citations, a spent budget —
 as first-class, reachable, reproducible states.
@@ -16,13 +16,13 @@ React today, adapters welcome, the core is yours to wrap.
 ## Install
 
 ```
-npm install @lucet/core
+npm install lucet-core
 ```
 
 ## The smallest real example
 
 ```ts
-import { createLucet } from '@lucet/core'
+import { createLucet } from 'lucet-core'
 
 const lucet = createLucet()
 lucet.subscribe(() => {
@@ -36,7 +36,7 @@ await lucet.submit('Summarise the three documents I shared.')
 // earlier version — every path is an ordinary event.
 ```
 
-Tokens ship at `@lucet/core/styles.css` — vanilla CSS custom properties,
+Tokens ship at `lucet-core/styles.css` — vanilla CSS custom properties,
 mapped onto shadcn's variable names, with light/dark themes and the
 Paper/Glass material axis at identical geometry.
 

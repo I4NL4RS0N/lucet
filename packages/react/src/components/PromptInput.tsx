@@ -5,9 +5,9 @@ import type {
   ModelState,
   ServiceState,
   UsageState,
-} from '@lucet/core'
-import { describeSubmitBlocker, submitBlocker } from '@lucet/core'
-import type { ScopeState } from '@lucet/core'
+} from 'lucet-core'
+import { describeSubmitBlocker, submitBlocker } from 'lucet-core'
+import type { ScopeState } from 'lucet-core'
 import { ScopeControl } from './ScopeControl.js'
 import { BudgetMeter } from './BudgetMeter.js'
 import { ActivityOrb } from './ActivityOrb.js'

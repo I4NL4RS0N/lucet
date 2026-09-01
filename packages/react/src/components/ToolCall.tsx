@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ToolStatus } from '@lucet/core'
+import type { ToolStatus } from 'lucet-core'
 import { ActivityOrb } from './ActivityOrb.js'
 import { StateIcon } from './StateIcon.js'
 import type { IconName } from './StateIcon.js'

@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { parseMarkdown, safeHref } from '@lucet/core'
-import type { MdBlock, MdInline } from '@lucet/core'
+import { parseMarkdown, safeHref } from 'lucet-core'
+import type { MdBlock, MdInline } from 'lucet-core'
 import { CodeBlock } from './CodeBlock.js'
 
 /**

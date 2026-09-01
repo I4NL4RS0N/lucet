@@ -718,7 +718,7 @@ export function Primitives() {
                 bash
                 <button className="btn btn--sm btn--lead">{Glyph.copy} Copy</button>
               </div>
-              <pre><code>{`npm install @lucet/core @lucet/react`}</code></pre>
+              <pre><code>{`npm install lucet-core lucet-react`}</code></pre>
             </div>
           </div>
         </Section>

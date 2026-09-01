@@ -1,4 +1,4 @@
-import type { Source } from '@lucet/core'
+import type { Source } from 'lucet-core'
 
 /**
  * Citations & sources: the response's bibliography. The positions:

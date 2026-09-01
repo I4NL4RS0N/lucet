@@ -1,6 +1,6 @@
-# @lucet/react
+# lucet-react
 
-React bindings for [`@lucet/core`](https://www.npmjs.com/package/@lucet/core) —
+React bindings for [`lucet-core`](https://www.npmjs.com/package/lucet-core) —
 AI interface components for the states real AI features actually hit.
 
 The core is framework-free; this package is the thin React layer:
@@ -11,16 +11,16 @@ stays in the core.
 ## Install
 
 ```
-npm install @lucet/core @lucet/react
+npm install lucet-core lucet-react
 ```
 
 ## The smallest real example
 
 ```tsx
-import { createLucet } from '@lucet/core'
-import { LucetProvider, Thread, PromptInput, useThread } from '@lucet/react'
-import '@lucet/core/styles.css'
-import '@lucet/react/styles.css'
+import { createLucet } from 'lucet-core'
+import { LucetProvider, Thread, PromptInput, useThread } from 'lucet-react'
+import 'lucet-core/styles.css'
+import 'lucet-react/styles.css'
 
 const lucet = createLucet()
 
