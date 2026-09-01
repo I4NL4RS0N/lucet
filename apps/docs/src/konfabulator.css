@@ -54,13 +54,19 @@ body {
      viewport — a frame cut by the viewport's edge is a severed card
      with no cue, where the frame's own scroll has a fade and a More
      chip. The wrapped phone header spends more. */
-  --cfg-chrome: 190px;
+  --cfg-chrome: 214px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: calc(36px * var(--lucet-density, 1));
-  max-inline-size: 1240px;
+  /* THE COMPOSED PAGE (review): the frame is capped — nobody runs an
+     assistant at 900px of thread width — and the surplus goes into a
+     gutter wide enough to say the rail is a different kind of thing
+     from the frame. The air under the nav doubled. Page-level outer
+     margins were considered and resisted: they would squeeze the rail
+     and treat the symptom. */
+  grid-template-columns: minmax(0, 820px) 300px;
+  gap: calc(72px * var(--lucet-density, 1));
+  max-inline-size: 1200px;
   margin: 0 auto;
-  padding: calc(24px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(80px * var(--lucet-density, 1));
+  padding: calc(48px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(80px * var(--lucet-density, 1));
   align-items: start;
 }
 
@@ -70,11 +76,16 @@ body {
 .cfg__railcol {
   align-self: stretch;
   border-inline-start: 1px solid var(--lucet-border);
-  padding-inline-start: 36px;
-  /* The states start where the stage starts: stage bar (32px) plus the
-     main column's gap (12px). The bar is chrome; the frame and the rail
-     are the page's two objects, and they share a top line. */
-  padding-block-start: 44px;
+  padding-inline-start: calc(36px * var(--lucet-density, 1));
+  /* ONE BAND OF CONTROLS: the rail's tabs sit on the stage bar's own
+     line, so the page reads as one control band with one content
+     region beneath — structure, not two stacks. The rail's flow still
+     starts at the frame's top: rail-top spends the same 32 + 12 the
+     stage bar and the main column's gap do. */
+}
+.cfg__rail-top {
+  min-block-size: 32px;
+  margin-block-end: 12px;
 }
 
 /* 768 KEEPS TWO COLUMNS: the rail is the argument, the sidebar is set
@@ -105,6 +116,7 @@ body {
   display: flex;
   flex-direction: column;
   block-size: var(--cfg-stage-h, min(72vh, 760px));
+  max-inline-size: 820px;
   background: var(--lucet-card);
   border-radius: var(--lucet-radius-panel);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
@@ -896,7 +908,7 @@ body {
      the rail is a PANEL WITH PARTS: the states flow scrolls in the
      middle wearing the house scroll fade, and the event log pins at the
      floor — the one thing a silent scroll edge must never swallow. */
-  max-block-size: min(var(--cfg-stage-h, 100vh), calc(100vh - 48px));
+  max-block-size: min(calc(var(--cfg-stage-h, 100vh) + 44px), calc(100vh - 48px));
   display: flex;
   flex-direction: column;
   font-size: 13px;
