@@ -165,11 +165,14 @@
    * edge triple-darkens it and reads as a smudge rather than as thickness.
    */
   --lucet-edge-bottom: inset 0 0 0 0 transparent;
-  --lucet-hairline: 0 0 0 1px oklch(0 0 0 / 0.07);
-  /* In light the ring is a DARK line, so rising reads as more defined rather
-     than brighter. Same idea, opposite direction. */
-  --lucet-hairline-raised: 0 0 0 1px oklch(0 0 0 / 0.09);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(0 0 0 / 0.11);
+  /* NO LINES AT ALL: Expressive separates with space and light. Surface
+     boundaries come from tint steps and the shade stack; a hairline here
+     would be System's tool in Expressive's hand. The border token goes
+     with them. */
+  --lucet-hairline: 0 0 0 0 transparent;
+  --lucet-hairline-raised: 0 0 0 0 transparent;
+  --lucet-hairline-overlay: 0 0 0 0 transparent;
+  --lucet-default-border: transparent;
 
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.1);
   --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.08);
@@ -216,18 +219,15 @@
   :root[data-expression='expressive']:not([data-theme='light']) {
     --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
     --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
-    /* Lighter than the fill, not darker. That is how a lit edge works. */
-    --lucet-hairline: 0 0 0 1px oklch(1 0 0 / 0.09);
-    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.12);
-    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
+    /* NO LINES AT ALL: space and light do the separating (see the light
+       block). The lit edge-top survives - it is light, not a line. */
+    --lucet-hairline: 0 0 0 0 transparent;
+    --lucet-hairline-raised: 0 0 0 0 transparent;
+    --lucet-hairline-overlay: 0 0 0 0 transparent;
+    --lucet-default-border: transparent;
     --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
     --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
     --lucet-inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.3);
-  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.12);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
-  --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
-  --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
-  --lucet-inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.3);
 
     --lucet-shade-1:
       0 0.5px 0 oklch(0 0 0 / 0.5),
@@ -256,10 +256,12 @@
 :root[data-theme='dark'][data-expression='expressive'] {
   --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.14);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
-  /* Lighter than the fill, not darker. That is how a lit edge works. */
-  --lucet-hairline: 0 0 0 1px oklch(1 0 0 / 0.09);
-  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.12);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
+  /* NO LINES AT ALL: space and light do the separating (see the light
+     block). The lit edge-top survives - it is light, not a line. */
+  --lucet-hairline: 0 0 0 0 transparent;
+  --lucet-hairline-raised: 0 0 0 0 transparent;
+  --lucet-hairline-overlay: 0 0 0 0 transparent;
+  --lucet-default-border: transparent;
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
   --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
   --lucet-inset-deep: inset 0 1px 3px oklch(0 0 0 / 0.3);

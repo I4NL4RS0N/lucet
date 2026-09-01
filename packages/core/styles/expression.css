@@ -1,9 +1,22 @@
 /**
  * The second axis: expression.
  *
+ * THE ORGANISING RULE, from which every number below follows:
+ *
+ *   SYSTEM SEPARATES WITH LINES. EXPRESSIVE SEPARATES WITH SPACE AND LIGHT.
+ *
+ * System: hairline rules, flat surfaces, borders doing the grouping, no
+ * elevation, controls at dashboard height, information packed close - the
+ * density of an operations screen, the restraint of a spreadsheet.
+ * Expressive: no borders anywhere, surfaces distinguished by tint and
+ * elevation, space carrying the grouping, tall pill controls, a wide type
+ * spread - the geometry of a modern assistant WITHOUT its effects layer
+ * (glass-and-glow ages in eighteen months; Expressive is the same
+ * components with more air, not a different product).
+ *
  * Not "utilitarian versus polished". Polish is not the variable. A dense
  * enterprise theme done well is highly polished, it just has different intent.
- * The variable is how much the interface performs.
+ * The variable is how the interface separates one thing from the next.
  *
  * System is the default, because the components are a guest in someone else's
  * product and should be quiet unless they have a reason not to be.
@@ -18,13 +31,15 @@
  * --------------------------------------------------------------- */
 :root,
 :root[data-expression='system'] {
-  /* DENSITY is the half of this axis that was missing: radius, leading,
-     and glow flipped while every padding and gap sat frozen in literal
-     pixels, so the two expressions read as one design with a decoration
-     toggle. Interior space (component padding, gaps, row heights) now
-     multiplies through this dial. System runs tighter than the drawn
-     reference; Expressive runs a fifth looser. */
-  --lucet-density: 0.95;
+  /* THE DIAL, second calibration. The first round (0.95 / 1.2) mostly
+     multiplied sub-12px micro-gaps - a 3px gap moving 0.75px is
+     invisible - so the axis still read as one design. The dial now
+     lives on STRUCTURAL space (panel padding, section gaps, gutters,
+     row heights, the shell itself) at a spread wide enough to change
+     a silhouette. */
+  --lucet-density: 0.85;
+  /* Dashboard height: a real operations screen runs ~30px controls. */
+  --lucet-control-height-md: calc(1.875rem * var(--lucet-scale));
   --lucet-space-base: 0.25rem;
   /* 8px, the dominant radius in the reference. 6px falls out as the md step. */
   --lucet-radius-base: 0.5rem;
@@ -46,14 +61,23 @@
  * radius, and material rather than by effects.
  * --------------------------------------------------------------- */
 :root[data-expression='expressive'] {
-  --lucet-density: 1.2;
+  --lucet-density: 1.45;
   --lucet-space-base: 0.34375rem;
   /*
-   * Softer than System, and that is the whole difference: the roles are derived
-   * identically in both expressions, from this one number. No pills.
+   * PILLS, reversed from the first draft ("no pills"): with separation
+   * carried by space and light rather than lines, full rounding is what
+   * makes a floating control read as an object rather than a cut-out.
+   * The roles still derive identically in both expressions, from this
+   * one number.
    */
-  --lucet-radius-base: 0.875rem;
-  --lucet-control-height-md: calc(2.25rem * var(--lucet-scale));
+  --lucet-radius-base: 1.375rem;
+  --lucet-control-height-md: calc(2.75rem * var(--lucet-scale));
+
+  /* The type SPREAD widens, not just the leading: display sizes step
+     up so hero-to-body differs by intent, while System's stay close
+     to body (a dashboard's headline is barely a headline). */
+  --lucet-text-xl: calc(1.5rem * var(--lucet-scale));
+  --lucet-text-2xl: calc(2rem * var(--lucet-scale));
 
   --lucet-leading-prose: 1.7;
 

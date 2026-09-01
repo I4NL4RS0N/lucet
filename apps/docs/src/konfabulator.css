@@ -51,10 +51,10 @@ body {
   --cfg-stage-h: min(84vh, 920px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 36px;
+  gap: calc(36px * var(--lucet-density, 1));
   max-inline-size: 1240px;
   margin: 0 auto;
-  padding: 24px 32px 80px;
+  padding: calc(24px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(80px * var(--lucet-density, 1));
   align-items: start;
 }
 
@@ -123,9 +123,9 @@ body {
 .cfg__side {
   display: flex;
   flex-direction: column;
-  inline-size: 208px;
+  inline-size: calc(208px * var(--lucet-density, 1));
   flex-shrink: 0;
-  padding: 12px 10px;
+  padding: calc(12px * var(--lucet-density, 1)) 10px;
   border-inline-end: 1px solid var(--lucet-border);
   background: var(--lucet-surface-sunken);
 }
@@ -543,7 +543,7 @@ body {
      read as a mystery gradient.) */
   overflow-x: hidden;
   overscroll-behavior: contain;
-  --cfg-gutter: 24px;
+  --cfg-gutter: calc(24px * var(--lucet-density, 1));
   /* 28px of headroom at the top: at 24 the first turn sat against the
      bar's hairline and the thread opened mid-thought. */
   padding: 28px var(--cfg-gutter) 12px;
@@ -608,7 +608,7 @@ body {
   gap: 12px;
   text-align: center;
   min-block-size: 100%;
-  padding-inline: 24px;
+  padding-inline: calc(24px * var(--lucet-density, 1));
   color: var(--lucet-muted-foreground);
   font-size: 13px;
 }
@@ -805,7 +805,7 @@ body {
 }
 /* The menu is its own stratum, not the composer's shadow: real air
    between the input and the ways in (Ian — "too close"). */
-.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: 26px; }
+.cfg__empty:has(.cfg__composer--center) .lucet-chips { margin-block-start: calc(26px * var(--lucet-density, 1)); }
 
 /* Center-seated, the meter's panel opens DOWNWARD: above the composer sit
    the greeting and the mock window's own chrome, and an app menu floating
@@ -852,8 +852,8 @@ body {
   padding: 0;
   border-block-start: 0;
   inline-size: 100%;
-  max-inline-size: 620px;
-  margin-block-start: 14px;
+  max-inline-size: calc(620px * var(--lucet-density, 1));
+  margin-block-start: calc(14px * var(--lucet-density, 1));
 }
 /* The centre seat grows DOWN through the welcome, so it gets a lower
    ceiling than the floor composer's 12em: four lines, then the field
@@ -1082,7 +1082,7 @@ body {
 
 .cfg__mock-doc {
   max-inline-size: 52ch;
-  padding: 40px 44px;
+  padding: calc(40px * var(--lucet-density, 1)) calc(44px * var(--lucet-density, 1));
 }
 .cfg__mock-doc h2 { margin: 0 0 12px; font-size: 19px; letter-spacing: -0.015em; }
 .cfg__mock-doc h3 { margin: 20px 0 8px; font-size: 14px; }
@@ -1621,7 +1621,9 @@ body {
    scoped: the drawer and phone keep the smaller greeting that suits
    their frames. */
 .cfg__frame .cfg__empty-hello {
-  font-size: 30px;
+  /* Rides the dial: a dashboard's headline is barely a headline
+     (~26px), an assistant's is a hero (~44px). */
+  font-size: calc(30px * var(--lucet-density, 1));
   letter-spacing: -0.025em;
 }
 .cfg__frame .cfg__empty-sub {

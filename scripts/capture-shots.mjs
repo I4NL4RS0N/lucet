@@ -50,6 +50,14 @@ const COMBOS = [
   { name: 'dark-system-1440-monochrome', theme: 'dark', expression: 'system', accent: 'monochrome', width: 1440 },
   { name: 'dark-system-768', theme: 'dark', expression: 'system', accent: 'violet', width: 768 },
   { name: 'dark-system-320', theme: 'dark', expression: 'system', accent: 'violet', width: 320 },
+  /* The expression matrix in full: an axis that only reads on desktop
+     is not one, and light is where Expressive has the least to work
+     with (spec: verify both expressions at three widths, both themes). */
+  { name: 'light-expressive-1440', theme: 'light', expression: 'expressive', accent: 'violet', width: 1440 },
+  { name: 'dark-expressive-768', theme: 'dark', expression: 'expressive', accent: 'violet', width: 768 },
+  { name: 'dark-expressive-320', theme: 'dark', expression: 'expressive', accent: 'violet', width: 320 },
+  { name: 'light-expressive-768', theme: 'light', expression: 'expressive', accent: 'violet', width: 768 },
+  { name: 'light-expressive-320', theme: 'light', expression: 'expressive', accent: 'violet', width: 320 },
 ]
 
 const PAGES = [
