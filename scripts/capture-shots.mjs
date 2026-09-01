@@ -61,10 +61,21 @@ const COMBOS = [
 ]
 
 const PAGES = [
-  { file: 'index.html', slug: 'konfabulator', sectioned: false },
   { file: 'primitives.html', slug: 'primitives', sectioned: true },
   { file: 'components.html', slug: 'components', sectioned: true },
 ]
+
+/* The Konfabulator gets its own full matrix — theme x expression x
+   container view — because the three containers are the same grid at
+   three widths and the review needs to see all of them in both
+   expressions. Views are React state, so each shot clicks the switcher. */
+const KONF_APPEARANCES = [
+  { name: 'dark-system', theme: 'dark', expression: 'system' },
+  { name: 'light-system', theme: 'light', expression: 'system' },
+  { name: 'dark-expressive', theme: 'dark', expression: 'expressive' },
+  { name: 'light-expressive', theme: 'light', expression: 'expressive' },
+]
+const KONF_VIEWS = ['Full page', 'Drawer', 'Mobile']
 
 const slugify = (name) =>
   name
@@ -98,6 +109,45 @@ async function main() {
     }
     await probe.close()
     if (!reached) throw new Error('dev server never came up')
+
+    /* --- Konfabulator matrix: 4 appearances x 3 views at 1440 --- */
+    for (const app of KONF_APPEARANCES) {
+      const context = await browser.newContext({
+        viewport: { width: 1440, height: 900 },
+        reducedMotion: 'reduce',
+      })
+      await context.addInitScript(
+        ({ theme, expression }) => {
+          localStorage.setItem(
+            'lucet-docs-appearance',
+            JSON.stringify({
+              theme,
+              expression,
+              accent: 'violet',
+              neutral: 'accent',
+              radius: 'default',
+              scale: '100',
+              typeface: 'inter',
+            }),
+          )
+        },
+        app,
+      )
+      const page = await context.newPage()
+      await page.goto(`http://localhost:${DEV_PORT}/index.html`, { waitUntil: 'networkidle' })
+      await page.addStyleTag({
+        content: '*, *::before, *::after { animation: none !important; transition: none !important; }',
+      })
+      await page.evaluate(() => document.fonts.ready)
+      for (const view of KONF_VIEWS) {
+        await page.getByRole('button', { name: view, exact: true }).click()
+        await page.waitForTimeout(250)
+        const slug = view.toLowerCase().replace(' ', '-')
+        await page.screenshot({ path: `${OUT}/konfabulator__${slug}__${app.name}.png` })
+        shots++
+      }
+      await context.close()
+    }
 
     for (const combo of COMBOS) {
       const context = await browser.newContext({

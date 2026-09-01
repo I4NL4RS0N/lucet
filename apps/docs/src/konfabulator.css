@@ -848,6 +848,24 @@ body {
   display: grid;
   justify-items: center;
 }
+/* THE GAP BREATHES WITH THE ROOM: at Expressive density the token gap
+   (≈48px) ate a small drawer's whole height and drowned the greeting.
+   The frames are size containers, so the gap yields by container
+   height — no per-container or per-expression special case; a tall
+   frame keeps the air, a small one keeps its words. */
+.cfg__frame,
+.cfg__drawer,
+.cfg__phone {
+  container-type: size;
+}
+.cfg__frame .cfg__floor,
+.cfg__drawer .cfg__floor,
+.cfg__phone .cfg__floor,
+.cfg__frame .cfg__floor-in,
+.cfg__drawer .cfg__floor-in,
+.cfg__phone .cfg__floor-in {
+  --cfg-content-gap: min(var(--lucet-space-6), 5cqh);
+}
 .cfg__floor-in {
   inline-size: 100%;
   max-inline-size: calc(620px * var(--lucet-density, 1));
