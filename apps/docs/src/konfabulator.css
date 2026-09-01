@@ -125,7 +125,11 @@ body {
   flex-direction: column;
   /* Floored: at System density the raw dial (177px) no longer fit the
      brand row, and the collapse toggle sat on top of the name. */
-  inline-size: max(184px, calc(208px * var(--lucet-density, 1)));
+  /* Floored where the brand row's geometry balances: mark + full default
+     name + reserved toggle track. The density story for the sidebar
+     lives in the expressive direction (+94px); System tightens the rest
+     of the shell harder than this one rail. */
+  inline-size: max(198px, calc(208px * var(--lucet-density, 1)));
   flex-shrink: 0;
   padding: calc(12px * var(--lucet-density, 1)) 10px;
   border-inline-end: 1px solid var(--lucet-border);
@@ -190,10 +194,15 @@ body {
 /* The identity row: the same B2 tile as the drawer's host — one fake
    universe, every container the same product. */
 .cfg__side-brand {
-  display: flex;
+  /* Grid with reserved tracks, not flex: a plain flex child has
+     min-width auto, so the name refused to shrink and pushed into the
+     toggle's space at System density. minmax(0, 1fr) is what lets the
+     name truncate into the space that's left while the toggle's track
+     is never invaded. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   padding: 2px 4px 12px;
   font-size: 13px;
   font-weight: 600;
@@ -201,11 +210,13 @@ body {
   white-space: nowrap;
 }
 .cfg__side-brand-id {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-inline-size: 0;
 }
+.cfg__side-brand-name { justify-self: start; max-inline-size: 100%; }
 .cfg__side-brand .cfg__mock-logo {
   inline-size: 20px;
   block-size: 20px;
