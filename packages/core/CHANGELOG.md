@@ -10,5 +10,4 @@
   projection, and the announcement plan for screen readers. The React
   package: the twelve baseline components with every state reachable,
   the token set with light/dark themes and the Paper/Glass material
-  axis at identical geometry. Everything before this was a name
-  placeholder.
+  axis at identical geometry.
