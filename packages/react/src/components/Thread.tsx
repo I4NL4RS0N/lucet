@@ -262,6 +262,45 @@ function ResponseAnnouncer({ state }: { state: ThreadState }) {
 
 export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRestore }: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
+  const sectionRef = useRef<HTMLElement | null>(null)
+  /* THE SEPARATOR RULE (review): no container ever renders a separator
+     whose preceding message is entirely out of view — either the tail
+     is visible above the line, or the line is not drawn. Enforced HERE,
+     in the component, because the separator is drawn here: each pair
+     watches its own visibility inside the host's scroll container, and
+     when a pair has less than a legible sliver showing, the divider on
+     the pair below it goes transparent (never zero-width). The host
+     declares a top inset for its own scroll fade via
+     --lucet-thread-top-inset, so a line of text dimmed to nothing by a
+     mask does not count as "visible". Falls back to always-drawn where
+     IntersectionObserver does not exist. */
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section || typeof IntersectionObserver === 'undefined') return
+    let root: HTMLElement | null = section.parentElement
+    while (root && root !== document.body) {
+      const overflow = getComputedStyle(root).overflowY
+      if (overflow === 'auto' || overflow === 'scroll') break
+      root = root.parentElement
+    }
+    if (!root || root === document.body) return
+    const inset = parseFloat(getComputedStyle(section).getPropertyValue('--lucet-thread-top-inset')) || 0
+    /* 18px past the fade: a two-pixel sliver of faded text is not
+       "visible text above the line". */
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const next = entry.target.nextElementSibling
+          if (!next || !next.classList.contains('lucet-thread__pair')) continue
+          if (entry.isIntersecting) next.removeAttribute('data-prev-out')
+          else next.setAttribute('data-prev-out', '')
+        }
+      },
+      { root, rootMargin: `${-(inset + 18)}px 0px 0px 0px` },
+    )
+    for (const pair of section.querySelectorAll('.lucet-thread__pair')) io.observe(pair)
+    return () => io.disconnect()
+  }, [state.turns.length])
   /* Version arithmetic: a turn is SUPERSEDED when a later commit retries
      it. Markers appear only where history is non-linear — a plain thread
      stays plain. */
@@ -284,7 +323,12 @@ export function Thread({ state, selfId, onRetry, onFeedback, onRestore, onExitRe
      * raw chunk and every piece of markdown syntax, which is the streaming
      * mess this component exists to clean up.
      */
-    <section className="lucet-thread" aria-label="Conversation" data-shared={shared || undefined}>
+    <section
+      ref={sectionRef}
+      className="lucet-thread"
+      aria-label="Conversation"
+      data-shared={shared || undefined}
+    >
       {state.turns.map((turn) => {
         const response = turn.response
         /* Actions appear once a response has SETTLED — there is nothing to

@@ -333,24 +333,6 @@ function AppCore({
   const attachCount = useRef(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  /* THE OPENING STORY, per container (close-out review): at rest the
-     thread shows as much of the prior answer's tail as the container's
-     height allows — never less of the current exchange. When the room
-     above the current pair cannot fit a legible line (the phone: 23px,
-     gap and divider only), the pair divider would surface ALONE at the
-     fold — a stray rule with nothing above it. So at rest it does not
-     paint. Scrolling restores it; rest-only, like the rail's orphan
-     cover. */
-  const measureTail = (el: HTMLElement) => {
-    const pairs = el.querySelectorAll<HTMLElement>('.lucet-thread__pair')
-    const last = pairs[pairs.length - 1]
-    const atRest = el.scrollHeight - el.scrollTop - el.clientHeight <= 4
-    const tailRoom = last
-      ? last.getBoundingClientRect().top - el.getBoundingClientRect().top
-      : 0
-    if (atRest && pairs.length > 1 && tailRoom < 48) el.setAttribute('data-tail-sliver', '')
-    else el.removeAttribute('data-tail-sliver')
-  }
   useEffect(() => {
     const el = scrollRef.current
     /* A chat opens at its LATEST message — including the boot-seeded
@@ -358,10 +340,7 @@ function AppCore({
        at Expressive density the turn's tail (sources, the freshness
        badge, the actions row — two differentiators and the controls)
        sat below the fold looking deleted. */
-    if (el && state.turns.length > 0) {
-      el.scrollTop = el.scrollHeight
-      measureTail(el)
-    }
+    if (el && state.turns.length > 0) el.scrollTop = el.scrollHeight
   }, [state])
 
   const composerNode = (
@@ -433,11 +412,7 @@ function AppCore({
       <div className="cfg__app-body">
         {aside}
         <div className="cfg__app-main">
-          <div
-            className="cfg__scroll"
-            ref={scrollRef}
-            onScroll={(e) => measureTail(e.currentTarget)}
-          >
+          <div className="cfg__scroll" ref={scrollRef}>
             {state.turns.length === 0 ? (
               /*
                * The cold start, designed: the product's real first state. The

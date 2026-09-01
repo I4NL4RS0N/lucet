@@ -60,7 +60,14 @@
      (delta 0.075), and the well is a real well under it. */
   --lucet-surface-ground: oklch(0.925 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-0);
-  --lucet-surface-overlay: var(--lucet-neutral-100);
+  /* NOT the raw n100, and not merely the muted cap either: the accent
+     neutral's OWN near-white chroma is 0.008, under the 0.009 cap, so
+     capping alone changed nothing — the Glass composer and chips sit
+     on this token and read violet-stained under Violet (the review's
+     lavender well, worst on the phone). Near white the hue may only
+     whisper: half the neutral's value, ceilinged at 0.005. Ground and
+     sunken keep their full tint — they are the room, not the object. */
+  --lucet-surface-overlay: oklch(0.97 min(calc(var(--lucet-neutral-c) / 2), 0.005) var(--lucet-neutral-h));
   --lucet-surface-sunken: oklch(0.9 var(--lucet-neutral-c) var(--lucet-neutral-h));
   /* Depth is carried by shadow, so the line is nearly gone. */
   --lucet-line: oklch(0.87 0 0 / 0.5);

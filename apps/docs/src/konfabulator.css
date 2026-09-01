@@ -585,6 +585,9 @@ body {
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
+  /* The thread's separator rule (Thread.tsx) must know the fade: a
+     line of text dimmed to nothing by this mask is not visible text. */
+  --lucet-thread-top-inset: var(--fade, 20px);
   /* A thread never scrolls sideways: anything that pokes past the
      gutters is a bug to clip, not a scrollbar to grow. (The atmosphere's
      bleed once overflowed by 6px on the phone and drew a scrollbar that
@@ -1743,14 +1746,6 @@ body {
   .cfg__layout { --cfg-chrome: 265px; }
 }
 
-/* The rest-only divider rule (see measureTail in App.tsx): when the
-   thread opens with no room for a legible tail line, the pair divider
-   above the current exchange does not paint — transparent, never
-   zero-width, so nothing moves. */
-.cfg__scroll[data-tail-sliver] .lucet-thread__pair + .lucet-thread__pair {
-  border-block-start-color: transparent;
-}
-
 /* NO GLASS FLOOR TINT — deliberately absent (close-out review). The
    sunken-tint substitute for Paper's floor hairline drew a horizontal
    value edge across the frame: a line, in the expression that forbids
@@ -1770,10 +1765,13 @@ body {
      content behind it, and at 88% it was indistinguishable from opaque
      — translucency claimed, never witnessed. 81 is the highest mix at
      which the witness (the chart and callout crossing the edge) still
-     reads in both themes; the heavier blur keeps what ghosts through
-     as colour, never as legible text. */
+     reads in both themes. Blur 12, down from 26: the 26px blur spread
+     an 8px bar's energy across fifty — the callout's mass survived it,
+     the bars did not (the review's "stop dead at the edge"). At 10 the
+     bars read as colour through the pane and text behind still smears
+     past legibility. */
   background-color: color-mix(in oklab, var(--lucet-popover) 81%, transparent);
-  -webkit-backdrop-filter: blur(26px);
-  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow: var(--lucet-material-overlay);
 }

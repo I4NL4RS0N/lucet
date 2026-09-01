@@ -1066,6 +1066,12 @@
   padding-block-start: var(--lucet-space-8);
   border-block-start: 1px solid var(--lucet-border);
 }
+/* The separator rule (Thread.tsx): when the preceding message is
+   entirely out of view — including under the host's scroll fade — the
+   line above this pair is not drawn. Transparent, never zero-width. */
+.lucet-thread__pair[data-prev-out] {
+  border-block-start-color: transparent;
+}
 
 /* Another person's turn: the face OUTSIDE the bubble, bottom-aligned —
    the avatar and the anchored tail corner meet, so the corner points at
