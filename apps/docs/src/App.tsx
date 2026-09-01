@@ -177,6 +177,10 @@ function TriggerRail({
         Reset
       </button>
       </div>
+      {/* Only the GROUPS scroll: the tabs and Reset are the panel's fixed
+          head, the way the event log is its fixed floor. The flow lives
+          inside the nav so the fade mask can never dim the controls. */}
+      <div className="cfg__rail-flow">
       {shown.map((group) => (
         <section className="cfg__group" key={group.group}>
           <h3 className="cfg__group-name">{group.group}</h3>
@@ -213,6 +217,7 @@ function TriggerRail({
           ))}
         </section>
       ))}
+      </div>
     </nav>
   )
 }
@@ -1221,22 +1226,19 @@ export function App() {
 
         <div className="cfg__railcol">
           <div className="cfg__rail">
-            {/* The rail is a PANEL with parts: the states flow scrolls in
-                the middle (with the house scroll fade as its cue), and the
-                event log pins at the floor — always visible, never lost
-                below a silent scroll edge. */}
-            <div className="cfg__rail-flow">
-              <TriggerRail
-                active={active}
-                firing={firing}
-                onFire={fire}
-                onReset={() => {
-                  lucet.reset()
-                  lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
-                  setActive(null)
-                }}
-              />
-            </div>
+            {/* The rail is a PANEL with parts: tabs and Reset fixed at the
+                head, the states flow scrolling in the middle (the house
+                scroll fade as its cue), the event log pinned at the floor. */}
+            <TriggerRail
+              active={active}
+              firing={firing}
+              onFire={fire}
+              onReset={() => {
+                lucet.reset()
+                lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
+                setActive(null)
+              }}
+            />
             <div className="cfg__aside">
               <EventLog />
             </div>

@@ -867,6 +867,7 @@ body {
 .cfg__rail {
   position: sticky;
   top: 24px;
+  gap: 4px;
   /* Bottoms align: the rail and the frame carry the same 44px head
      start in their columns, so equal caps end them on one line. Inside,
      the rail is a PANEL WITH PARTS: the states flow scrolls in the
@@ -1624,4 +1625,14 @@ body {
 @media (max-width: 480px) {
   .cfg__frame .cfg__empty-hello { font-size: 24px; }
   .cfg__frame .cfg__empty-sub { font-size: 14px; }
+}
+
+/* The rail's nav is head + flow: it takes the middle of the rail's
+   column and hands its height budget to the scrolling flow inside. */
+.cfg__rail > nav {
+  flex: 1;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
