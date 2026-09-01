@@ -124,6 +124,9 @@ body {
   font-size: 14px;
   line-height: 1.5;
   letter-spacing: -0.006em;
+  /* Antialiased at the root — see the Konfabulator's body rule. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .prim__bar {
@@ -2172,3 +2175,46 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
     inset 0 0 0 1px color-mix(in oklab, var(--lucet-foreground) 8%, transparent);
   color: var(--lucet-foreground);
 }
+
+/* ============================================================
+ * AESTHETIC PASS (2026-09-01): page rhythm on the macro scale,
+ * the open duet, the hero's crop link, and the reference page's
+ * tighter rhythm. The spacing scale in force on the components
+ * page: 96px between major sections, 128px into the page's one
+ * hero-follow moment (the receipt lifecycle), 72px between kin
+ * sections of the same component family.
+ * ============================================================ */
+
+.prim--comp .sec--kin { margin-block-start: 72px; }
+.prim--comp .sec--hero + .sec { margin-block-start: 128px; }
+.prim--comp .sec--hero { margin-block-start: 32px; }
+
+/* The crop link: the specimen is a crop, and says where the whole is. */
+.prim--comp .hero-app__more { margin: 14px 0 0; font-size: 13px; }
+.prim--comp .hero-app__more a {
+  color: var(--ink-3);
+  text-decoration: none;
+  transition: color var(--fast);
+}
+.prim--comp .hero-app__more a:hover { color: var(--lucet-foreground); }
+.prim--comp .hero-app__more a:focus-visible { outline: 2px solid var(--lucet-ring); outline-offset: 2px; border-radius: 2px; }
+.prim--comp .hero-app__more a::after { content: ' →'; }
+
+/* The OPEN duet: a sequence composed directly on the page. Breaks the
+   run of wells so no two consecutive viewports share a grammar — the
+   section head anchors it; space does the separating. */
+.prim--comp .stage--open,
+:root[data-theme='light'] .prim--comp .stage--open {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 4px 0 0;
+}
+
+/* Section names carry the editorial register: balanced when they wrap. */
+.prim--comp .sec__name { text-wrap: balance; }
+
+/* The reference page's rhythm tightens without art direction: the
+   systematic grid is the point, the dead air between rows was not. */
+.prim--ref .sec { margin-block-start: 56px; }
+.prim--ref .stage { padding: calc(28px * var(--lucet-density, 1)); }

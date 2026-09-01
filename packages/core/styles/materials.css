@@ -195,16 +195,19 @@
     0 0.5px 0 oklch(0 0 0 / 0.04),
     0 1px 2px oklch(0 0 0 / 0.06),
     0 3px 4px -1px oklch(0 0 0 / 0.1);
+  /* Tightened (aesthetic pass): the farthest layers pulled in — 28px
+     of blur floated cards inches above the page; the same stack at
+     10/20 reads as thickness near the surface, which is what glass is. */
   --lucet-shade-2:
     0 0.5px 0 oklch(0 0 0 / 0.04),
     0 1px 2px oklch(0 0 0 / 0.06),
-    0 5px 10px oklch(0 0 0 / 0.06),
-    0 14px 28px oklch(0 0 0 / 0.07);
+    0 4px 8px oklch(0 0 0 / 0.06),
+    0 10px 20px oklch(0 0 0 / 0.06);
   --lucet-shade-3:
     0 0.5px 0 oklch(0 0 0 / 0.05),
-    0 2px 5px oklch(0 0 0 / 0.07),
-    0 10px 24px oklch(0 0 0 / 0.1),
-    0 28px 56px oklch(0 0 0 / 0.12);
+    0 2px 5px oklch(0 0 0 / 0.08),
+    0 8px 18px oklch(0 0 0 / 0.09),
+    0 20px 40px oklch(0 0 0 / 0.11);
 
   --lucet-material-flat: var(--lucet-hairline);
   --lucet-material-control:

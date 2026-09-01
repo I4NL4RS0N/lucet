@@ -55,24 +55,27 @@
      the things that are meant to be picked up. The overlay steps a full tone
      BELOW the card: above white the only distinct direction is down — the
      shadow, the lit edge, and translucency carry the floating.
-       ground 0.925 · sunken 0.9 · overlay 0.97 · card 1.0
-     Ground sits BELOW the old n150 so a white card is unmistakably lifted
-     (delta 0.075), and the well is a real well under it. */
-  /* RATIFIED 2026-09-01 (lab-acreage review): the accent-following
-     tint on ground and sunken is deliberate and KEPT at lab scale —
-     the room's tint is the room. Objects near white are whisper-capped
-     (the overlay below); the room is not. */
-  --lucet-surface-ground: oklch(0.925 var(--lucet-neutral-c) var(--lucet-neutral-h));
+       sunken 0.912 · ground 0.945 · overlay 0.975 · card 1.0
+     Four steps that survive grayscale; the card's lift is carried by the
+     value gap AND the rim light together, not by value alone. */
+  /* THE GROUND IS NEARLY NEUTRAL (aesthetic pass, 2026-09-01 — this
+     supersedes the earlier lab-acreage ratification for the GROUND
+     only). At full accent-following chroma the whole page wore the
+     accent as a wash: white cards read as pasted onto a tinted room,
+     and the room read as the product. A third of the neutral's value,
+     ceilinged low, keeps the temperature without the cast. The room's
+     tint retreats to the SUNKEN step — the sidebar, the wells, the
+     recesses — where it stays the identity moment it was ratified as,
+     local instead of global. */
+  --lucet-surface-ground: oklch(0.945 min(calc(var(--lucet-neutral-c) / 3), 0.0035) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-0);
-  /* NOT the raw n100, and not merely the muted cap either: the accent
-     neutral's OWN near-white chroma is 0.008, under the 0.009 cap, so
-     capping alone changed nothing — the Glass composer and chips sit
-     on this token and read violet-stained under Violet (the review's
-     lavender well, worst on the phone). Near white the hue may only
-     whisper: half the neutral's value, ceilinged at 0.005. Ground and
-     sunken keep their full tint — they are the room, not the object. */
-  --lucet-surface-overlay: oklch(0.97 min(calc(var(--lucet-neutral-c) / 2), 0.005) var(--lucet-neutral-h));
-  --lucet-surface-sunken: oklch(0.9 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* Near white the hue may only whisper: half the neutral's value,
+     ceilinged at 0.005 (the lavender-well fix — see git history). */
+  --lucet-surface-overlay: oklch(0.975 min(calc(var(--lucet-neutral-c) / 2), 0.005) var(--lucet-neutral-h));
+  /* The recess keeps most of the room's temperature — see the ground
+     note above. Three quarters of the neutral, ceilinged so the
+     non-default greys cannot triple it into a colourwash. */
+  --lucet-surface-sunken: oklch(0.912 min(calc(var(--lucet-neutral-c) * 0.75), 0.008) var(--lucet-neutral-h));
   /* Depth is carried by shadow, so the line is nearly gone. */
   --lucet-line: oklch(0.87 0 0 / 0.5);
   --lucet-shadow-color: 0 0 0;

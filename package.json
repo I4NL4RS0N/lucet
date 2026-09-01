@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "dev": "npm run build --workspace lucet && npm run build --workspace lucet-react && npm run dev --workspace @lucet/docs",
+    "dev": "npm run build --workspace lucet-core && npm run build --workspace lucet-react && npm run dev --workspace @lucet/docs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "rm -rf packages/*/dist apps/*/dist **/*.tsbuildinfo",
     "changeset": "changeset",

@@ -241,7 +241,7 @@ export function Primitives() {
   const [seg, setSeg] = useState('all')
 
   return (
-    <div className="prim" data-expression={appearance.expression}>
+    <div className="prim prim--ref" data-expression={appearance.expression}>
       <SiteHeader page="primitives" />
 
       <main className="prim__main">

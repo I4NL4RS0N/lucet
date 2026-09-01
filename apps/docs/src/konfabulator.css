@@ -34,6 +34,10 @@ body {
   font-size: 14px;
   line-height: 1.5;
   letter-spacing: -0.006em;
+  /* Antialiased at the root (aesthetic pass): subpixel rendering read
+     heavier than the weights specify, most visibly in dark themes. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-wrap: pretty;
 }
 

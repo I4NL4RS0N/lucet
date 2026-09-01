@@ -660,8 +660,10 @@ function Section({
 }: {
   name: string
   note: string
-  /** 'hero' floats its content directly on the page — no stage well. */
-  variant?: 'hero'
+  /** 'hero' floats its content directly on the page — no stage well.
+      'kin' follows a section of the same component family at the
+      related-group interval instead of the major one. */
+  variant?: 'hero' | 'kin'
   children: React.ReactNode
 }) {
   return (
@@ -677,12 +679,18 @@ function Section({
 
 /** One live composer on a real store, mock runtime and all. */
 function Live() {
-  /* Seeded with the SAME mid-thread moment the Konfabulator opens on
-     (opener.ts): the section is titled "The app, live", and a heading
-     over a bare composer made that a false claim. */
+  /* Seeded from the SAME moment the Konfabulator opens on (opener.ts),
+     CROPPED to the one representative sequence: prompt, tool receipt,
+     cited answer, composer — one composition, not a second application
+     shell. The prior exchange belongs to the Konfabulator, where
+     mid-thread honesty is the point; here it was dead air above the
+     specimen. The link under the specimen points at the whole. */
   const lucet = useMemo(() => {
     const instance = createLucet({ threadId: 'stage_live' })
-    for (const e of OPENER_EVENTS) instance.store.dispatch(e)
+    for (const e of OPENER_EVENTS) {
+      if (JSON.stringify(e).includes('_prev')) continue
+      instance.store.dispatch(e)
+    }
     return instance
   }, [])
   const [state, setState] = useState(lucet.getState())
@@ -777,6 +785,9 @@ export function ComponentsStage() {
           <div className="hero-app">
             <Live />
           </div>
+          <p className="hero-app__more">
+            <a href="/">The complete application, every state on its rail — the Konfabulator</a>
+          </p>
         </Section>
 
         <Section
@@ -817,8 +828,8 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
-          <div className="stage stage--duet">
+        <Section variant="kin" name="Scope control — the breadcrumb is the ladder" note="wrong answers are usually wrong context, not a wrong model">
+          <div className="stage stage--duet stage--open">
             {SCOPE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -842,6 +853,7 @@ export function ComponentsStage() {
         </Section>
 
         <Section
+          variant="kin"
           name="Budget meter — the price before you spend it"
           note="the projected price of the next turn, on every model, before you commit — and the month it lands in"
         >
@@ -868,10 +880,11 @@ export function ComponentsStage() {
         </Section>
 
         <Section
+          variant="kin"
           name="Prompt input — multiplayer"
           note="one thread, several people, one turn at a time"
         >
-          <div className="stage stage--duet">
+          <div className="stage stage--duet stage--open">
             {MULTI_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
