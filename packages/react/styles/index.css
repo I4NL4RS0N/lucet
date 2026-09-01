@@ -1100,7 +1100,13 @@
    The hairline sits in the middle of real air, not instead of it. A
    CONTENT RULE (--lucet-line, not --lucet-border): history's
    punctuation survives Glass — chrome borders zero, punctuation
-   doesn't (expression.css). */
+   doesn't (expression.css). RULING 2026-09-01: kept, with presence —
+   its correction direction is toward presence, never erasure (the
+   light-hairline position in surfaces.css: presence, not weight; a
+   page whose every line whispers reads sterile). Measured on ratify
+   day: 0.064–0.100 ΔL against the thread plane across all four
+   cells — more than double the content-rule floor, no alpha change
+   needed. */
 .lucet-thread__pair + .lucet-thread__pair {
   padding-block-start: var(--lucet-space-8);
   border-block-start: 1px solid var(--lucet-line);

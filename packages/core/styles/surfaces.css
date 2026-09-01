@@ -58,6 +58,10 @@
        ground 0.925 · sunken 0.9 · overlay 0.97 · card 1.0
      Ground sits BELOW the old n150 so a white card is unmistakably lifted
      (delta 0.075), and the well is a real well under it. */
+  /* RATIFIED 2026-09-01 (lab-acreage review): the accent-following
+     tint on ground and sunken is deliberate and KEPT at lab scale —
+     the room's tint is the room. Objects near white are whisper-capped
+     (the overlay below); the room is not. */
   --lucet-surface-ground: oklch(0.925 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-0);
   /* NOT the raw n100, and not merely the muted cap either: the accent
