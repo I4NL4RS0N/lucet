@@ -125,6 +125,16 @@ function TriggerRail({
    * Tabs primitive does not exist in the library yet; it is on the list.)
    */
   const [tab, setTab] = useState<'state' | 'feature'>('state')
+  /* The honest cue: a fade can land in the whitespace after a heading
+     and read as nothing (it did — FRESHNESS orphaned, SOURCES silently
+     gone). A chip that says MORE cannot be misread, and it leaves the
+     moment nothing is below. */
+  const flowRef = useRef<HTMLDivElement | null>(null)
+  const [moreBelow, setMoreBelow] = useState(false)
+  const checkMore = () => {
+    const el = flowRef.current
+    if (el) setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 8)
+  }
   const kindOf = (id: string | null) =>
     groups.flatMap((g) => g.scenarios).find((s) => s.id === id)?.kind ?? 'state'
   /* A deep link or chip that lands on the other half switches the tab to
@@ -133,6 +143,12 @@ function TriggerRail({
     if (active) setTab(kindOf(active) === 'feature' ? 'feature' : 'state')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active])
+  useEffect(() => {
+    checkMore()
+    window.addEventListener('resize', checkMore)
+    return () => window.removeEventListener('resize', checkMore)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
 
   const shown = groups.filter((g) => (g.scenarios[0]?.kind ?? 'state') === tab)
 
@@ -180,7 +196,7 @@ function TriggerRail({
       {/* Only the GROUPS scroll: the tabs and Reset are the panel's fixed
           head, the way the event log is its fixed floor. The flow lives
           inside the nav so the fade mask can never dim the controls. */}
-      <div className="cfg__rail-flow">
+      <div className="cfg__rail-flow" ref={flowRef} onScroll={checkMore}>
       {shown.map((group) => (
         <section className="cfg__group" key={group.group}>
           <h3 className="cfg__group-name">{group.group}</h3>
@@ -218,6 +234,18 @@ function TriggerRail({
         </section>
       ))}
       </div>
+      {moreBelow ? (
+        <button
+          type="button"
+          className="cfg__rail-more"
+          onClick={() => flowRef.current?.scrollBy({ top: 220, behavior: 'smooth' })}
+        >
+          More
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+      ) : null}
     </nav>
   )
 }

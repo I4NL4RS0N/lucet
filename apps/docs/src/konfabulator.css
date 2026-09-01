@@ -43,7 +43,12 @@ body {
   /* ONE ceiling for the page's two objects: the frame and the rail cap
      at the same height, so both columns end on the same line and the
      composition settles instead of trailing off at unrelated depths. */
-  --cfg-stage-h: min(72vh, 760px);
+  /* Raised from 72vh/760: at the old cap the rail hid a third of the
+     taxonomy — its strongest asset — behind a fade that could land in
+     whitespace and read as nothing. On ~1010px+ viewports everything
+     now sits visible at rest, still settled; shorter viewports get the
+     explicit More affordance below. */
+  --cfg-stage-h: min(84vh, 920px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 36px;
@@ -1635,4 +1640,38 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* The More chip: shown only while states sit below the fold, gone the
+   moment they don't. An affordance, not decoration — it scrolls. */
+.cfg__rail-more {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-block-start: 2px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  box-shadow: var(--lucet-hairline);
+  color: var(--lucet-subtle-foreground);
+  font: inherit;
+  font-size: var(--lucet-text-xs);
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease-out);
+}
+.cfg__rail-more:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__rail-more:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+}
+.cfg__rail-more svg {
+  inline-size: 11px;
+  block-size: 11px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
