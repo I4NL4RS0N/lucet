@@ -215,12 +215,17 @@ function TriggerRail({
   const checkMore = () => {
     const el = flowRef.current
     if (!el) return
-    el.style.removeProperty('--fade-bottom')
     if (el.scrollHeight - el.scrollTop - el.clientHeight <= 8) {
+      el.style.removeProperty('--fade-bottom')
       setMore(null)
       return
     }
-    if (el.scrollTop > 4) return /* rest-only rule; the fade reverts above */
+    if (el.scrollTop > 4) {
+      /* Scrolling: the orphan-covering extra reverts (rest-only rule),
+         but the chip persists, so its 44px void band persists with it. */
+      el.style.setProperty('--fade-bottom', '44px')
+      return
+    }
     const cTop = el.getBoundingClientRect().top
     const foldY = el.clientHeight
     let safeFold = foldY
@@ -232,7 +237,11 @@ function TriggerRail({
       const firstBottom = (first ?? head).getBoundingClientRect().bottom - cTop
       if (foldY > headTop - 6 && foldY < firstBottom + 4) safeFold = Math.min(safeFold, headTop - 6)
     }
-    if (safeFold < foldY) el.style.setProperty('--fade-bottom', `${Math.round(foldY - safeFold + 18)}px`)
+    /* The chip lives in the bottom band, so whenever it will show the
+       band must be VOID: the fade floors at 44px (chip + air), and
+       grows further when an orphaned heading needs covering. */
+    const fadePx = Math.max(44, safeFold < foldY ? Math.round(foldY - safeFold + 18) : 0)
+    el.style.setProperty('--fade-bottom', `${fadePx}px`)
     let count = 0
     const hiddenGroups = new Set<string>()
     for (const g of el.querySelectorAll('.cfg__group')) {
@@ -357,10 +366,12 @@ function TriggerRail({
           ))}
         </section>
       ))}
-      {/* Sticky INSIDE the flow: as a flex sibling it changed the flow's
-          height when it appeared, which moved the fold, which changed the
-          verdict that summoned it — an oscillator. As an overlay it
-          observes without participating. */}
+      </div>
+      {/* ABSOLUTE over the flow, outside its mask: in flow it was an
+          oscillator (its height changed the fold that summoned it);
+          inside the flow it was masked by the very fade it rode. Out
+          here it takes no height and no fade — and the measurement
+          guarantees the band beneath it is always faded void. */}
       {more ? (
         <button
           type="button"
@@ -373,7 +384,6 @@ function TriggerRail({
           </svg>
         </button>
       ) : null}
-      </div>
     </nav>
   )
 }

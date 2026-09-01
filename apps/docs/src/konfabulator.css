@@ -1663,8 +1663,10 @@ body {
 }
 
 /* The rail's nav is head + flow: it takes the middle of the rail's
-   column and hands its height budget to the scrolling flow inside. */
+   column and hands its height budget to the scrolling flow inside. It
+   is also the More chip's positioning context. */
 .cfg__rail > nav {
+  position: relative;
   flex: 1;
   min-block-size: 0;
   display: flex;
@@ -1721,14 +1723,16 @@ body {
   .cfg__layout { --cfg-chrome: 265px; }
 }
 
-/* The rail's counting cue, overlaying the flow's floor: sticky above the
-   fade band, never part of the height it measures. */
+/* The rail's counting cue: absolute over the flow's floor, OUTSIDE the
+   flow's mask, floating in the faded band the measurement guarantees
+   beneath it. */
 .cfg__rail-more--overlay {
-  position: sticky;
-  inset-block-end: 2px;
+  position: absolute;
+  inset-block-end: 10px;
+  inset-inline-start: 50%;
+  translate: -50% 0;
   z-index: 3;
-  margin: -30px auto 4px;
-  inline-size: fit-content;
+  inline-size: max-content;
   display: flex;
   background-color: var(--lucet-card);
   box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
