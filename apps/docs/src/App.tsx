@@ -125,15 +125,48 @@ function TriggerRail({
    * Tabs primitive does not exist in the library yet; it is on the list.)
    */
   const [tab, setTab] = useState<'state' | 'feature'>('state')
-  /* The honest cue: a fade can land in the whitespace after a heading
-     and read as nothing (it did — FRESHNESS orphaned, SOURCES silently
-     gone). A chip that says MORE cannot be misread, and it leaves the
-     moment nothing is below. */
+  /* THE UNBREAKABLE UNIT (review rule): a group heading and its first
+     item never separate. If the resting fold would land between them,
+     the whole group goes below the line — the fade widens to cover it —
+     and the cue COUNTS what's out ("1 more in Sources"). The last
+     visible thing is always a partially-faded item, never a heading
+     with nothing under it. */
   const flowRef = useRef<HTMLDivElement | null>(null)
-  const [moreBelow, setMoreBelow] = useState(false)
+  const [more, setMore] = useState<{ count: number; group: string | null } | null>(null)
   const checkMore = () => {
     const el = flowRef.current
-    if (el) setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 8)
+    if (!el) return
+    el.style.removeProperty('--fade-bottom')
+    if (el.scrollHeight - el.scrollTop - el.clientHeight <= 8) {
+      setMore(null)
+      return
+    }
+    if (el.scrollTop > 4) return /* rest-only rule; the fade reverts above */
+    const cTop = el.getBoundingClientRect().top
+    const foldY = el.clientHeight
+    let safeFold = foldY
+    for (const g of el.querySelectorAll('.cfg__group')) {
+      const head = g.querySelector('.cfg__group-name')
+      const first = g.querySelector('.cfg__trigger')
+      if (!head) continue
+      const headTop = head.getBoundingClientRect().top - cTop
+      const firstBottom = (first ?? head).getBoundingClientRect().bottom - cTop
+      if (foldY > headTop - 6 && foldY < firstBottom + 4) safeFold = Math.min(safeFold, headTop - 6)
+    }
+    if (safeFold < foldY) el.style.setProperty('--fade-bottom', `${Math.round(foldY - safeFold + 18)}px`)
+    let count = 0
+    const hiddenGroups = new Set<string>()
+    for (const g of el.querySelectorAll('.cfg__group')) {
+      const name = g.querySelector('.cfg__group-name')?.textContent ?? ''
+      for (const r of g.querySelectorAll('.cfg__trigger')) {
+        const rr = r.getBoundingClientRect()
+        if (rr.top - cTop + rr.height / 2 > safeFold) {
+          count++
+          hiddenGroups.add(name)
+        }
+      }
+    }
+    setMore(count === 0 ? null : { count, group: hiddenGroups.size === 1 ? [...hiddenGroups][0]! : null })
   }
   const kindOf = (id: string | null) =>
     groups.flatMap((g) => g.scenarios).find((s) => s.id === id)?.kind ?? 'state'
@@ -233,19 +266,23 @@ function TriggerRail({
           ))}
         </section>
       ))}
-      </div>
-      {moreBelow ? (
+      {/* Sticky INSIDE the flow: as a flex sibling it changed the flow's
+          height when it appeared, which moved the fold, which changed the
+          verdict that summoned it — an oscillator. As an overlay it
+          observes without participating. */}
+      {more ? (
         <button
           type="button"
-          className="cfg__rail-more"
+          className="cfg__rail-more cfg__rail-more--overlay"
           onClick={() => flowRef.current?.scrollBy({ top: 220, behavior: 'smooth' })}
         >
-          More
+          {more.group ? `${more.count} more in ${more.group}` : `${more.count} more`}
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
       ) : null}
+      </div>
     </nav>
   )
 }

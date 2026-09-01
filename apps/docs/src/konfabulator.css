@@ -581,7 +581,7 @@ body {
     to bottom,
     transparent 0,
     #000 var(--fade),
-    #000 calc(100% - var(--fade)),
+    #000 calc(100% - var(--fade-bottom, var(--fade))),
     transparent 100%
   );
 }
@@ -594,14 +594,14 @@ body {
   }
   @keyframes cfg-scroll-fade {
     0% {
-      mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - var(--fade-bottom, var(--fade))), transparent 100%);
     }
     8%, 92% {
       mask-image: linear-gradient(
         to bottom,
         transparent 0,
         #000 var(--fade),
-        #000 calc(100% - var(--fade)),
+        #000 calc(100% - var(--fade-bottom, var(--fade))),
         transparent 100%
       );
     }
@@ -930,7 +930,7 @@ body {
   mask-image: linear-gradient(
     to bottom,
     #000 0,
-    #000 calc(100% - var(--fade)),
+    #000 calc(100% - var(--fade-bottom, var(--fade))),
     transparent 100%
   );
 }
@@ -1681,6 +1681,7 @@ body {
   align-items: center;
   gap: 4px;
   margin-block-start: 2px;
+  min-block-size: 24px; /* 2.5.8 floor */
   padding: 3px 10px;
   border: 0;
   border-radius: 999px;
@@ -1731,4 +1732,17 @@ body {
 
 @media (max-width: 560px) {
   .cfg__layout { --cfg-chrome: 265px; }
+}
+
+/* The rail's counting cue, overlaying the flow's floor: sticky above the
+   fade band, never part of the height it measures. */
+.cfg__rail-more--overlay {
+  position: sticky;
+  inset-block-end: 2px;
+  z-index: 3;
+  margin: -30px auto 4px;
+  inline-size: fit-content;
+  display: flex;
+  background-color: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-1);
 }
