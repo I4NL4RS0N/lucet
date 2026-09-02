@@ -211,13 +211,14 @@ html { background-color: var(--lucet-background); }
 .cfg__more-panel {
   /* Top layer (popover): no z-index can outrank it and none is
      carried. inset/margin/border reset the UA popover defaults; the
-     open placement is set inline from the trigger's rect. Its own
-     view-transition-name keeps the flip's exemption now that it no
-     longer lives inside the cluster's snapshot. */
+     open placement is set inline from the trigger's rect. NO
+     view-transition-name here: naming a top-layer element inverted
+     its paint order in real Chrome builds (page text rendered
+     through the panel). The flip needs no exemption for it — the
+     panel closes on the press that starts the dissolve. */
   margin: 0;
   inset: auto;
   border: 0;
-  view-transition-name: lucet-appearance-panel;
   display: grid;
   gap: 8px;
   min-inline-size: 220px;
@@ -308,8 +309,6 @@ html { background-color: var(--lucet-background); }
 .cfg__prefs { view-transition-name: lucet-appearance; }
 ::view-transition-old(lucet-appearance) { animation: none; opacity: 0; }
 ::view-transition-new(lucet-appearance) { animation: none; opacity: 1; }
-::view-transition-old(lucet-appearance-panel) { animation: none; opacity: 0; }
-::view-transition-new(lucet-appearance-panel) { animation: none; opacity: 1; }
 
 /* The control itself: `switch` treatment with a crisp pressed state —
    the dissolve begins from this press. */

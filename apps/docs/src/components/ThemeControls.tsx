@@ -257,6 +257,15 @@ export function useAppearance(fallback: {
       typeof doc.startViewTransition === 'function' &&
       !window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ) {
+      /* The More panel CLOSES on the press that flips the expression —
+         before the snapshot, so the dissolve carries no floating
+         settings object and the press is acknowledged by the instant
+         close. (A view-transition-name on the top-layer panel was the
+         previous exemption; real-Chrome builds inverted its paint
+         order and page text rendered through the panel. A menu closing
+         on selection is also just what menus do.) */
+      const panel = document.querySelector('.cfg__more-panel') as (HTMLElement & { hidePopover?: () => void; matches(s: string): boolean }) | null
+      if (panel?.matches(':popover-open')) panel.hidePopover?.()
       doc.startViewTransition(() => {
         flushSync(() => setState((prev) => ({ ...prev, ...patch })))
       })
