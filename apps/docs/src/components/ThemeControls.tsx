@@ -388,10 +388,26 @@ export function AppearancePrefs({
           ))}
         </select>
       </span>
+      {/* The material axis, promoted from the More panel (macro pass,
+          2026-09-02): the three axes the thesis names, one grammar —
+          Theme · Accent · Expression · More. A step quieter than its
+          neighbours and held at a fixed width, so Paper and Glass never
+          move the trigger beside them. The flip itself is unchanged: the
+          same onChange, the same dissolve, the same atomic switch. */}
+      <span className="cfg__pick cfg__pick--expression">
+        <select
+          aria-label="Expression"
+          value={state.expression}
+          onChange={(e) => onChange({ expression: e.target.value as Expression })}
+        >
+          <option value="paper">Paper</option>
+          <option value="glass">Glass</option>
+        </select>
+      </span>
       {/*
-       * The rest of the appearance axes — expression, greys, radius, scale,
-       * typeface — are real and audited, but four more pickers on the bar
-       * would bury the two that carry the pitch. They wait behind one word.
+       * The rest of the appearance axes — greys, radius, scale, typeface —
+       * are real and audited, but four more pickers on the bar would bury
+       * the three that carry the pitch. They wait behind one word.
        */}
       <span className="cfg__more">
         <button type="button" className="cfg__more-trigger" popoverTarget="lucet-more-panel" ref={moreTriggerRef}>
@@ -400,7 +416,6 @@ export function AppearancePrefs({
         <div id="lucet-more-panel" popover="auto" className="cfg__more-panel" ref={moreRef}>
           {(
             [
-              ['Expression', 'expression', ['paper', 'glass'], undefined],
               [
                 'Greys',
                 'neutral',

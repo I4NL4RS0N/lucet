@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
+import { Chapter } from '../components/Chapter'
 import { SiteHeader } from '../components/SiteHeader'
 
 /**
@@ -35,7 +36,7 @@ function Section({
   return (
     <section className="sec">
       <header className="sec__head">
-        <h2 className="sec__name">{name}</h2>
+        <h3 className="sec__name">{name}</h3>
         <span className="sec__note">{note}</span>
       </header>
       <div className={`stage${variant ? ` stage--${variant}` : ''}`}>{children}</div>
@@ -259,6 +260,8 @@ export function Primitives() {
           composed.
         </p>
 
+        <Chapter name="Actions" note="Buttons, links, and the keys that drive them." />
+
         <Section name="Button" note="variants, sizes, and every state">
           <Spec label="Variants">
             <div className="row">
@@ -328,6 +331,24 @@ export function Primitives() {
             </div>
           </Spec>
         </Section>
+
+        <Section name="Link" note="underlined from the start, not on hover">
+          <Spec label="In prose">
+            <p style={{ maxInlineSize: 380, margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+              Answered from three sources, including{' '}
+              <a className="link" href="#0">the revised specification</a> and{' '}
+              <a className="link is-hover" href="#0">a summary from Tuesday</a>.
+            </p>
+          </Spec>
+        </Section>
+
+        <Section name="Keyboard" note="a raised cap on the control surface, sized to its text">
+          <div className="row">
+            <kbd>⌘</kbd><kbd>⇧</kbd><kbd>⏎</kbd><kbd>Esc</kbd><kbd>Tab</kbd>
+          </div>
+        </Section>
+
+        <Chapter name="Fields" note="Where text goes in: one line, many lines, and a fixed list." />
 
         <Section name="Input" note="a field is inset where a control is raised">
           <Spec label="All states">
@@ -406,6 +427,8 @@ export function Primitives() {
             </div>
           </Spec>
         </Section>
+
+        <Chapter name="Selection" note="One of several, any of several, on or off." />
 
         <Section name="Checkbox" note="the tick is drawn, not a glyph">
           <Spec label="All states, checked">
@@ -547,81 +570,14 @@ export function Primitives() {
           </Spec>
         </Section>
 
+        <Chapter name="Status and feedback" note="What the interface says about itself while it works, and after." />
+
         <Section name="Badge" note="every tone pairs its colour with a glyph">
           <span className="badge badge--ok">{StatusGlyph.ok}Operational</span>
           <span className="badge badge--warn">{StatusGlyph.warn}Degraded</span>
           <span className="badge badge--bad">{StatusGlyph.bad}Down</span>
           <span className="badge badge--info">{StatusGlyph.info}Scheduled</span>
           <span className="badge">Draft</span>
-        </Section>
-
-        <Section name="Avatar" note="solid, initials, stacked — and a button variant with states">
-          <Spec label="Identity — inert on purpose">
-            <div className="row">
-              <span className="avatar avatar--solid">AI</span>
-              <span className="avatar">AB</span>
-              <span className="avatar avatar--lg">AB</span>
-              <span className="avatar-stack">
-                <span className="avatar">AB</span>
-                <span className="avatar">CD</span>
-                <span className="avatar">EF</span>
-              </span>
-            </div>
-          </Spec>
-          <Spec label="Interactive, all states">
-            <StateRow
-              render={(cls) => (
-                <button className={`avatar ${cls}`} disabled={cls === 'is-disabled'}>
-                  AB
-                </button>
-              )}
-            />
-          </Spec>
-        </Section>
-
-        <Section name="Tooltip" note="hover or focus the control — these are real">
-          <Spec label="On hover, and on keyboard focus">
-            <div className="row">
-              <span className="tipwrap">
-                <button className="btn btn--icon" aria-label="Copy">{Glyph.copy}</button>
-                <span className="tip" role="tooltip">Copy to clipboard</span>
-              </span>
-              <span className="tipwrap">
-                <button className="btn">Send</button>
-                <span className="tip" role="tooltip">⌘ ⏎</span>
-              </span>
-            </div>
-          </Spec>
-          <Spec label="Shown">
-            <span className="tipwrap is-hover" style={{ marginBlockStart: 26 }}>
-              <button className="btn btn--icon" aria-label="Copy">{Glyph.copy}</button>
-              <span className="tip" role="tooltip">Copy to clipboard</span>
-            </span>
-          </Spec>
-        </Section>
-
-        <Section name="Menu" note="hover, shortcut hints, a separator, a destructive row">
-          <div className="menu">
-            <div className="menu__item is-hover">Rename<kbd>⌘R</kbd></div>
-            <div className="menu__item">Duplicate<kbd>⌘D</kbd></div>
-            <div className="menu__item">Export</div>
-            <div className="menu__sep" />
-            <div className="menu__item menu__item--danger">Delete<kbd>⌫</kbd></div>
-          </div>
-        </Section>
-
-        <Section name="Dialog" note="a dialog sits above every other surface and takes the deepest shadow">
-          <div className="dialog">
-            <h3 className="dialog__title">Discard this draft?</h3>
-            <p className="dialog__body">
-              The response was interrupted before it finished. What arrived is
-              still here, and discarding it cannot be undone.
-            </p>
-            <div className="dialog__foot">
-              <button className="btn btn--ghost">Keep</button>
-              <button className="btn btn--danger">Discard</button>
-            </div>
-          </div>
         </Section>
 
         <Section name="Progress" note="determinate, complete, and unknown" variant="cols">
@@ -645,31 +601,6 @@ export function Primitives() {
           </Spec>
         </Section>
 
-        <Section name="Separator" note="a content rule, not a chrome border — punctuation survives both expressions; chrome lines zero in Glass">
-          <Spec label="Default">
-            <div style={{ inlineSize: 260 }}><hr className="sep" /></div>
-          </Spec>
-          <Spec label="Strong">
-            <div style={{ inlineSize: 260 }}><hr className="sep sep--strong" /></div>
-          </Spec>
-        </Section>
-
-        <Section name="Link" note="underlined from the start, not on hover">
-          <Spec label="In prose">
-            <p style={{ maxInlineSize: 380, margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
-              Answered from three sources, including{' '}
-              <a className="link" href="#0">the revised specification</a> and{' '}
-              <a className="link is-hover" href="#0">a summary from Tuesday</a>.
-            </p>
-          </Spec>
-        </Section>
-
-        <Section name="Keyboard" note="a raised cap on the control surface, sized to its text">
-          <div className="row">
-            <kbd>⌘</kbd><kbd>⇧</kbd><kbd>⏎</kbd><kbd>Esc</kbd><kbd>Tab</kbd>
-          </div>
-        </Section>
-
         <Section name="Spinner" note="unknown duration, no false progress">
           <div className="row">
             <span className="spinner" />
@@ -686,65 +617,6 @@ export function Primitives() {
               <span className="skel skel--text" />
               <span className="skel skel--text" style={{ inlineSize: '80%' }} />
             </div>
-          </div>
-        </Section>
-
-        <Section name="Disclosure" note="what reasoning and tool calls are built on">
-          <div style={{ display: 'grid', gap: 10, inlineSize: 420 }}>
-            <div className="disc">
-              <button className="disc__head" aria-expanded="false">
-                <span className="caret" />
-                Thought for 4 seconds
-                <span className="disc__meta">collapsed</span>
-              </button>
-            </div>
-            <div className="disc">
-              <button className="disc__head is-hover" aria-expanded="true">
-                <span className="caret" />
-                Searched 3 documents
-                <span className="disc__meta">2 of 3 returned</span>
-              </button>
-              <div className="disc__body">
-                Two sources came back and the third timed out, so this is not the
-                full picture.
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section name="Code" note="quoted material, so the surface is sunken">
-          <div style={{ display: 'grid', gap: 12, inlineSize: 460 }}>
-            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
-              Inline, as in <code>npm install</code>, sits in running text.
-            </p>
-            <div className="codeblock">
-              <div className="codeblock__bar">
-                bash
-                <button className="btn btn--sm btn--lead">{Glyph.copy} Copy</button>
-              </div>
-              <pre><code>{`npm install lucet-core lucet-react`}</code></pre>
-            </div>
-          </div>
-        </Section>
-
-        <Section name="Prose" note="a streamed answer is this — the most important surface here">
-          <div className="prose">
-            <p>
-              All three describe the same change, but only the last one gives a
-              date for it. Where the earlier two disagree with it, they are{' '}
-              <strong>older rather than wrong</strong>.
-            </p>
-            <h3>What changed</h3>
-            <ul>
-              <li>The review step now runs after approval, not before it.</li>
-              <li>Two fields were merged into one.</li>
-              <li>
-                The old <code>archive</code> flag is gone.
-              </li>
-            </ul>
-            <blockquote>
-              Anything filed before Tuesday follows the previous order.
-            </blockquote>
           </div>
         </Section>
 
@@ -820,6 +692,146 @@ export function Primitives() {
           </Spec>
         </Section>
 
+        <Chapter name="Overlays and disclosure" note="Surfaces that appear above the page, and content that opens in place." />
+
+        <Section name="Tooltip" note="hover or focus the control — these are real">
+          <Spec label="On hover, and on keyboard focus">
+            <div className="row">
+              <span className="tipwrap">
+                <button className="btn btn--icon" aria-label="Copy">{Glyph.copy}</button>
+                <span className="tip" role="tooltip">Copy to clipboard</span>
+              </span>
+              <span className="tipwrap">
+                <button className="btn">Send</button>
+                <span className="tip" role="tooltip">⌘ ⏎</span>
+              </span>
+            </div>
+          </Spec>
+          <Spec label="Shown">
+            <span className="tipwrap is-hover" style={{ marginBlockStart: 26 }}>
+              <button className="btn btn--icon" aria-label="Copy">{Glyph.copy}</button>
+              <span className="tip" role="tooltip">Copy to clipboard</span>
+            </span>
+          </Spec>
+        </Section>
+
+        <Section name="Menu" note="hover, shortcut hints, a separator, a destructive row">
+          <div className="menu">
+            <div className="menu__item is-hover">Rename<kbd>⌘R</kbd></div>
+            <div className="menu__item">Duplicate<kbd>⌘D</kbd></div>
+            <div className="menu__item">Export</div>
+            <div className="menu__sep" />
+            <div className="menu__item menu__item--danger">Delete<kbd>⌫</kbd></div>
+          </div>
+        </Section>
+
+        <Section name="Dialog" note="a dialog sits above every other surface and takes the deepest shadow">
+          <div className="dialog">
+            <h3 className="dialog__title">Discard this draft?</h3>
+            <p className="dialog__body">
+              The response was interrupted before it finished. What arrived is
+              still here, and discarding it cannot be undone.
+            </p>
+            <div className="dialog__foot">
+              <button className="btn btn--ghost">Keep</button>
+              <button className="btn btn--danger">Discard</button>
+            </div>
+          </div>
+        </Section>
+
+        <Section name="Disclosure" note="what reasoning and tool calls are built on">
+          <div style={{ display: 'grid', gap: 10, inlineSize: 420 }}>
+            <div className="disc">
+              <button className="disc__head" aria-expanded="false">
+                <span className="caret" />
+                Thought for 4 seconds
+                <span className="disc__meta">collapsed</span>
+              </button>
+            </div>
+            <div className="disc">
+              <button className="disc__head is-hover" aria-expanded="true">
+                <span className="caret" />
+                Searched 3 documents
+                <span className="disc__meta">2 of 3 returned</span>
+              </button>
+              <div className="disc__body">
+                Two sources came back and the third timed out, so this is not the
+                full picture.
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Chapter name="Content and data" note="The material a conversation is made of: people, prose, code, files, and tables." />
+
+        <Section name="Avatar" note="solid, initials, stacked — and a button variant with states">
+          <Spec label="Identity — inert on purpose">
+            <div className="row">
+              <span className="avatar avatar--solid">AI</span>
+              <span className="avatar">AB</span>
+              <span className="avatar avatar--lg">AB</span>
+              <span className="avatar-stack">
+                <span className="avatar">AB</span>
+                <span className="avatar">CD</span>
+                <span className="avatar">EF</span>
+              </span>
+            </div>
+          </Spec>
+          <Spec label="Interactive, all states">
+            <StateRow
+              render={(cls) => (
+                <button className={`avatar ${cls}`} disabled={cls === 'is-disabled'}>
+                  AB
+                </button>
+              )}
+            />
+          </Spec>
+        </Section>
+
+        <Section name="Separator" note="a content rule, not a chrome border — punctuation survives both expressions; chrome lines zero in Glass">
+          <Spec label="Default">
+            <div style={{ inlineSize: 260 }}><hr className="sep" /></div>
+          </Spec>
+          <Spec label="Strong">
+            <div style={{ inlineSize: 260 }}><hr className="sep sep--strong" /></div>
+          </Spec>
+        </Section>
+
+        <Section name="Code" note="quoted material, so the surface is sunken">
+          <div style={{ display: 'grid', gap: 12, inlineSize: 460 }}>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--ink-2)' }}>
+              Inline, as in <code>npm install</code>, sits in running text.
+            </p>
+            <div className="codeblock">
+              <div className="codeblock__bar">
+                bash
+                <button className="btn btn--sm btn--lead">{Glyph.copy} Copy</button>
+              </div>
+              <pre><code>{`npm install lucet-core lucet-react`}</code></pre>
+            </div>
+          </div>
+        </Section>
+
+        <Section name="Prose" note="a streamed answer is this — the most important surface here">
+          <div className="prose">
+            <p>
+              All three describe the same change, but only the last one gives a
+              date for it. Where the earlier two disagree with it, they are{' '}
+              <strong>older rather than wrong</strong>.
+            </p>
+            <h3>What changed</h3>
+            <ul>
+              <li>The review step now runs after approval, not before it.</li>
+              <li>Two fields were merged into one.</li>
+              <li>
+                The old <code>archive</code> flag is gone.
+              </li>
+            </ul>
+            <blockquote>
+              Anything filed before Tuesday follows the previous order.
+            </blockquote>
+          </div>
+        </Section>
 
         <Section name="Media" note="the outline is pure black or white, never tinted">
           <Spec label="Square, wide, small">

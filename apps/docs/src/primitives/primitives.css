@@ -47,6 +47,21 @@
   --inset-deep: var(--lucet-inset-deep);
   --cast-1: var(--lucet-shade-1);
   --cast-2: var(--lucet-shade-2);
+
+  /* THE PAGE RHYTHM, NAMED (macro pass, 2026-09-02): the gaps the
+     aesthetic pass tuned, as site-level tokens — naming, not retuning.
+     The one new value is the step into a chapter. The reference page
+     sets its own, tighter values below. */
+  --cfg-gap-opening: 32px;
+  --cfg-gap-chapter: 160px;
+  --cfg-gap-hero: 128px;
+  --cfg-gap-feature: 96px;
+  --cfg-gap-supporting: 72px;
+  --cfg-gap-heading: 22px;
+  /* The measured minimum a specimen cell may shrink to before its text
+     compresses: the truncation grammar's floor, the width the sources
+     block is proven at. Grids break from this, never from a device. */
+  --cfg-cell-min: 354px;
   --cast-3: var(--lucet-shade-3);
   --lit: var(--lucet-edge-top);
   --lit-strong: var(--lucet-edge-top);
@@ -209,17 +224,23 @@ body {
 }
 
 
-.sec { margin-block-start: 64px; }
+.sec { margin-block-start: var(--cfg-gap-feature); }
 
+/* ONE SECTION-HEADING PATTERN, site-level (macro pass): title and
+   proposition share a baseline at width and stack with a fixed gap when
+   narrow; the proposition's measure is capped and wraps without
+   orphans; the title balances. Specimen-internal type is untouched. */
 .sec__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: calc(12px * var(--lucet-density, 1));
-  margin-block-end: calc(16px * var(--lucet-density, 1));
+  column-gap: calc(12px * var(--lucet-density, 1));
+  row-gap: 6px;
+  margin-block-end: calc(var(--cfg-gap-heading) * var(--lucet-density, 1));
 }
 
-.sec__name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
-.sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); }
+.sec__name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); max-inline-size: 44ch; }
 
 /*
  * The stage. Every specimen sits on one, and the stage is a step DOWN from the
@@ -2050,12 +2071,12 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 
 .prim--comp .prim__main { max-inline-size: 1140px; }
 
-.prim--comp .sec { margin-block-start: 96px; }
-.prim--comp .sec__head { margin-block-end: 22px; }
+.prim--comp .sec { margin-block-start: var(--cfg-gap-feature); }
+.prim--comp .sec__head { margin-block-end: var(--cfg-gap-heading); }
 .prim--comp .sec__name { font-size: 17px; letter-spacing: -0.014em; }
 
 /* Tier 1 — the hero floats. */
-.prim--comp .sec--hero { margin-block-start: 48px; }
+.prim--comp .sec--hero { margin-block-start: var(--cfg-gap-opening); }
 .prim--comp .hero-app { max-inline-size: 720px; padding-block: 8px 16px; }
 
 /* Tier 2 — the rail. The .stage well is reset in every theme (the
@@ -2107,8 +2128,13 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   gap: 30px 36px;
   align-items: start;
 }
-.prim--comp .stage--duet { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.prim--comp .stage--trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Columns break from the cell's MEASURED minimum (--cfg-cell-min), never
+   from a device: three to two before text compresses, two to one at a
+   narrow desktop, one on a phone — the same rule at every width. */
+.prim--comp .stage--duet,
+.prim--comp .stage--trio {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--cfg-cell-min)), 1fr));
+}
 .prim--comp .stage--duet .spec__demo,
 .prim--comp .stage--trio .spec__demo { max-inline-size: none; }
 
@@ -2136,11 +2162,12 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   border-inline-start: 1px solid var(--lucet-line);
 }
 
-/* The narrow-page collapse: rails and bands stack; trios step down
-   through two columns; duets give up at the same fold the stage
-   grammar always used. Nothing may clip — the overflow rule. */
-@media (max-width: 1080px) {
-  .prim--comp .stage--trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* The narrow-page collapse for the two-column compositions, measured
+   from the composition itself: the main column is the query container,
+   and a rail or band stacks when 640 + 48 + 220 no longer fits. Nothing
+   may clip — the overflow rule. */
+.prim__main { container-type: inline-size; }
+@container (max-width: 907px) {
   .prim--comp .stage--rail > .spec,
   .prim--comp .spec--band {
     grid-template-columns: minmax(0, 1fr);
@@ -2152,10 +2179,6 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
     border-inline-start: 0;
     padding-inline-start: 0;
   }
-}
-@media (max-width: 860px) {
-  .prim--comp .stage--duet,
-  .prim--comp .stage--trio { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Specimen labels drop the caps here: thirty specimens of shouting
@@ -2201,9 +2224,9 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
  * sections of the same component family.
  * ============================================================ */
 
-.prim--comp .sec--kin { margin-block-start: 72px; }
-.prim--comp .sec--hero + .sec { margin-block-start: 128px; }
-.prim--comp .sec--hero { margin-block-start: 32px; }
+.prim--comp .sec--kin { margin-block-start: var(--cfg-gap-supporting); }
+.prim--comp .sec--hero + .sec { margin-block-start: var(--cfg-gap-hero); }
+.prim--comp .sec--hero { margin-block-start: var(--cfg-gap-opening); }
 
 /* The crop link: the specimen is a crop, and says where the whole is. */
 .prim--comp .hero-app__more { margin: 14px 0 0; font-size: 13px; }
@@ -2227,12 +2250,17 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   padding: 4px 0 0;
 }
 
-/* Section names carry the editorial register: balanced when they wrap. */
-.prim--comp .sec__name { text-wrap: balance; }
-
 /* The reference page's rhythm tightens without art direction: the
-   systematic grid is the point, the dead air between rows was not. */
-.prim--ref .sec { margin-block-start: 56px; }
+   systematic grid is the point, the dead air between rows was not. Its
+   own values for the named gaps; the chapter step is twice its section
+   step. */
+.prim--ref {
+  --cfg-gap-opening: 56px;
+  --cfg-gap-chapter: 112px;
+  --cfg-gap-feature: 56px;
+  --cfg-gap-supporting: 56px;
+  --cfg-gap-heading: 16px;
+}
 .prim--ref .stage { padding: calc(28px * var(--lucet-density, 1)); }
 
 /* The trios are the page's controlled full-width moments (§5): three
@@ -2283,7 +2311,39 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
   padding-inline-start: 16px;
   border-inline-start: 1px solid var(--lucet-line);
 }
-@media (max-width: 1080px) {
+@container (max-width: 1007px) {
   .prim--comp .hero-wrap { grid-template-columns: minmax(0, 1fr); }
   .prim--comp .hero-wrap .spec__note { margin-block-end: 0; border-inline-start: 0; padding-inline-start: 0; }
 }
+
+/* ============================================================
+ * CHAPTERS (macro pass, 2026-09-02). Both long pages read in named
+ * chapters: a quiet label and one plain proposition, visually below
+ * the section headings they group, the break carried by spacing alone
+ * — no divider, no sticky nav, no jump index. Named, never numbered.
+ * The label→first-section step is half the supporting gap; the first
+ * chapter follows the lede at the page's opening interval.
+ * ============================================================ */
+.prim .chapter {
+  display: grid;
+  gap: 6px;
+  margin-block-start: var(--cfg-gap-chapter);
+}
+.prim .chapter__name {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.prim .chapter__note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-inline-size: 44ch;
+  text-wrap: pretty;
+}
+.prim .chapter + .sec { margin-block-start: calc(var(--cfg-gap-supporting) / 2); }
+.prim .prim__lede + .chapter { margin-block-start: var(--cfg-gap-opening); }

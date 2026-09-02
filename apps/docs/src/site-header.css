@@ -47,17 +47,15 @@ html { background-color: var(--lucet-background); }
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
-/* The tile floats: the lithos shadow grammar — hairline separator, contact,
-   mid, ambient — in one stack, so the mark reads as an object on both page
-   grounds. */
+/* The tile casts nothing (ruling, 2026-09-02). The header is chrome,
+   chrome is pinned to Paper, and Paper does not cast: the always-dark
+   plate separates by value on both header grounds. Only if its edge
+   went soft on the light header at 200% may Paper's own hairline
+   assist — nothing else. Checked at 200%, both grounds: it did not. */
 .cfg__logo {
   inline-size: 26px;
   block-size: 26px;
   border-radius: 7px;
-  box-shadow:
-    0 0 0 0.5px oklch(0 0 0 / 0.55),
-    0 1px 1px oklch(0 0 0 / 0.35),
-    0 4px 10px -3px oklch(0 0 0 / 0.35);
 }
 /* The docs chrome's display voice: Instrument Sans, loaded eagerly by
    every shell. The components and the mock app stay on the visitor's
@@ -178,6 +176,16 @@ html { background-color: var(--lucet-background); }
 .cfg__prefs select:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
+}
+/* The material axis sits with Theme and Accent (macro pass, 2026-09-02)
+   — the three axes the thesis names, one grammar — a step quieter in
+   ink, and at a FIXED width: content sizing would let "Paper" and
+   "Glass" move the More trigger on every flip. Hover and focus are the
+   shared rules above. */
+.cfg__pick--expression select {
+  field-sizing: fixed;
+  inline-size: 74px;
+  color: var(--lucet-muted-foreground);
 }
 
 /* The rest of the appearance axes, behind one word. */

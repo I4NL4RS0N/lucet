@@ -3,6 +3,7 @@ import { createInitialState, createLucet, reduce } from 'lucet-core'
 import type { LucetEvent, ThreadState } from 'lucet-core'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
 import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
+import { Chapter } from '../components/Chapter'
 import { SiteHeader } from '../components/SiteHeader'
 import { OPENER_EVENTS } from '../opener'
 
@@ -669,7 +670,7 @@ function Section({
   return (
     <section className={variant ? `sec sec--${variant}` : 'sec'}>
       <header className="sec__head">
-        <h2 className="sec__name">{name}</h2>
+        <h3 className="sec__name">{name}</h3>
         <span className="sec__note">{note}</span>
       </header>
       {children}
@@ -783,6 +784,8 @@ export function ComponentsStage() {
           working surface beside the primitives.
         </p>
 
+        <Chapter name="Live system" note="The application on the mock runtime, and the receipt that reports what a tool did." />
+
         <Section variant="hero" name="The app, live" note="try it — type, attach, send, watch it answer">
           <div className="hero-wrap">
             <div className="hero-app">
@@ -812,6 +815,8 @@ export function ComponentsStage() {
             ))}
           </div>
         </Section>
+
+        <Chapter name="Compose" note="What a person sends, and what the field knows before they send it: scope, price, whose turn it is." />
 
         <Section name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
           <div className="stage stage--duet">
@@ -917,36 +922,6 @@ export function ComponentsStage() {
           </div>
         </Section>
 
-        <Section name="Thread — every ending" note="a response is never simply loading or done">
-          <div className="stage stage--rail">
-            {THREAD_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
-              </Example>
-            ))}
-          </div>
-        </Section>
-
-        <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
-          <div className="stage stage--trio">
-            {SOURCES_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
-              </Example>
-            ))}
-          </div>
-        </Section>
-
-        <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
-          <div className="stage stage--duet">
-            {VERSIONS_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
-              </Example>
-            ))}
-          </div>
-        </Section>
-
         <Section name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
           <div className="stage stage--duet">
             <div className="spec spec--wide">
@@ -984,6 +959,38 @@ export function ComponentsStage() {
                 a way in that would fail is not offered as live.
               </p>
             </div>
+          </div>
+        </Section>
+
+        <Chapter name="Respond and recover" note="What comes back, how it can end, where it came from, and how to return to an earlier turn." />
+
+        <Section name="Thread — every ending" note="a response is never simply loading or done">
+          <div className="stage stage--rail">
+            {THREAD_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
+        <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
+          <div className="stage stage--trio">
+            {SOURCES_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
+        <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
+          <div className="stage stage--duet stage--open">
+            {VERSIONS_FIXTURES.map((f) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+              </Example>
+            ))}
           </div>
         </Section>
       </main>
