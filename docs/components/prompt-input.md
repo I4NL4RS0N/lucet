@@ -115,3 +115,17 @@ the queue, attachment failure states, and submit blockers with reasons are
 all in `lucet` core, testable without a DOM, and every transition is an
 event in a log. The component is a rendering of that contract, not the
 place where the behaviour lives.
+
+## Floating surface — stacking decision (2026-09-01)
+
+In-tree by design. The panel anchors inside the composer's own
+stacking context and always wins within the component; nothing the
+library renders can occlude it. What CAN occlude it is a host whose
+own chrome floats above the composer at a higher layer — that is the
+host's z-ladder to manage, and the honest fix on the host side is
+the top layer, not a bigger number. The docs site's chrome popovers
+use the native Popover API for exactly this reason. An opt-in
+top-layer mode for this surface (Popover API, keeping the current
+anchoring as fallback) is filed for 0.2. The states audit probes
+this surface open, in all four theme-and-expression cells, and fails
+on any occlusion.

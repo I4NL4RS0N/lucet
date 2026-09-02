@@ -173,6 +173,10 @@ body {
    the slide so tab order and AT agree with the eyes. */
 .cfg__side[data-closed] {
   position: absolute;
+  /* THE KONFABULATOR'S Z-LADDER: drawer scrim 19, drawer 20, its
+     handle 21; the exhibit app's own menus at 30 stack within the
+     frame. Site chrome that must beat all of it (the More panel)
+     lives in the top layer, not above 30. */
   z-index: 20;
   inset-block: 10px;
   inset-inline-start: 10px;

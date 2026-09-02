@@ -204,6 +204,38 @@ async function main() {
        color-scheme must agree with the theme so the browser's own
        surfaces do. Checked after every theme application so a restyled
        wrapper cannot silently reopen the seam. */
+    /* NO FLOATING SURFACE MAY LOSE A STACKING FIGHT (stacking pass):
+       open each chrome popover and library floating surface and probe
+       points inside its rect — the hit must be the surface or its
+       descendant, never page content. The regression this locks out:
+       a view-transition-name atomised the appearance cluster and let
+       thread content paint over the More panel. */
+    const checkOcclusion = async (where, surfaceSel) => {
+      const res = await page.evaluate((sel) => {
+        const el = document.querySelector(sel)
+        if (!el) return 'surface missing'
+        const r = el.getBoundingClientRect()
+        if (r.width < 8 || r.height < 8) return 'surface not open'
+        if (getComputedStyle(el).opacity === '0') return 'surface not shown'
+        /* A tip is pointer-events: none by design; hit-testing skips
+           such elements entirely, which reads as occlusion. Flip it
+           for the probe — stacking is what is being measured — and
+           restore before anyone can notice. */
+        const hadPE = el.style.pointerEvents
+        const peWasNone = getComputedStyle(el).pointerEvents === 'none'
+        if (peWasNone) el.style.pointerEvents = 'auto'
+        let bad = 0
+        for (const [fx, fy] of [[0.5, 0.15], [0.5, 0.5], [0.5, 0.85], [0.15, 0.5], [0.85, 0.5]]) {
+          const hit = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy)
+          if (!hit || !el.contains(hit)) bad++
+        }
+        if (peWasNone) el.style.pointerEvents = hadPE
+        return bad === 0 ? 'ok' : `occluded at ${bad}/5 probe points`
+      }, surfaceSel)
+      checks++
+      if (res !== 'ok') failures.push(`${where}  floating surface ${surfaceSel}: ${res}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -345,6 +377,36 @@ async function main() {
     await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
     await tagProbes(COMPONENT_PROBES)
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
+
+    /* Occlusion, all four cells on the components page: the chrome
+       popover plus every library floating surface it exhibits. */
+    for (const theme of ['dark', 'light']) {
+      for (const expression of ['paper', 'glass']) {
+        await setState(theme, 'monochrome')
+        await page.evaluate((e) => document.querySelector('.prim')?.setAttribute('data-expression', e), expression)
+        await page.waitForTimeout(60)
+        const cell = `occlusion components/${theme}/${expression}`
+        await page.click('.cfg__more-trigger')
+        await page.waitForTimeout(120)
+        await checkOcclusion(cell, '.cfg__more-panel')
+        await page.keyboard.press('Escape')
+        await page.click('.lucet-budget__button')
+        await page.waitForTimeout(120)
+        await checkOcclusion(cell, '.lucet-budget__panel')
+        await page.keyboard.press('Escape')
+        await page.click('.lucet-scope__button')
+        await page.waitForTimeout(120)
+        await checkOcclusion(cell, '.lucet-scope__panel')
+        await page.keyboard.press('Escape')
+        await page.evaluate(() => {
+          const b = document.querySelector('.lucet-tipwrap button')
+          b?.focus()
+        })
+        await page.waitForTimeout(160)
+        await checkOcclusion(cell, '.lucet-tipwrap:focus-within .lucet-tip')
+        await page.evaluate(() => document.querySelector('.prim')?.setAttribute('data-expression', 'paper'))
+      }
+    }
 
     /*
      * Menu keyboard grammar, asserted with REAL key events (the shared
@@ -694,6 +756,24 @@ async function main() {
         () => document.querySelector('.lucet-budget__button') && !document.querySelector('.lucet-thread__caret'),
         { timeout: 20000 },
       )
+
+      /* Occlusion on the KONFABULATOR — the page whose ancestor chain
+         actually lost the fight (the exemption's stacking context sat
+         beside the frame): the chrome popover and the budget panel,
+         both themes. */
+      for (const t of ['dark', 'light']) {
+        await page.evaluate((th) => document.documentElement.setAttribute('data-theme', th), t)
+        await page.waitForTimeout(60)
+        await page.click('.cfg__more-trigger')
+        await page.waitForTimeout(120)
+        await checkOcclusion(`occlusion konfabulator/${t}`, '.cfg__more-panel')
+        await page.keyboard.press('Escape')
+        await page.click('.lucet-budget__button')
+        await page.waitForTimeout(120)
+        await checkOcclusion(`occlusion konfabulator/${t}`, '.lucet-budget__panel')
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(80)
+      }
       const rest = await page.evaluate(() => {
         const chips = [...document.querySelectorAll('.lucet-budget')].filter(
           (c) => c.getBoundingClientRect().width > 0,

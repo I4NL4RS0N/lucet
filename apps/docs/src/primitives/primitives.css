@@ -132,6 +132,11 @@ body {
 .prim__bar {
   position: sticky;
   top: 0;
+  /* THE LAB'S WHOLE Z-LADDER, documented so it stays small: sticky
+     table cells sit at 1, the lab tips at 5, this chrome bar at 10.
+     Nothing on a lab page may exceed 10 — floating chrome that must
+     win every fight (the More panel) lives in the top layer instead
+     of climbing this ladder. */
   z-index: 10;
   display: flex;
   align-items: center;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { loadAppearance, saveAppearance } from '../lib/appearance'
 
@@ -317,26 +317,38 @@ export function AppearancePrefs({
   state: ThemeState
   onChange: (patch: Partial<ThemeState>) => void
 }) {
-  /* The More popover closes like a popover: click anywhere else, or
-     Escape, and it goes. A details that only closes on its own summary
-     makes the reader do the tidying. */
+  /* THE PANEL LIVES IN THE TOP LAYER (stacking pass). The appearance
+     cluster's view-transition-name — needed so the pressed control
+     answers on the flip's first frame — also forces a stacking
+     context, which atomised the cluster at z-auto and let the
+     Konfabulator's frame content paint over the open panel. A bigger
+     z-index would be the next regression; the native Popover API is
+     immune by construction: the top layer outranks every page
+     stacking context. Light dismiss and Escape come with popover=auto,
+     replacing the hand-rolled listeners this block used to hold. The
+     top layer ignores anchor positioning, so the panel is placed from
+     the trigger's rect on each open. */
+  const moreRef = useRef<HTMLDivElement | null>(null)
+  const moreTriggerRef = useRef<HTMLButtonElement | null>(null)
   useEffect(() => {
-    const closeIfOutside = (e: PointerEvent) => {
-      const more = document.querySelector('details.cfg__more[open]')
-      if (more && e.target instanceof Node && !more.contains(e.target)) {
-        more.removeAttribute('open')
-      }
+    const panel = moreRef.current
+    if (!panel) return
+    const place = () => {
+      const t = moreTriggerRef.current
+      if (!t) return
+      const r = t.getBoundingClientRect()
+      panel.style.top = `${Math.round(r.bottom + 6)}px`
+      panel.style.left = 'auto'
+      panel.style.right = `${Math.round(window.innerWidth - r.right)}px`
     }
-    const closeOnEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        document.querySelector('details.cfg__more[open]')?.removeAttribute('open')
-      }
+    const onToggle = () => {
+      if ((panel as HTMLElement & { matches(s: string): boolean }).matches(':popover-open')) place()
     }
-    document.addEventListener('pointerdown', closeIfOutside)
-    document.addEventListener('keydown', closeOnEscape)
+    panel.addEventListener('toggle', onToggle)
+    window.addEventListener('resize', place)
     return () => {
-      document.removeEventListener('pointerdown', closeIfOutside)
-      document.removeEventListener('keydown', closeOnEscape)
+      panel.removeEventListener('toggle', onToggle)
+      window.removeEventListener('resize', place)
     }
   }, [])
 
@@ -371,9 +383,11 @@ export function AppearancePrefs({
        * typeface — are real and audited, but four more pickers on the bar
        * would bury the two that carry the pitch. They wait behind one word.
        */}
-      <details className="cfg__more">
-        <summary>More</summary>
-        <div className="cfg__more-panel">
+      <span className="cfg__more">
+        <button type="button" className="cfg__more-trigger" popoverTarget="lucet-more-panel" ref={moreTriggerRef}>
+          More
+        </button>
+        <div id="lucet-more-panel" popover="auto" className="cfg__more-panel" ref={moreRef}>
           {(
             [
               ['Expression', 'expression', ['paper', 'glass'], undefined],
@@ -403,7 +417,7 @@ export function AppearancePrefs({
             </label>
           ))}
         </div>
-      </details>
+      </span>
     </div>
   )
 }

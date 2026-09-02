@@ -182,7 +182,8 @@ html { background-color: var(--lucet-background); }
 
 /* The rest of the appearance axes, behind one word. */
 .cfg__more { position: relative; }
-.cfg__more summary {
+.cfg__more summary,
+.cfg__more-trigger {
   display: inline-flex;
   align-items: center;
   min-block-size: 26px;
@@ -198,17 +199,25 @@ html { background-color: var(--lucet-background); }
     color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .cfg__more summary::-webkit-details-marker { display: none; }
-.cfg__more summary:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.cfg__more[open] summary { background-color: var(--lucet-subtle); color: var(--lucet-foreground); }
-.cfg__more summary:focus-visible {
+.cfg__more summary:hover,
+.cfg__more-trigger:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+.cfg__more[open] summary,
+.cfg__more-trigger[aria-expanded='true'] { background-color: var(--lucet-subtle); color: var(--lucet-foreground); }
+.cfg__more summary:focus-visible,
+.cfg__more-trigger:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
 .cfg__more-panel {
-  position: absolute;
-  inset-inline-end: 0;
-  inset-block-start: calc(100% + 6px);
-  z-index: 30;
+  /* Top layer (popover): no z-index can outrank it and none is
+     carried. inset/margin/border reset the UA popover defaults; the
+     open placement is set inline from the trigger's rect. Its own
+     view-transition-name keeps the flip's exemption now that it no
+     longer lives inside the cluster's snapshot. */
+  margin: 0;
+  inset: auto;
+  border: 0;
+  view-transition-name: lucet-appearance-panel;
   display: grid;
   gap: 8px;
   min-inline-size: 220px;
@@ -282,6 +291,8 @@ html { background-color: var(--lucet-background); }
 .cfg__prefs { view-transition-name: lucet-appearance; }
 ::view-transition-old(lucet-appearance) { animation: none; opacity: 0; }
 ::view-transition-new(lucet-appearance) { animation: none; opacity: 1; }
+::view-transition-old(lucet-appearance-panel) { animation: none; opacity: 0; }
+::view-transition-new(lucet-appearance-panel) { animation: none; opacity: 1; }
 
 /* The control itself: `switch` treatment with a crisp pressed state —
    the dissolve begins from this press. */
