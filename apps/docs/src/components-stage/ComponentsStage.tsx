@@ -628,8 +628,8 @@ const SCOPE_FIXTURES: readonly Fixture[] = [
     events: [{ type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' }],
   },
   {
-    label: 'The page moved underneath',
-    note: 'Navigation changed the ground; the scope followed and SAYS SO until the person acts on scope again.',
+    label: 'Scope updated after navigation',
+    note: 'The person navigated to a different page; the scope followed it and says so until they act on scope again.',
     events: [
       { type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' },
       {
