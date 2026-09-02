@@ -183,13 +183,21 @@ html { background-color: var(--lucet-background); }
 /* The rest of the appearance axes, behind one word. */
 .cfg__more { position: relative; }
 .cfg__more-trigger {
+  /* A <button> since the panel became a popover: the UA's ButtonFace
+     fill and 2px outset ring render raw the moment the radius and
+     hairline below land, so they are reset here — the same reset the
+     selects beside it carry. */
+  appearance: none;
   display: inline-flex;
   align-items: center;
   min-block-size: 26px;
   padding-inline: 9px;
+  border: 0;
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
+  background-color: transparent;
   color: var(--lucet-subtle-foreground);
+  font: inherit;
   font-size: 12.5px;
   cursor: pointer;
   transition:

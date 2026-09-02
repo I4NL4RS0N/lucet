@@ -285,6 +285,24 @@ async function main() {
       if (res !== 'ok') failures.push(`${where}  ${surfaceSel}: ${res}`)
     }
 
+    /* NATIVE CHROME LEAK: a <button> still wearing the UA's 2px outset
+       border was never reset. Chrome drops the native look the moment
+       an author styles the element, and the raw ButtonFace fill and
+       ButtonBorder ring show through — the More trigger did this after
+       its summary→button conversion. No house style uses outset/inset. */
+    const checkNativeButtons = async (where) => {
+      const leaks = await page.evaluate(() =>
+        [...document.querySelectorAll('button')]
+          .filter((b) => {
+            const cs = getComputedStyle(b)
+            return cs.display !== 'none' && /^(outset|inset)$/.test(cs.borderTopStyle)
+          })
+          .map((b) => (b.className ? `button.${String(b.className).split(' ')[0]}` : 'button')),
+      )
+      checks++
+      if (leaks.length) failures.push(`${where}  native button chrome on ${[...new Set(leaks)].join(', ')}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -307,6 +325,7 @@ async function main() {
     const sweep = async (theme, accent, probes, all = PROBES) => {
       await setState(theme, accent)
       await checkCanvas(`canvas ${theme}/${accent}`, theme)
+      await checkNativeButtons(`buttons ${theme}/${accent}`)
       await page.waitForTimeout(50)
       let found = 0
       for (let i = 0; i < all.length; i++) {
