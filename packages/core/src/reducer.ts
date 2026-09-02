@@ -48,7 +48,7 @@ export function createInitialState(
       monthlyResetAt: null,
     },
     restoredFrom: null,
-    scope: { levels: [], selectedId: null, movedNote: null },
+    scope: { levels: [], selectedId: null, movedNote: null, pending: null },
   }
 }
 
@@ -93,7 +93,16 @@ export function reduce(
           state.model.options,
           state.suggestions,
         ),
-        scope: { ...state.scope, movedNote: null },
+        /* A new thread is an act on scope: a page change held behind the
+           old draft applies now — the draft is gone with the thread. */
+        scope: state.scope.pending
+          ? {
+              levels: state.scope.pending.levels,
+              selectedId: state.scope.pending.selectedId,
+              movedNote: null,
+              pending: null,
+            }
+          : { ...state.scope, movedNote: null, pending: null },
         /* The month outlives the thread. A new conversation empties the
            window and the thread's tally, never the account's. */
         usage: {
@@ -250,7 +259,7 @@ export function reduce(
         ],
         status: 'complete',
         reason: null,
-        recovery: null,
+        recovery: null, tone: null,
         feedback: null,
         createdAt: ctx.now,
       }
@@ -293,7 +302,7 @@ export function reduce(
         parts: [],
         status: 'streaming',
         reason: null,
-        recovery: null,
+        recovery: null, tone: null,
         feedback: null,
         createdAt: ctx.now,
       }
@@ -359,6 +368,7 @@ export function reduce(
           status: event.status,
           reason: event.reason,
           recovery: event.recovery ?? null,
+          tone: event.tone ?? null,
         })),
       }
 
@@ -374,7 +384,7 @@ export function reduce(
           ...message,
           status: 'streaming',
           reason: null,
-          recovery: null,
+          recovery: null, tone: null,
         })),
       }
 
@@ -431,20 +441,49 @@ export function reduce(
     case 'scope/configured':
       return {
         ...state,
-        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null },
+        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null, pending: null },
       }
 
     case 'scope/changed':
       return {
         ...state,
-        scope: { ...state.scope, selectedId: event.levelId, movedNote: null },
+        scope: { ...state.scope, selectedId: event.levelId, movedNote: null, pending: null },
       }
 
+    /* THE SCOPE-FREEZE RULE (round 05 P2). With nothing typed, navigation
+       may update the scope, and the note says so. With a draft in the
+       field the words were written against a page, and swapping the page
+       under them is a silent change of meaning — so the move is HELD until
+       the person chooses: Use new page, or Keep previous page. */
     case 'scope/moved':
-      return {
-        ...state,
-        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note },
-      }
+      return state.composer.text.trim() !== ''
+        ? {
+            ...state,
+            scope: {
+              ...state.scope,
+              pending: { levels: event.levels, selectedId: event.selectedId, note: event.note },
+            },
+          }
+        : {
+            ...state,
+            scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null },
+          }
+
+    case 'scope/updateAccepted':
+      return state.scope.pending
+        ? {
+            ...state,
+            scope: {
+              levels: state.scope.pending.levels,
+              selectedId: state.scope.pending.selectedId,
+              movedNote: state.scope.pending.note,
+              pending: null,
+            },
+          }
+        : state
+
+    case 'scope/updateDeclined':
+      return { ...state, scope: { ...state.scope, pending: null } }
 
     case 'source/changed':
       return {

@@ -286,16 +286,61 @@ describe('scope control', () => {
     expect(lucet.getState().turns).toHaveLength(0)
   })
 
-  it('the page moves AFTER settle: the ladder follows and the note says so', async () => {
+  it('the page moves AFTER settle: with nothing typed the ladder follows and says so; with a draft the move is held', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await lucet.trigger('scope-moved')
-    const { scope, turns } = lucet.getState()
+    const { scope, turns, composer } = lucet.getState()
     expect(turns[0]!.response?.status).toBe('complete')
+    /* The first move found an empty field: it applied, and said so. */
     expect(scope.movedNote).toContain('Reports review')
     expect(scope.levels[0]?.summary).toContain('Reports review')
-    /* Acting on scope settles the note. */
+    /* The second found a draft: HELD, ladder unchanged, the choice open. */
+    expect(composer.text).not.toBe('')
+    expect(scope.pending?.note).toContain('Vendor call')
+    expect(scope.pending?.levels[0]?.summary).toContain('Vendor call')
+    /* Acting on scope settles the note and the held move alike. */
     lucet.store.dispatch({ type: 'scope/changed', levelId: 'page' })
     expect(lucet.getState().scope.movedNote).toBeNull()
+    expect(lucet.getState().scope.pending).toBeNull()
+    expect(lucet.getState().scope.levels[0]?.summary).toContain('Reports review')
+  })
+
+  it('Use new page applies the held move; Keep previous page drops it; a new thread applies it', async () => {
+    const run = async () => {
+      const l = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+      await l.trigger('scope-moved')
+      return l
+    }
+    const accepted = await run()
+    accepted.store.dispatch({ type: 'scope/updateAccepted' })
+    expect(accepted.getState().scope.pending).toBeNull()
+    expect(accepted.getState().scope.levels[0]?.summary).toContain('Vendor call')
+    expect(accepted.getState().scope.movedNote).toContain('Vendor call')
+    expect(describeEvent({ type: 'scope/updateAccepted' })).toBe('Scope updated to the new page')
+    const declined = await run()
+    declined.store.dispatch({ type: 'scope/updateDeclined' })
+    expect(declined.getState().scope.pending).toBeNull()
+    expect(declined.getState().scope.levels[0]?.summary).toContain('Reports review')
+    expect(declined.getState().composer.text).not.toBe('')
+    expect(describeEvent({ type: 'scope/updateDeclined' })).toBe('Scope kept on the previous page')
+    const fresh = await run()
+    fresh.reset()
+    expect(fresh.getState().scope.pending).toBeNull()
+    expect(fresh.getState().scope.levels[0]?.summary).toContain('Vendor call')
+    expect(fresh.getState().scope.movedNote).toBeNull()
+  })
+
+  it('an empty field never holds: the same move applies at once, and only a draft holds the next', () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    const levels = [{ id: 'page', label: 'This page', summary: 'Somewhere else', itemCount: 1 }]
+    lucet.store.dispatch({ type: 'scope/moved', levels, selectedId: 'page', note: 'Moved.' })
+    expect(lucet.getState().scope.pending).toBeNull()
+    expect(lucet.getState().scope.levels[0]?.summary).toBe('Somewhere else')
+    lucet.store.dispatch({ type: 'composer/changed', text: 'a draft' })
+    lucet.store.dispatch({ type: 'scope/moved', levels: [{ ...levels[0]!, summary: 'A third page' }], selectedId: 'page', note: 'Moved again.' })
+    expect(lucet.getState().scope.levels[0]?.summary).toBe('Somewhere else')
+    expect(lucet.getState().scope.pending?.levels[0]?.summary).toBe('A third page')
+    expect(describeEvent({ type: 'scope/moved', levels, selectedId: 'page', note: 'x' })).toBe('The page changed under the scope')
   })
 })
 
@@ -586,7 +631,7 @@ describe('every ending gets its own exit (round 05, P1)', () => {
     expect(last(lucet).response!.recovery?.label).toBe('Check sources')
     await lucet.recover(last(lucet).id)
     expect(lucet.getState().turns).toHaveLength(1)
-    expect(last(lucet).response!.parts.map((p) => p.kind)).toEqual(['text', 'tool', 'sources', 'text'])
+    expect(last(lucet).response!.parts.map((p) => p.kind)).toEqual(['notice', 'text', 'tool', 'sources', 'text'])
     expect(last(lucet).response!.status).toBe('complete')
   })
 
@@ -894,5 +939,36 @@ describe('the hold at the threshold, and staged receipts (round 06)', () => {
     expect(lucet.getState().turns).toHaveLength(0)
     expect(pending()).toBe(0)
     expect(lucet.inspect().running).toBe(false)
+  })
+})
+
+describe('language, the scope-freeze rule, metadata, severity (round 05, P2)', () => {
+  const fresh = () => createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+
+  it('a rate limit ends in caution: failed as status, caution as tone; an outage keeps the red', async () => {
+    const lucet = fresh()
+    await lucet.trigger('rate-limit')
+    const limited = lucet.getState().turns[0]!.response!
+    expect(limited.status).toBe('failed')
+    expect(limited.tone).toBe('caution')
+    await lucet.trigger('service-down')
+    const outage = lucet.getState().turns[1]!.response!
+    expect(outage.status).toBe('failed')
+    expect(outage.tone).toBeNull()
+  })
+
+  it('the uncertain answer carries one quiet word before it: Unverified, neutral, no percentage', async () => {
+    const lucet = fresh()
+    await lucet.trigger('low-confidence')
+    const parts = lucet.getState().turns[0]!.response!.parts
+    expect(parts[0]).toMatchObject({ kind: 'notice', state: 'uncertain', tone: 'neutral', label: 'Unverified', text: '' })
+    expect(parts[1]?.kind).toBe('text')
+    expect(parts.some((p) => p.kind === 'text' && /%/.test(p.text))).toBe(false)
+  })
+
+  it('the rail speaks the new names', () => {
+    const lucet = fresh()
+    expect(lucet.triggers.get('scope-ladder')?.label).toBe('Use the current page as context')
+    expect(lucet.triggers.get('scope-moved')?.label).toBe('Scope updates after navigation')
   })
 })

@@ -18,6 +18,7 @@ import type {
   ScopeLevel,
   RecoveryVerb,
   Source,
+  NoticeTone,
 } from './types.js'
 
 export type LucetEvent =
@@ -75,6 +76,8 @@ export type LucetEvent =
       reason: string | null
       /** The state's own exit, if the runtime offers one (round 05, P1). */
       recovery?: RecoveryVerb | null
+      /** A tone apart from the status's own (round 05 P2): a rate limit fails as caution. */
+      tone?: NoticeTone | null
     }
   /** A settled response continues: parts append to it from here, and it
    * settles again. The bounded form of "continue" — one event, one reducer
@@ -129,6 +132,10 @@ export type LucetEvent =
       selectedId: string | null
       note: string
     }
+  /** The held move applied: the person chose the new page (round 05 P2). */
+  | { type: 'scope/updateAccepted' }
+  /** The held move dropped: the person kept the previous page. */
+  | { type: 'scope/updateDeclined' }
   | {
       /**
        * A cited source's condition changed AFTER the response settled —
@@ -230,7 +237,11 @@ export function describeEvent(event: LucetEvent): string {
     case 'scope/changed':
       return 'Scope changed'
     case 'scope/moved':
-      return 'The page moved — scope followed, and said so'
+      return 'The page changed under the scope'
+    case 'scope/updateAccepted':
+      return 'Scope updated to the new page'
+    case 'scope/updateDeclined':
+      return 'Scope kept on the previous page'
     case 'source/changed':
       return event.status === 'gone'
         ? 'A cited source is no longer available'

@@ -15,6 +15,9 @@ import { useMenuGrammar } from '../menu-grammar.js'
  *    moving underneath. When navigation reconfigures the ladder, the
  *    selection follows and the moved note renders beside the control
  *    until the person acts on scope — silent following is guessing.
+ *    With a draft in the field the move is HELD instead (the reducer's
+ *    scope-freeze rule, round 05 P2) and the control asks: Use new page,
+ *    or Keep previous page.
  * 4. THE TOGGLE IS THE CONFIG. No levels, no control. Hosts without a
  *    scope feature render nothing.
  * 5. Keyboard grammar via the shared disclosure-menu hook: roving
@@ -26,10 +29,12 @@ import { useMenuGrammar } from '../menu-grammar.js'
 export interface ScopeControlProps {
   scope: ScopeState
   onChange: (levelId: string) => void
+  /** The held page change: true takes the new page, false keeps the previous one. */
+  onUpdate?: ((useNewPage: boolean) => void) | undefined
   disabled?: boolean | undefined
 }
 
-export function ScopeControl({ scope, onChange, disabled }: ScopeControlProps) {
+export function ScopeControl({ scope, onChange, onUpdate, disabled }: ScopeControlProps) {
   const menuRef = useMenuGrammar()
   if (scope.levels.length === 0) return null
   const selected = scope.levels.find((l) => l.id === scope.selectedId) ?? scope.levels[0]!
@@ -74,7 +79,31 @@ export function ScopeControl({ scope, onChange, disabled }: ScopeControlProps) {
           ))}
         </div>
       </details>
-      {scope.movedNote ? (
+      {scope.pending ? (
+        /* THE FREEZE, ASKED IN WORDS (round 05 P2): a draft is in the field
+           and the page moved. The scope holds until the person says which
+           page the words are for — two real buttons on the site's 28px
+           target, the question read out as status. */
+        <span className="lucet-scope__pending" role="status">
+          <span className="lucet-scope__pending-text">Page changed — update scope?</span>
+          <button
+            type="button"
+            className="lucet-button lucet-scope__decide"
+            data-variant="secondary"
+            onClick={() => onUpdate?.(true)}
+          >
+            Use new page
+          </button>
+          <button
+            type="button"
+            className="lucet-button lucet-scope__decide"
+            data-variant="ghost"
+            onClick={() => onUpdate?.(false)}
+          >
+            Keep previous page
+          </button>
+        </span>
+      ) : scope.movedNote ? (
         /* role=status: the ground moved and the reader hears it too. */
         <span className="lucet-scope__moved" role="status">
           {scope.movedNote}

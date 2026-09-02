@@ -61,8 +61,9 @@ export type Step =
       levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
       selectedId: string | null
     }
-  /** The page moves underneath — new ladder, selection follows, note
-      says so. Allowed after settle: navigation does not wait. */
+  /** The page changes under the scope — new ladder, selection follows, note
+      says so; held behind a draft by the reducer's freeze rule. Allowed after
+      settle: navigation does not wait. */
   | {
       type: 'scopeMoved'
       levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
@@ -72,7 +73,9 @@ export type Step =
   | { type: 'refuse'; reason: string }
   /** With retryAt (ms from now) the failure is a limit that lifts: the
    * ending shows the exact time and the recovery may schedule itself. */
-  | { type: 'fail'; reason: string; retryAt?: number }
+  /** With a tone the ending departs from the failed status's red: a limit
+   * that lifts is caution (round 05 P2). */
+  | { type: 'fail'; reason: string; retryAt?: number; tone?: NoticeTone }
   /** Append to the LAST text part of the resumed response — a continuation
    * from where it stopped, not a new paragraph. Resume mode only. */
   | { type: 'continue'; text: string; chunkMs?: number }

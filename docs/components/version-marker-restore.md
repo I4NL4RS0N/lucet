@@ -42,7 +42,8 @@ stays restorable, forward as well as back.
   creation word (`Edited` is reserved for future prompt editing).
   Muted foreground, no tone colour — versioning is bookkeeping, not
   status. The ordinal survives as per-turn metadata, revealed on hover
-  or focus: "2nd version of this prompt · retried". The store's global
+  or focus: "Version 2 of 2 · retried"; the original reads "Version 1 of
+  2" (the count, then how the version came to be). The store's global
   id stays internal; Restore needs a stable address, readers don't.
   (One resolution made in implementation: the spec gives `Current` and
   the creation words a claim on the same badge slot; the creation word

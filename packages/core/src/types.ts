@@ -170,6 +170,17 @@ export interface ScopeLevel {
  * Scope state. Empty levels = the host has no scope feature and no
  * control renders — the toggle is the config, as everywhere.
  */
+/**
+ * A page change waiting on the person (round 05 P2, the scope-freeze rule):
+ * with a draft in the field, navigation may not swap what the words will
+ * run against. The move waits here until they choose.
+ */
+export interface ScopeMove {
+  readonly levels: readonly ScopeLevel[]
+  readonly selectedId: string | null
+  readonly note: string
+}
+
 export interface ScopeState {
   /** Narrow to wide. */
   readonly levels: readonly ScopeLevel[]
@@ -181,6 +192,9 @@ export interface ScopeState {
    * A scope that silently tracks a moving page is a guess again.
    */
   readonly movedNote: string | null
+  /** A page change held behind a draft, awaiting Use new page or Keep
+      previous page. Null when nothing is held. */
+  readonly pending: ScopeMove | null
 }
 
 /** The glyph a recovery verb is drawn with — its own, never a repeated
@@ -226,6 +240,10 @@ export interface Message {
   /** The state's own exit, stamped when the response settles; null when
    * the generic "Ask again" is the honest recovery. */
   readonly recovery: RecoveryVerb | null
+  /** The ending's tone when it departs from the status's own (round 05
+   * P2): a rate limit fails the request but is told as caution, because
+   * the limit lifts. Null keeps the status's tone. */
+  readonly tone: NoticeTone | null
   /**
    * The reader's verdict on a response, revocable. In the contract rather
    * than fired-and-forgotten at an analytics endpoint, because a rating

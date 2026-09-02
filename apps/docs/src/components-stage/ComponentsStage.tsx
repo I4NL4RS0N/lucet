@@ -422,7 +422,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
     ],
   },
   {
-    label: 'Thought about it',
+    label: 'Why this answer',
     note: 'Settled thinking is a quiet fact wearing the quote’s grammar — the machine quoting its own working, collapsed by default, never pushed at you. A real disclosure now: it opens.',
     events: [
       ...turn(1, 'Which plan is more likely to slip?', {
@@ -543,7 +543,7 @@ const THREAD_LAYOUT: ReadonlyArray<{ kind: 'rail' | 'duet' | 'trio'; open?: true
      states inside one equal-height well left voids, so the enclosure
      goes and the gutters separate. The code duet's cells match within
      37px and keep their well. */
-  { kind: 'trio', open: true, labels: ['Streaming', 'Thinking, live', 'Thought about it'] },
+  { kind: 'trio', open: true, labels: ['Streaming', 'Thinking, live', 'Why this answer'] },
   { kind: 'rail', labels: ['A formatted answer'] },
   { kind: 'duet', labels: ['Streaming into a code block', 'Stopped inside a code block'] },
   { kind: 'trio', open: true, labels: ['Stopped early', 'Failed', 'Declined'] },
@@ -639,6 +639,22 @@ const SCOPE_FIXTURES: readonly Fixture[] = [
         ),
         selectedId: 'page',
         note: 'The page changed — “This page” now covers Reports review.',
+      },
+    ],
+  },
+  {
+    label: 'Scope held behind a draft',
+    note: 'The page changed while words were already in the field. The move is held and the control asks which page the words are for — Use new page, or Keep previous page. With nothing typed it would simply have followed.',
+    events: [
+      { type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' },
+      { type: 'composer/changed' as const, text: 'Summarise what changed in the review for the vendor.' },
+      {
+        type: 'scope/moved' as const,
+        levels: SCOPE_LADDER.map((l) =>
+          l.id === 'page' ? { ...l, summary: 'Vendor call — the notes and the quote', itemCount: 2 } : l,
+        ),
+        selectedId: 'page',
+        note: 'The page changed — “This page” now covers Vendor call.',
       },
     ],
   },
@@ -867,6 +883,7 @@ export function ComponentsStage() {
                     service={stateOf(f).service}
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
+                    onScopeUpdate={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -892,6 +909,7 @@ export function ComponentsStage() {
                     service={stateOf(f).service}
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
+                    onScopeUpdate={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -948,6 +966,7 @@ export function ComponentsStage() {
                     service={stateOf(f).service}
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
+                    onScopeUpdate={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}

@@ -133,19 +133,23 @@
   --lucet-state-failed-foreground: var(--lucet-tone-danger-foreground);
   --lucet-state-failed-border: var(--lucet-tone-danger-border);
 
-  /* A quota wall is a HARD STOP: nothing sends until it lifts, and amber
-     undersold that (Ian's call, 2026-09-01 — the earlier caution mapping
-     read "expected and temporary", which is true and beside the point).
-     Red for the stop; the copy still carries the fact that matters, which
-     is when it lifts. */
-  --lucet-state-rate-limited-surface: var(--lucet-tone-danger-surface);
-  --lucet-state-rate-limited-foreground: var(--lucet-tone-danger-foreground);
-  --lucet-state-rate-limited-border: var(--lucet-tone-danger-border);
+  /* A limit is a stop that LIFTS, and the ending says exactly when (round
+     05 P1). The severity table (Ian, 2026-09-02, round 05 P2) puts it in
+     caution beside budget exhaustion: red is kept for failed requests,
+     unavailable services, removed sources and destructive risk. This
+     reverses the 2026-09-01 ruling that made the wall red; the copy still
+     carries the fact that matters, which is when it lifts. */
+  --lucet-state-rate-limited-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-rate-limited-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-rate-limited-border: var(--lucet-tone-caution-border);
 
-  /* Freshness is information about the answer, not a warning about it. */
-  --lucet-state-stale-surface: var(--lucet-tone-info-surface);
-  --lucet-state-stale-foreground: var(--lucet-tone-info-foreground);
-  --lucet-state-stale-border: var(--lucet-tone-info-border);
+  /* Stale is caution (the severity table, round 05 P2): the answer may no
+     longer hold, which asks for attention rather than reading as
+     information. Stale, partial and updated-since share the amber; a
+     receipt stays quiet. */
+  --lucet-state-stale-surface: var(--lucet-tone-caution-surface);
+  --lucet-state-stale-foreground: var(--lucet-tone-caution-foreground);
+  --lucet-state-stale-border: var(--lucet-tone-caution-border);
 
   /* Uncertainty must never look like an error, or people discount the answer
      entirely instead of weighting it. */

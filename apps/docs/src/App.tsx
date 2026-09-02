@@ -381,6 +381,9 @@ function AppCore({
               restoredFrom={state.restoredFrom}
               scope={state.scope}
               onScopeChange={(levelId) => lucet.store.dispatch({ type: 'scope/changed', levelId })}
+              onScopeUpdate={(useNewPage) =>
+                lucet.store.dispatch({ type: useNewPage ? 'scope/updateAccepted' : 'scope/updateDeclined' })
+              }
               model={state.model}
               service={state.service}
               usage={state.usage}

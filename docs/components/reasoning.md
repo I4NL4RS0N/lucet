@@ -17,7 +17,7 @@ answer, present but never presumptuous.
 - **The row is the loading state.** While the model thinks, the summary
   carries the activity orb and its word — "Thinking…" — so the wait has a
   face and a name instead of a mystery spinner. At settle it becomes a
-  plain fact: "Thought about it."
+  plain label for what the row holds: "Why this answer."
 - **A real control, with real states.** Native `<details>`/`<summary>` — the
   browser owns expanded/collapsed and announces it — dressed with the same
   hover veil, press, and focus ring as every other control, on a ≥24px row.

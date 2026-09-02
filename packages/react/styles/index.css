@@ -453,6 +453,23 @@
   margin: 0;
   max-width: 62ch;
 }
+/* THE BRIEF NOTICE (round 05 P2): a label alone — no text, no action —
+   sizes to its word and sits as a quiet mark before the answer, in the
+   notice's own tone grammar: the same edge, the same ink, a third of the
+   height. "Unverified" is one word, and one word does not get a banner. */
+.lucet-notice[data-brief] {
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 7px;
+  border-radius: var(--lucet-radius-control);
+  font-size: var(--lucet-text-xs);
+  font-weight: 500;
+}
+.lucet-notice[data-brief] .lucet-notice__label { margin-right: 0; }
+.lucet-notice[data-brief] .lucet-icon { inline-size: 14px; block-size: 14px; }
 
 .lucet-notice__label { margin-right: 0.4em; }
 
@@ -521,6 +538,17 @@
   background: var(--lucet-tone-neutral-surface);
   border-color: var(--lucet-tone-neutral-border);
   color: var(--lucet-tone-neutral-foreground);
+}
+/* THE FALLBACK, ONE STEP QUIETER (round 05 P2, the severity table): the
+   degraded-told-as-information notice keeps the info tone's edge and ink
+   and cuts only its surface chroma — still tinted, never neutral grey.
+   Relative colour keeps the derivation: the same lightness, six tenths of
+   the chroma, so every contrast the tone already passed still holds. The
+   plain declaration before it is the fallback for engines without
+   relative colour. */
+.lucet-notice[data-state='degraded'][data-tone='info'] {
+  background: var(--lucet-tone-info-surface);
+  background: oklch(from var(--lucet-tone-info-surface) l calc(c * 0.6) h);
 }
 
 /* ============================================================
@@ -1388,6 +1416,15 @@
 .lucet-thread__ended[data-status='refused'] .lucet-icon {
   stroke-width: 2.75;
 }
+/* A TONE APART FROM THE STATUS (round 05 P2, the severity table): a rate
+   limit fails the request but is not a breakage — the limit lifts at a
+   known time — so its ending wears caution over the failed status. Red
+   stays for failed requests, unavailable services, removed sources and
+   destructive risk. Declared after the status rules so the tone wins. */
+.lucet-thread__ended[data-tone='caution'] strong,
+.lucet-thread__ended[data-tone='caution'] .lucet-icon {
+  color: var(--lucet-tone-caution-foreground);
+}
 
 /*
  * ARRIVAL. Things enter the thread; they do not pop into it. When every
@@ -2063,6 +2100,25 @@
   order: 10;
   font-size: var(--lucet-text-xs);
   color: var(--lucet-tone-info-foreground);
+}
+/* THE HELD MOVE ASKS (round 05 P2): the note's line, carrying a question
+   and two real buttons — the site's 28px target, the smallest text size,
+   the info ink the note already wears. */
+.lucet-scope__pending {
+  flex-basis: 100%;
+  order: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--lucet-text-xs);
+  color: var(--lucet-tone-info-foreground);
+}
+.lucet-scope__pending-text { margin-inline-end: 2px; }
+.lucet-scope__decide {
+  min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
+  padding-inline: 8px;
+  font-size: var(--lucet-text-xs);
 }
 
 /* ============================================================

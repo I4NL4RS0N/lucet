@@ -833,8 +833,8 @@ async function main() {
     })
     await summary.click() // leave the stage as it was found
     checks += 2
-    if (closedWord !== 'Thought about it')
-      failures.push(`reasoning: settled row says "${closedWord}", expected "Thought about it"`)
+    if (closedWord !== 'Why this answer')
+      failures.push(`reasoning: settled row says "${closedWord}", expected "Why this answer"`)
     if (!reasoningOpen.open || !reasoningOpen.bodyVisible || reasoningOpen.bodyWords < 40)
       failures.push(
         `reasoning: clicking the row must open the working (open=${reasoningOpen.open}, visible=${reasoningOpen.bodyVisible}, ${reasoningOpen.bodyWords} chars)`,
@@ -1572,6 +1572,102 @@ async function main() {
     await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
     await page.waitForTimeout(200)
     await resetAndInspect('budget-low (mobile)')
+    /* P2 — language, the scope-freeze rule, metadata, severity (round 05). */
+    /* Renames swept: the rail speaks the new names and none of the old. */
+    await coldStart()
+    const spoken = await railLabels('Features')
+    await page.locator('.cfg__views--rail button', { hasText: 'States' }).first().click()
+    checks++
+    if (!spoken.includes('Use the current page as context') || !spoken.includes('Scope updates after navigation') || spoken.some((l) => /breadcrumb|moves underneath/i.test(l)))
+      failures.push(`rail: the scope entries are not renamed — ${JSON.stringify(spoken)}`)
+    /* The scope-freeze rule, in the drawer: with nothing typed the ladder
+       follows and says so; with a draft the move is HELD and the control
+       asks. Both answers walked. */
+    const freeze = async (choice) => {
+      await coldStart()
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Drawer' }).first().click()
+      await page.waitForTimeout(300)
+      await fireFromRail('Scope updates after navigation', 'Features')
+      await page.waitForFunction(() => window.__lucet.getState().scope.movedNote !== null && window.__lucet.getState().scope.pending === null, null, { timeout: 15000 })
+      const followed = await page.evaluate(() => ({ note: [...document.querySelectorAll('.lucet-scope__moved')].find((e) => e.getBoundingClientRect().width > 0)?.textContent.trim() ?? null, button: [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0)?.getAttribute('aria-label') }))
+      await page.waitForFunction(() => window.__lucet.getState().scope.pending !== null && !window.__lucet.inspect().running, null, { timeout: 15000 })
+      await page.waitForTimeout(150)
+      const held = await page.evaluate(() => {
+        const p = [...document.querySelectorAll('.lucet-scope__pending')].find((e) => e.getBoundingClientRect().width > 0)
+        const btns = p ? [...p.querySelectorAll('button')] : []
+        return { text: p?.querySelector('.lucet-scope__pending-text')?.textContent.trim(), role: p?.getAttribute('role'), labels: btns.map((b) => b.textContent.trim()), targets: btns.map((b) => b.getBoundingClientRect().height >= 28), button: [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0)?.getAttribute('aria-label'), draft: [...document.querySelectorAll('.lucet-prompt__field')].find((f) => f.getBoundingClientRect().width > 0)?.value, noteStillShown: document.querySelector('.lucet-scope__moved') !== null }
+      })
+      await page.locator('.lucet-scope__pending button', { hasText: choice }).first().click()
+      await page.waitForTimeout(150)
+      const decided = await page.evaluate(() => ({ pending: window.__lucet.getState().scope.pending, button: [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0)?.getAttribute('aria-label'), note: [...document.querySelectorAll('.lucet-scope__moved')].find((e) => e.getBoundingClientRect().width > 0)?.textContent.trim() ?? null, prompt: document.querySelector('.lucet-scope__pending') !== null, draft: [...document.querySelectorAll('.lucet-prompt__field')].find((f) => f.getBoundingClientRect().width > 0)?.value }))
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
+      await page.waitForTimeout(200)
+      await resetAndInspect(`scope-freeze (${choice})`)
+      return { followed, held, decided }
+    }
+    const useNew = await freeze('Use new page')
+    checks++
+    if (!/Reports review/.test(useNew.followed.note || '') || !/Reports review/.test(useNew.followed.button || '')
+      || useNew.held.text !== 'Page changed — update scope?' || useNew.held.role !== 'status' || useNew.held.labels.join('|') !== 'Use new page|Keep previous page' || useNew.held.targets.length !== 2 || useNew.held.targets.some((t) => !t) || !/Reports review/.test(useNew.held.button || '') || !useNew.held.draft || useNew.held.noteStillShown
+      || useNew.decided.pending !== null || !/Vendor call/.test(useNew.decided.button || '') || !/Vendor call/.test(useNew.decided.note || '') || useNew.decided.prompt || !useNew.decided.draft)
+      failures.push(`scope-freeze: Use new page does not apply the held move — ${JSON.stringify(useNew)}`)
+    const keep = await freeze('Keep previous page')
+    checks++
+    if (keep.decided.pending !== null || !/Reports review/.test(keep.decided.button || '') || keep.decided.prompt || !keep.decided.draft || keep.held.labels.length !== 2)
+      failures.push(`scope-freeze: Keep previous page does not keep the ladder — ${JSON.stringify(keep)}`)
+    /* Metadata: the version line counts. */
+    await coldStart()
+    await fireFromRail('Version history', 'Features')
+    await settled()
+    await page.waitForTimeout(200)
+    const vmeta = await page.evaluate(() => [...document.querySelectorAll('.lucet-thread__vmeta')].map((e) => e.textContent.trim()))
+    checks++
+    if (vmeta.join('|') !== 'Version 1 of 2|Version 2 of 2 · retried')
+      failures.push(`version metadata: expected "Version 1 of 2" and "Version 2 of 2 · retried" — ${JSON.stringify(vmeta)}`)
+    await resetAndInspect('version-history')
+    /* Severity, in both Glass cells: the rate limit's ending wears caution
+       while the outage keeps red; the fallback notice sits one step quieter
+       than the info surface with its edge intact; the uncertain answer
+       carries "Unverified" in the neutral tone before its text, and no
+       percentage anywhere. */
+    const savedAppearance = await page.evaluate(() => localStorage.getItem('lucet-docs-appearance'))
+    const severity = async (theme) => {
+      await page.evaluate((theme) => localStorage.setItem('lucet-docs-appearance', JSON.stringify({ theme, accent: 'violet', neutral: 'accent', expression: 'glass' })), theme)
+      await page.emulateMedia({ colorScheme: theme })
+      const probe = () => page.evaluate(() => {
+        const el = document.createElement('span'); document.body.appendChild(el)
+        const color = (v) => { el.style.color = `var(${v})`; return getComputedStyle(el).color }
+        el.style.backgroundColor = 'var(--lucet-tone-info-surface)'
+        const out = { caution: color('--lucet-tone-caution-foreground'), danger: color('--lucet-tone-danger-foreground'), infoSurface: getComputedStyle(el).backgroundColor, infoBorder: color('--lucet-tone-info-border'), infoInk: color('--lucet-tone-info-foreground'), expression: document.querySelector('[data-expression]')?.getAttribute('data-expression') ?? null }
+        el.remove(); return out
+      })
+      await coldStart(); await fireFromRail('Rate limited', 'States'); await settled(); await page.waitForTimeout(150)
+      const tokens = await probe()
+      const limited = await page.evaluate(() => { const e = document.querySelector('.lucet-thread__ended'); return { tone: e?.dataset.tone, word: getComputedStyle(e.querySelector('strong')).color, icon: getComputedStyle(e.querySelector('.lucet-icon')).color } })
+      await resetAndInspect(`rate-limit tone (${theme})`)
+      await coldStart(); await fireFromRail('Provider outage', 'States'); await settled(); await page.waitForTimeout(150)
+      const outage = await page.evaluate(() => { const e = document.querySelector('.lucet-thread__ended'); return { tone: e?.dataset.tone ?? null, word: getComputedStyle(e.querySelector('strong')).color } })
+      await resetAndInspect(`outage tone (${theme})`)
+      await coldStart(); await fireFromRail('Fallback model used', 'States'); await settled(); await page.waitForTimeout(150)
+      const fallback = await page.evaluate(() => { const n = document.querySelector('.lucet-notice'); const cs = getComputedStyle(n); return { bg: cs.backgroundColor, border: cs.borderTopColor, color: cs.color } })
+      await resetAndInspect(`fallback tone (${theme})`)
+      await coldStart(); await fireFromRail('Low confidence', 'States'); await settled(); await page.waitForTimeout(150)
+      const uncertain = await page.evaluate(() => { const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1); const n = turn.querySelector('.lucet-notice'); const md = turn.querySelector('.lucet-md'); return { state: n?.dataset.state, tone: n?.dataset.tone, label: n?.querySelector('.lucet-notice__label')?.textContent.trim(), text: n?.querySelector('.lucet-notice__text')?.textContent ?? '', before: n && md ? !!(n.compareDocumentPosition(md) & Node.DOCUMENT_POSITION_FOLLOWING) : false, percent: /%/.test(turn.textContent), height: Math.round(n?.getBoundingClientRect().height ?? 0) } })
+      await resetAndInspect(`unverified (${theme})`)
+      return { tokens, limited, outage, fallback, uncertain }
+    }
+    const oklch = (str) => { const m = /oklch\(([\d.]+) ([\d.]+) ([\d.]+)/.exec(str || ''); return m ? { l: +m[1], c: +m[2], h: +m[3] } : null }
+    for (const theme of ['dark', 'light']) {
+      const sev = await severity(theme)
+      const quiet = oklch(sev.fallback.bg), info = oklch(sev.tokens.infoSurface)
+      checks++
+      if (sev.tokens.expression !== 'glass' || sev.limited.tone !== 'caution' || sev.limited.word !== sev.tokens.caution || sev.limited.icon !== sev.tokens.caution || sev.outage.tone !== null || sev.outage.word !== sev.tokens.danger
+        || !quiet || !info || quiet.c >= info.c || quiet.c <= 0 || Math.abs(quiet.l - info.l) > 0.005 || sev.fallback.border !== sev.tokens.infoBorder || sev.fallback.color !== sev.tokens.infoInk
+        || sev.uncertain.state !== 'uncertain' || sev.uncertain.tone !== 'neutral' || sev.uncertain.label !== 'Unverified' || sev.uncertain.text !== '' || !sev.uncertain.before || sev.uncertain.percent)
+        failures.push(`severity (${theme} glass): ${JSON.stringify(sev)}`)
+    }
+    await page.evaluate((saved) => { if (saved === null) localStorage.removeItem('lucet-docs-appearance'); else localStorage.setItem('lucet-docs-appearance', saved) }, savedAppearance)
+    await page.emulateMedia({ colorScheme: null })
     /* 5. Restore straight into preview, no duplicate blocks. */
     await coldStart()
     const logBefore = await page.evaluate(() => window.__lucet.getLog().length)

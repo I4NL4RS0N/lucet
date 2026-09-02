@@ -43,6 +43,8 @@ export interface PromptInputProps {
       levels — the toggle is the config. */
   scope?: ScopeState | undefined
   onScopeChange?: ((levelId: string) => void) | undefined
+  /** The held page change (round 05 P2): Use new page (true) or Keep previous page (false). */
+  onScopeUpdate?: ((useNewPage: boolean) => void) | undefined
   composer: ComposerState
   model: ModelState
   service: ServiceState
@@ -221,6 +223,7 @@ export function PromptInput({
   restoredFrom,
   scope,
   onScopeChange,
+  onScopeUpdate,
   composer,
   model,
   service,
@@ -455,7 +458,7 @@ export function PromptInput({
         ) : null}
 
         {scope && onScopeChange ? (
-          <ScopeControl scope={scope} onChange={onScopeChange} disabled={composer.locked} />
+          <ScopeControl scope={scope} onChange={onScopeChange} onUpdate={onScopeUpdate} disabled={composer.locked} />
         ) : null}
 
         {/* The picker grew into the meter (the extension point core reserved):

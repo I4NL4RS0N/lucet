@@ -236,7 +236,12 @@ function MessageView({
         promptBody
       )}
       {terminal ? (
-        <p className="lucet-thread__ended" data-status={message.status} role="status">
+        <p
+          className="lucet-thread__ended"
+          data-status={message.status}
+          data-tone={message.tone ?? undefined}
+          role="status"
+        >
           <StateIcon name={terminal.icon} />
           <span>
             <strong>{terminal.word}.</strong> {message.reason ?? ''}
@@ -389,10 +394,11 @@ export function Thread({
   /* THE BADGE SPEAKS WORDS; NUMBERS DEMOTE TO METADATA. A version's
      badge says what happened, in the reader's language: Retried and
      Restored name how a version came to be; Current marks a badged
-     newest version with no creation word. Ordinals ("2nd version of
-     this prompt") survive only as per-lineage metadata, revealed on
-     hover/focus — the store's global ids stay internal. Markers appear
-     only where history is non-linear; a plain thread stays plain. */
+     newest version with no creation word. The count ("Version 2 of 2 ·
+     retried"; the original reads "Version 1 of 2") survives only as
+     per-lineage metadata, revealed on hover/focus — the store's global
+     ids stay internal. Markers appear only where history is non-linear;
+     a plain thread stays plain. */
   const lineageRoot = (t: (typeof state.turns)[number]): string => {
     let cur = t
     for (;;) {
@@ -417,8 +423,9 @@ export function Thread({
     const newest = family[family.length - 1] === t.id
     const born = t.restoreOf ? 'restored' : t.retryOf ? 'retried' : 'asked'
     const word = t.restoreOf ? 'Restored' : t.retryOf ? 'Retried' : newest ? 'Current' : null
-    const ord = ordinal === 1 ? '1st' : ordinal === 2 ? '2nd' : ordinal === 3 ? '3rd' : `${ordinal}th`
-    const meta = `${newest ? 'current · ' : ''}${ord} version of this prompt · ${born}`
+    /* "Version 2 of 2 · retried" (round 05 P2): the count, then how this
+       one came to be — nothing for the original, which was simply asked. */
+    const meta = `Version ${ordinal} of ${family.length}${born === 'asked' ? '' : ` · ${born}`}`
     return { word, meta, newest }
   }
   const restoredIndex = state.restoredFrom

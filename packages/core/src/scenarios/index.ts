@@ -244,6 +244,10 @@ export const lowConfidence = defineScenario({
   prompt: 'What is the deadline on this?',
   steps: [
     { type: 'wait', ms: 400 },
+    /* THE QUIET LABEL (round 05 P2): uncertainty is marked before the
+       answer in one word, in the neutral tone — never a percentage, never
+       an alarm. */
+    { type: 'notice', state: 'uncertain', tone: 'neutral', label: 'Unverified', text: '' },
     {
       type: 'say',
       text: 'Probably the 30th, which is what the summary says. I could not find it confirmed anywhere in the source documents, so this is the summary’s claim rather than the original’s. Worth checking before you rely on it.',
@@ -321,7 +325,8 @@ export const rateLimit = defineScenario({
     { type: 'wait', ms: 600 },
     /* The reset is a clock time the ending shows exactly (round 05, P1);
        thirty seconds here so the demo can be watched, not waited out. */
-    { type: 'fail', reason: 'The burst limit for this minute is used up. Your draft is kept.', retryAt: 30_000 },
+    /* Caution, not danger (round 05 P2 severity table): the limit lifts. */
+    { type: 'fail', reason: 'The burst limit for this minute is used up. Your draft is kept.', retryAt: 30_000, tone: 'caution' },
   ],
   /* NO GENERIC RETRY UNTIL RESET: the verb arms a retry for the moment
      the limit lifts; until then it reads as a status. The draft stays. */
@@ -672,12 +677,13 @@ export const sourceGone = defineScenario({
 /*
  * SCOPE: the strongest idea in the set. The host's breadcrumb is the
  * context ladder; the control shows what is actually inside each rung;
- * and when the page moves underneath, the scope follows AND SAYS SO.
+ * and when the page changes under it, the scope follows AND SAYS SO (or,
+ * with a draft in the field, asks first).
  */
 
 export const scopeLadder = defineScenario({
   id: 'scope-ladder',
-  label: 'Scope from the breadcrumb',
+  label: 'Use the current page as context',
   group: 'Scope',
   kind: 'feature',
   description:
@@ -728,11 +734,11 @@ export const scopeLadder = defineScenario({
 
 export const scopeMoved = defineScenario({
   id: 'scope-moved',
-  label: 'The page moves underneath',
+  label: 'Scope updates after navigation',
   group: 'Scope',
   kind: 'feature',
   description:
-    'In a drawer the page keeps moving. The scope follows the navigation \u2014 and says so, instead of silently guessing.',
+    'In a drawer the page keeps moving. With nothing typed, the scope follows the navigation and says so. With a draft in the field it asks first — the words were written against a page.',
   prompt: 'What is still open in this plan?',
   steps: [
     {
@@ -790,6 +796,36 @@ export const scopeMoved = defineScenario({
       ],
       selectedId: 'page',
       note: 'The page changed \u2014 \u201cThis page\u201d now covers Reports review.',
+    },
+    /* THE FREEZE (round 05 P2): a draft is in the field when the page
+       moves again, so this move is HELD and the control asks. */
+    { type: 'wait', ms: 1600 },
+    { type: 'draft', text: 'Summarise what changed in the review for the vendor.' },
+    { type: 'wait', ms: 500 },
+    {
+      type: 'scopeMoved',
+      levels: [
+        {
+          id: 'page',
+          label: 'This page',
+          summary: 'Vendor call — the notes and the quote',
+          itemCount: 2,
+        },
+        {
+          id: 'section',
+          label: 'Calls',
+          summary: 'Everything filed under Calls',
+          itemCount: 6,
+        },
+        {
+          id: 'all',
+          label: 'Everything',
+          summary: 'All of Aquilo',
+          itemCount: 48,
+        },
+      ],
+      selectedId: 'page',
+      note: 'The page changed — “This page” now covers Vendor call.',
     },
   ],
 })

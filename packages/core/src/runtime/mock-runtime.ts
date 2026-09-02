@@ -335,6 +335,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           status: 'failed',
           reason: s.reason,
           recovery: verbFor(at),
+          tone: s.tone ?? null,
         })
         return 'failed'
       }
@@ -470,15 +471,17 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         for (const s of scenario.steps) {
           if (settled) {
             /* The response has settled, but the WORLD keeps moving: a
-               cited source can age behind a finished answer. Only steps
-               that model the world after settle may run here — the rest
-               stay unreachable, exactly as before. */
+               cited source can age behind a finished answer, the person
+               can start typing (round 05 P2: the draft the scope-freeze
+               rule protects). Only steps that model the world after settle
+               may run here — the rest stay unreachable, exactly as before. */
             if (
               s.type === 'wait' ||
               s.type === 'sourceChange' ||
               s.type === 'retryTurn' ||
               s.type === 'restore' ||
-              s.type === 'scopeMoved'
+              s.type === 'scopeMoved' ||
+              s.type === 'draft'
             ) {
               await step(s, messageId, signal)
             }

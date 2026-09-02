@@ -67,7 +67,16 @@ export interface StateNoticeProps {
 
 export function StateNotice({ state, tone, label, children, action, onDismiss }: StateNoticeProps) {
   return (
-    <div className="lucet-notice" data-state={state} data-tone={tone} role="status">
+    <div
+      className="lucet-notice"
+      data-state={state}
+      data-tone={tone}
+      /* BRIEF (round 05 P2): a notice that is only its label — "Unverified"
+         before an uncertain answer — is a quiet mark, not a banner. The
+         same grammar, sized to its one word. */
+      data-brief={!children && !action && !onDismiss ? 'true' : undefined}
+      role="status"
+    >
       <StateIcon name={ICON[state]} />
       <p className="lucet-notice__body">
         <strong className="lucet-notice__label">{label}</strong>

@@ -15,8 +15,8 @@ import { Markdown } from './Markdown.js'
  * 3. THE ROW IS THE LOADING STATE. While the model thinks, the summary
  *    carries the activity orb and the word "Thinking…" — the wait has a
  *    face and a name, not a mystery spinner ("an orb without its word is a
- *    mystery lamp"). When it settles the row becomes a plain fact:
- *    "Thought about it".
+ *    mystery lamp"). When it settles the row becomes a plain label for
+ *    what it holds: "Why this answer" (round 05 P2).
  * 4. A REAL CONTROL, WITH REAL STATES. Native <details>/<summary> — the
  *    browser owns the expanded/collapsed semantics — dressed with the same
  *    hover veil, press, and focus ring as every other control. (Its
@@ -44,7 +44,7 @@ export function Reasoning({ text, streaming = false, defaultOpen = false }: Reas
         {streaming ? (
           <ActivityOrb state="thinking" label="Thinking…" size="sm" />
         ) : (
-          'Thought about it'
+          'Why this answer'
         )}
       </summary>
       <div className="lucet-reasoning__body">
