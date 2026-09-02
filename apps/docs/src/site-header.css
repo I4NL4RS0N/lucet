@@ -22,6 +22,24 @@ html { background-color: var(--lucet-background); }
 
 /* Full-bleed: the hairline runs edge to edge; the content inside keeps the
    page measure. */
+/* ONE OUTER SHELL (0.2 coherence pass). Every page hangs from the same
+   two numbers: the shell's measure and its inline padding. The header,
+   the Konfabulator's app and rail, the components page and the
+   primitives page all put their controls, titles, chapter headings and
+   primary grid on these lines; editorial prose keeps its own measure
+   inside them, small primitives keep their narrower tracks inside them,
+   and the components page's 1300px trio breakout is the one deliberate
+   exception, derived from the shell. The shell does not ride the
+   density dial and does not narrow on phones — 32px at every width.
+   BREAKPOINTS, ONE STRATEGY: viewport queries belong to the shell and
+   its chrome — 1100 (the mock sidebar collapses), 900 (the rail
+   narrows), 620 (the layout stacks; the decks stack), 560 and 480
+   (header and phone chrome fold); everything inside a lab column reads
+   its container — 1007 (hero wrap) and 907 (rail and band stack). */
+:root {
+  --site-shell-max: 1240px;
+  --site-shell-pad: 32px;
+}
 .cfg__bar {
   border-block-end: 1px solid var(--lucet-border);
 }
@@ -29,9 +47,9 @@ html { background-color: var(--lucet-background); }
   display: flex;
   align-items: center;
   gap: 10px;
-  max-inline-size: 1240px;
+  max-inline-size: var(--site-shell-max);
   margin: 0 auto;
-  padding: 14px 32px;
+  padding: 14px var(--site-shell-pad);
 }
 
 /* Identity: the tile and the name, and the tile links home. */
