@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet-core'
 import type { LucetEvent, ThreadState } from 'lucet-core'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
-import { AppearancePrefs, useAppearance } from '../components/ThemeControls'
+import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
 import { OPENER_EVENTS } from '../opener'
 
@@ -759,12 +759,14 @@ export function ComponentsStage() {
      2026-09-01; monochrome remains one click away for judging components
      without accent seduction.) */
   const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'violet' })
+  const groundRef = useRef<HTMLDivElement | null>(null)
+  useCanvasGround(groundRef, appearance)
 
   return (
     /* The lab rides the axis whole: its stage wells are part of the
        specimen presentation. (The Konfabulator pins its chrome instead —
        see App.tsx.) */
-    <div className="prim prim--comp" data-expression={appearance.expression}>
+    <div ref={groundRef} className="prim prim--comp" data-expression={appearance.expression}>
       <SiteHeader page="components" />
 
       <main className="prim__main">

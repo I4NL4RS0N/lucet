@@ -1,3 +1,19 @@
+/* THE CANVAS IS PART OF THE THEME (overscroll pass). Rubber-band
+   overscroll, the area beyond a short page, and the browser's own
+   surfaces all paint from the ROOT, not from a wrapper: html takes
+   the ground token, and color-scheme tells the browser what the page
+   IS so scrollbars and overscroll agree with it. The lab pages'
+   grounds are expression-scoped on their wrappers, so a hook mirrors
+   the wrapper's computed ground onto the root (useCanvasGround);
+   this static rule is the first-paint value and the Konfabulator's
+   exact one (its chrome pins Paper, the root-resolved token). */
+html { background-color: var(--lucet-background); }
+:root { color-scheme: light; }
+:root[data-theme='dark'] { color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { color-scheme: dark; }
+}
+
 /*
  * The shared site header: one identity, one navigation grammar, worn by
  * the Konfabulator, the components stage, and the primitives lab alike.

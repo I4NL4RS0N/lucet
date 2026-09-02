@@ -198,8 +198,34 @@ async function main() {
         [theme, accent],
       )
 
+    /* THE CANVAS IS PART OF THE THEME (overscroll pass): the root's
+       painted background must equal the page wrapper's ground — that is
+       what overscroll and the area beyond a short page show — and
+       color-scheme must agree with the theme so the browser's own
+       surfaces do. Checked after every theme application so a restyled
+       wrapper cannot silently reopen the seam. */
+    const checkCanvas = async (where, theme) => {
+      await page.waitForTimeout(50)
+      const r = await page.evaluate(() => {
+        const html = getComputedStyle(document.documentElement)
+        const wrapper = document.querySelector('.prim') ?? document.body
+        return {
+          htmlBg: html.backgroundColor,
+          ground: getComputedStyle(wrapper).backgroundColor,
+          scheme: html.colorScheme,
+        }
+      })
+      checks++
+      if (r.htmlBg !== r.ground)
+        failures.push(`${where}  canvas: root paints ${r.htmlBg}, page ground is ${r.ground}`)
+      checks++
+      if ((theme === 'dark') !== /dark/.test(r.scheme))
+        failures.push(`${where}  color-scheme is "${r.scheme}" under ${theme} theme`)
+    }
+
     const sweep = async (theme, accent, probes, all = PROBES) => {
       await setState(theme, accent)
+      await checkCanvas(`canvas ${theme}/${accent}`, theme)
       await page.waitForTimeout(50)
       let found = 0
       for (let i = 0; i < all.length; i++) {

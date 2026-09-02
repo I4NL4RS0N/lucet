@@ -268,6 +268,39 @@ export function useAppearance(fallback: {
 }
 
 /**
+ * The canvas mirror (overscroll pass): a page whose ground is
+ * expression-scoped on its wrapper paints that computed ground onto
+ * the root, so overscroll and the area beyond a short page show the
+ * page's own surface — one ground from the canvas inward. rAF waits
+ * for the wrapper's re-derived tokens to resolve.
+ */
+export function useCanvasGround(ref: React.RefObject<HTMLElement | null>, state: unknown) {
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let raf = 0
+    const sync = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        document.documentElement.style.backgroundColor = getComputedStyle(el).backgroundColor
+      })
+    }
+    sync()
+    /* The theme can also arrive as a bare attribute swap — devtools, the
+       audits — so the mirror watches the root, not only React state. */
+    const mo = new MutationObserver(sync)
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-accent', 'data-neutral'],
+    })
+    return () => {
+      mo.disconnect()
+      cancelAnimationFrame(raf)
+    }
+  }, [ref, state])
+}
+
+/**
  * The pickers — theme, accent, and every other axis behind "More" — as one
  * component, so each page offers ALL of the appearance, not the two pieces
  * it remembered to wire.

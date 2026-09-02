@@ -115,7 +115,7 @@ body {
 }
 
 .prim {
-  min-block-size: 100vh;
+  min-block-size: 100dvh;
   /* pretty is the default for short-to-medium text; balance is reserved for
      headings, where it only works up to six lines anyway. */
   text-wrap: pretty;

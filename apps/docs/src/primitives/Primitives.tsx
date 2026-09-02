@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { AppearancePrefs, useAppearance } from '../components/ThemeControls'
+import { useRef, useState } from 'react'
+import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
 
 /**
@@ -235,13 +235,15 @@ export function Primitives() {
      2026-09-01; monochrome remains one click away for judging primitives
      without accent seduction.) */
   const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'violet' })
+  const groundRef = useRef<HTMLDivElement | null>(null)
+  useCanvasGround(groundRef, appearance)
   const [checks, setChecks] = useState({ a: true, b: false })
   const [radio, setRadio] = useState('one')
   const [sw, setSw] = useState({ a: true, b: false })
   const [seg, setSeg] = useState('all')
 
   return (
-    <div className="prim prim--ref" data-expression={appearance.expression}>
+    <div ref={groundRef} className="prim prim--ref" data-expression={appearance.expression}>
       <SiteHeader page="primitives" />
 
       <main className="prim__main">
