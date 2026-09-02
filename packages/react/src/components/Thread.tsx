@@ -123,15 +123,10 @@ function Part({
 function MessageView({
   message,
   self,
-  shared,
   actions,
 }: {
   message: Message
   self: boolean
-  /** More than one human has spoken: the collaborative grammar applies
-      to EVERYONE — face, name, left — you included. Solo threads keep
-      the messaging grammar, where position says yours. */
-  shared?: boolean
   actions?: React.ReactNode
 }) {
   const isUser = message.role === 'user'
@@ -185,11 +180,16 @@ function MessageView({
        */}
       {!isUser ? <span className="lucet-visually-hidden">Assistant</span> : null}
 
-      {isUser && (!self || shared) ? (
+      {isUser && !self ? (
         /* Another person's turn: the face sits OUTSIDE the bubble,
            bottom-aligned to it — meeting the bubble's anchored tail
            corner, so the corner and the face point at each other. The
-           name rides above the bubble in the same column. */
+           name rides above the bubble in the same column. In a SHARED
+           thread this is still only other people: your own turns keep
+           the messaging grammar — right, no head, no "you" — position
+           says yours whoever else is speaking (Option A, 2026-09-02;
+           the previous rule gave you a face and pulled you left, which
+           contradicted the specimen's own caption). */
         <div className="lucet-thread__withface">
           <Avatar name={message.authorId} />
           <div className="lucet-thread__spoke">
@@ -433,7 +433,6 @@ export function Thread({
             <MessageView
               message={turn.prompt}
               self={turn.prompt.authorId === (selfId ?? null)}
-              shared={shared}
             />
             {response ? (
               <MessageView

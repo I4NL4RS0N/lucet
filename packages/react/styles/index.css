@@ -320,7 +320,6 @@
 /* The live counter only: the width must hold still while it ticks. */
 .lucet-tool__elapsed {
   font-family: var(--lucet-font-mono);
-  font-variant-numeric: tabular-nums;
   font-size: calc(var(--lucet-text-xs) - 0.5px);
 }
 .lucet-tool__row--summary .lucet-tool__detail { margin-inline-start: 37px; }
@@ -661,10 +660,22 @@
 }
 .lucet-prompt__att[data-status='failed'] .lucet-prompt__att-icon,
 .lucet-att__icon { color: inherit; }
+/* The reason is METADATA, not a third action (audit round 01): quieter
+   than the name, never a pill, read after the filename and before the
+   actions. */
 .lucet-prompt__att-reason {
   flex: none;
   font-size: 11px;
-  opacity: 0.85;
+  opacity: 0.7;
+}
+/* Retry and Remove are a group: separated by a full spacing token so
+   each 24px hit target is its own — at the chip's 6px gap the two zones
+   touched edge to edge. */
+.lucet-prompt__att-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
+  flex: none;
 }
 
 .lucet-prompt__att[data-status='uploading'] .lucet-prompt__att-name,
@@ -1116,17 +1127,14 @@
 }
 
 .lucet-thread__turn { min-inline-size: 0; display: grid; justify-items: start; }
-/* The group-chat grammar: your own turns sit right. */
+/* The group-chat grammar: your own turns sit right — in a SHARED
+   thread too. Other people gain a face and a name; you keep position
+   and the anchored tail corner, no head (Option A, 2026-09-02). The
+   rule that once pulled self turns back to the start under [data-shared]
+   made the render contradict the specimen's caption on one screen; the
+   registers audit now asserts a self turn never aligns start or carries
+   a face. */
 .lucet-thread__turn[data-self] { justify-items: end; }
-/* In a SHARED thread everyone stands on the same side: alignment stops
-   meaning "mine" the moment a third voice exists, and the faces take
-   over that job (the collaborative grammar — Slack, Figma). The tail
-   follows the face. */
-.lucet-thread[data-shared] .lucet-thread__turn[data-self] { justify-items: start; }
-.lucet-thread[data-shared] .lucet-thread__turn[data-self] .lucet-thread__prompt {
-  border-end-end-radius: var(--lucet-radius-surface);
-  border-end-start-radius: 4px;
-}
 
 /* Quiet separators between pairs: the structure Ian asked the marker to be.
    The hairline sits in the middle of real air, not instead of it. A
@@ -1574,7 +1582,15 @@
 
 .lucet-codeblock {
   margin: 0;
-  min-inline-size: 0;
+  /* A FLOOR for the code-only answer (audit round 01, 2026-09-02): a
+     block that is the response's whole substance sized to its longest
+     line — 108px streaming, 112px settled — and jumped as the fence
+     filled. 16rem is the least a code surface may measure; the cap
+     keeps it inside its column. Inside a full answer the block already
+     spans the measure, so the floor is a no-op there: streaming and
+     settled measure the same, bar, label, writing state and Copy hold. */
+  min-inline-size: 16rem;
+  max-inline-size: 100%;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-muted);
   box-shadow: var(--lucet-hairline);
@@ -1764,10 +1780,11 @@
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 /* The commit half of the banner's pair: same quiet control, its words
-   do the emphasis. */
+   and its ink do the emphasis — no heavier weight. (It asked for 550;
+   the loaded faces ship 400/500/600, so 550 rendered as a synthesized
+   600. Weights are shipped weights only.) */
 .lucet-thread__return[data-commit] {
   color: var(--lucet-foreground);
-  font-weight: 550;
 }
 .lucet-thread__return:hover { background-color: var(--lucet-hover); }
 .lucet-thread__return:focus-visible {
@@ -2078,15 +2095,22 @@
   color: var(--lucet-subtle-foreground);
   font-size: var(--lucet-text-xs);
 }
-/* THE FIGURE GRAMMAR, shared: every priced or counted figure sets in
-   tabular numerals so columns of numbers read as columns — the budget
-   panel, the chip's price, the tool receipt's duration, the scope
-   counts, and any future priced row join the same rule rather than
-   re-declaring it. */
+/* THE FIGURE GRAMMAR, shared: every dynamic figure sets in tabular
+   numerals so a digit changing never moves its neighbours and columns
+   of numbers read as columns — projected prices on triggers and rows,
+   token counts and fit notes, the receipt's elapsed time, source
+   locations and freshness, the scope counts. One rule; anything new
+   that counts or times joins it here rather than re-declaring it
+   (audit round 01 swept the strays in, 2026-09-02). */
 .lucet-budget__fig,
 .lucet-budget__price,
+.lucet-budget__why,
+.lucet-budget__row-note,
 .lucet-tool__detail,
-.lucet-scope__count {
+.lucet-tool__elapsed,
+.lucet-scope__count,
+.lucet-sources__loc,
+.lucet-sources__flag {
   font-variant-numeric: tabular-nums;
 }
 /* THREE REGISTERS at a squint: the projection is the component's

@@ -342,6 +342,53 @@ async function main() {
       else if (res.bad.length) failures.push(`${where}  control family drifts: ${res.bad.join('; ')}`)
     }
 
+    /* THE LAB'S OWN FAMILY (audit round 01): specimen labels on the
+       components page take the control recipe (13/500/18) and every
+       Preview/Code tab the meta size at the control weight (12/500/18),
+       in the sans stack, no tracking — so half-pixels cannot return. */
+    const checkLabFamily = async (where) => {
+      const res = await page.evaluate(() => {
+        const first = (v) => v.split(',')[0].replace(/['"]/g, '').trim()
+        const sans = first(getComputedStyle(document.documentElement).getPropertyValue('--lucet-font-sans'))
+        const bad = []
+        const check = (sel, size, weight) => {
+          for (const el of document.querySelectorAll(sel)) {
+            const cs = getComputedStyle(el)
+            const tracking = cs.letterSpacing === 'normal' || cs.letterSpacing === '0px'
+            if (cs.fontSize !== size || cs.fontWeight !== weight || cs.lineHeight !== '18px' || !tracking || first(cs.fontFamily) !== sans)
+              bad.push(`${sel} ${cs.fontSize}/${cs.fontWeight}/${cs.lineHeight}/${cs.letterSpacing}/${first(cs.fontFamily)}`)
+          }
+        }
+        check('.prim--comp .spec__label', '13px', '500')
+        check('.spec__tabs button', '12px', '500')
+        return { n: document.querySelectorAll('.prim--comp .spec__label, .spec__tabs button').length, bad: [...new Set(bad)] }
+      })
+      if (res.n === 0) return
+      checks++
+      if (res.bad.length) failures.push(`${where}  lab family drifts: ${res.bad.join('; ')}`)
+    }
+
+    /* THE SELF TURN (audit round 01): your own prompt sits right and
+       carries no head — in a shared thread too. Other people's turns in a
+       shared thread do carry the face. */
+    const checkSelfTurns = async (where) => {
+      const res = await page.evaluate(() => {
+        const selfs = [...document.querySelectorAll('.lucet-thread__turn[data-self]')]
+        const bad = []
+        for (const t of selfs) {
+          if (getComputedStyle(t).justifyItems !== 'end') bad.push('self turn aligns ' + getComputedStyle(t).justifyItems)
+          if (t.querySelector('.lucet-thread__withface, .lucet-thread__author, .lucet-avatar')) bad.push('self turn carries a head')
+        }
+        const shared = [...document.querySelectorAll('.lucet-thread[data-shared]')]
+        const others = shared.flatMap((th) => [...th.querySelectorAll('.lucet-thread__turn[data-role="user"]:not([data-self])')])
+        for (const t of others) if (!t.querySelector('.lucet-thread__withface')) bad.push('another person in a shared thread has no face')
+        return { selfs: selfs.length, shared: shared.length, others: others.length, bad: [...new Set(bad)] }
+      })
+      checks++
+      if (res.selfs === 0 || res.shared === 0) failures.push(`${where}  self turns: no self turn or no shared thread found to judge`)
+      else if (res.bad.length) failures.push(`${where}  self turns: ${res.bad.join('; ')}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -366,6 +413,7 @@ async function main() {
       await checkCanvas(`canvas ${theme}/${accent}`, theme)
       await checkNativeButtons(`buttons ${theme}/${accent}`)
       await checkControlFamily(`family ${theme}/${accent}`)
+      await checkLabFamily(`lab family ${theme}/${accent}`)
       await page.waitForTimeout(50)
       let found = 0
       for (let i = 0; i < all.length; i++) {
@@ -485,6 +533,7 @@ async function main() {
     await still()
     await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
     await tagProbes(COMPONENT_PROBES)
+    await checkSelfTurns('registers components')
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
 
     /* Occlusion, all four cells on the components page: the chrome

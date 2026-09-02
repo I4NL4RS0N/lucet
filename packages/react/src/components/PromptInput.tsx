@@ -178,28 +178,34 @@ function AttachmentChip({
       {att.status === 'failed' ? (
         <span className="lucet-prompt__att-reason">{att.reason ?? 'Didn’t upload'}</span>
       ) : null}
-      {att.status === 'failed' && onRetry ? (
+      {/* The actions are one group, a spacing token apart, so each 24px
+          hit target is its own. The two glyphs are drawn to the same
+          optical size: an arc reads smaller than its box and a cross
+          larger, so the cross is drawn a shade smaller than the arc. */}
+      <span className="lucet-prompt__att-actions">
+        {att.status === 'failed' && onRetry ? (
+          <button
+            type="button"
+            className="lucet-prompt__att-remove"
+            aria-label={`Try uploading ${att.name} again`}
+            onClick={() => onRetry(att.id)}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4" />
+            </svg>
+          </button>
+        ) : null}
         <button
           type="button"
           className="lucet-prompt__att-remove"
-          aria-label={`Try uploading ${att.name} again`}
-          onClick={() => onRetry(att.id)}
+          aria-label={`Remove ${att.name}`}
+          onClick={() => onRemove(att.id)}
         >
           <svg viewBox="0 0 24 24" aria-hidden>
-            <path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4" />
+            <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" />
           </svg>
         </button>
-      ) : null}
-      <button
-        type="button"
-        className="lucet-prompt__att-remove"
-        aria-label={`Remove ${att.name}`}
-        onClick={() => onRemove(att.id)}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden>
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
-      </button>
+      </span>
     </span>
   )
 }

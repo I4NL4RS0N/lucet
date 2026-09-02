@@ -1,5 +1,12 @@
 # lucet-react
 
+## 0.1.1
+
+### Patch Changes
+
+- Five fixes from the first component audit. In a shared thread your own turns stay on the right with no avatar; only other people gain a face and a name, as the thread's own caption says. A code-only answer gets a width floor of 16rem, so a block measures the same while it streams and after it settles. The failed-attachment chip keeps Retry and Remove a spacing token apart with independent hit targets, draws the two glyphs to one optical size, and sets the reason as quiet metadata. Every dynamic figure — projected prices, token counts, elapsed time, source locations and freshness, scope counts — sets in tabular numerals through the one shared rule. The restore banner's commit action no longer asks for a 550 weight no loaded face ships.
+  - lucet-core@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

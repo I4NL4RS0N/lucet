@@ -39,7 +39,9 @@ the bubble doesn't wear, and the light-cell utterance was invisible.
 - **People have faces; the machine has output.** The group-chat grammar:
   your own turns sit right with no avatar (you know who you are), other
   people's turns sit left with a prominent avatar and their name —
-  multiplayer is the differentiator, so the humans get the faces. The
+  multiplayer is the differentiator, so the humans get the faces. In a
+  shared thread the same grammar holds: the other people gain faces and
+  names; your own turns stay right and headless. The
   assistant gets no avatar and no header at all: the document is its
   presence, the no-bubble position taken to its conclusion.
 - **A response is never simply "loading" or "done".** Streaming shows a caret
