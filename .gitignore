@@ -53,7 +53,8 @@ scratch/
 .netlify/
 
 # private, local-only. see CLAUDE.md
-docs/design-brief.md
+# no path: a stray copy of the brief must never be committable
+design-brief.md
 docs/todo.md
 shots/
 .agents/
