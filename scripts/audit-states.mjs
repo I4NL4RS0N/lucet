@@ -36,6 +36,9 @@ import { contrastRatio, flattenBackground, oklabLightness } from './contrast.mjs
 const DEV_PORT = 4344
 const URL_ARG = process.argv[2] ?? process.env.AUDIT_URL ?? null
 const MIN_DL = 0.03
+/* The lab stage under Glass sits at least this far ABOVE its page: half
+   the surface ladder's first stride (round 03 ruling). */
+const PLATE_MIN_DL = 0.015
 const ACCENTS = ['slate', 'blue', 'indigo', 'violet', 'magenta', 'rose', 'green', 'teal', 'cyan', 'amber']
 
 /*
@@ -1160,13 +1163,21 @@ async function main() {
         checks++
         const ground = lab.pageBg === 'rgba(0, 0, 0, 0)' ? lab.bodyBg : lab.pageBg
         if (expression === 'glass') {
-          /* Glass separates with value: the well needs its own step. */
-          const dls = Math.abs(
+          /* RULING (audit round 03): in Glass a stage is a PLATE, not a
+             well — the Konfabulator's grammar, a raised specimen on the
+             host's floor. The assertion is directional: the stage sits
+             ABOVE the page by at least half the ladder's first stride
+             (0.125 on 0.105 in dark; white on .965 in light) and wears
+             the raised material. Until this round the check accepted
+             either direction at a 0.03 step, which is how a 0.065 well
+             passed under the expression that raises every other specimen. */
+          const d =
             oklabLightness(flattenBackground([lab.stage, ground, 'rgb(255,255,255)'])) -
-              oklabLightness(flattenBackground([ground, 'rgb(255,255,255)'])),
-          )
-          if (dls < 0.03 - 0.0005)
-            failures.push(`lab stage (${theme}/glass): stage-vs-page is ${dls.toFixed(3)} L — the well needs its own step (>= 0.03)`)
+            oklabLightness(flattenBackground([ground, 'rgb(255,255,255)']))
+          if (d < PLATE_MIN_DL - 0.0005)
+            failures.push(`lab stage (${theme}/glass): stage-vs-page is ${d >= 0 ? '+' : ''}${d.toFixed(3)} L — under Glass the stage is a plate above the page (>= +${PLATE_MIN_DL})`)
+          if (lab.stageRing === 'none' || !/\binset\b/.test(lab.stageRing))
+            failures.push(`lab stage (${theme}/glass): the plate wears no raised material (${lab.stageRing}) — rim, edge-top and contact are the grammar`)
         } else if (lab.stageRing === 'none') {
           /* Paper separates with a line: the ring must exist. */
           failures.push(`lab stage (${theme}/paper): the stage ring is gone — Paper's grammar is the line`)

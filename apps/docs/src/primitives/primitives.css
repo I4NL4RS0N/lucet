@@ -20,10 +20,11 @@
      across all three pages. */
   --page: var(--cfg-stage-ground);
   --sunken: var(--lucet-subtle);
-  /* The stage's own well value: everywhere else --sunken serves small
-     recesses; the stage is the page-scale well, and dark Glass needs
-     it deeper (override below). */
+  /* The stage's own plane: in Paper a well (--sunken, everywhere else
+     the small recess), in Glass a plate (override below). --stage-lift
+     is what the stage wears: Paper's ring, Glass's raised material. */
   --stage-well: var(--sunken);
+  --stage-lift: var(--ring-1);
   --surface: var(--lucet-card);
   --raised: var(--lucet-secondary);
   --field: var(--lucet-muted);
@@ -200,26 +201,33 @@ body {
 
 /* ---- a section, and its stage ---- */
 
-/* THE STAGE IN DARK GLASS (lab pass): ring-1 is transparent by the
-   no-lines law, which left a 0.145 well on a 0.125 ground — specimens
-   floated in an undifferentiated field. The well takes its own value,
-   a full stride below the ground, the surface grammar's move — never
-   a border, never a resurrected ring. Light Glass holds as shipped
-   (the white stage and its cast carry the edge — confirmed from the
-   captures, both lab pages) and Paper keeps its hairline.
-   DERIVED FROM THE GROUND, NOT WRITTEN BESIDE IT (dark-Glass pass,
-   2026-09-01): the first cut hard-coded 0.09 against a 0.125 ground and
-   the step collapsed to 0.015 the day the ladder moved (ground 0.105).
-   The stride is the ladder's own first stride, 0.04, taken downward —
-   a recess in the page, not a surface inside a window. */
+/* THE STAGE IN DARK GLASS. History first, because the ruling reverses
+   it. Lab pass: ring-1 is transparent by the no-lines law, which left a
+   0.145 well on a 0.125 ground, so the well took its own value a full
+   stride BELOW the ground — a recess in the page. Dark-Glass pass
+   (2026-09-01): derived from the ground rather than written beside it,
+   after a hard-coded 0.09 collapsed to a 0.015 step the day the ladder
+   moved. That derivation was calc(l - 0.04): 0.065 on 0.105.
+   RULING (audit round 03, 2026-09-02): IN GLASS A STAGE IS A PLATE, NOT
+   A WELL. The Konfabulator's grammar is the specimen as a raised plate
+   on the host's floor — frame 0.205 on ground 0.105 — and a well under
+   the same expression was a second grammar for the same idea, reading
+   as a void. One grammar: the stage steps UP from the ground, half the
+   ladder's first stride, 0.125 on 0.105, and wears the raised material
+   — rim, edge-top, contact — no border, no gradient, no glow. Light
+   Glass was already a plate (white on the .965 studio ground) and does
+   not change; Paper keeps its well and its ring in both themes, lines
+   not light. audit-states asserts the plate direction under Glass. */
 :root[data-theme='dark'] [data-expression='glass'].prim,
 :root[data-theme='dark'][data-expression='glass'] .prim {
-  --stage-well: oklch(from var(--lucet-background) calc(l - 0.04) c h);
+  --stage-well: oklch(from var(--lucet-background) calc(l + 0.02) c h);
+  --stage-lift: var(--lucet-material-raised);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) [data-expression='glass'].prim,
   :root:not([data-theme='light'])[data-expression='glass'] .prim {
-    --stage-well: oklch(from var(--lucet-background) calc(l - 0.04) c h);
+    --stage-well: oklch(from var(--lucet-background) calc(l + 0.02) c h);
+    --stage-lift: var(--lucet-material-raised);
   }
 }
 
@@ -229,7 +237,11 @@ body {
 /* ONE SECTION-HEADING PATTERN, site-level (macro pass): title and
    proposition share a baseline at width and stack with a fixed gap when
    narrow; the proposition's measure is capped and wraps without
-   orphans; the title balances. Specimen-internal type is untouched. */
+   orphans; the title balances. Specimen-internal type is untouched.
+   CLOSED (audit round 03): the criterion is the contract — no deck line
+   begins under the title column at 1366 or 1440 — and wrapping flex is
+   the implementation. Verified three rounds running, 38 heads across
+   both lab pages, none under. */
 .sec__head {
   display: flex;
   flex-wrap: wrap;
@@ -243,17 +255,19 @@ body {
 .sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); max-inline-size: 44ch; }
 
 /*
- * The stage. Every specimen sits on one, and the stage is a step DOWN from the
- * page rather than up: a well, so the objects in it read as lit from above and
- * the page frames them. Raising the stage instead would put it in competition
- * with the things standing on it.
+ * The stage. Every specimen sits on one. In Paper it is a step DOWN from the
+ * page: a well with a ring, so the objects in it read as lit from above and
+ * the page frames them. In Glass it is a PLATE, a step up wearing the raised
+ * material, because that is the Konfabulator's grammar for a specimen on the
+ * host's floor (round 03 ruling, above). Both arrive through the two lab
+ * tokens; the rule itself is one.
  */
 .stage {
   background: var(--stage-well);
   border-radius: var(--r-panel);
-  box-shadow: var(--ring-1);
+  box-shadow: var(--stage-lift);
   padding: calc(32px * var(--lucet-density, 1));
-  /* Light overrides below: the well is a dark-mode idea. */
+  /* Light overrides below; in Glass the tokens above make this a plate. */
   display: flex;
   flex-wrap: wrap;
   /* Hugs its content. Centring left the taller specs floating in dead air. */
