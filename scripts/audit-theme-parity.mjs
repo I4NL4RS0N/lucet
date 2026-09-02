@@ -171,6 +171,26 @@ async function main() {
     ['--lucet-card', '--lucet-surface-sunken', 0.035],
   ]
 
+  /* THE INSIDE-ABOVE-OUTSIDE LADDER (dark Glass pass, 2026-09-01):
+   * nothing inside a floating window may be darker than the page it
+   * floats on. The dark-Glass sunken step once sat BELOW the page
+   * ground (0.105 under 0.125): the sidebar dissolved into the browser
+   * and the frame had no edge. Judged from the page ground to every
+   * in-frame surface, SIGNED — inside minus outside. Direction is
+   * asserted in both dark cells (a lit object is lighter than the room)
+   * and the ≥ 0.03 L floor in dark Glass, where value is the only
+   * separator. Dark Paper separates the frame by line and keeps its
+   * ladder tight on purpose (sunken 0.005 above the ground), so there
+   * the check asserts direction plus a painted frame hairline. The two
+   * LIGHT cells are the polarity exception and are MEASURED, not
+   * asserted: a white page cannot be out-lit (the one-white-ground law)
+   * and a light recess is darker than its page by definition. Their
+   * signed deltas print with the pass line so the exception stays a
+   * number, not a belief. */
+  const FRAME_INSIDE = ['--lucet-surface-sunken', '--lucet-card', '--lucet-popover']
+  const FRAME_FLOOR = 0.03
+  const frameMeasured = []
+
   /* Union of every pair list: the resolver must know a name to paint it.
      (The glass shell pairs failed as `undefined` the first time they were
      actually exercised — see below.) */
@@ -178,6 +198,7 @@ async function main() {
     ...DISTINCT.flatMap(([a, b, , base]) => [a, b, base]),
     ...GLASS_DISTINCT.flatMap(([a, b]) => [a, b]),
     ...PAPER_DARK_DISTINCT.flatMap(([a, b]) => [a, b]),
+    '--lucet-background', '--lucet-border', ...FRAME_INSIDE,
   ].filter(Boolean))]
 
 
@@ -245,6 +266,33 @@ async function main() {
               const delta = la !== null && lb !== null ? Math.abs(la - lb) : null
               if (delta === null || delta < min - 0.0005) {
                 roleFailures.push({ theme: `${theme}/${expression}`, a, b, av: resolved[a], bv: resolved[b], delta: delta?.toFixed(3) ?? 'n/a', min })
+              }
+            }
+            const lGround = oklabLightness(flattenBackground([resolved['--lucet-background'], 'rgb(255, 255, 255)']))
+            const signed = {}
+            for (const inside of FRAME_INSIDE) {
+              const lIn = oklabLightness(flattenBackground([resolved[inside], 'rgb(255, 255, 255)']))
+              signed[inside] = lGround !== null && lIn !== null ? lIn - lGround : null
+            }
+            frameMeasured.push({ cell: `${theme}/${expression}`, ground: lGround, signed })
+            if (theme === 'dark') {
+              const min = expression === 'glass' ? FRAME_FLOOR : 0
+              for (const inside of FRAME_INSIDE) {
+                const delta = signed[inside]
+                if (delta === null || delta < min - 0.0005) {
+                  roleFailures.push({
+                    theme: `${theme}/${expression} frame`, a: '--lucet-background', b: inside,
+                    av: resolved['--lucet-background'], bv: resolved[inside],
+                    delta: delta === null ? 'n/a' : `${delta >= 0 ? '+' : ''}${delta.toFixed(3)} inside-minus-page`, min: `${min} above the page`,
+                  })
+                }
+              }
+              if (expression === 'paper') {
+                const border = resolved['--lucet-border']
+                const alpha = border?.match(/\/ ([\d.]+)\)/)?.[1]
+                if (!border || border === 'rgba(0, 0, 0, 0)' || border === 'transparent' || (alpha !== undefined && parseFloat(alpha) === 0)) {
+                  roleFailures.push({ theme: `${theme}/${expression} frame`, a: '--lucet-border', b: '(frame hairline)', av: border, bv: 'must paint: Paper separates the window by line', delta: 'n/a', min: 'visible' })
+                }
               }
             }
             for (const [a, b, min, base] of DISTINCT) {
@@ -319,8 +367,16 @@ async function main() {
     process.exit(1)
   }
   console.log(
-    `Role distinctness passed: ${DISTINCT.length} pairs apart in both themes; ${GLASS_DISTINCT.length} glass and ${PAPER_DARK_DISTINCT.length} dark-paper surface steps hold.`,
+    `Role distinctness passed: ${DISTINCT.length} pairs apart in both themes; ${GLASS_DISTINCT.length} glass and ${PAPER_DARK_DISTINCT.length} dark-paper surface steps hold; frame ladder inside-above-outside in both dark cells.`,
   )
+  for (const m of frameMeasured) {
+    const parts = FRAME_INSIDE.map((n) => {
+      const d = m.signed[n]
+      return `${n.replace('--lucet-', '').replace('surface-', '')} ${d === null ? 'n/a' : (d >= 0 ? '+' : '') + d.toFixed(3)}`
+    })
+    const asserted = m.cell.startsWith('dark') ? 'asserted' : 'measured only'
+    console.log(`  frame ladder ${m.cell}: page ${m.ground?.toFixed(3)} → ${parts.join(', ')}  (${asserted})`)
+  }
 }
 
 main().catch((err) => {

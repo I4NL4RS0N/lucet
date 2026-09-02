@@ -136,18 +136,30 @@
   :root:not([data-theme='light']) [data-expression='glass'],
   :root[data-expression='glass']:not([data-theme='light']) {
     /* A raised surface is LIGHTER than the ground, because that is how
-       light works. The ladder is WIDE — the drama comes from the gap:
-         sunken 0.105 · ground 0.125 · card 0.205 · overlay 0.269
+       light works. The ladder is WIDE — the drama comes from the gap.
        The first cut kept Paper's raised/overlay values and only nudged
-       the ground (0.155 vs 0.165) — dark Glass was the flattest of the
-       four combinations, near-indistinguishable from dark Paper at a
-       glance. Ground drops well clear of the card and the overlay jumps
-       to n800, so a popover, chip, or drawer is a visibly lighter object
-       and not a shadow with no ground to fall on. */
-    --lucet-surface-ground: oklch(0.125 var(--lucet-neutral-c) var(--lucet-neutral-h));
+       the ground — dark Glass was the flattest of the four combinations,
+       near-indistinguishable from dark Paper at a glance. Ground drops
+       well clear of the card and the overlay jumps to n800, so a
+       popover, chip, or drawer is a visibly lighter object and not a
+       shadow with no ground to fall on.
+       THE INSIDE-ABOVE-OUTSIDE LADDER (dark-Glass pass, 2026-09-01):
+       nothing inside a floating window may be darker than the page it
+       floats on. The second cut put the sunken step BELOW the ground
+       (0.105 under 0.125): the sidebar dissolved into the browser and
+       the frame lost its edge. Derived as one system, not picked —
+       every in-frame surface is a step of the neutral scale (sunken
+       n950, card n900, overlay n800) and the ground, which is the room
+       and not a surface, sits one stride below the scale's floor.
+       Strides grow with height, the way light falls off:
+         ground 0.105 · sunken 0.145 · card 0.205 · overlay 0.269
+       (+0.040, +0.060, +0.064). audit-theme-parity asserts the
+       direction and a 0.03 floor from the ground to every in-frame
+       surface. */
+    --lucet-surface-ground: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
     --lucet-surface-raised: var(--lucet-neutral-900);
     --lucet-surface-overlay: var(--lucet-neutral-800);
-    --lucet-surface-sunken: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --lucet-surface-sunken: var(--lucet-neutral-950);
     --lucet-line: oklch(0.42 0.006 264 / 0.4);
     --lucet-shadow-color: 0 0 0;
     --lucet-shadow-alpha: 0.6;
@@ -156,12 +168,13 @@
 
 :root[data-theme='dark'] [data-expression='glass'],
 :root[data-theme='dark'][data-expression='glass'] {
-  /* See the media twin above: wide ladder, sunken 0.105 · ground 0.125 ·
-     card 0.205 · overlay 0.269. */
-  --lucet-surface-ground: oklch(0.125 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  /* See the media twin above: the inside-above-outside ladder, ground
+     0.105 · sunken 0.145 (n950) · card 0.205 (n900) · overlay 0.269
+     (n800). */
+  --lucet-surface-ground: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
   --lucet-surface-raised: var(--lucet-neutral-900);
   --lucet-surface-overlay: var(--lucet-neutral-800);
-  --lucet-surface-sunken: oklch(0.105 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --lucet-surface-sunken: var(--lucet-neutral-950);
   --lucet-line: oklch(0.42 0.006 264 / 0.4);
   --lucet-shadow-color: 0 0 0;
   --lucet-shadow-alpha: 0.6;

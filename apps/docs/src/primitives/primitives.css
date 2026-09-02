@@ -188,15 +188,20 @@ body {
    a full stride below the ground, the surface grammar's move — never
    a border, never a resurrected ring. Light Glass holds as shipped
    (the white stage and its cast carry the edge — confirmed from the
-   captures, both lab pages) and Paper keeps its hairline. */
+   captures, both lab pages) and Paper keeps its hairline.
+   DERIVED FROM THE GROUND, NOT WRITTEN BESIDE IT (dark-Glass pass,
+   2026-09-01): the first cut hard-coded 0.09 against a 0.125 ground and
+   the step collapsed to 0.015 the day the ladder moved (ground 0.105).
+   The stride is the ladder's own first stride, 0.04, taken downward —
+   a recess in the page, not a surface inside a window. */
 :root[data-theme='dark'] [data-expression='glass'].prim,
 :root[data-theme='dark'][data-expression='glass'] .prim {
-  --stage-well: oklch(0.09 var(--lucet-neutral-c) var(--lucet-neutral-h));
+  --stage-well: oklch(from var(--lucet-background) calc(l - 0.04) c h);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) [data-expression='glass'].prim,
   :root:not([data-theme='light'])[data-expression='glass'] .prim {
-    --stage-well: oklch(0.09 var(--lucet-neutral-c) var(--lucet-neutral-h));
+    --stage-well: oklch(from var(--lucet-background) calc(l - 0.04) c h);
   }
 }
 

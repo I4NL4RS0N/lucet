@@ -2503,3 +2503,15 @@
   background-color: var(--lucet-popover);
   box-shadow: var(--lucet-material-raised);
 }
+
+/* LIGHT ON EVERYTHING, SHADOW ONLY ON OBJECTS (dark-Glass pass,
+   2026-09-01). In Glass every surface catches light on its upper edge —
+   the utterance included. The bubble keeps its tint step and its
+   geometry and casts nothing; it simply catches the same light the
+   receipt does, so bubble and receipt read as one material at two
+   heights rather than as two materials. Paper stays lines-only: no
+   edge-top anywhere, which is why this is scoped to Glass rather than
+   left to the token's Paper value. */
+[data-expression='glass'] .lucet-thread__prompt {
+  box-shadow: var(--lucet-edge-top);
+}

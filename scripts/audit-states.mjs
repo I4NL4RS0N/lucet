@@ -890,9 +890,13 @@ async function main() {
      *      step >= 0.03 L from the thread plane (it rendered white on
      *      white in the light cells when it borrowed the control
      *      token);
-     *   2. the receipt is the ONLY elevated object in the thread — no
-     *      bubble carries a material box-shadow, the receipt's pseudo
-     *      does;
+     *   2. the receipt is the ONLY elevated object in the thread. Light
+     *      on everything, shadow only on objects (dark-Glass pass,
+     *      2026-09-01): in Glass the bubble wears exactly the lit top
+     *      edge — the same --lucet-edge-top the receipt catches — and
+     *      nothing else: no rim, no cast. In Paper it wears nothing.
+     *      The receipt's pseudo carries the material, and in Glass that
+     *      material must include a cast (a non-inset layer);
      *   3. stage-vs-page on the primitives lab — the well must step
      *      >= 0.03 from the ground (dark Glass had 0.02 and no ring).
      */
@@ -912,10 +916,19 @@ async function main() {
           const bubble = frame.querySelector('.lucet-thread__prompt')
           const plane = getComputedStyle(frame).backgroundColor
           const tools = [...frame.querySelectorAll('.lucet-tool')]
+          /* The lit edge, resolved where the bubble lives: a probe inside
+             the frame painting --lucet-edge-top gives the exact string
+             the bubble must match in Glass. */
+          const probe = document.createElement('div')
+          probe.style.boxShadow = 'var(--lucet-edge-top)'
+          frame.appendChild(probe)
+          const edgeTop = getComputedStyle(probe).boxShadow
+          probe.remove()
           return {
             bubble: getComputedStyle(bubble).backgroundColor,
             plane,
             bubbleShadow: getComputedStyle(bubble).boxShadow,
+            edgeTop,
             toolMaterial: tools.length
               ? getComputedStyle(tools[0], '::after').boxShadow
               : null,
@@ -929,11 +942,22 @@ async function main() {
         if (dl < 0.03 - 0.0005)
           failures.push(`registers (${theme}/${expression}): bubble-vs-plane is ${dl.toFixed(3)} L — the utterance must read as a surface (>= 0.03)`)
         checks++
-        if (reg.bubbleShadow !== 'none')
-          failures.push(`registers (${theme}/${expression}): the utterance wears material (${reg.bubbleShadow}) — elevation belongs to the receipt alone`)
+        if (expression === 'glass') {
+          if (reg.bubbleShadow !== reg.edgeTop)
+            failures.push(`registers (${theme}/${expression}): the utterance must wear exactly the lit edge (${reg.edgeTop}), not (${reg.bubbleShadow}) — light on everything, shadow only on objects`)
+        } else if (reg.bubbleShadow !== 'none') {
+          failures.push(`registers (${theme}/${expression}): the utterance wears material (${reg.bubbleShadow}) — Paper separates with lines`)
+        }
         checks++
         if (!reg.toolMaterial || reg.toolMaterial === 'none')
           failures.push(`registers (${theme}/${expression}): the receipt's material pseudo is missing — nothing is elevated`)
+        else if (
+          expression === 'glass' &&
+          /* Computed layers read "<color> x y blur spread [inset]", comma-
+             separated; split where a colour function starts a new layer. */
+          !reg.toolMaterial.split(/,\s*(?=(?:oklch|oklab|rgba?|hsla?|color)\()/).some((layer) => !/\binset\b/.test(layer))
+        )
+          failures.push(`registers (${theme}/${expression}): the receipt casts no shadow (${reg.toolMaterial}) — the object is a lit surface that also casts`)
       }
 
       /* the lab stage */

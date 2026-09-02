@@ -15,6 +15,11 @@ makes its elevation mean something.
 If every message rose, nothing would float. Elevation is spent on
 exactly one register so the reader can trust what height means.
 
+In Glass, every surface catches light on its upper edge — the
+utterance included. Only objects cast shadows. The document has no
+container; the utterance is a lit surface; the object is a lit
+surface that also casts.
+
 Material never encodes identity: another person's bubble is the same
 utterance surface as yours — position, avatar, and the tail corner
 carry whose it is. The utterance tint derives from the plane itself

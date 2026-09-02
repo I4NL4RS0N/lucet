@@ -228,16 +228,22 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) [data-expression='glass'],
   :root[data-expression='glass']:not([data-theme='light']) {
-    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.28);
+    --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.42);
     --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
     /* NO LINES AT ALL: space and light do the separating (see the light
        block). The lit edge-top survives - it is light, not a line - and
        the raised/overlay slots carry the rim light. In dark it is the
        PRIMARY depth cue: shadow barely reads on a dark ground, so the
-       lit top edge and rim do what the shade stack does in light. */
+       lit top edge and rim do what the shade stack does in light.
+       THE VALUES NOW OBEY THAT SENTENCE (dark-Glass pass, 2026-09-01).
+       The first calibration pushed shadow where it should have pushed
+       rim: the receipt wore a 14/28px cast at 0.45 over a 0.11 rim and
+       read as hovering, not lit. The lift moved into the light — rim
+       raised 0.11→0.22, overlay 0.16→0.30, edge-top 0.28→0.42 — and
+       the shade stacks below dropped to contact shadows. */
     --lucet-hairline: 0 0 0 0 transparent;
-    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.11);
-    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
+    --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.22);
+    --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.3);
     --lucet-default-border: transparent;
     --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
     --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
@@ -247,16 +253,18 @@
       0 0.5px 0 oklch(0 0 0 / 0.5),
       0 1px 2px oklch(0 0 0 / 0.45),
       0 2px 5px oklch(0 0 0 / 0.35);
+    /* IN DARK, SHADOW IS A WHISPER: a contact shadow only — the
+       half-pixel stop and one tight layer — and no far layer on a dark
+       plane, where it can only read as a smudge. Raised is the lighter
+       touch; overlay keeps the one cast that may still read, at the
+       frame's edge, and even that stops at 8px. */
     --lucet-shade-2:
-      0 0.5px 0 oklch(0 0 0 / 0.45),
-      0 1px 2px oklch(0 0 0 / 0.45),
-      0 5px 10px oklch(0 0 0 / 0.4),
-      0 14px 28px oklch(0 0 0 / 0.45);
+      0 0.5px 0 oklch(0 0 0 / 0.4),
+      0 1px 2px oklch(0 0 0 / 0.3);
     --lucet-shade-3:
-      0 0.5px 0 oklch(0 0 0 / 0.5),
-      0 2px 5px oklch(0 0 0 / 0.5),
-      0 10px 24px oklch(0 0 0 / 0.55),
-      0 28px 56px oklch(0 0 0 / 0.6);
+      0 0.5px 0 oklch(0 0 0 / 0.55),
+      0 1px 2px oklch(0 0 0 / 0.45),
+      0 3px 8px oklch(0 0 0 / 0.35);
 
     --lucet-material-pressed:
       inset 0 1px 3px oklch(0 0 0 / 0.55), inset 0 -1px 0 oklch(1 0 0 / 0.06), var(--lucet-hairline);
@@ -269,16 +277,19 @@
 /* @paired-begin dark-glass-attr */
 :root[data-theme='dark'] [data-expression='glass'],
 :root[data-theme='dark'][data-expression='glass'] {
-  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.28);
+  --lucet-edge-top: inset 0 1px 0 oklch(1 0 0 / 0.42);
   --lucet-edge-bottom: inset 0 -1px 1px oklch(0 0 0 / 0.5);
   /* NO LINES AT ALL: space and light do the separating (see the light
      block). The lit edge-top survives - it is light, not a line - and
      the raised/overlay slots carry the rim light. In dark it is the
      PRIMARY depth cue: shadow barely reads on a dark ground, so the
-     lit top edge and rim do what the shade stack does in light. */
+     lit top edge and rim do what the shade stack does in light.
+     THE VALUES NOW OBEY THAT SENTENCE (dark-Glass pass, 2026-09-01) —
+     see the media twin's note: lift moved from shade into rim and
+     edge-top; the shade stacks below are contact shadows only. */
   --lucet-hairline: 0 0 0 0 transparent;
-  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.11);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.16);
+  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.22);
+  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.3);
   --lucet-default-border: transparent;
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.3);
   --lucet-inset-shallow: inset 0 1px 1.5px oklch(0 0 0 / 0.26);
@@ -288,16 +299,14 @@
     0 0.5px 0 oklch(0 0 0 / 0.5),
     0 1px 2px oklch(0 0 0 / 0.45),
     0 2px 5px oklch(0 0 0 / 0.35);
+  /* IN DARK, SHADOW IS A WHISPER — see the media twin's note. */
   --lucet-shade-2:
-    0 0.5px 0 oklch(0 0 0 / 0.45),
-    0 1px 2px oklch(0 0 0 / 0.45),
-    0 5px 10px oklch(0 0 0 / 0.4),
-    0 14px 28px oklch(0 0 0 / 0.45);
+    0 0.5px 0 oklch(0 0 0 / 0.4),
+    0 1px 2px oklch(0 0 0 / 0.3);
   --lucet-shade-3:
-    0 0.5px 0 oklch(0 0 0 / 0.5),
-    0 2px 5px oklch(0 0 0 / 0.5),
-    0 10px 24px oklch(0 0 0 / 0.55),
-    0 28px 56px oklch(0 0 0 / 0.6);
+    0 0.5px 0 oklch(0 0 0 / 0.55),
+    0 1px 2px oklch(0 0 0 / 0.45),
+    0 3px 8px oklch(0 0 0 / 0.35);
 
   --lucet-material-pressed:
     inset 0 1px 3px oklch(0 0 0 / 0.55), inset 0 -1px 0 oklch(1 0 0 / 0.06), var(--lucet-hairline);
