@@ -934,6 +934,54 @@ async function main() {
               : null,
           }
         })
+        /* THE FLOOR, RENDERED (ruling, 2026-09-01): the frame floats on
+           the stage floor, which follows the exhibit. Measured where it
+           paints — the first painted background just left of the frame
+           — and judged theme-relative like the token ladder in
+           audit-theme-parity: dark Glass, sidebar and card ≥ 0.03 L
+           above the floor; dark Paper, above it, with the frame's
+           hairline present; light Glass, the card above the floor;
+           light Paper, the hairline. Recesses may sit below in light. */
+        const floor = await page.evaluate(() => {
+          const frame = document.querySelector('.cfg__frame')
+          const r = frame.getBoundingClientRect()
+          /* elementsFromPoint, plural: the floor sits at z -1 beneath
+             transparent layout boxes, so the topmost hit is not what
+             paints — the first element in paint order with a fill is. */
+          const e = document
+            .elementsFromPoint(Math.max(1, r.left - 12), r.top + r.height / 2)
+            .find((el) => getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)')
+          const side = document.querySelector('.cfg__side')
+          return {
+            on: e ? (e.className ? String(e.className).split(' ')[0] : e.tagName.toLowerCase()) : null,
+            floorBg: e ? getComputedStyle(e).backgroundColor : null,
+            sidebar: side ? getComputedStyle(side).backgroundColor : null,
+            card: getComputedStyle(frame).backgroundColor,
+            frameShadow: getComputedStyle(frame).boxShadow,
+          }
+        })
+        const lit = (c) => oklabLightness(flattenBackground([c, 'rgb(255,255,255)']))
+        const lFloor = floor.floorBg ? lit(floor.floorBg) : null
+        const dSide = lFloor !== null && floor.sidebar ? lit(floor.sidebar) - lFloor : null
+        const dCard = lFloor !== null ? lit(floor.card) - lFloor : null
+        const fmt = (d) => (d === null ? 'n/a' : (d >= 0 ? '+' : '') + d.toFixed(3))
+        checks++
+        if (floor.on !== 'cfg__stage-floor')
+          failures.push(`floor (${theme}/${expression}): the frame floats on ${floor.on ?? 'nothing'} (${floor.floorBg}) — the stage floor must paint under it`)
+        checks++
+        if (theme === 'dark') {
+          const min = expression === 'glass' ? 0.03 : 0
+          const bad = [['sidebar', dSide], ['card', dCard]].filter(([, d]) => d === null || d < min - 0.0005)
+          if (bad.length)
+            failures.push(`floor (${theme}/${expression}): ${bad.map(([n, d]) => `${n} ${fmt(d)}`).join(', ')} vs the floor — inside must sit ${min ? `≥ ${min} L ` : ''}above the page it floats on`)
+        } else if (expression === 'glass' && (dCard === null || dCard < -0.0005)) {
+          failures.push(`floor (${theme}/glass): card ${fmt(dCard)} vs the floor — the card must sit above its page`)
+        }
+        if (expression === 'paper') {
+          checks++
+          if (!/0px 0px 0px 1px/.test(floor.frameShadow))
+            failures.push(`floor (${theme}/paper): the frame's hairline is missing (${floor.frameShadow}) — Paper separates the window by line`)
+        }
         checks++
         const dl = Math.abs(
           oklabLightness(flattenBackground([reg.bubble, reg.plane, 'rgb(255,255,255)'])) -

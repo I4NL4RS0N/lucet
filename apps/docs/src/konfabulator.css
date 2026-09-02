@@ -73,10 +73,17 @@ body {
      rows wrapped into the fold, and the drawer's host page lost the
      breadcrumb behind it. The dial is for interior space; the shell is
      the site's, and it holds still. */
-  gap: 64px;
-  max-inline-size: 1200px;
+  /* The shell's measures, named once: the stage floor below derives its
+     extents from these same numbers. */
+  --cfg-page-max: 1200px;
+  --cfg-page-pad-x: 28px;
+  --cfg-page-pad-top: 48px;
+  --cfg-page-pad-bottom: 80px;
+  --cfg-col-gap: 64px;
+  gap: var(--cfg-col-gap);
+  max-inline-size: var(--cfg-page-max);
   margin: 0 auto;
-  padding: 48px 28px 80px;
+  padding: var(--cfg-page-pad-top) var(--cfg-page-pad-x) var(--cfg-page-pad-bottom);
   align-items: start;
 }
 
@@ -102,11 +109,17 @@ body {
    dressing (already dropped at 1100). The rail narrows; true stacking
    waits for genuinely phone-ish widths. */
 @media (max-width: 900px) {
-  .cfg__layout { grid-template-columns: minmax(0, 1fr) 248px; gap: 20px; }
+  .cfg__layout { grid-template-columns: minmax(0, 1fr) 248px; --cfg-col-gap: 20px; }
   .cfg__railcol { padding-inline-start: 20px; }
 }
 @media (max-width: 620px) {
   .cfg__layout { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked: the rail sits below on Paper's page, so the stage floor runs
+     to the viewport's right edge and stops halfway into the row gap. */
+  .cfg__stage-floor {
+    inset-inline-end: calc(-1 * var(--cfg-page-pad-x));
+    inset-block-end: calc(-1 * var(--cfg-col-gap) / 2);
+  }
   .cfg__railcol {
     border-inline-start: 0;
     padding-inline-start: 0;
@@ -1088,7 +1101,48 @@ body {
 
 /* ---- the stage bar: every viewing control, above the stage ---- */
 
-.cfg__main { display: grid; gap: 12px; min-inline-size: 0; }
+.cfg__main {
+  --cfg-main-gap: 12px;
+  position: relative;
+  /* The column is its own stacking context so the floor below, at z -1,
+     paints under the exhibit but OVER the page: in the root order the
+     body's fill is in-flow paint, which comes after negative layers, and
+     an un-isolated z -1 floor vanished beneath it. */
+  isolation: isolate;
+  display: grid;
+  gap: var(--cfg-main-gap);
+  min-inline-size: 0;
+}
+
+/* THE FLOOR IS THE HOST'S (ruling, 2026-09-01) — the amendment to the
+   pin decision in App.tsx: the chrome is a constant; the floor is the
+   host's, and follows the exhibit. A real host that adopts Glass paints
+   its own ground and the frame floats on THAT, so the canvas under the
+   frame wears the exhibit's expression for its ground alone. An empty
+   layer anchored to the frame's grid row — not the stage bar's: the
+   toolbar, rail, and header keep Paper's page — running from under the
+   bar to the page's bottom and from the viewport's left edge to the
+   rail's divider, painting --lucet-background as the exhibit resolves
+   it (dark Glass 0.105, light Glass's recessed ground; under Paper it
+   is the page itself and nothing shows). Absolutely positioned and
+   aria-hidden: no geometry moves and nothing else is scoped — the
+   exhibit still wears the axis on .cfg__frame; the desk matches it.
+   (Named stage-floor: .cfg__floor is already the composer's seat inside
+   the frame, and the first cut of this rule captured it.) */
+.cfg__stage-floor {
+  position: absolute;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  inset-block: calc(-1 * var(--cfg-main-gap)) calc(-1 * var(--cfg-page-pad-bottom));
+  inset-inline:
+    calc(-1 * (var(--cfg-page-pad-x) + max(0px, (100vw - var(--cfg-page-max)) / 2)))
+    calc(-1 * var(--cfg-col-gap));
+  z-index: -1;
+  /* Hit-testable on purpose: it is inert (no handlers, aria-hidden), and
+     the audits measure the floor where it paints with elementsFromPoint,
+     which pointer-events: none would hide from them. */
+  background: var(--lucet-background);
+}
 
 .cfg__stagebar {
   display: flex;

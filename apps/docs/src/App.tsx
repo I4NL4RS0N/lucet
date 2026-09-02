@@ -1104,6 +1104,11 @@ export function App() {
 
       <div className="cfg__layout">
         <div className="cfg__main">
+          {/* The floor the frame floats on is the host's, and follows the
+              exhibit (ruling, 2026-09-01) — see .cfg__stage-floor in
+              konfabulator.css. It wears the expression for its ground
+              alone; the axis itself still rides on the frame below. */}
+          <div className="cfg__stage-floor" data-expression={themeState.expression} aria-hidden="true" />
           {/*
            * The stage bar: every control over HOW YOU ARE VIEWING the demo,
            * in one row above the stage it controls. Container on the left
@@ -1134,7 +1139,9 @@ export function App() {
               constant instrument reading — and data-expression rides on
               the app containers themselves. This also demonstrates the
               axis as it ships: scoped to a subtree, the way a host
-              product would adopt it, not a whole-page mode. */}
+              product would adopt it, not a whole-page mode. Amended
+              2026-09-01: the chrome is a constant; the floor is the
+              host's, and follows the exhibit (.cfg__stage-floor above). */}
           {view === 'full' ? (
             <section
               className="cfg__frame cfg__frame--app"
