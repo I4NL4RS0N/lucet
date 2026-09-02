@@ -7,6 +7,7 @@
 - Raise the attachment chip's Retry and Remove hit regions to 28×28 with the two regions 4px apart, widen their focus ring offset to 2px, and dim the set-aside turn to 0.48 opacity — the smallest value at which its body text keeps 4.5:1 against the dark planes.
   - lucet-core@0.1.2
 - Remove two orphaned lines left behind when the orb's breathe animation was taken out — the tail of a deleted `@keyframes` block that the CSS minifier warned about.
+- Let narrow columns win over fixed minimums: the sources block caps its grid tracks at the column and lets the freshness note wrap once it has its own line, the code block's 16rem floor yields to a narrower column, attachment chips cap at their row, and the scope panel yields to the viewport. A phone-width thread no longer scrolls sideways.
 
 ## 0.1.1
 

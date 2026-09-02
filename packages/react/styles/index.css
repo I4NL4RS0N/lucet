@@ -616,7 +616,9 @@
   box-shadow: var(--lucet-hairline-raised);
   font-size: var(--lucet-text-xs);
   color: var(--lucet-foreground);
-  max-inline-size: 260px;
+  /* 260, or the row when the row is narrower (mobile pass): the base
+     ellipsizes, the extension stays. */
+  max-inline-size: min(260px, 100%);
 }
 
 .lucet-prompt__att-icon,
@@ -1239,6 +1241,17 @@
   gap: var(--lucet-space-2);
   max-inline-size: 68ch;
 }
+/* THE CODE FLOOR, CARRIED BY THE DOCUMENT (mobile pass, 2026-09-02). The
+   document hugs its content — the turn justifies it start, so a reasoning
+   row or a short answer measures what it says — which makes every
+   percentage inside it cyclic: the code block's own floor and cap resolve
+   to nothing there, and its 16rem floor overflowed a 232px column. The
+   document's containing block is the turn's track, which is definite, so
+   the floor lives here: a document holding a code block measures at least
+   16rem, or the column when the column is narrower (256 at 1440, 232 at
+   360, 192 at 320, measured). Inside it the block spans the measure as it
+   always did. First use of :has() in the library. */
+.lucet-thread__doc:has(.lucet-codeblock) { min-inline-size: min(16rem, 100%); }
 .lucet-thread__doc .lucet-thread__text {
   margin: 0;
   font-size: var(--lucet-text-base);
@@ -1591,8 +1604,15 @@
      filled. 16rem is the least a code surface may measure; the cap
      keeps it inside its column. Inside a full answer the block already
      spans the measure, so the floor is a no-op there: streaming and
-     settled measure the same, bar, label, writing state and Copy hold. */
-  min-inline-size: 16rem;
+     settled measure the same, bar, label, writing state and Copy hold.
+     Where the column itself is narrower than 16rem the floor yields to
+     the column (mobile pass, 2026-09-02): a floor that overflows what it
+     stands on is no floor, and below 360px it did. In the thread the
+     document hugs its content, which makes these percentages cyclic and
+     void — so there the floor is carried by the document (see
+     .lucet-thread__doc:has(.lucet-codeblock)); this rule serves any
+     definite column. */
+  min-inline-size: min(16rem, 100%);
   max-inline-size: 100%;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-muted);
@@ -1890,7 +1910,11 @@
   z-index: 30;
   display: grid;
   gap: 2px;
-  min-inline-size: 260px;
+  /* 260 is the least the ladder may measure where the screen affords it;
+     on a screen too narrow the panel yields to the viewport (mobile
+     pass) — 8rem covers the composer's inset and the button's offset in
+     every host measured, the docs' narrowest exhibit included. */
+  min-inline-size: min(260px, calc(100vw - 8rem));
   padding: 6px;
   border-radius: var(--lucet-radius-surface);
   background-color: var(--lucet-card);
@@ -2186,6 +2210,12 @@
 
 .lucet-sources {
   display: grid;
+  /* THE CEILING (mobile pass, 2026-09-02): an implicit track sizes to its
+     content's min-content, and the nowrap freshness note inflated the
+     block to 351px inside a 262px column — the page scrolled sideways.
+     minmax(0, 1fr) makes the column the ceiling; the rows then truncate
+     by the rule below instead of escaping it. Same on the list. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--lucet-space-1);
   margin-block-start: var(--lucet-space-3);
   padding-block-start: var(--lucet-space-3);
@@ -2212,6 +2242,7 @@
   padding: 0;
   list-style: none;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 /* Dividers between sources, none at the edges: the rows open now, and a
    list of disclosures reads as one object only when lines say where each
@@ -2311,7 +2342,16 @@
     flex-basis: 100%;
     margin-inline-start: 0;
     padding-inline-start: 38px;
+    /* On its own line the note may wrap (mobile pass): nowrap here was
+       the row's min-content, 343px in a 262px column, and no ceiling
+       holds a line that refuses to break. `anywhere` also caps the
+       min-content, so an unbroken host token cannot inflate the track.
+       The clock sits on the first line rather than floating mid-block. */
+    white-space: normal;
+    overflow-wrap: anywhere;
+    align-items: start;
   }
+  .lucet-sources__flag-glyph { margin-block-start: calc((1lh - 12px) / 2); }
 }
 .lucet-sources__flag-glyph {
   flex: none;

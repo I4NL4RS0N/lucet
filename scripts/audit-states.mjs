@@ -1174,6 +1174,46 @@ async function main() {
       }
     }
 
+    /* NOTHING CLIPS, AT MOBILE WIDTHS TOO (audit round 02): the components
+       page scrolled sideways at 390 for weeks — a sources grid track sized
+       to an unbreakable label, a code floor that did not yield to its
+       column, a chip and a panel with fixed minimums — and no instrument
+       measured it, because every audit ran at 1280. Every page at 390 and
+       320 must have zero horizontal document overflow. On a failure the
+       outermost element that extends the document is named, skipping
+       anything already contained by a scrolling ancestor. */
+    for (const width of [390, 320]) {
+      await page.setViewportSize({ width, height: 844 })
+      for (const path of ['primitives.html', 'components.html', 'index.html']) {
+        await page.goto(url.replace('primitives.html', path))
+        await still()
+        await page.waitForSelector(path === 'index.html' ? '.cfg__frame' : '.sec', { timeout: 15000 })
+        await page.waitForTimeout(500)
+        const res = await page.evaluate(() => {
+          const over = document.documentElement.scrollWidth - document.documentElement.clientWidth
+          if (over <= 0) return { over }
+          const contained = (e) => {
+            let a = e.parentElement
+            while (a && a !== document.documentElement) {
+              if (getComputedStyle(a).overflowX !== 'visible' && a.getBoundingClientRect().right <= innerWidth + 1) return true
+              a = a.parentElement
+            }
+            return false
+          }
+          const wide = [...document.querySelectorAll('body *')].filter((e) => {
+            const r = e.getBoundingClientRect()
+            return r.right > innerWidth + 1 && r.width > 0 && !contained(e)
+          })
+          const roots = wide.filter((e) => !wide.some((o) => o !== e && o.contains(e)))
+          const name = (e) => (e.className && e.className.toString().split(' ')[0]) || e.tagName.toLowerCase()
+          return { over, culprits: [...new Set(roots.map((e) => `${name(e)} ${Math.round(e.getBoundingClientRect().width)}px wide`))].slice(0, 4) }
+        })
+        checks++
+        if (res.over > 0) failures.push(`mobile overflow  ${path} at ${width}px scrolls sideways by ${res.over}px: ${res.culprits.join(', ')}`)
+      }
+    }
+    await page.setViewportSize({ width: 1280, height: 900 })
+
   } finally {
     await browser.close()
     dev?.kill()
@@ -1186,7 +1226,7 @@ async function main() {
     console.error('')
     process.exit(1)
   }
-  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas, tooltip arrival, cost thresholds) across two pages, both themes, ${ACCENTS.length + 1} accents.`)
+  console.log(`State audit passed: ${checks} checks (hover travel, disabled inertness, hit areas, tooltip arrival, cost thresholds, zero horizontal overflow at 390 and 320) across three pages, both themes, ${ACCENTS.length + 1} accents.`)
 }
 
 main()
