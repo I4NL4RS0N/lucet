@@ -1767,10 +1767,18 @@ body {
  * frame, sidebar, and page sat at nearly the same value and the layering
  * vanished (Ian's light crit). The host spends a deeper cast on its one
  * big prop; dark keeps its own depth story untouched.
+ * PAPER ONLY (light-Glass pass, 2026-09-01): this is the white-on-white
+ * argument, and it holds for light Paper alone. Light Glass now floats
+ * the frame on its recessed ground (the stage floor), so value carries
+ * the lift and this cast became a shadow whose only job was to make a
+ * rectangle visible — the frame takes the derived overlay material
+ * there, contact shadow and directional rim, like every other Glass
+ * surface. The containers carry data-expression themselves, so the
+ * scope is read off the exhibit.
  * ============================================================ */
-:root[data-theme='light'] .cfg__frame,
-:root[data-theme='light'] .cfg__mock,
-:root[data-theme='light'] .cfg__phone {
+:root[data-theme='light'] .cfg__frame:not([data-expression='glass']),
+:root[data-theme='light'] .cfg__mock:not([data-expression='glass']),
+:root[data-theme='light'] .cfg__phone:not([data-expression='glass']) {
   box-shadow:
     var(--lucet-hairline-overlay),
     0 1px 2px oklch(0 0 0 / 0.05),
@@ -1778,9 +1786,9 @@ body {
     0 28px 56px -28px oklch(0 0 0 / 0.16);
 }
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .cfg__frame,
-  :root:not([data-theme='dark']) .cfg__mock,
-  :root:not([data-theme='dark']) .cfg__phone {
+  :root:not([data-theme='dark']) .cfg__frame:not([data-expression='glass']),
+  :root:not([data-theme='dark']) .cfg__mock:not([data-expression='glass']),
+  :root:not([data-theme='dark']) .cfg__phone:not([data-expression='glass']) {
     box-shadow:
       var(--lucet-hairline-overlay),
       0 1px 2px oklch(0 0 0 / 0.05),

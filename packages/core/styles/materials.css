@@ -177,8 +177,18 @@
      the silhouette, brightening with elevation. Against the recessed
      ground it reads as the edge catching the light, not as a rule. */
   --lucet-hairline: 0 0 0 0 transparent;
-  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.55);
-  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.8);
+  /* THE RIM HAS A DIRECTION (light-Glass pass, 2026-09-01). One light,
+     above: the rim is a quiet ring at the sides plus a second, brighter
+     line on the top edge alone, where the light lands; at the bottom the
+     contact shadow takes over and the rim all but disappears. On a white
+     surface the inset edge-top cannot show (white on white), so this
+     outward top line is where the lit edge reads — against the recessed
+     ground — and the frame's top edge becomes the strongest continuous
+     highlight on the page. The sides stepped DOWN (0.55→0.45, 0.8→0.65)
+     so the top reads stronger by contrast, not by adding light
+     everywhere. */
+  --lucet-hairline-raised: 0 0 0 1px oklch(1 0 0 / 0.45), 0 -1px 0 0 oklch(1 0 0 / 0.7);
+  --lucet-hairline-overlay: 0 0 0 1px oklch(1 0 0 / 0.65), 0 -1px 0 0 oklch(1 0 0 / 0.9);
   --lucet-default-border: transparent;
 
   --lucet-inset-hair: inset 0 0.5px 0.5px oklch(0 0 0 / 0.1);
@@ -195,19 +205,23 @@
     0 0.5px 0 oklch(0 0 0 / 0.04),
     0 1px 2px oklch(0 0 0 / 0.06),
     0 3px 4px -1px oklch(0 0 0 / 0.1);
-  /* Tightened (aesthetic pass): the farthest layers pulled in — 28px
-     of blur floated cards inches above the page; the same stack at
-     10/20 reads as thickness near the surface, which is what glass is. */
+  /* CONTACT + EDGE, NOT CLOUD (light-Glass pass, 2026-09-01) — the dark
+     principle applied to light. The aesthetic pass had already pulled
+     28px of blur in to 10/20; now the far diffuse layers go entirely
+     (4/8 and 10/20 on raised, 8/18 and 20/40 on overlay) and each stack
+     is the contact stop plus one short layer, so the frame and composer
+     sit just above their planes instead of hovering. Light keeps
+     slightly more cast than dark — shadow reads on a light plane — and
+     the overlay keeps one more short layer than raised, both from the
+     same light source; the lift itself is carried by value and the
+     directional rim above. */
   --lucet-shade-2:
-    0 0.5px 0 oklch(0 0 0 / 0.04),
-    0 1px 2px oklch(0 0 0 / 0.06),
-    0 4px 8px oklch(0 0 0 / 0.06),
-    0 10px 20px oklch(0 0 0 / 0.06);
-  --lucet-shade-3:
     0 0.5px 0 oklch(0 0 0 / 0.05),
-    0 2px 5px oklch(0 0 0 / 0.08),
-    0 8px 18px oklch(0 0 0 / 0.09),
-    0 20px 40px oklch(0 0 0 / 0.11);
+    0 2px 4px oklch(0 0 0 / 0.08);
+  --lucet-shade-3:
+    0 0.5px 0 oklch(0 0 0 / 0.06),
+    0 2px 4px oklch(0 0 0 / 0.08),
+    0 6px 12px oklch(0 0 0 / 0.08);
 
   --lucet-material-flat: var(--lucet-hairline);
   --lucet-material-control:
