@@ -223,8 +223,25 @@ html { background-color: var(--lucet-background); }
   min-inline-size: 220px;
   padding: 12px;
   border-radius: var(--lucet-radius-surface);
-  background-color: var(--lucet-card);
-  box-shadow: var(--lucet-hairline-overlay), var(--lucet-shade-3);
+  /* THE POPOVER CARRIES ITS OWN SURFACE (legibility law): nothing
+     behind a chrome popover may be readable through it. It was
+     wearing the CARD tint — the floating-surface law says overlay:
+     at the card's own value a popover vanishes against card-tinted
+     content. Paper: opaque popover token. The shadow stack is the
+     derived overlay material — edge-top, rim, layered shade — never
+     hand-built layers. */
+  background-color: var(--lucet-popover);
+  box-shadow: var(--lucet-material-overlay);
+}
+
+/* Glass: the drawer's grammar — a high mix so every contrast pair
+   behind stays honest, blur enough that text behind is a whisper.
+   Chrome pins Paper on the Konfabulator, so this fires only where a
+   lab wrapper stamps glass around the cluster. */
+[data-expression='glass'] .cfg__more-panel {
+  background-color: color-mix(in oklab, var(--lucet-popover) 81%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 .cfg__more-row {
   display: flex;

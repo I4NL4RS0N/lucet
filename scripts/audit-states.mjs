@@ -174,6 +174,15 @@ async function main() {
         await new Promise((r) => setTimeout(r, 500))
       }
     }
+
+    /* Deterministic sampling: every navigation drops injected styles,
+       so stillness is re-applied after each goto — a check that reads
+       an opacity mid-fade is measuring the race, not the design. */
+    const still = () =>
+      page.addStyleTag({
+        content: '*, *::before, *::after { transition: none !important; animation: none !important; }',
+      })
+    await still()
     if (!reached) throw new Error('primitives page never came up')
     await page.waitForSelector('.sec', { timeout: 15000 })
 
@@ -234,6 +243,26 @@ async function main() {
       }, surfaceSel)
       checks++
       if (res !== 'ok') failures.push(`${where}  floating surface ${surfaceSel}: ${res}`)
+    }
+
+    /* THE VEIL: nothing behind a chrome popover may be readable
+       through it. Enforced as computed-surface floors — Paper: fully
+       opaque; Glass: at least a 75% mix with real blur. */
+    const checkVeil = async (where, surfaceSel) => {
+      const res = await page.evaluate((sel) => {
+        const el = document.querySelector(sel)
+        if (!el) return 'surface missing'
+        const cs = getComputedStyle(el)
+        const bg = cs.backgroundColor
+        const m = bg.match(/\/ ([\d.]+)\)/)
+        const alpha = m ? parseFloat(m[1]) : bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent' ? 0 : 1
+        const blur = parseFloat((cs.backdropFilter.match(/blur\((\d+(?:\.\d+)?)px\)/) ?? [])[1] ?? '0')
+        const glass = !!el.closest("[data-expression='glass']")
+        if (glass) return alpha >= 0.75 && blur >= 8 ? 'ok' : `glass veil too thin (alpha ${alpha}, blur ${blur}px)`
+        return alpha === 1 ? 'ok' : `paper surface not opaque (alpha ${alpha})`
+      }, surfaceSel)
+      checks++
+      if (res !== 'ok') failures.push(`${where}  ${surfaceSel}: ${res}`)
     }
 
     const checkCanvas = async (where, theme) => {
@@ -374,6 +403,7 @@ async function main() {
      * the accent behaviour of the shared tokens is already proven above.
      */
     await page.goto(url.replace('primitives.html', 'components.html'))
+    await still()
     await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
     await tagProbes(COMPONENT_PROBES)
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
@@ -389,6 +419,7 @@ async function main() {
         await page.click('.cfg__more-trigger')
         await page.waitForTimeout(120)
         await checkOcclusion(cell, '.cfg__more-panel')
+        await checkVeil(cell, '.cfg__more-panel')
         await page.keyboard.press('Escape')
         await page.click('.lucet-budget__button')
         await page.waitForTimeout(120)
@@ -681,6 +712,7 @@ async function main() {
         ['budget-spent', 'spent'],
       ]) {
         await page.goto(url.replace('primitives.html', `index.html?state=${state}`))
+          await still()
         await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
         await page.waitForFunction(
           () =>
@@ -752,6 +784,7 @@ async function main() {
 
       /* At rest: no threshold state, no tone anywhere on the meter. */
       await page.goto(url.replace('primitives.html', 'index.html'))
+      await still()
       await page.waitForFunction(
         () => document.querySelector('.lucet-budget__button') && !document.querySelector('.lucet-thread__caret'),
         { timeout: 20000 },
@@ -767,6 +800,7 @@ async function main() {
         await page.click('.cfg__more-trigger')
         await page.waitForTimeout(120)
         await checkOcclusion(`occlusion konfabulator/${t}`, '.cfg__more-panel')
+        await checkVeil(`occlusion konfabulator/${t}`, '.cfg__more-panel')
         await page.keyboard.press('Escape')
         await page.click('.lucet-budget__button')
         await page.waitForTimeout(120)
@@ -820,6 +854,7 @@ async function main() {
     for (const theme of ['dark', 'light']) {
       await page.emulateMedia({ colorScheme: theme })
       await page.goto(url.replace('primitives.html', 'index.html'))
+      await still()
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
       await page.waitForSelector('.lucet-thread__prompt', { timeout: 15000 })
       for (const expression of ['paper', 'glass']) {
@@ -858,6 +893,7 @@ async function main() {
 
       /* the lab stage */
       await page.goto(url)
+      await still()
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
       await page.waitForSelector('.stage', { timeout: 15000 })
       for (const expression of ['paper', 'glass']) {
