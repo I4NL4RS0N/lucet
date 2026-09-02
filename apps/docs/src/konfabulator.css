@@ -749,6 +749,34 @@ body {
   --cfg-silk-3: 14%;
   --cfg-silk-core: 26%;
 }
+/* THE SILK UNDER MONOCHROME: the atmosphere borrows the accent's
+   voice, and monochrome deliberately has none — the same ellipses
+   mixed from the NEUTRAL solid rendered as a soot cloud over the
+   welcome (Ian's screenshots, 2026-09-01; latent since the silk
+   landed, surfaced by the panel work drawing eyes to the cold
+   start). Greyscale keeps weather, not smoke: the bands drop to a
+   breath and the coloured core goes out — the same rule that hands
+   primary to the neutral solid everywhere else. */
+:root[data-accent='monochrome'] .cfg__atmo {
+  --cfg-silk-1: 9%;
+  --cfg-silk-2: 6%;
+  --cfg-silk-3: 4%;
+  --cfg-silk-core: 0%;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light'])[data-accent='monochrome'] .cfg__atmo {
+    --cfg-silk-1: 12%;
+    --cfg-silk-2: 8%;
+    --cfg-silk-3: 6%;
+    --cfg-silk-core: 10%;
+  }
+}
+:root[data-theme='dark'][data-accent='monochrome'] .cfg__atmo {
+  --cfg-silk-1: 12%;
+  --cfg-silk-2: 8%;
+  --cfg-silk-3: 6%;
+  --cfg-silk-core: 10%;
+}
 /* The silk: three blurred ellipses, one long horizon and two strays.
    Transform-only drift, each on its own odd period so the composition
    never repeats in a way an eye could catch. */
