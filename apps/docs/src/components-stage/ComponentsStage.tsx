@@ -537,12 +537,16 @@ const THREAD_FIXTURES: readonly Fixture[] = [
    Specimen text and reducer states are untouched. Every fixture is
    placed exactly once — asserted below, so a fixture added to the list
    cannot fall out of the page. */
-const THREAD_LAYOUT: ReadonlyArray<{ kind: 'rail' | 'duet' | 'trio'; labels: readonly string[] }> = [
+const THREAD_LAYOUT: ReadonlyArray<{ kind: 'rail' | 'duet' | 'trio'; open?: true; labels: readonly string[] }> = [
   { kind: 'rail', labels: ['A finished turn, attachments and all'] },
-  { kind: 'trio', labels: ['Streaming', 'Thinking, live', 'Thought about it'] },
+  /* The trios sit on the OPEN plane (audit round 03): unequal-height
+     states inside one equal-height well left voids, so the enclosure
+     goes and the gutters separate. The code duet's cells match within
+     37px and keep their well. */
+  { kind: 'trio', open: true, labels: ['Streaming', 'Thinking, live', 'Thought about it'] },
   { kind: 'rail', labels: ['A formatted answer'] },
   { kind: 'duet', labels: ['Streaming into a code block', 'Stopped inside a code block'] },
-  { kind: 'trio', labels: ['Stopped early', 'Failed', 'Declined'] },
+  { kind: 'trio', open: true, labels: ['Stopped early', 'Failed', 'Declined'] },
   { kind: 'rail', labels: ['Multiplayer — two people, one thread'] },
 ]
 const threadFixture = (label: string): Fixture => {
@@ -840,7 +844,8 @@ export function ComponentsStage() {
           name="Tool calls — the receipt lifecycle"
           note="running, partly returned, failed — the receipt tells the truth at every stage"
         >
-          <div className="stage stage--trio">
+          {/* OPEN PLANE (audit round 03): the three receipts differ in height by 103px, and the well showed it as a void. */}
+          <div className="stage stage--trio stage--open">
             {TOOL_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
@@ -852,7 +857,8 @@ export function ComponentsStage() {
         <Chapter name="Compose" note="What a person sends, and what the field knows before they send it: scope, price, whose turn it is." />
 
         <Section name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
-          <div className="stage stage--duet">
+          {/* OPEN PLANE (audit round 03): seven states in a two-column grid leave an orphan cell; on the open plane the empty half is just the page. */}
+          <div className="stage stage--duet stage--open">
             {CORE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -905,7 +911,8 @@ export function ComponentsStage() {
           name="Budget meter — the price before you spend it"
           note="the projected price of the next turn, on every model, before you commit — and the month it lands in"
         >
-          <div className="stage stage--duet">
+          {/* OPEN PLANE (audit round 03): three states in a two-column grid leave an orphan cell; the well showed the empty half as a void. */}
+          <div className="stage stage--duet stage--open">
             {BUDGET_FIXTURES.map((f, i) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560} {...(i === 2 ? { variant: 'band' as const } : {})}>
                   <PromptInput
@@ -956,7 +963,8 @@ export function ComponentsStage() {
         </Section>
 
         <Section name="Suggestion chips — the cold start" note="prompts made visible: what you click is what sends, verbatim">
-          <div className="stage stage--duet">
+          {/* OPEN PLANE (audit round 03): the shared well showed an empty lower-right quadrant beside the inset; each example is sized to its content on the page. */}
+          <div className="stage stage--duet stage--open">
             <div className="spec spec--wide">
               <span className="spec__label">Ways in</span>
               <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '460px' } as React.CSSProperties}>
@@ -978,10 +986,11 @@ export function ComponentsStage() {
             {/* A compact INSET beside the dominant example (audit round 02):
                 top-aligned, sized to its two disabled suggestions, the
                 explanation 12px beneath — the height follows the content
-                and disabled rows are never stretched to fill a cell. */}
+                and disabled rows are never stretched to fill a cell. Round
+                03 opened the duet and capped the inset at 22rem. */}
             <div className="spec spec--wide spec--inset">
               <span className="spec__label">Locked — another person’s turn</span>
-              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '320px' } as React.CSSProperties}>
+              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '22rem' } as React.CSSProperties}>
                 <SuggestionChips
                   suggestions={[
                     { id: 's1', prompt: 'Summarise the three documents I shared.' },
@@ -1003,7 +1012,7 @@ export function ComponentsStage() {
 
         <Section name="Thread — every ending" note="a response is never simply loading or done">
           {THREAD_LAYOUT.map((group) => (
-            <div key={group.labels.join('|')} className={`stage stage--${group.kind}`}>
+            <div key={group.labels.join('|')} className={`stage stage--${group.kind}${group.open ? ' stage--open' : ''}`}>
               {group.labels.map(threadFixture).map((f) => (
                 <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
                   <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
