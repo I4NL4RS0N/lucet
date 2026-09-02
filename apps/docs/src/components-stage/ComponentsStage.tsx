@@ -323,7 +323,7 @@ const VERSIONS_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'The preview',
-    note: 'Viewing an earlier version: later turns set aside — dimmed, inert, skipped by the reader — and the banner states both ways out. Restoring only ever adds.',
+    note: 'Previewing an earlier version: later turns set aside — dimmed, inert, skipped by the reader — and the banner pairs the way back with the commit. Restoring only ever adds.',
     events: ([...VERSION_EVENTS, { type: 'restore/entered' as const, turnId: 't1' }]),
   },
 ]
@@ -1034,9 +1034,21 @@ export function ComponentsStage() {
 
         <Section name="Version marker + restore" note="the thread is the version history, and it speaks in words">
           <div className="stage stage--duet stage--open">
+            {/* The restore handlers are wired (audit round 04) so the lab
+                shows the flow's controls — Preview version on the older
+                version, the banner's Return to latest and Restore version
+                pair — the way every other fixture shows its actions. */}
             {VERSIONS_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+                <Thread
+                  state={stateOf(f)}
+                  selfId="you"
+                  onRetry={noop}
+                  onFeedback={noop}
+                  onRestore={noop}
+                  onExitRestore={noop}
+                  onRestoreCommit={noop}
+                />
               </Example>
             ))}
           </div>
