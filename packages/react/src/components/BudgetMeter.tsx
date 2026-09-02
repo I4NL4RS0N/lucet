@@ -107,11 +107,20 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
             <span className="lucet-budget__why">≈{tok(projection.tokens)} tokens</span>
           </div>
         ) : null}
-        {caution && remaining !== null ? (
+        {caution && remaining !== null && projection ? (
+          /* THE DECISION POINT, BEFORE THE SPEND (audit round 05): one line
+             of cause — what makes this turn expensive — and the two named
+             exits, in the calm register of informed consent. The rows
+             below are the exits themselves. */
           <p className="lucet-budget__note" role="status">
-            More than the {usd(remaining)} left this month
+            More than the {usd(remaining)} left this month.{' '}
+            {usage && usage.contextTokens > projection.tokens * 0.6
+              ? `The thread's context is ≈${tok(usage.contextTokens)} tokens, re-sent each turn.`
+              : selected.id === 'deep'
+                ? 'Deep reasoning prices every turn higher.'
+                : 'The draft itself is long.'}
             {fits && fits.model.id !== selected.id
-              ? ` — ${fits.model.label} still fits (≈${usd(fits.costUsd)})`
+              ? ` Use ${fits.model.label} (≈${usd(fits.costUsd)}) or continue on ${selected.label} (≈${usd(projection.costUsd)}).`
               : ''}
           </p>
         ) : null}

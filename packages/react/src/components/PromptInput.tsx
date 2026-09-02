@@ -286,7 +286,7 @@ export function PromptInput({
           ? {
               tone: 'neutral' as const,
               who: composer.lockedBy!,
-              text: `${composer.lockedBy} is taking a turn in this shared thread — yours sends next`,
+              text: `${composer.lockedBy} is taking a turn — yours sends next`,
             }
           : streaming
             ? {

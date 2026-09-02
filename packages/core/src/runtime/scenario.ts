@@ -7,7 +7,7 @@
  * flat list of steps rather than a single canned response.
  */
 
-import type { ServiceStatus, ToolStatus } from '../types.js'
+import type { ServiceStatus, ToolStatus, NoticeAction, NoticeKind, NoticeTone } from '../types.js'
 
 export type Step =
   /** Dead air. Latency is a designed state, not an accident. */
@@ -29,6 +29,8 @@ export type Step =
   /** Attach the response's bibliography, all sources arriving `ok`. */
   | {
       type: 'sources'
+      /** What the rows are; "Sources" when absent. */
+      label?: string
       sources: readonly {
         id: string
         title: string
@@ -63,7 +65,15 @@ export type Step =
   | { type: 'refuse'; reason: string }
   | { type: 'fail'; reason: string }
   | { type: 'interrupt'; reason: string }
-  | { type: 'usage'; tokens: number; costUsd: number }
+  /** Without costUsd the runtime prices the tokens at the SELECTED model's
+   * rate — so the model the person chose is the model that runs. */
+  | { type: 'usage'; tokens: number; costUsd?: number }
+  /** An inline notice in the response, before the answer (a fallback model, a limit). */
+  | { type: 'notice'; state: NoticeKind; tone?: NoticeTone; label: string; text: string; action?: Omit<NoticeAction, 'turnId'> }
+  /** The model the runtime is actually using; the composer's control agrees. */
+  | { type: 'model'; modelId: string }
+  /** Put words in the composer without sending them — the pre-send state. */
+  | { type: 'draft'; text: string }
   /** Seed or move the monthly ledger — the account's month, not the thread's tally. */
   | { type: 'budget'; budgetUsd: number; spentUsd: number }
   | { type: 'service'; status: ServiceStatus; message: string | null }
@@ -88,6 +98,18 @@ export interface Scenario {
   /** Who submits the prompt. Defaults to the local participant — another
       name makes the turn arrive from someone else in the shared thread. */
   readonly author?: string
+  /** Steps that run when the trigger fires, BEFORE any turn exists: the
+   * world is set up (usage, a budget, a draft in the composer) and the
+   * runtime stops there. `steps` then answer the person's own send, on
+   * the model they chose. The decision happens before tokens are spent. */
+  readonly preSend?: readonly Step[]
+  /** Replay without frames: no streaming, no waits — the scenario lands
+   * settled within one dispatch run. For triggers whose point is the
+   * state they end in, not the arrival. */
+  readonly instant?: boolean
+  /** Firing again adds nothing: when the thread already holds this
+   * scenario's turns, only a final `restore` step re-enters the preview. */
+  readonly oncePerThread?: boolean
   readonly steps: readonly Step[]
   /**
    * What retrying this turn plays. A failure that tells the user "ask

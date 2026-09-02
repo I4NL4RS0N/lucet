@@ -24,6 +24,8 @@ import type { Source } from 'lucet-core'
  */
 
 export interface SourcesProps {
+  /** What the rows are — "Sources" by default; a Do path lists what it created. */
+  label?: string | undefined
   sources: readonly Source[]
 }
 
@@ -87,11 +89,11 @@ function Row({ source }: { source: Source }) {
   )
 }
 
-export function Sources({ sources }: SourcesProps) {
+export function Sources({ sources, label = 'Sources' }: SourcesProps) {
   if (sources.length === 0) return null
   return (
     <div className="lucet-sources">
-      <span className="lucet-sources__label">Sources</span>
+      <span className="lucet-sources__label">{label}</span>
       <ol className="lucet-sources__list">
         {sources.map((source) => (
           <li key={source.id}>

@@ -69,11 +69,24 @@ export interface Lucet {
       of the thread (restore is a copy — nothing is deleted), and any
       preview view returns to latest. */
   restore(turnId: string): void
-  /** Force a named state, in context, without resetting the thread. */
+  /** Force a named state, in context, without resetting the thread. A
+      scenario with pre-send steps sets the world up and stops; the
+      person's own send then gets that scenario's reply. A once-per-thread
+      scenario fired again only re-enters its preview. */
   trigger(id: string): Promise<void>
   /** Stop the current response. What already arrived stays. */
   abort(): void
+  /** Abort, drop any pending pre-send reply, and return the thread to its
+      initial state. Every timer is cancelled with the abort. */
   reset(): void
+  /** The instrument behind Reset: what is still pending. */
+  inspect(): {
+    pendingTimers: number
+    running: boolean
+    pendingReply: string | null
+    queued: string | null
+    locked: boolean
+  }
 }
 
 const defaultReply: readonly Scenario['steps'][number][] = [
@@ -96,14 +109,30 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     ...(options.suggestions === undefined ? {} : { suggestions: options.suggestions }),
   })
   const triggers = createTriggerRegistry(options.scenarios ?? builtInScenarios)
+  /* Every sleep is counted in and out, so Reset can be instrumented: a
+     cancelled timer rejects and leaves the count at zero. */
+  let pendingTimers = 0
+  const baseScheduler = options.scheduler ?? systemScheduler
+  const scheduler: Scheduler = {
+    async sleep(ms, signal) {
+      pendingTimers++
+      try {
+        await baseScheduler.sleep(ms, signal)
+      } finally {
+        pendingTimers--
+      }
+    },
+  }
   const runtime = createMockRuntime({
     store,
     nextId,
-    scheduler: options.scheduler ?? systemScheduler,
+    scheduler,
     ...(options.authorId === undefined ? {} : { authorId: options.authorId }),
   })
 
   let controller: AbortController | null = null
+  /* A pre-send scenario waits here for the person's own send. */
+  let pendingReply: Scenario | null = null
 
   const submitScenario = (text: string): Scenario => ({
     id: 'submit',
@@ -130,10 +159,9 @@ export function createLucet(options: LucetOptions = {}): Lucet {
       if (controller === own) controller = null
     }
     const turnsNow = store.getState().turns
-    if (turnsNow.length > turnsBefore) {
-      const born = turnsNow[turnsNow.length - 1]
-      if (born) turnScenarios.set(born.id, scenario)
-    }
+    /* Every turn this run created remembers its scenario — a retryTurn
+       makes two, and a once-per-thread trigger must find the original. */
+    for (const born of turnsNow.slice(turnsBefore)) turnScenarios.set(born.id, scenario)
 
     /*
      * THE QUEUE PROMISE, KEPT HERE. The strip says "Queued — yours sends
@@ -167,7 +195,11 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     subscribe: (listener) => store.subscribe(listener),
 
     submit(text) {
-      return run(submitScenario(text))
+      /* The pre-send decision, kept: a trigger that set the world up gets
+         its own reply when the person sends, on the model they chose. */
+      const reply = pendingReply
+      pendingReply = null
+      return run(reply?.preSend ? { ...reply, prompt: text } : submitScenario(text))
     },
 
     retry(turnId) {
@@ -200,10 +232,34 @@ export function createLucet(options: LucetOptions = {}): Lucet {
       })
     },
 
-    trigger(id) {
+    async trigger(id) {
       const scenario = triggers.get(id)
       if (!scenario) {
-        return Promise.reject(new Error(`Unknown trigger: ${id}`))
+        throw new Error(`Unknown trigger: ${id}`)
+      }
+      if (scenario.preSend) {
+        controller?.abort()
+        const own = new AbortController()
+        controller = own
+        pendingReply = scenario
+        try {
+          await runtime.prepare(scenario, own.signal)
+        } finally {
+          if (controller === own) controller = null
+        }
+        return
+      }
+      if (scenario.oncePerThread) {
+        const present = store.getState().turns.filter((t) => turnScenarios.get(t.id)?.id === scenario.id)
+        if (present.length > 0) {
+          /* Already here: re-enter the preview of the ORIGINAL turn, add
+             nothing. Entry and exit any number of times leave the thread
+             exactly as long as it was. */
+          const origin = present.find((t) => t.retryOf === null) ?? present[0]
+          if (origin && scenario.steps.some((s) => s.type === 'restore'))
+            store.dispatch({ type: 'restore/entered', turnId: origin.id })
+          return
+        }
       }
       return run(scenario)
     },
@@ -214,7 +270,19 @@ export function createLucet(options: LucetOptions = {}): Lucet {
 
     reset() {
       controller?.abort()
+      pendingReply = null
       store.dispatch({ type: 'thread/reset' })
+    },
+
+    inspect() {
+      const { composer } = store.getState()
+      return {
+        pendingTimers,
+        running: controller !== null,
+        pendingReply: pendingReply?.id ?? null,
+        queued: composer.queued,
+        locked: composer.locked,
+      }
     },
   }
 }

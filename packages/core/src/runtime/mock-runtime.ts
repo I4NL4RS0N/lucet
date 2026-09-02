@@ -22,6 +22,8 @@ export interface MockRuntimeOptions {
 
 export interface MockRuntime {
   run(scenario: Scenario, signal?: AbortSignal, meta?: { retryOf?: string }): Promise<void>
+  /** Run a scenario's pre-send steps: the world changes, no turn is made. */
+  prepare(scenario: Scenario, signal?: AbortSignal): Promise<void>
 }
 
 const DEFAULT_CHUNK_MS = 24
@@ -34,6 +36,11 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
   const { store, nextId } = options
   const scheduler = options.scheduler ?? systemScheduler
   const authorId = options.authorId ?? 'you'
+  /* An instant scenario skips every wait and lands each text whole: the
+     state it ends in is the point, and no frame of arrival is shown. */
+  let instant = false
+  const sleep = (ms: number, signal: AbortSignal | undefined): Promise<void> =>
+    instant ? Promise.resolve() : scheduler.sleep(ms, signal)
 
   async function stream(
     messageId: string,
@@ -43,6 +50,14 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
     signal: AbortSignal | undefined,
   ): Promise<void> {
     const partId = nextId('part')
+    if (instant) {
+      store.dispatch({
+        type: 'part/added',
+        messageId,
+        part: kind === 'text' ? { kind: 'text', id: partId, text } : { kind: 'reasoning', id: partId, text },
+      })
+      return
+    }
     store.dispatch({
       type: 'part/added',
       messageId,
@@ -52,7 +67,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           : { kind: 'reasoning', id: partId, text: '' },
     })
     for (const piece of chunk(text)) {
-      await scheduler.sleep(chunkMs, signal)
+      await sleep(chunkMs, signal)
       store.dispatch({ type: 'part/delta', messageId, partId, delta: piece })
     }
   }
@@ -70,7 +85,31 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
   ): Promise<MessageStatus | null> {
     switch (s.type) {
       case 'wait':
-        await scheduler.sleep(s.ms, signal)
+        await sleep(s.ms, signal)
+        return null
+
+      case 'notice':
+        store.dispatch({
+          type: 'part/added',
+          messageId,
+          part: {
+            kind: 'notice',
+            id: nextId('part'),
+            state: s.state,
+            ...(s.tone === undefined ? {} : { tone: s.tone }),
+            label: s.label,
+            text: s.text,
+            action: s.action ? { ...s.action, turnId: currentTurnId ?? '' } : null,
+          },
+        })
+        return null
+
+      case 'model':
+        store.dispatch({ type: 'model/changed', modelId: s.modelId })
+        return null
+
+      case 'draft':
+        store.dispatch({ type: 'composer/changed', text: s.text })
         return null
 
       case 'say':
@@ -96,7 +135,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             result: null,
           },
         })
-        await scheduler.sleep(s.ms, signal)
+        await sleep(s.ms, signal)
         store.dispatch({
           type: 'tool/settled',
           messageId,
@@ -162,6 +201,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           part: {
             kind: 'sources',
             id: partId,
+            ...(s.label === undefined ? {} : { label: s.label }),
             sources: s.sources.map((source) => ({
               ...source,
               status: 'ok',
@@ -190,15 +230,21 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         return null
 
       case 'usage': {
-        const { usage } = store.getState()
+        const { usage, model } = store.getState()
+        /* Priced at the selected model's rate when the script names no
+           cost — the whole window, since the context re-sends with every
+           turn, the way the meter projects it: the model the person chose
+           is the model that runs, and the ledger says what it cost. */
+        const rate = model.options.find((o) => o.id === model.selectedId)?.usdPerMTok ?? 0
+        const costUsd = s.costUsd ?? Number((((usage.contextTokens + s.tokens) / 1_000_000) * rate).toFixed(4))
         store.dispatch({
           type: 'usage/changed',
           patch: {
             threadTokens: usage.threadTokens + s.tokens,
             contextTokens: usage.contextTokens + s.tokens,
-            threadCostUsd: Number((usage.threadCostUsd + s.costUsd).toFixed(4)),
+            threadCostUsd: Number((usage.threadCostUsd + costUsd).toFixed(4)),
             /* Every turn the thread pays for, the month pays for too. */
-            monthlySpentUsd: Number((usage.monthlySpentUsd + s.costUsd).toFixed(4)),
+            monthlySpentUsd: Number((usage.monthlySpentUsd + costUsd).toFixed(4)),
           },
         })
         return null
@@ -254,7 +300,19 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
   }
 
   return {
+    async prepare(scenario, signal) {
+      instant = !!scenario.instant
+      for (const s of scenario.preSend ?? []) {
+        /* No turn exists yet, so nothing that writes into a message may
+           run here — a script that tries is a bug, and says so. */
+        if (s.type === 'say' || s.type === 'think' || s.type === 'tool' || s.type === 'notice' || s.type === 'sources' || s.type === 'sourceChange' || s.type === 'retryTurn' || s.type === 'restore' || s.type === 'refuse' || s.type === 'fail' || s.type === 'interrupt' || s.type === 'complete')
+          throw new Error(`preSend cannot run a '${s.type}' step`)
+        await step(s, '', signal)
+      }
+    },
+
     async run(scenario, signal, meta) {
+      instant = !!scenario.instant
       const turnId = nextId('turn')
       const promptId = nextId('msg')
       const messageId = nextId('msg')

@@ -108,9 +108,47 @@ export interface SourcesPart {
   readonly kind: 'sources'
   readonly id: string
   readonly sources: readonly Source[]
+  /** What the rows are. "Sources" when absent; a Do path that created
+   * files lists them under "Created" in the same row grammar. */
+  readonly label?: string
 }
 
-export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart | SourcesPart
+/** The notice states the interface names — the renderer's own set,
+ * mirrored here so a runtime can emit one without knowing the renderer. */
+export type NoticeKind = 'operational' | 'refused' | 'interrupted' | 'partial' | 'degraded' | 'down' | 'failed' | 'rate-limited' | 'stale' | 'uncertain' | 'queued'
+
+/** A notice may name its tone apart from its state: the fallback model
+ * is a degraded condition told as information, not as a failure. */
+export type NoticeTone = 'info' | 'caution' | 'danger' | 'neutral'
+
+/** A named exit carried by a notice, performed by the host. */
+export interface NoticeAction {
+  readonly label: string
+  /** Retry the turn on a named model — the fallback notice's exit. */
+  readonly kind: 'retry-on-model'
+  readonly modelId: string
+  /** The turn the action belongs to, stamped by the runtime that emitted it. */
+  readonly turnId: string
+}
+
+/** A notice INSIDE a response, before the answer: the runtime saying how
+ * this answer is being produced — a fallback model, a limit — so model,
+ * reason and impact are legible without the rail. Tone comes from the
+ * state; the action, if any, is a named exit. */
+export interface NoticePart {
+  readonly kind: 'notice'
+  readonly id: string
+  readonly state: NoticeKind
+  /** The tone to wear when it is not the state's own. */
+  readonly tone?: NoticeTone
+  /** The bold lead — the fact in a few words ("Using Fast instead of Auto."). */
+  readonly label: string
+  /** The sentence after it: reason and impact. */
+  readonly text: string
+  readonly action: NoticeAction | null
+}
+
+export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart | SourcesPart | NoticePart
 
 /**
  * One rung of the scope ladder. The host's information architecture

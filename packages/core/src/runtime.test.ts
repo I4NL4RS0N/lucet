@@ -404,13 +404,16 @@ describe('budget meter', () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await lucet.trigger('budget-low')
     const state = lucet.getState()
-    expect(state.usage.monthlySpentUsd).toBeCloseTo(9.91, 4)
+    /* The trigger sets the decision up and spends nothing (round 05):
+       $9.88 of $10 gone, the draft in the composer, no turn yet. */
+    expect(state.usage.monthlySpentUsd).toBeCloseTo(9.88, 4)
+    expect(state.turns).toHaveLength(0)
     const remaining = state.usage.monthlyBudgetUsd! - state.usage.monthlySpentUsd
     const onSelected = projectNextTurn(state)!
     expect(onSelected.costUsd).toBeGreaterThan(remaining)
     expect(projectNextTurn(state, 'fast')!.costUsd).toBeLessThanOrEqual(remaining)
-    /* Low is a warning, not a wall: the composer still sends. */
-    expect(submitBlocker({ ...state, usage: state.usage })).toBe('empty')
+    /* Low is a warning, not a wall: the composer still sends the draft. */
+    expect(submitBlocker({ ...state, usage: state.usage })).toBeNull()
   })
 
   it('the month runs out mid-conversation: the crossing turn lands, then the composer stops with words', async () => {
@@ -434,6 +437,120 @@ describe('budget meter', () => {
     expect(usage.contextTokens).toBe(0)
     expect(usage.threadCostUsd).toBe(0)
     expect(usage.monthlyBudgetUsd).toBe(10)
-    expect(usage.monthlySpentUsd).toBeCloseTo(9.91, 4)
+    expect(usage.monthlySpentUsd).toBeCloseTo(9.88, 4)
+  })
+})
+
+describe('every trigger does what it says (round 05)', () => {
+  const fresh = () => createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+
+  it('Do runs three receipts to completion, then the summary, then the pages it created', async () => {
+    const lucet = fresh()
+    await lucet.trigger('do-plan')
+    const turn = lucet.getState().turns.at(-1)!
+    const parts = turn.response!.parts
+    const kinds = parts.map((p) => p.kind)
+    expect(kinds.slice(0, 3)).toEqual(['tool', 'tool', 'tool'])
+    expect(parts.every((p) => p.kind !== 'tool' || p.status === 'succeeded')).toBe(true)
+    expect(kinds.indexOf('text')).toBeGreaterThan(kinds.lastIndexOf('tool'))
+    const made = parts.find((p) => p.kind === 'sources')
+    expect(made && made.kind === 'sources' ? made.label : null).toBe('Created')
+    expect(made && made.kind === 'sources' ? made.sources.map((x) => x.title) : []).toEqual(['brief.md', 'checklist.md', 'decisions.md'])
+    expect(turn.response!.status).toBe('complete')
+    /* The receipts take real time on the real clock: about 2.3 seconds. */
+    const ms = lucet.triggers.get('do-plan')!.steps.reduce((sum, s) => sum + (s.type === 'tool' ? s.ms : 0), 0)
+    expect(ms).toBeGreaterThanOrEqual(2000)
+    expect(ms).toBeLessThanOrEqual(3000)
+  })
+
+  it('the fallback is told inline, the control agrees, and Retry on Auto recovers', async () => {
+    const lucet = fresh()
+    await lucet.trigger('degraded-model')
+    const state = lucet.getState()
+    expect(state.model.selectedId).toBe('fast')
+    const turn = state.turns.at(-1)!
+    const parts = turn.response!.parts
+    const notice = parts.find((p) => p.kind === 'notice')
+    expect(notice && notice.kind === 'notice' ? notice.state : null).toBe('degraded')
+    expect(notice && notice.kind === 'notice' ? notice.tone : null).toBe('info')
+    expect(notice && notice.kind === 'notice' ? notice.label : '').toBe('Using Fast instead of Auto.')
+    expect(notice && notice.kind === 'notice' ? notice.text : '').toMatch(/^Auto is temporarily unavailable/)
+    expect(parts.findIndex((p) => p.kind === 'notice')).toBeLessThan(parts.findIndex((p) => p.kind === 'text'))
+    const action = notice && notice.kind === 'notice' ? notice.action : null
+    expect(action).toEqual({ label: 'Retry on Auto', kind: 'retry-on-model', modelId: 'auto', turnId: turn.id })
+    lucet.store.dispatch({ type: 'model/changed', modelId: action!.modelId })
+    await lucet.retry(action!.turnId)
+    const after = lucet.getState()
+    expect(after.turns).toHaveLength(2)
+    expect(after.turns.at(-1)!.retryOf).toBe(turn.id)
+    expect(after.model.selectedId).toBe('auto')
+    expect(after.service.status).toBe('operational')
+  })
+
+  it('while Ada holds the turn, a queued prompt waits and sends itself when her turn lands', async () => {
+    const lucet = fresh()
+    const run = lucet.trigger('multiplayer')
+    expect(lucet.getState().composer.locked).toBe(true)
+    expect(lucet.getState().composer.lockedBy).toBe('Ada')
+    lucet.store.dispatch({ type: 'composer/changed', text: 'And the southern site?' })
+    lucet.store.dispatch({ type: 'composer/queued', text: 'And the southern site?' })
+    expect(lucet.inspect().queued).toBe('And the southern site?')
+    await run
+    const state = lucet.getState()
+    expect(state.turns).toHaveLength(2)
+    expect(state.turns[0]!.prompt.authorId).toBe('Ada')
+    expect(state.turns[1]!.prompt.authorId).toBe('you')
+    expect(state.composer.queued).toBeNull()
+    expect(state.composer.locked).toBe(false)
+  })
+
+  it('the budget caution sets up the decision and spends nothing until the person sends, on the model they chose', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-low')
+    const before = lucet.getState()
+    expect(before.turns).toHaveLength(0)
+    expect(before.composer.text).toBe('Compare the two proposals and recommend one.')
+    expect(before.usage.monthlySpentUsd).toBeCloseTo(9.88, 4)
+    expect(lucet.inspect().pendingReply).toBe('budget-low')
+    const remaining = before.usage.monthlyBudgetUsd! - before.usage.monthlySpentUsd
+    expect(projectNextTurn(before)!.costUsd).toBeGreaterThan(remaining)
+    expect(projectNextTurn(before, 'fast')!.costUsd).toBeLessThanOrEqual(remaining)
+    lucet.store.dispatch({ type: 'model/changed', modelId: 'fast' })
+    await lucet.submit(before.composer.text)
+    const after = lucet.getState()
+    expect(after.turns).toHaveLength(1)
+    expect(after.turns[0]!.response!.status).toBe('complete')
+    expect(after.turns[0]!.response!.parts.some((p) => p.kind === 'text' && /second proposal/i.test(p.text))).toBe(true)
+    /* The whole window at Fast's rate — 46,000 of context plus 2,400 — not Auto's. */
+    expect(after.usage.threadCostUsd - before.usage.threadCostUsd).toBeCloseTo(((46_000 + 2_400) / 1_000_000) * 0.6, 3)
+    expect(lucet.inspect().pendingReply).toBeNull()
+  })
+
+  it('the restore trigger lands straight in the preview and never duplicates version blocks', async () => {
+    const lucet = fresh()
+    const logBefore = lucet.getLog().length
+    await lucet.trigger('restore-version')
+    const events = lucet.getLog().slice(logBefore).map((e) => e.event.type)
+    expect(events).not.toContain('part/delta')
+    const state = lucet.getState()
+    expect(state.turns).toHaveLength(2)
+    expect(state.restoredFrom).toBe(state.turns[0]!.id)
+    lucet.store.dispatch({ type: 'restore/exited' })
+    await lucet.trigger('restore-version')
+    expect(lucet.getState().turns).toHaveLength(2)
+    expect(lucet.getState().restoredFrom).toBe(state.turns[0]!.id)
+  })
+
+  it('Reset cancels timers, clears the queue and the pending reply, and unlocks', async () => {
+    const lucet = createLucet({ clock: createManualClock(0) })
+    const run = lucet.trigger('multiplayer')
+    lucet.store.dispatch({ type: 'composer/queued', text: 'later' })
+    lucet.reset()
+    await run.catch(() => undefined)
+    await lucet.trigger('budget-low')
+    lucet.reset()
+    expect(lucet.inspect()).toEqual({ pendingTimers: 0, running: false, pendingReply: null, queued: null, locked: false })
+    expect(lucet.getState().turns).toHaveLength(0)
+    expect(lucet.getState().composer.text).toBe('')
   })
 })

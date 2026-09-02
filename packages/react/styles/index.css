@@ -470,6 +470,32 @@
   color: var(--lucet-state-uncertain-foreground);
 }
 
+/* A TONE APART FROM THE STATE (audit round 05): a notice may say what it
+   is (the glyph, the state) in a tone the moment calls for. The fallback
+   model is a degraded condition told as information — transparency, not
+   failure — so it wears the info tone on the degraded glyph. Declared
+   after the state rules so the named tone wins. */
+.lucet-notice[data-tone='info'] {
+  background: var(--lucet-tone-info-surface);
+  border-color: var(--lucet-tone-info-border);
+  color: var(--lucet-tone-info-foreground);
+}
+.lucet-notice[data-tone='caution'] {
+  background: var(--lucet-tone-caution-surface);
+  border-color: var(--lucet-tone-caution-border);
+  color: var(--lucet-tone-caution-foreground);
+}
+.lucet-notice[data-tone='danger'] {
+  background: var(--lucet-tone-danger-surface);
+  border-color: var(--lucet-tone-danger-border);
+  color: var(--lucet-tone-danger-foreground);
+}
+.lucet-notice[data-tone='neutral'] {
+  background: var(--lucet-tone-neutral-surface);
+  border-color: var(--lucet-tone-neutral-border);
+  color: var(--lucet-tone-neutral-foreground);
+}
+
 /* ============================================================
  * Expressive: the primary action earns the one gradient.
  *

@@ -1,5 +1,11 @@
 # lucet-core
 
+## 0.2.0
+
+### Minor Changes
+
+- Every trigger does what it says. The runtime gains a `notice` part (an inline notice inside a response, with an optional named action), `model` and `draft` steps, pre-send scenarios that set the world up and answer the person's own send on the model they chose, instant once-per-thread scenarios, computed turn cost at the selected model's rate, and `inspect()` behind Reset. Scenarios: the Do path runs three receipts and lists the pages it created; the fallback model is told inline with Retry on Auto; another person's turn runs live and queued input sends itself; the budget caution decides before the spend; restore lands straight in its preview. The thread renders notice parts, the sources block takes a label, and the meter states the cause and the two exits.
+
 ## 0.1.3
 
 ### Patch Changes

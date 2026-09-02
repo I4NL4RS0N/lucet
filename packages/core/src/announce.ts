@@ -47,7 +47,13 @@
  * cases still ahead: whether a collaborator's concurrent stream
  * narrates to you (they initiated it, you did not — likely 'history'
  * plus a status ping), and any host replay feature. Decide those from
- * this sentence, not case by case. (First applied to the Konfabulator's
+ * this sentence, not case by case.
+ * DECIDED FOR THE COLLABORATOR'S TURN (audit round 05): another person's
+ * live turn is 'history' — you did not ask for it, so it fills the log
+ * without a live role. Ownership is announced as a status ping: the
+ * composer's strip (role=status) says whose turn it is and what happens
+ * to what you type. Your own queued send, once it runs, narrates
+ * normally — you initiated it, even if it waited. (First applied to the Konfabulator's
  * opening playback; the a11y write-up lives in
  * docs/components/streaming-response.md.)
  */

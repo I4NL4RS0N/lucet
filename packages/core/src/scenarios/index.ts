@@ -241,18 +241,50 @@ export const rateLimit = defineScenario({
   ],
 })
 
+/* TOLD, PLAINLY (audit round 05): the fallback is a fact about how this
+   answer was made, so it is stated inline before the answer — model,
+   reason, impact — in the info tone, because transparency is not a
+   failure. The composer's model control agrees (Fast), and the notice
+   carries the one exit the runtime can keep: Retry on Auto, which plays
+   the recovery once Auto is back. */
 export const degradedModel = defineScenario({
   id: 'degraded-model',
-  label: 'Silent downgrade, told',
+  label: 'Fallback model used',
   group: 'Service',
   description:
     'The app fell back to a cheaper model during an incident. That is exactly the moment the user most deserves to be told, and exactly the moment every tool stays quiet.',
   prompt: 'Draft the summary section.',
   steps: [
-    { type: 'service', status: 'degraded', message: 'The usual model is unavailable. Running on the fallback, which is faster and less careful.' },
+    { type: 'service', status: 'degraded', message: 'Auto is temporarily unavailable.' },
+    { type: 'model', modelId: 'fast' },
+    {
+      type: 'notice',
+      state: 'degraded',
+      /* Transparency, not failure: the info tone on the degraded glyph. */
+      tone: 'info',
+      label: 'Using Fast instead of Auto.',
+      text: 'Auto is temporarily unavailable — review numerical details before using this result.',
+      action: { label: 'Retry on Auto', kind: 'retry-on-model', modelId: 'auto' },
+    },
     { type: 'wait', ms: 400 },
-    { type: 'say', text: 'Here is a draft. Given what it is running on right now, read the numbers twice.' },
-    { type: 'usage', tokens: 520, costUsd: 0.0021 },
+    {
+      type: 'say',
+      text: 'Here is a draft of the summary section. The two figures it quotes — the total and the delivery date — are carried over from the notes as written.',
+    },
+    { type: 'usage', tokens: 520 },
+    { type: 'complete' },
+  ],
+  /* Retry on Auto: the service is back, the model control returns to
+     Auto, and the same section is drafted with the figures checked. */
+  recovery: [
+    { type: 'service', status: 'operational', message: null },
+    { type: 'model', modelId: 'auto' },
+    { type: 'wait', ms: 400 },
+    {
+      type: 'say',
+      text: 'Here is the summary section, drafted on Auto. The total and the delivery date were checked against the revised table: the total holds, the date moved to Thursday.',
+    },
+    { type: 'usage', tokens: 560 },
     { type: 'complete' },
   ],
 })
@@ -615,6 +647,12 @@ export const restoreVersion = defineScenario({
   description:
     'The thread IS the version history: preview an earlier version, see later turns set aside, then return — or restore it, which only ever adds.',
   prompt: 'Tighten the summary to three sentences.',
+  /* STRAIGHT INTO PREVIEW (audit round 05): the point of this trigger is
+     the state it ends in, so it lands settled — no Sending, no streaming,
+     no Queue frame — and firing it again re-enters the preview without
+     adding a single version block. */
+  instant: true,
+  oncePerThread: true,
   steps: [
     { type: 'wait', ms: 300 },
     {
@@ -643,8 +681,13 @@ export const multiplayer = defineScenario({
   prompt: 'Pull the totals for the northern site.',
   steps: [
     { type: 'wait', ms: 600 },
+    /* Ada's turn runs LIVE and long enough to be seen (audit round 05):
+       the composer stays typeable under her lock, the strip says whose
+       turn it is, Send reads Queue, and the queued turn sends itself when
+       hers lands — the library keeping the strip's promise. */
     {
       type: 'say',
+      chunkMs: 90,
       text: 'Gathered. The northern site peaks in March, and the one number that moved since last week — the survey figure — is flagged for review.',
     },
     { type: 'usage', tokens: 610, costUsd: 0.0092 },
@@ -676,19 +719,26 @@ export const budgetLow = defineScenario({
   description:
     'The month is nearly spent and the thread is heavy, so the projected price of the next turn on the current model no longer fits what remains. The meter says so \u2014 and prices the model that still fits, one click away.',
   prompt: 'Compare the two proposals and recommend one.',
-  steps: [
-    /* A heavy thread: the window re-sends every turn, so context is what
-       makes the next turn expensive. */
+  /* BEFORE THE SPEND (audit round 05): the trigger sets up the decision
+     and stops. A heavy thread (the window re-sends every turn, so context
+     is what makes the next turn expensive), a month nearly gone ($9.88 of
+     $10 — twelve cents left, less than the turn on Auto, more than on
+     Fast — seeded after the context so the ledger is exact), and the draft
+     already in the composer. The meter is the decision point: Use Fast or
+     continue on Auto. Nothing is spent until the person sends. */
+  preSend: [
     { type: 'usage', tokens: 46_000, costUsd: 0.41 },
-    /* The month, nearly gone. Seeded after the context so the ledger is
-       exact: $9.80 spent of $10. */
-    { type: 'budget', budgetUsd: 10, spentUsd: 9.8 },
+    { type: 'budget', budgetUsd: 10, spentUsd: 9.88 },
+    { type: 'draft', text: 'Compare the two proposals and recommend one.' },
+  ],
+  /* The reply to the person's own send, priced at the model they chose. */
+  steps: [
     { type: 'wait', ms: 500 },
     {
       type: 'say',
-      text: 'The second proposal. Both land in the same quarter, but the second front-loads its dependencies and names an owner for each \u2014 the first defers exactly the decisions that made last quarter slip.',
+      text: 'The second proposal. Both land in the same quarter, but the second front-loads its dependencies and names an owner for each \u2014 the first defers exactly the decisions that make the schedule slip.',
     },
-    { type: 'usage', tokens: 2_400, costUsd: 0.11 },
+    { type: 'usage', tokens: 2_400 },
     { type: 'complete' },
   ],
 })
@@ -727,6 +777,90 @@ export const budgetSpent = defineScenario({
  * (success beside partial failure) stay adjacent inside their group;
  * ids never move, so deep links hold.
  */
+/*
+ * DO VISIBLY DOES (audit round 05). The cold start's Do chip promised
+ * pages in Plans; the path now performs it through the tool lifecycle —
+ * three legible receipts, running to complete on the runtime's own clock
+ * (about 2.3 seconds of real time; the chip's "~2 min" is the fiction's
+ * estimate) — then the summary, then the created pages as rows in the
+ * Sources grammar under "Created", each expandable in place. No artifact
+ * panel, no new component: the receipt and the row already existed.
+ */
+export const doPlan = defineScenario({
+  id: 'do-plan',
+  label: 'Do — creates pages in Plans',
+  group: 'Baseline',
+  description:
+    'The Do path: a request that changes something outside the answer. The receipts run, the pages are created, and the answer reports what now exists.',
+  prompt: 'Turn my notes into a short plan.',
+  steps: [
+    { type: 'wait', ms: 250 },
+    {
+      type: 'tool',
+      name: 'Drafting release plan',
+      ms: 900,
+      outcome: 'succeeded',
+      detail: '4 sections from 2 notes',
+      args: '{ "source": ["Kickoff notes", "Vendor call"], "shape": "release plan" }',
+      result: '{ "sections": ["Goal", "Scope", "Timeline", "Risks"] }',
+    },
+    {
+      type: 'tool',
+      name: 'Creating folder structure',
+      ms: 600,
+      outcome: 'succeeded',
+      detail: 'Plans / Release',
+      args: '{ "parent": "Plans", "name": "Release" }',
+      result: '{ "path": "Plans/Release", "created": true }',
+    },
+    {
+      type: 'tool',
+      name: 'Filing pages in Plans',
+      ms: 800,
+      outcome: 'succeeded',
+      detail: '3 pages filed',
+      args: '{ "folder": "Plans/Release", "pages": ["brief.md", "checklist.md", "decisions.md"] }',
+      result: '{ "filed": 3, "failed": 0 }',
+    },
+    {
+      type: 'say',
+      text: 'Done. Three pages are filed under Plans / Release: the brief carries the four-section plan, the checklist holds the launch steps in order, and the decisions log opens with the two calls already made in your notes.',
+    },
+    {
+      type: 'sources',
+      label: 'Created',
+      sources: [
+        {
+          id: 'made-brief',
+          title: 'brief.md',
+          location: 'Plans / Release',
+          sourceKind: 'document',
+          detail: '4 sections',
+          trace: '{ "path": "Plans/Release/brief.md", "sections": ["Goal", "Scope", "Timeline", "Risks"], "words": 412 }',
+        },
+        {
+          id: 'made-checklist',
+          title: 'checklist.md',
+          location: 'Plans / Release',
+          sourceKind: 'document',
+          detail: '9 steps',
+          trace: '{ "path": "Plans/Release/checklist.md", "steps": 9, "owners_assigned": 6 }',
+        },
+        {
+          id: 'made-decisions',
+          title: 'decisions.md',
+          location: 'Plans / Release',
+          sourceKind: 'document',
+          detail: '2 decisions',
+          trace: '{ "path": "Plans/Release/decisions.md", "decisions": ["Freeze the template Tuesday", "Move the review to Thursday"] }',
+        },
+      ],
+    },
+    { type: 'usage', tokens: 1_260, costUsd: 0.0189 },
+    { type: 'complete' },
+  ],
+})
+
 export const builtInScenarios: readonly Scenario[] = [
   refusal,
   lowConfidence,
@@ -745,6 +879,7 @@ export const builtInScenarios: readonly Scenario[] = [
   happyPath,
   formatted,
   reasoning,
+  doPlan,
   scopeLadder,
   scopeMoved,
   versionHistory,

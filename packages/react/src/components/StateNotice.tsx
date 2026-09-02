@@ -53,6 +53,10 @@ const ICON: Record<NoticeState, IconName> = {
 
 export interface StateNoticeProps {
   state: NoticeState
+  /** A tone apart from the state's own (round 05): the fallback model is a
+   * degraded condition told as information, so it wears info on the
+   * degraded glyph. Absent, the state's tone stands. */
+  tone?: 'info' | 'caution' | 'danger' | 'neutral' | undefined
   /** Short, sentence case, no trailing period unless there are two sentences. */
   label: string
   children?: ReactNode
@@ -61,9 +65,9 @@ export interface StateNoticeProps {
   onDismiss?: (() => void) | undefined
 }
 
-export function StateNotice({ state, label, children, action, onDismiss }: StateNoticeProps) {
+export function StateNotice({ state, tone, label, children, action, onDismiss }: StateNoticeProps) {
   return (
-    <div className="lucet-notice" data-state={state} role="status">
+    <div className="lucet-notice" data-state={state} data-tone={tone} role="status">
       <StateIcon name={ICON[state]} />
       <p className="lucet-notice__body">
         <strong className="lucet-notice__label">{label}</strong>

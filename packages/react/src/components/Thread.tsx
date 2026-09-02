@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, createContext, useContext } from 'react'
 import { announcementPlan } from 'lucet-core'
-import type { Message, MessagePart, ThreadState } from 'lucet-core'
+import type { Message, MessagePart, ThreadState, NoticeAction, NoticePart } from 'lucet-core'
 import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
 import { MessageActions } from './MessageActions.js'
 import { Reasoning } from './Reasoning.js'
 import { Sources } from './Sources.js'
+import { StateNotice } from './StateNotice.js'
 import { StateIcon } from './StateIcon.js'
 import { ToolCall } from './ToolCall.js'
 
@@ -45,6 +46,8 @@ export interface ThreadProps {
   onRestoreCommit?: ((turnId: string) => void) | undefined
   /** Return to latest (restore/exited); the banner's escape hatch. */
   onExitRestore?: (() => void) | undefined
+  /** A notice's named exit (Retry on Auto): the host performs it. */
+  onNoticeAction?: ((action: NoticeAction) => void) | undefined
   /** 'history' holds the announcer's live role while a HOST-SCRIPTED
       stream plays (narration follows initiation — see
       ResponseAnnouncer); default 'live'. */
@@ -62,6 +65,29 @@ const TERMINAL: Record<string, { icon: 'interrupted' | 'failed' | 'refused'; wor
   interrupted: { icon: 'interrupted', word: 'Stopped early' },
   failed: { icon: 'failed', word: 'Failed' },
   refused: { icon: 'refused', word: 'Declined' },
+}
+
+const NoticeActionContext = createContext<((action: NoticeAction) => void) | undefined>(undefined)
+
+function NoticeInline({ part }: { part: NoticePart }) {
+  const onAction = useContext(NoticeActionContext)
+  const action = part.action
+  return (
+    <StateNotice
+      state={part.state}
+      tone={part.tone}
+      label={part.label}
+      action={
+        action && onAction ? (
+          <button type="button" className="lucet-button" data-variant="ghost" onClick={() => onAction(action)}>
+            {action.label}
+          </button>
+        ) : undefined
+      }
+    >
+      {part.text}
+    </StateNotice>
+  )
 }
 
 function Part({
@@ -106,7 +132,14 @@ function Part({
         />
       )
     case 'sources':
-      return <Sources sources={part.sources} />
+      return <Sources sources={part.sources} label={part.label} />
+    case 'notice':
+      /* THE RUNTIME TELLS, INLINE (audit round 05): how this answer is
+         being made — a fallback model, a limit — before the answer, in the
+         notice grammar that already exists. The action is a named exit the
+         host performs (Retry on Auto), delivered through context so the
+         part needs no plumbing. */
+      return <NoticeInline part={part} />
     case 'attachment':
       return (
         <span className="lucet-att lucet-att--readonly">
@@ -295,6 +328,7 @@ export function Thread({
   onRestore,
   onRestoreCommit,
   onExitRestore,
+  onNoticeAction,
   narration,
 }: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
@@ -387,6 +421,7 @@ export function Thread({
      * raw chunk and every piece of markdown syntax, which is the streaming
      * mess this component exists to clean up.
      */
+    <NoticeActionContext.Provider value={onNoticeAction}>
     <section
       ref={sectionRef}
       className="lucet-thread"
@@ -507,5 +542,6 @@ export function Thread({
       })}
       <ResponseAnnouncer state={state} narration={narration ?? 'live'} />
     </section>
+    </NoticeActionContext.Provider>
   )
 }
