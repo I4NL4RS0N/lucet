@@ -105,7 +105,7 @@ async function main() {
     let reached = false
     for (let i = 0; i < 40 && !reached; i++) {
       try {
-        await page.goto(`http://localhost:${DEV_PORT}/index.html`, { timeout: 2000 })
+        await page.goto(`http://localhost:${DEV_PORT}/index.html?instant=1`, { timeout: 2000 })
         reached = true
       } catch {
         await new Promise((r) => setTimeout(r, 500))

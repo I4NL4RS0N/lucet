@@ -817,9 +817,10 @@ export function App() {
      a different destination: it dispatches the same OPENER_EVENTS the
      instant seed does, so the settled page is byte-identical and every
      audit and capture stays valid. Skipped for: deep links (they own
-     the opening), automation (audits and captures must not wait —
-     ?playback=1 overrides for the recording), reduced motion, repeat
-     visits this session, and every Reset. */
+     the opening), ?instant=1 (audits and captures must not wait, and
+     they say so — the browser is never sniffed; ?playback=1 forces the
+     playback for the recording), reduced motion, repeat visits this
+     session, and every Reset. */
   const playbackWanted = useMemo(() => {
     try {
       const q = new URLSearchParams(window.location.search)
@@ -828,7 +829,11 @@ export function App() {
          preference, and a recording rig never sets it. */
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
       if (q.has('playback')) return true
-      if (navigator.webdriver) return false
+      /* Never inferred from the browser (round 06): a reviewer's automated
+         browser must see what a person sees, so nothing here reads
+         navigator.webdriver. A capture or audit that needs the resting
+         thread at once says so — ?instant=1. */
+      if (q.has('instant')) return false
       return window.sessionStorage.getItem('lucet-konf-played') === null
     } catch {
       return false

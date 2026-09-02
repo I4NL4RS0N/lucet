@@ -134,7 +134,10 @@ async function main() {
         app,
       )
       const page = await context.newPage()
-      await page.goto(`http://localhost:${DEV_PORT}/index.html`, { waitUntil: 'networkidle' })
+      /* ?instant=1 lands on the resting thread without the opening playback.
+         It is explicit on purpose (round 06): the site never infers it from
+         the browser, so an automated reviewer sees what a person sees. */
+      await page.goto(`http://localhost:${DEV_PORT}/index.html?instant=1`, { waitUntil: 'networkidle' })
       await page.addStyleTag({
         content: '*, *::before, *::after { animation: none !important; transition: none !important; }',
       })

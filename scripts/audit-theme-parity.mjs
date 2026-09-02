@@ -214,7 +214,8 @@ async function main() {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     for (let i = 0; i < 40; i++) {
       try {
-        await page.goto(URL, { timeout: 2000 })
+        /* ?instant=1 says the audit wants the resting thread; the site never sniffs the browser (round 06). */
+        await page.goto(`${URL}${URL.includes('?') ? '&' : '?'}instant=1`, { timeout: 2000 })
         break
       } catch {
         await new Promise((r) => setTimeout(r, 500))

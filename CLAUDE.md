@@ -13,6 +13,11 @@ repos with separate hosting and, in some cases, opposite visibility rules.
 - Confirm the working directory before starting a dev server. This docs site
   runs on port 4340. Note that after a directory change, the session's working
   directory does not actually move until the end of the turn.
+- The docs site never infers anything from the browser it runs in: no
+  `navigator.webdriver` checks, no automation sniffing. A capture or audit that
+  must land on the resting thread without the opening playback passes
+  `?instant=1` explicitly; `?playback=1` forces the playback for a recording.
+  The runtime's scripted timing is the same in every browser, automated or not.
 - Do not carry conventions in from another project. Decisions here are made
   here.
 
