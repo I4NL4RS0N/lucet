@@ -933,7 +933,7 @@ export function Primitives() {
         </Section>
 
         <Section name="Table" note="numbers are tabular, so a column never shifts">
-          <div style={{ inlineSize: '100%' }}>
+          <div className="spec__scroll">
             <table className="table">
               <thead>
                 <tr>

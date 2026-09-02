@@ -298,7 +298,12 @@ body {
 
 .stage--tight { padding: 22px; }
 
-.spec { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+/* A specimen never exceeds its stage (mobile pass, 2026-09-02): the
+   lab's fixed-width exhibits — a 340px textarea, a five-tile grid —
+   pushed the page sideways at phone widths. The stage is the ceiling;
+   what is wider scrolls inside its own box (.spec__scroll). */
+.spec { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; min-inline-size: 0; max-inline-size: 100%; }
+.spec__scroll { inline-size: 100%; max-inline-size: 100%; overflow-x: auto; }
 /* Preview | Code: the specimen's head holds the toggle; the code well
    shows the fixture's own events, generated so it cannot drift. */
 .spec__head {
@@ -597,6 +602,7 @@ body {
 .field.is-disabled { opacity: 0.45; cursor: not-allowed; }
 
 textarea.field {
+  max-inline-size: 100%;
   block-size: auto;
   min-block-size: calc(78px * var(--lucet-density, 1));
   padding-block: 9px;
