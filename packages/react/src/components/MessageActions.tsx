@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Message } from 'lucet-core'
+import type { Message, RecoveryIcon } from 'lucet-core'
 
 /**
  * Feedback controls: what you can DO with a settled response. The positions:
@@ -33,6 +33,9 @@ import type { Message } from 'lucet-core'
 export interface MessageActionsProps {
   message: Message
   onRetry?: (() => void) | undefined
+  /** The ending's own exit (round 05, P1). When the response carries a
+      recovery verb this performs it and "Ask again" is not shown. */
+  onRecover?: (() => void) | undefined
   onFeedback?: ((verdict: 'up' | 'down' | null) => void) | undefined
   /** Present only where restoring MEANS something: a settled, non-latest
       turn, outside an existing restored view. The thread decides; this
@@ -48,7 +51,23 @@ const COPY_WORDS: Record<CopyState, string> = {
   failed: 'Didn’t copy',
 }
 
-export function MessageActions({ message, onRetry, onFeedback, onRestore }: MessageActionsProps) {
+/* EVERY VERB HAS ITS OWN GLYPH — never a repeated generic arrow. */
+const RECOVERY_ICON: Record<RecoveryIcon, string> = {
+  list: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',
+  'check-sources': 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 15l2 2 4-4',
+  'retry-one': 'M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4M12 9v6',
+  continue: 'M6 5v14l10-7zM19 5v14',
+  queue: 'M12 8v4l2.5 1.5M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0',
+  connection: 'M10 14l4-4M8 12l-2 2a3 3 0 1 0 4 4l2-2M16 12l2-2a3 3 0 1 0-4-4l-2 2',
+  refresh: 'M21 12a9 9 0 1 1-3-6.7M21 3v5h-5',
+  recheck: 'M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4M9 12l2 2 4-4',
+  replace: 'M4 7h12l-3-3M20 17H8l3 3',
+}
+
+const timeOf = (ms: number): string =>
+  new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(ms))
+
+export function MessageActions({ message, onRetry, onRecover, onFeedback, onRestore }: MessageActionsProps) {
   const [copy, setCopy] = useState<CopyState>('idle')
   /* The pop fires on RECORDING a verdict, never on retracting one: giving
      feedback is a small moment; taking it back is quiet housekeeping. */
@@ -100,7 +119,27 @@ export function MessageActions({ message, onRetry, onFeedback, onRestore }: Mess
         <span aria-hidden>{COPY_WORDS[copy]}</span>
       </button>
 
-      {onRetry ? (
+      {message.recovery && message.recovery.scheduledAt !== null ? (
+        /* Armed: the verb has become a status, and it reads as one. */
+        <span className="lucet-actions__pending" role="status">
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d={RECOVERY_ICON.queue} />
+          </svg>
+          Retrying at{' '}
+          <time dateTime={new Date(message.recovery.scheduledAt).toISOString()}>{timeOf(message.recovery.scheduledAt)}</time>
+        </span>
+      ) : message.recovery && onRecover ? (
+        /* THE STATE'S OWN EXIT (round 05, P1): the verb says what this
+           ending promised and performs it through the runtime. */
+        <button type="button" className="lucet-actions__btn" data-recovery={message.recovery.mode} onClick={() => onRecover()}>
+          <svg viewBox="0 0 24 24" aria-hidden>
+            <path d={RECOVERY_ICON[message.recovery.icon]} />
+          </svg>
+          {message.recovery.label}
+        </button>
+      ) : onRetry ? (
+        /* "Ask again" survives only where asking the same question is the
+           right recovery — where no verb was stamped. */
         <button type="button" className="lucet-actions__btn" onClick={() => onRetry()}>
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />

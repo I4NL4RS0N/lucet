@@ -1407,11 +1407,32 @@
   gap: 2px;
   margin-block-start: var(--lucet-space-1);
 }
+/* An armed retry reads as a status, not a control (round 05, P1). */
+.lucet-actions__pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
+  padding-inline: var(--lucet-space-2);
+  color: var(--lucet-muted-foreground);
+  font-size: var(--lucet-text-xs);
+}
+.lucet-actions__pending svg { inline-size: 14px; block-size: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* Reset times hold still: tabular figures on the ending and the strip. */
+.lucet-thread__at,
+.lucet-prompt__at,
+.lucet-actions__pending time { font-variant-numeric: tabular-nums; }
+/* The blocked month's exit sits at the strip's end, a ghost. */
+.lucet-prompt__exit { margin-inline-start: auto; flex: none; }
+.lucet-prompt__status .lucet-orb-row { inline-size: 100%; }
+
 .lucet-actions__btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-block-size: max(24px, calc(26px * var(--lucet-density, 1))); /* 24px = 2.5.8 floor, not a density decision */
+  /* 28px: the site's target standard (2.5.8 asks 24), kept on the compact
+     row too — round 05 P1 measured the row at 26 and raised it. */
+  min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
   padding-inline: var(--lucet-space-2);
   border: 0;
   border-radius: var(--lucet-radius-control);

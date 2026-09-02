@@ -16,6 +16,8 @@ import type {
   UsageState,
   SourceStatus,
   ScopeLevel,
+  RecoveryVerb,
+  Source,
 } from './types.js'
 
 export type LucetEvent =
@@ -65,7 +67,17 @@ export type LucetEvent =
       messageId: string
       status: MessageStatus
       reason: string | null
+      /** The state's own exit, if the runtime offers one (round 05, P1). */
+      recovery?: RecoveryVerb | null
     }
+  /** A settled response continues: parts append to it from here, and it
+   * settles again. The bounded form of "continue" — one event, one reducer
+   * case, the existing part events for the rest. */
+  | { type: 'response/resumed'; messageId: string }
+  /** A retry is armed for the moment a limit lifts; the verb becomes a status. */
+  | { type: 'recovery/scheduled'; messageId: string; at: number }
+  /** A cited source that is gone is replaced by another, in place. */
+  | { type: 'source/replaced'; messageId: string; partId: string; sourceId: string; replacement: Source }
   | { type: 'service/changed'; status: ServiceStatus; message: string | null }
   | { type: 'service/dismissed' }
   | { type: 'usage/changed'; patch: Partial<UsageState> }
@@ -177,6 +189,12 @@ export function describeEvent(event: LucetEvent): string {
       return `Tool ${event.status}`
     case 'response/settled':
       return `Response ${event.status}`
+    case 'response/resumed':
+      return 'Response resumed'
+    case 'recovery/scheduled':
+      return 'Retry scheduled for when the limit lifts'
+    case 'source/replaced':
+      return 'Source replaced'
     case 'service/changed':
       return `Service ${event.status}`
     case 'service/dismissed':

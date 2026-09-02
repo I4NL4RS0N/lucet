@@ -45,6 +45,7 @@ export function createInitialState(
       threadCostUsd: 0,
       monthlyBudgetUsd: null,
       monthlySpentUsd: 0,
+      monthlyResetAt: null,
     },
     restoredFrom: null,
     scope: { levels: [], selectedId: null, movedNote: null },
@@ -228,6 +229,7 @@ export function reduce(
         ],
         status: 'complete',
         reason: null,
+        recovery: null,
         feedback: null,
         createdAt: ctx.now,
       }
@@ -246,11 +248,17 @@ export function reduce(
         status: 'submitting',
         composer: {
           ...state.composer,
-          text: '',
+          /* A RETRY IS NOT THE COMPOSER'S SEND (round 05, P1): the words came
+             from an earlier turn, so a draft in progress stays exactly as
+             typed, attachments included. Only a fresh send empties the field. */
+          text: event.retryOf === null ? '' : state.composer.text,
           // Ready attachments went with the turn. Anything still uploading or
           // failed stays behind, visibly -- silently discarding it would send
           // less than the person thinks they sent.
-          attachments: state.composer.attachments.filter((a) => a.status !== 'ready'),
+          attachments:
+            event.retryOf === null
+              ? state.composer.attachments.filter((a) => a.status !== 'ready')
+              : state.composer.attachments,
         },
       }
     }
@@ -263,6 +271,7 @@ export function reduce(
         parts: [],
         status: 'streaming',
         reason: null,
+        recovery: null,
         feedback: null,
         createdAt: ctx.now,
       }
@@ -316,6 +325,50 @@ export function reduce(
           ...message,
           status: event.status,
           reason: event.reason,
+          recovery: event.recovery ?? null,
+        })),
+      }
+
+    /* THE BOUNDED CONTINUATION (round 05, P1): a settled response goes
+       live again, keeping every part it has; the runtime then appends
+       with the ordinary part events and settles it once more. The verb
+       that reopened it is consumed here — an exit is offered once. */
+    case 'response/resumed':
+      return {
+        ...state,
+        status: 'streaming',
+        turns: mapResponse(state, event.messageId, (message) => ({
+          ...message,
+          status: 'streaming',
+          reason: null,
+          recovery: null,
+        })),
+      }
+
+    case 'recovery/scheduled':
+      return {
+        ...state,
+        turns: mapResponse(state, event.messageId, (message) => ({
+          ...message,
+          recovery: message.recovery ? { ...message.recovery, scheduledAt: event.at } : null,
+        })),
+      }
+
+    case 'source/replaced':
+      return {
+        ...state,
+        turns: mapResponse(state, event.messageId, (message) => ({
+          ...message,
+          parts: message.parts.map((part) =>
+            part.kind === 'sources' && part.id === event.partId
+              ? {
+                  ...part,
+                  sources: part.sources.map((source) =>
+                    source.id === event.sourceId ? { ...event.replacement, status: 'ok' as const, note: null } : source,
+                  ),
+                }
+              : part,
+          ),
         })),
       }
 

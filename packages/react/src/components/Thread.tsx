@@ -48,6 +48,8 @@ export interface ThreadProps {
   onExitRestore?: (() => void) | undefined
   /** A notice's named exit (Retry on Auto): the host performs it. */
   onNoticeAction?: ((action: NoticeAction) => void) | undefined
+  /** The ending's own exit (round 05, P1): perform the response's recovery verb. */
+  onRecover?: ((turnId: string) => void) | undefined
   /** 'history' holds the announcer's live role while a HOST-SCRIPTED
       stream plays (narration follows initiation — see
       ResponseAnnouncer); default 'live'. */
@@ -238,6 +240,18 @@ function MessageView({
           <StateIcon name={terminal.icon} />
           <span>
             <strong>{terminal.word}.</strong> {message.reason ?? ''}
+            {message.recovery?.mode === 'retry-at' && message.recovery.at !== null ? (
+              /* The one thing the person needs from a limit: exactly when it
+                 lifts (round 05, P1). Tabular, so the seconds hold still. */
+              <>
+                {' '}
+                Resets at{' '}
+                <time className="lucet-thread__at" dateTime={new Date(message.recovery.at).toISOString()}>
+                  {new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(message.recovery.at))}
+                </time>
+                .
+              </>
+            ) : null}
           </span>
         </p>
       ) : null}
@@ -329,6 +343,7 @@ export function Thread({
   onRestoreCommit,
   onExitRestore,
   onNoticeAction,
+  onRecover,
   narration,
 }: ThreadProps) {
   const last = state.turns[state.turns.length - 1]
@@ -478,6 +493,7 @@ export function Thread({
                     <MessageActions
                       message={response}
                       onRetry={onRetry ? () => onRetry(turn.id) : undefined}
+                      onRecover={onRecover ? () => onRecover(turn.id) : undefined}
                       onFeedback={
                         onFeedback ? (verdict) => onFeedback(response.id, verdict) : undefined
                       }

@@ -97,7 +97,7 @@ export function Sources({ sources, label = 'Sources' }: SourcesProps) {
       <ol className="lucet-sources__list">
         {sources.map((source) => (
           <li key={source.id}>
-            {source.trace ? (
+            {source.trace && source.status !== 'gone' ? (
               <details className="lucet-source" data-status={source.status}>
                 <summary className="lucet-sources__row lucet-sources__row--summary">
                   <Row source={source} />
@@ -117,7 +117,9 @@ export function Sources({ sources, label = 'Sources' }: SourcesProps) {
                 </div>
               </details>
             ) : (
-              /* No trace, no disclosure: a plain row that promises nothing. */
+              /* No trace, no disclosure: a plain row that promises nothing.
+                 A GONE source is a plain row too (round 05, P1): a removed
+                 reference must never read as openable. */
               <span className="lucet-sources__row" data-status={source.status}>
                 <Row source={source} />
               </span>

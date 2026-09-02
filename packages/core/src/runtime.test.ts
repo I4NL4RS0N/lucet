@@ -549,8 +549,157 @@ describe('every trigger does what it says (round 05)', () => {
     await run.catch(() => undefined)
     await lucet.trigger('budget-low')
     lucet.reset()
-    expect(lucet.inspect()).toEqual({ pendingTimers: 0, running: false, pendingReply: null, queued: null, locked: false })
+    expect(lucet.inspect()).toEqual({ pendingTimers: 0, running: false, pendingReply: null, queued: null, locked: false, scheduledRetries: 0 })
     expect(lucet.getState().turns).toHaveLength(0)
     expect(lucet.getState().composer.text).toBe('')
+  })
+})
+
+describe('every ending gets its own exit (round 05, P1)', () => {
+  const fresh = () => createLucet({ clock: createManualClock(1_000_000), scheduler: instantScheduler })
+  const last = (lucet: ReturnType<typeof createLucet>) => lucet.getState().turns.at(-1)!
+
+  it('a refusal shows the proposed deletions as rows and deletes nothing; it stays a refusal', async () => {
+    const lucet = fresh()
+    await lucet.trigger('refusal')
+    const before = last(lucet)
+    expect(before.response!.recovery).toMatchObject({ label: 'Show proposed deletions', mode: 'resume' })
+    await lucet.recover(before.id)
+    const after = last(lucet)
+    expect(lucet.getState().turns).toHaveLength(1)
+    expect(after.response!.status).toBe('refused')
+    expect(after.response!.reason).toBe(before.response!.reason)
+    expect(after.response!.parts.map((p) => p.kind)).toEqual(['tool', 'sources', 'text'])
+    const rows = after.response!.parts.find((p) => p.kind === 'sources')
+    expect(rows && rows.kind === 'sources' ? rows.label : null).toBe('Proposed deletions')
+    expect(after.response!.recovery).toBeNull()
+  })
+
+  it('low confidence checks its sources without re-asking', async () => {
+    const lucet = fresh()
+    await lucet.trigger('low-confidence')
+    expect(last(lucet).response!.recovery?.label).toBe('Check sources')
+    await lucet.recover(last(lucet).id)
+    expect(lucet.getState().turns).toHaveLength(1)
+    expect(last(lucet).response!.parts.map((p) => p.kind)).toEqual(['text', 'tool', 'sources', 'text'])
+    expect(last(lucet).response!.status).toBe('complete')
+  })
+
+  it('a partial tool failure retries only the missing source, as a new turn', async () => {
+    const lucet = fresh()
+    await lucet.trigger('tool-partial-failure')
+    const first = last(lucet)
+    expect(first.response!.recovery).toMatchObject({ label: 'Retry missing source', icon: 'retry-one', mode: 'retry' })
+    await lucet.recover(first.id)
+    expect(lucet.getState().turns).toHaveLength(2)
+    expect(last(lucet).retryOf).toBe(first.id)
+    const tool = last(lucet).response!.parts.find((p) => p.kind === 'tool')
+    expect(tool && tool.kind === 'tool' ? tool.name : null).toBe('Retried the carrier quote')
+  })
+
+  it('an interrupted response continues from where it stopped, in the same message', async () => {
+    const lucet = fresh()
+    await lucet.trigger('interrupted')
+    const before = last(lucet)
+    const partial = before.response!.parts[0]
+    expect(before.response!.status).toBe('interrupted')
+    expect(before.response!.recovery).toMatchObject({ label: 'Continue response', icon: 'continue', mode: 'resume' })
+    await lucet.recover(before.id)
+    expect(lucet.getState().turns).toHaveLength(1)
+    const after = last(lucet).response!
+    expect(after.status).toBe('complete')
+    expect(after.parts).toHaveLength(1)
+    const text = after.parts[0]!.kind === 'text' ? after.parts[0]!.text : ''
+    expect(text.startsWith(partial && partial.kind === 'text' ? partial.text : '?')).toBe(true)
+    expect(text).toMatch(/Previously that step was applied once per file/)
+  })
+
+  it('a rate limit shows its reset time and arms a retry for that moment; the draft stays', async () => {
+    const lucet = fresh()
+    await lucet.trigger('rate-limit')
+    /* The person types while limited; the scheduled retry must not touch it. */
+    lucet.store.dispatch({ type: 'composer/changed', text: 'a draft in progress' })
+    const first = last(lucet)
+    expect(first.response!.recovery).toMatchObject({ label: 'Retry when it resets', mode: 'retry-at', at: 1_000_000 + 30_000 })
+    const armed = lucet.recover(first.id)
+    expect(lucet.getState().turns.at(-1)!.response!.recovery?.scheduledAt).toBe(1_030_000)
+    await armed
+    expect(lucet.getState().turns).toHaveLength(2)
+    expect(last(lucet).retryOf).toBe(first.id)
+    expect(last(lucet).response!.status).toBe('complete')
+    expect(lucet.getState().composer.text).toBe('a draft in progress')
+    expect(lucet.inspect().scheduledRetries).toBe(0)
+  })
+
+  it('an outage retries the connection; the strip and the ending share no words', async () => {
+    const lucet = fresh()
+    await lucet.trigger('service-down')
+    const first = last(lucet)
+    expect(lucet.getState().service.status).toBe('down')
+    expect(first.response!.recovery).toMatchObject({ label: 'Retry connection', mode: 'retry' })
+    const words = (t: string) => new Set(t.toLowerCase().match(/[a-z]{5,}/g) ?? [])
+    const strip = words(lucet.getState().service.message ?? '')
+    const ending = words(first.response!.reason ?? '')
+    expect([...strip].filter((w) => ending.has(w))).toEqual([])
+    await lucet.recover(first.id)
+    expect(lucet.getState().service.status).toBe('operational')
+    expect(last(lucet).retryOf).toBe(first.id)
+    expect(last(lucet).response!.status).toBe('complete')
+  })
+
+  it('a spent month says exactly when it resets', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-spent')
+    const { usage } = lucet.getState()
+    expect(usage.monthlyResetAt).toBe(1_000_000 + 2 * 24 * 3_600_000 + 5 * 3_600_000)
+    expect(submitBlocker({ ...lucet.getState(), usage })).toBe('budget')
+    expect(last(lucet).response!.recovery).toBeNull()
+  })
+
+  it('a stale result refreshes through the runtime and the receipt says how fresh', async () => {
+    const lucet = fresh()
+    await lucet.trigger('stale-data')
+    expect(last(lucet).response!.recovery?.label).toBe('Refresh result')
+    await lucet.recover(last(lucet).id)
+    const tools = last(lucet).response!.parts.filter((p) => p.kind === 'tool')
+    expect(tools).toHaveLength(2)
+    expect(tools[1]!.kind === 'tool' ? tools[1]!.detail : null).toBe('Fresh — fetched just now')
+    expect(last(lucet).response!.status).toBe('complete')
+  })
+
+  it('an updated source is re-checked and its flag clears', async () => {
+    const lucet = fresh()
+    await lucet.trigger('source-updated')
+    const sourcesOf = () => { const p = last(lucet).response!.parts.find((x) => x.kind === 'sources'); return p && p.kind === 'sources' ? p.sources : [] }
+    expect(sourcesOf().find((x) => x.id === 'src-q3')?.status).toBe('stale')
+    expect(last(lucet).response!.recovery?.label).toBe('Re-check answer')
+    await lucet.recover(last(lucet).id)
+    expect(sourcesOf().find((x) => x.id === 'src-q3')).toMatchObject({ status: 'ok', note: null })
+  })
+
+  it('a removed source is replaced in place', async () => {
+    const lucet = fresh()
+    await lucet.trigger('source-gone')
+    const sourcesOf = () => { const p = last(lucet).response!.parts.find((x) => x.kind === 'sources'); return p && p.kind === 'sources' ? p.sources : [] }
+    expect(sourcesOf().find((x) => x.id === 'src-quote')?.status).toBe('gone')
+    expect(last(lucet).response!.recovery?.label).toBe('Replace source')
+    await lucet.recover(last(lucet).id)
+    expect(sourcesOf().some((x) => x.id === 'src-quote')).toBe(false)
+    expect(sourcesOf().find((x) => x.id === 'src-quote-archive')).toMatchObject({ status: 'ok', note: null, title: 'Vendor quote (archived copy)' })
+    expect(sourcesOf()).toHaveLength(3)
+  })
+
+  it('a complete answer with no verb keeps "Ask again", and Reset cancels an armed retry', async () => {
+    const instant = fresh()
+    await instant.trigger('happy-path')
+    expect(last(instant).response!.recovery).toBeNull()
+    const lucet = createLucet({ clock: createManualClock(0) })
+    await lucet.trigger('rate-limit')
+    const armed = lucet.recover(last(lucet).id)
+    expect(lucet.inspect().scheduledRetries).toBe(1)
+    lucet.reset()
+    await armed
+    expect(lucet.inspect()).toMatchObject({ scheduledRetries: 0, pendingTimers: 0, running: false })
+    expect(lucet.getState().turns).toHaveLength(0)
   })
 })

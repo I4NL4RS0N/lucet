@@ -6,16 +6,18 @@
  * emitting the same events.
  */
 
-import type { Scheduler } from '../clock.js'
-import { systemScheduler } from '../clock.js'
+import type { Clock, Scheduler } from '../clock.js'
+import { systemClock, systemScheduler } from '../clock.js'
 import type { Store } from '../store.js'
-import type { MessageStatus } from '../types.js'
+import type { MessageStatus, RecoveryVerb } from '../types.js'
 import type { Scenario, Step } from './scenario.js'
 
 export interface MockRuntimeOptions {
   store: Store
   nextId: (prefix: string) => string
   scheduler?: Scheduler
+  /** Reset times and limit windows are clock times; injected like the scheduler. */
+  clock?: Clock
   /** Who the local participant is. Used for turn attribution. */
   authorId?: string
 }
@@ -24,18 +26,31 @@ export interface MockRuntime {
   run(scenario: Scenario, signal?: AbortSignal, meta?: { retryOf?: string }): Promise<void>
   /** Run a scenario's pre-send steps: the world changes, no turn is made. */
   prepare(scenario: Scenario, signal?: AbortSignal): Promise<void>
+  /** Continue a settled response with the given steps, then settle it
+      again — its own status and reason restored unless a step settles it. */
+  resume(scenario: Scenario, messageId: string, signal?: AbortSignal): Promise<void>
 }
 
 const DEFAULT_CHUNK_MS = 24
 
 function chunk(text: string): string[] {
-  return text.match(/\S+\s*/g) ?? [text]
+  /* Leading whitespace rides with the first word: a continuation begins
+     mid-sentence, and its first chunk is " applied", not "applied". */
+  return text.match(/\s*\S+\s*/g) ?? [text]
 }
 
 export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
   const { store, nextId } = options
   const scheduler = options.scheduler ?? systemScheduler
+  const clock = options.clock ?? systemClock
   const authorId = options.authorId ?? 'you'
+  /* The scenario whose steps are running, so a settle can stamp its exit. */
+  let currentScenario: Scenario | null = null
+  const verbFor = (at: number | null): RecoveryVerb | null => {
+    const r = currentScenario?.recovery
+    if (!r?.verb) return null
+    return { label: r.verb.label, icon: r.verb.icon, mode: r.mode, at, scheduledAt: null }
+  }
   /* An instant scenario skips every wait and lands each text whole: the
      state it ends in is the point, and no frame of arrival is shown. */
   let instant = false
@@ -253,7 +268,11 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       case 'budget':
         store.dispatch({
           type: 'usage/changed',
-          patch: { monthlyBudgetUsd: s.budgetUsd, monthlySpentUsd: s.spentUsd },
+          patch: {
+            monthlyBudgetUsd: s.budgetUsd,
+            monthlySpentUsd: s.spentUsd,
+            ...(s.resetsInMs === undefined ? {} : { monthlyResetAt: clock.now() + s.resetsInMs }),
+          },
         })
         return null
 
@@ -267,17 +286,21 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           messageId,
           status: 'refused',
           reason: s.reason,
+          recovery: verbFor(null),
         })
         return 'refused'
 
-      case 'fail':
+      case 'fail': {
+        const at = s.retryAt === undefined ? null : clock.now() + s.retryAt
         store.dispatch({
           type: 'response/settled',
           messageId,
           status: 'failed',
           reason: s.reason,
+          recovery: verbFor(at),
         })
         return 'failed'
+      }
 
       case 'interrupt':
         store.dispatch({
@@ -285,6 +308,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           messageId,
           status: 'interrupted',
           reason: s.reason,
+          recovery: verbFor(null),
         })
         return 'interrupted'
 
@@ -294,8 +318,40 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           messageId,
           status: 'complete',
           reason: null,
+          recovery: verbFor(null),
         })
         return 'complete'
+
+      case 'continue': {
+        /* Append to the LAST text part: the sentence picks up where it
+           stopped. A continuation with no text to continue is a script bug. */
+        const message = store.getState().turns.flatMap((t) => (t.response ? [t.response] : [])).find((m) => m.id === messageId)
+        const target = message ? [...message.parts].reverse().find((p) => p.kind === 'text') : undefined
+        if (!target) throw new Error('continue with no text part to continue')
+        if (instant) {
+          store.dispatch({ type: 'part/delta', messageId, partId: target.id, delta: s.text })
+          return null
+        }
+        for (const piece of chunk(s.text)) {
+          await sleep(s.chunkMs ?? DEFAULT_CHUNK_MS, signal)
+          store.dispatch({ type: 'part/delta', messageId, partId: target.id, delta: piece })
+        }
+        return null
+      }
+
+      case 'sourceReplace': {
+        const message = store.getState().turns.flatMap((t) => (t.response ? [t.response] : [])).find((m) => m.id === messageId)
+        const part = message ? [...message.parts].reverse().find((p) => p.kind === 'sources') : undefined
+        if (!part) throw new Error('sourceReplace before sources')
+        store.dispatch({
+          type: 'source/replaced',
+          messageId,
+          partId: part.id,
+          sourceId: s.sourceId,
+          replacement: { ...s.replacement, detail: s.replacement.detail ?? null, trace: s.replacement.trace ?? null, status: 'ok', note: null },
+        })
+        return null
+      }
     }
   }
 
@@ -311,8 +367,39 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       }
     },
 
+    async resume(scenario, messageId, signal) {
+      instant = !!scenario.instant
+      currentScenario = scenario
+      const before = store.getState().turns.flatMap((t) => (t.response ? [t.response] : [])).find((m) => m.id === messageId)
+      if (!before) throw new Error(`Unknown response: ${messageId}`)
+      store.dispatch({ type: 'response/resumed', messageId })
+      store.dispatch({ type: 'composer/locked', by: authorId })
+      let settled = false
+      try {
+        for (const s of scenario.steps) {
+          if (settled) continue
+          const outcome = await step(s, messageId, signal)
+          if (outcome !== null) settled = true
+        }
+        if (!settled) {
+          /* Back to how it ended — a refusal that listed what would go is
+             still a refusal — with the exit consumed. */
+          store.dispatch({ type: 'response/settled', messageId, status: before.status, reason: before.reason, recovery: null })
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          store.dispatch({ type: 'response/settled', messageId, status: 'interrupted', reason: 'Stopped before it finished.', recovery: null })
+        } else {
+          store.dispatch({ type: 'response/settled', messageId, status: 'failed', reason: error instanceof Error ? error.message : 'Unknown failure', recovery: null })
+        }
+      } finally {
+        store.dispatch({ type: 'composer/unlocked' })
+      }
+    },
+
     async run(scenario, signal, meta) {
       instant = !!scenario.instant
+      currentScenario = scenario
       const turnId = nextId('turn')
       const promptId = nextId('msg')
       const messageId = nextId('msg')
@@ -326,10 +413,14 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         messageId: promptId,
         text: scenario.prompt ?? '',
         authorId: scenario.author ?? authorId,
-        attachmentIds: store
-          .getState()
-          .composer.attachments.filter((a) => a.status === 'ready')
-          .map((a) => a.id),
+        /* A retry carries the earlier turn's words, not the composer's
+           attachments — those stay with the draft. */
+        attachmentIds: meta?.retryOf
+          ? []
+          : store
+              .getState()
+              .composer.attachments.filter((a) => a.status === 'ready')
+              .map((a) => a.id),
         retryOf: meta?.retryOf ?? null,
       })
       // Single writer at a time. The composer closes for everyone, not just
@@ -365,6 +456,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             messageId,
             status: 'complete',
             reason: null,
+            recovery: verbFor(null),
           })
         }
       } catch (error) {

@@ -7,7 +7,7 @@
  * flat list of steps rather than a single canned response.
  */
 
-import type { ServiceStatus, ToolStatus, NoticeAction, NoticeKind, NoticeTone } from '../types.js'
+import type { ServiceStatus, ToolStatus, NoticeAction, NoticeKind, NoticeTone, RecoveryIcon, SourceStatus } from '../types.js'
 
 export type Step =
   /** Dead air. Latency is a designed state, not an accident. */
@@ -42,7 +42,8 @@ export type Step =
       }[]
     }
   /** Age one cited source after the fact — the states nobody designs. */
-  | { type: 'sourceChange'; sourceId: string; status: 'stale' | 'gone'; note: string }
+  /** A source's condition changes after settle — aged, removed, or (on a re-check) cleared. */
+  | { type: 'sourceChange'; sourceId: string; status: SourceStatus; note: string | null }
   /** Resubmit this scenario's own prompt: same words, NEW commit, with a
       fresh (usually better) response. The version-history demo. */
   | { type: 'retryTurn'; say: string; chunkMs?: number }
@@ -63,7 +64,18 @@ export type Step =
       note: string
     }
   | { type: 'refuse'; reason: string }
-  | { type: 'fail'; reason: string }
+  /** With retryAt (ms from now) the failure is a limit that lifts: the
+   * ending shows the exact time and the recovery may schedule itself. */
+  | { type: 'fail'; reason: string; retryAt?: number }
+  /** Append to the LAST text part of the resumed response — a continuation
+   * from where it stopped, not a new paragraph. Resume mode only. */
+  | { type: 'continue'; text: string; chunkMs?: number }
+  /** Replace a cited source, in place, with another. */
+  | {
+      type: 'sourceReplace'
+      sourceId: string
+      replacement: { id: string; title: string; location: string; sourceKind: 'document' | 'web' | 'data'; detail?: string; trace?: string }
+    }
   | { type: 'interrupt'; reason: string }
   /** Without costUsd the runtime prices the tokens at the SELECTED model's
    * rate — so the model the person chose is the model that runs. */
@@ -75,9 +87,16 @@ export type Step =
   /** Put words in the composer without sending them — the pre-send state. */
   | { type: 'draft'; text: string }
   /** Seed or move the monthly ledger — the account's month, not the thread's tally. */
-  | { type: 'budget'; budgetUsd: number; spentUsd: number }
+  /** resetsInMs, when given, says when the month resets — the exact time the blocked composer shows. */
+  | { type: 'budget'; budgetUsd: number; spentUsd: number; resetsInMs?: number }
   | { type: 'service'; status: ServiceStatus; message: string | null }
   | { type: 'complete' }
+
+export interface Recovery {
+  readonly verb?: { readonly label: string; readonly icon: RecoveryIcon }
+  readonly mode: 'retry' | 'resume' | 'retry-at'
+  readonly steps: readonly Step[]
+}
 
 export interface Scenario {
   readonly id: string
@@ -118,7 +137,15 @@ export interface Scenario {
    * (same prompt, new version) instead of the generic reply. Absent,
    * a retry gets the default.
    */
-  readonly recovery?: readonly Step[]
+  /**
+   * EVERY ENDING GETS ITS OWN EXIT (round 05, P1). The verb is offered on
+   * the ending in the user's words and drawn with its own glyph; the mode
+   * says how the runtime keeps it: 'retry' plays the steps as a new turn
+   * of the same words, 'resume' continues this very response, 'retry-at'
+   * schedules the retry for the failure's reset time. A recovery without a
+   * verb is reached another way (the fallback's notice action).
+   */
+  readonly recovery?: Recovery
 }
 
 export function defineScenario(scenario: Scenario): Scenario {

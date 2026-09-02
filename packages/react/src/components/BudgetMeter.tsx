@@ -89,7 +89,9 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
           </svg>
         ) : null}
         {selected.label}
-        {projection ? <span className="lucet-budget__price">≈{usd(projection.costUsd)}</span> : null}
+        {/* A projected price on a blocked month is a promise the send
+            button cannot keep: hidden while spent (round 05, P1). */}
+        {projection && !spent ? <span className="lucet-budget__price">≈{usd(projection.costUsd)}</span> : null}
         <span className="lucet-budget__chev" aria-hidden />
       </summary>
       <div className="lucet-budget__panel">

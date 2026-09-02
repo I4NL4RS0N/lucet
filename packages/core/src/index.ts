@@ -69,6 +69,11 @@ export interface Lucet {
       of the thread (restore is a copy — nothing is deleted), and any
       preview view returns to latest. */
   restore(turnId: string): void
+  /** Perform the settled response's own exit — the verb its ending offered
+      (round 05, P1): a new turn from the recovery script, a resumption of
+      the same response, or a retry scheduled for when a limit lifts. Falls
+      back to retry() when the turn's scenario stamped no verb. */
+  recover(turnId: string): Promise<void>
   /** Force a named state, in context, without resetting the thread. A
       scenario with pre-send steps sets the world up and stops; the
       person's own send then gets that scenario's reply. A once-per-thread
@@ -86,6 +91,8 @@ export interface Lucet {
     pendingReply: string | null
     queued: string | null
     locked: boolean
+    /** Retries armed for a limit's reset and not yet fired. */
+    scheduledRetries: number
   }
 }
 
@@ -123,12 +130,15 @@ export function createLucet(options: LucetOptions = {}): Lucet {
       }
     },
   }
+  const clock = options.clock ?? systemClock
   const runtime = createMockRuntime({
     store,
     nextId,
     scheduler,
+    clock,
     ...(options.authorId === undefined ? {} : { authorId: options.authorId }),
   })
+  let scheduledRetries = 0
 
   let controller: AbortController | null = null
   /* A pre-send scenario waits here for the person's own send. */
@@ -214,9 +224,53 @@ export function createLucet(options: LucetOptions = {}): Lucet {
       const source = turnScenarios.get(turnId)
       if (source?.recovery) {
         const { recovery, ...rest } = source
-        return run({ ...rest, prompt: text, steps: recovery }, { retryOf: turnId })
+        return run({ ...rest, prompt: text, steps: recovery.steps }, { retryOf: turnId })
       }
       return run(submitScenario(text), { retryOf: turnId })
+    },
+
+    async recover(turnId) {
+      const turn = store.getState().turns.find((t) => t.id === turnId)
+      if (!turn) throw new Error(`Unknown turn: ${turnId}`)
+      const source = turnScenarios.get(turnId)
+      const recovery = source?.recovery
+      if (!source || !recovery) return this.retry(turnId)
+      const text = turn.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join('\n')
+      const { recovery: _r, ...rest } = source
+      if (recovery.mode === 'retry') {
+        return run({ ...rest, prompt: text, steps: recovery.steps }, { retryOf: turnId })
+      }
+      if (recovery.mode === 'resume') {
+        if (!turn.response) throw new Error('Nothing to resume')
+        controller?.abort()
+        const own = new AbortController()
+        controller = own
+        try {
+          await runtime.resume({ ...rest, steps: recovery.steps }, turn.response.id, own.signal)
+        } finally {
+          if (controller === own) controller = null
+        }
+        return
+      }
+      /* retry-at: armed for the moment the limit lifts. The draft in the
+         composer is untouched — the wait belongs to the ending that asked
+         for it, and Reset cancels it with everything else. */
+      if (!turn.response) throw new Error('Nothing to retry')
+      const at = turn.response.recovery?.at ?? clock.now()
+      store.dispatch({ type: 'recovery/scheduled', messageId: turn.response.id, at })
+      controller?.abort()
+      const own = new AbortController()
+      controller = own
+      scheduledRetries++
+      try {
+        await scheduler.sleep(Math.max(0, at - clock.now()), own.signal)
+      } catch {
+        return
+      } finally {
+        scheduledRetries--
+        if (controller === own) controller = null
+      }
+      return run({ ...rest, prompt: text, steps: recovery.steps }, { retryOf: turnId })
     },
 
     restore(turnId) {
@@ -282,6 +336,7 @@ export function createLucet(options: LucetOptions = {}): Lucet {
         pendingReply: pendingReply?.id ?? null,
         queued: composer.queued,
         locked: composer.locked,
+        scheduledRetries,
       }
     },
   }

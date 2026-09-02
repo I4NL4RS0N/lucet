@@ -159,26 +159,30 @@ export const toolPartialFailure = defineScenario({
     },
     { type: 'complete' },
   ],
-  /* The promise in the text above, kept: the retry re-runs only the
-     timed-out source and completes the picture. */
-  recovery: [
-    { type: 'wait', ms: 250 },
-    {
-      type: 'tool',
-      name: 'Retried the carrier quote',
-      ms: 1100,
-      outcome: 'succeeded',
-      detail: '1 source returned',
-      args: '{ "query": "carrier quote", "limit": 1 }',
-      result: '{ "returned": 1, "timed_out": [] }',
-    },
-    {
-      type: 'say',
-      text: 'The carrier quote came back this time, and it has changed too — its totals moved with the revised delivery table. All three of your flagged sources are now confirmed current as of this check; you are looking at the full picture.',
-    },
-    { type: 'usage', tokens: 410, costUsd: 0.0061 },
-    { type: 'complete' },
-  ],
+  /* The promise in the text above, kept and NAMED (round 05, P1): the
+     verb retries only the timed-out source and completes the picture. */
+  recovery: {
+    verb: { label: 'Retry missing source', icon: 'retry-one' },
+    mode: 'retry',
+    steps: [
+      { type: 'wait', ms: 250 },
+      {
+        type: 'tool',
+        name: 'Retried the carrier quote',
+        ms: 1100,
+        outcome: 'succeeded',
+        detail: '1 source returned',
+        args: '{ "query": "carrier quote", "limit": 1 }',
+        result: '{ "returned": 1, "timed_out": [] }',
+      },
+      {
+        type: 'say',
+        text: 'The carrier quote came back this time, and it has changed too — its totals moved with the revised delivery table. All three of your flagged sources are now confirmed current as of this check; you are looking at the full picture.',
+      },
+      { type: 'usage', tokens: 410, costUsd: 0.0061 },
+      { type: 'complete' },
+    ],
+  },
 })
 
 export const refusal = defineScenario({
@@ -196,6 +200,39 @@ export const refusal = defineScenario({
         'I cannot delete anything. I can show you exactly what would go, grouped by why it looks old, so you can decide what actually leaves.',
     },
   ],
+  /* THE SAFE BOUNDARY STILL ADVANCES THE TASK (round 05, P1): the verb
+     lists what would go, as rows, and deletes nothing. The response stays
+     a refusal; the list is appended to it. */
+  recovery: {
+    verb: { label: 'Show proposed deletions', icon: 'list' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 200 },
+      {
+        type: 'tool',
+        name: 'Listed what would be deleted',
+        ms: 700,
+        outcome: 'succeeded',
+        detail: '4 files, nothing removed',
+        args: '{ "scope": "Plans", "older_than_days": 365, "dry_run": true }',
+        result: '{ "candidates": 4, "deleted": 0 }',
+      },
+      {
+        type: 'sources',
+        label: 'Proposed deletions',
+        sources: [
+          { id: 'del-kickoff', title: 'kickoff-notes-2023.md', location: 'Plans / Archive', sourceKind: 'document', detail: 'Last edited 14 months ago', trace: '{ "path": "Plans/Archive/kickoff-notes-2023.md", "edited": "2025-06-30", "reason": "superseded by the release plan" }' },
+          { id: 'del-draft-a', title: 'brief-draft-a.md', location: 'Plans / Drafts', sourceKind: 'document', detail: 'Superseded draft', trace: '{ "path": "Plans/Drafts/brief-draft-a.md", "superseded_by": "Plans/Release/brief.md" }' },
+          { id: 'del-draft-b', title: 'brief-draft-b.md', location: 'Plans / Drafts', sourceKind: 'document', detail: 'Superseded draft', trace: '{ "path": "Plans/Drafts/brief-draft-b.md", "superseded_by": "Plans/Release/brief.md" }' },
+          { id: 'del-empty', title: 'Scratch', location: 'Plans / Scratch', sourceKind: 'document', detail: 'Empty folder', trace: '{ "path": "Plans/Scratch", "items": 0 }' },
+        ],
+      },
+      {
+        type: 'say',
+        text: 'Nothing was deleted. These four look old: a kickoff note from 2023, two drafts the release brief replaced, and an empty folder. Say which should go and I will remove only those.',
+      },
+    ],
+  },
 })
 
 export const lowConfidence = defineScenario({
@@ -213,6 +250,36 @@ export const lowConfidence = defineScenario({
     },
     { type: 'complete' },
   ],
+  /* THE UNCERTAIN ANSWER IS CHECKED, NOT RE-ASKED (round 05, P1): the
+     verb runs the citation check and surfaces the sources for the claim. */
+  recovery: {
+    verb: { label: 'Check sources', icon: 'check-sources' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 200 },
+      {
+        type: 'tool',
+        name: 'Checked the sources',
+        ms: 800,
+        outcome: 'succeeded',
+        detail: '1 of 2 claims confirmed',
+        args: '{ "claim": "deadline is the 30th", "search": ["Plans/Quarterly"] }',
+        result: '{ "confirmed": ["schedule: 28th"], "unconfirmed": ["summary: 30th"] }',
+      },
+      {
+        type: 'sources',
+        label: 'Checked against',
+        sources: [
+          { id: 'chk-summary', title: 'Project summary', location: 'Plans / Quarterly', sourceKind: 'document', detail: 'Page 1', trace: '{ "pages": [1], "passage": "Deadline: the 30th." }' },
+          { id: 'chk-schedule', title: 'Schedule', location: 'Plans / Quarterly', sourceKind: 'data', detail: 'Row 14', trace: '{ "row": 14, "milestone": "Deadline", "date": "the 28th" }' },
+        ],
+      },
+      {
+        type: 'say',
+        text: 'The 30th comes from the summary alone. The schedule names the 28th, so the deadline is the 28th unless the summary was updated after it.',
+      },
+    ],
+  },
 })
 
 export const interrupted = defineScenario({
@@ -227,6 +294,21 @@ export const interrupted = defineScenario({
     { type: 'say', text: 'The change affects how the second stage is applied. Previously that step was' },
     { type: 'interrupt', reason: 'The connection dropped before the response finished.' },
   ],
+  /* CONTINUE, FROM WHERE IT STOPPED (round 05, P1): a bounded addition —
+     the response resumes and the sentence picks up mid-word, then it
+     settles complete. What arrived stayed; what was missing arrives. */
+  recovery: {
+    verb: { label: 'Continue response', icon: 'continue' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 300 },
+      {
+        type: 'continue',
+        text: ' applied once per file, so every batch repeated the same work. Now it runs once per batch, and the second stage sees the whole set at once.',
+      },
+      { type: 'complete' },
+    ],
+  },
 })
 
 export const rateLimit = defineScenario({
@@ -237,8 +319,22 @@ export const rateLimit = defineScenario({
   prompt: 'Run that across all 400 files.',
   steps: [
     { type: 'wait', ms: 600 },
-    { type: 'fail', reason: 'You have hit this hour’s limit. It resets in 14 minutes. Your draft is saved.' },
+    /* The reset is a clock time the ending shows exactly (round 05, P1);
+       thirty seconds here so the demo can be watched, not waited out. */
+    { type: 'fail', reason: 'The burst limit for this minute is used up. Your draft is kept.', retryAt: 30_000 },
   ],
+  /* NO GENERIC RETRY UNTIL RESET: the verb arms a retry for the moment
+     the limit lifts; until then it reads as a status. The draft stays. */
+  recovery: {
+    verb: { label: 'Retry when it resets', icon: 'queue' },
+    mode: 'retry-at',
+    steps: [
+      { type: 'wait', ms: 300 },
+      { type: 'say', text: 'Done across all 400 files. Twelve carried the old header and were updated; the rest were already current.' },
+      { type: 'usage', tokens: 1_800 },
+      { type: 'complete' },
+    ],
+  },
 })
 
 /* TOLD, PLAINLY (audit round 05): the fallback is a fact about how this
@@ -276,17 +372,22 @@ export const degradedModel = defineScenario({
   ],
   /* Retry on Auto: the service is back, the model control returns to
      Auto, and the same section is drafted with the figures checked. */
-  recovery: [
-    { type: 'service', status: 'operational', message: null },
-    { type: 'model', modelId: 'auto' },
-    { type: 'wait', ms: 400 },
-    {
-      type: 'say',
-      text: 'Here is the summary section, drafted on Auto. The total and the delivery date were checked against the revised table: the total holds, the date moved to Thursday.',
-    },
-    { type: 'usage', tokens: 560 },
-    { type: 'complete' },
-  ],
+  recovery: {
+    /* No verb on the ending — the exit is the notice's action (P0, the
+       reference implementation). */
+    mode: 'retry',
+    steps: [
+      { type: 'service', status: 'operational', message: null },
+      { type: 'model', modelId: 'auto' },
+      { type: 'wait', ms: 400 },
+      {
+        type: 'say',
+        text: 'Here is the summary section, drafted on Auto. The total and the delivery date were checked against the revised table: the total holds, the date moved to Thursday.',
+      },
+      { type: 'usage', tokens: 560 },
+      { type: 'complete' },
+    ],
+  },
 })
 
 export const serviceDown = defineScenario({
@@ -297,10 +398,24 @@ export const serviceDown = defineScenario({
     'Down is not degraded. Degraded means wait or switch. Down means protect the draft and say so.',
   prompt: 'Draft the summary section.',
   steps: [
-    { type: 'service', status: 'down', message: 'We can’t reach the AI service right now. Your draft is safe here in the composer.' },
+    /* TWO LEVELS, NO REPEATED WORDING (round 05, P1): the composer's
+       strip states the current condition, quietly; the turn's ending
+       records what happened to that request, in danger. */
+    { type: 'service', status: 'down', message: 'The AI service is unreachable right now — drafts are kept.' },
     { type: 'wait', ms: 300 },
-    { type: 'fail', reason: 'We couldn’t reach the AI service. Your prompt is still here — try again in a moment.' },
+    { type: 'fail', reason: 'This request did not get through.' },
   ],
+  recovery: {
+    verb: { label: 'Retry connection', icon: 'connection' },
+    mode: 'retry',
+    steps: [
+      { type: 'service', status: 'operational', message: null },
+      { type: 'wait', ms: 300 },
+      { type: 'say', text: 'Here is the summary section. The two figures it quotes, the total and the delivery date, match the revised table.' },
+      { type: 'usage', tokens: 520 },
+      { type: 'complete' },
+    ],
+  },
 })
 
 export const staleData = defineScenario({
@@ -327,6 +442,25 @@ export const staleData = defineScenario({
     },
     { type: 'complete' },
   ],
+  /* REFRESH, THROUGH THE RUNTIME (round 05, P1): a fresh fetch, and the
+     receipt says how fresh. */
+  recovery: {
+    verb: { label: 'Refresh result', icon: 'refresh' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 200 },
+      {
+        type: 'tool',
+        name: 'Fetched the index',
+        ms: 600,
+        outcome: 'succeeded',
+        detail: 'Fresh — fetched just now',
+        args: '{ "path": "revisions/latest", "cache": "bypass" }',
+        result: '{ "revision": 8, "dated": "today 09:14", "cache_age_hours": 0 }',
+      },
+      { type: 'say', text: 'Revision 8, published this morning at 09:14. The cached answer above was one revision behind.' },
+    ],
+  },
 })
 
 /*
@@ -432,6 +566,26 @@ export const sourceUpdated = defineScenario({
       note: 'Updated after it was cited — the dates may have moved.',
     },
   ],
+  /* RE-CHECK AGAINST THE UPDATED SOURCE (round 05, P1): the source's flag
+     clears when the check lands, and the answer says what held. */
+  recovery: {
+    verb: { label: 'Re-check answer', icon: 'recheck' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 300 },
+      {
+        type: 'tool',
+        name: 'Re-checked the Q3 revision',
+        ms: 700,
+        outcome: 'succeeded',
+        detail: 'Pages 4–6, revised copy',
+        args: '{ "source": "src-q3", "pages": [4, 5, 6] }',
+        result: '{ "changed": ["room booking"], "unchanged": ["freeze date", "review capacity", "print deadline"] }',
+      },
+      { type: 'sourceChange', sourceId: 'src-q3', status: 'ok', note: null },
+      { type: 'say', text: 'Checked against the updated revision: the freeze still lands Tuesday, and the room and vendor dates are unchanged.' },
+    ],
+  },
 })
 
 export const sourceGone = defineScenario({
@@ -485,6 +639,30 @@ export const sourceGone = defineScenario({
       note: 'Removed from the library after it was cited.',
     },
   ],
+  /* REPLACE THE SOURCE (round 05, P1): the dead reference is replaced in
+     place by one that opens; the removed one never read as openable. */
+  recovery: {
+    verb: { label: 'Replace source', icon: 'replace' },
+    mode: 'resume',
+    steps: [
+      { type: 'wait', ms: 300 },
+      {
+        type: 'tool',
+        name: 'Found a replacement',
+        ms: 700,
+        outcome: 'succeeded',
+        detail: 'Archived copy, same query',
+        args: '{ "missing": "src-quote", "search": ["Suppliers / Archive"] }',
+        result: '{ "replacement": "src-quote-archive", "rows": 3 }',
+      },
+      {
+        type: 'sourceReplace',
+        sourceId: 'src-quote',
+        replacement: { id: 'src-quote-archive', title: 'Vendor quote (archived copy)', location: 'Suppliers / Archive', sourceKind: 'data', detail: 'Query, 3 rows', trace: '{ "query": "deadline FROM quotes_archive WHERE vendor = \'print\'", "returned": 3 }' },
+      },
+      { type: 'say', text: 'The vendor quote was removed from the library. The archived copy returns the same three rows, and the print deadline holds.' },
+    ],
+  },
 })
 
 /*
@@ -752,7 +930,9 @@ export const budgetSpent = defineScenario({
   prompt: 'Summarise where the project stands.',
   steps: [
     { type: 'usage', tokens: 30_000, costUsd: 0.9 },
-    { type: 'budget', budgetUsd: 10, spentUsd: 9.97 },
+    /* The month resets at a clock time the blocked composer shows exactly
+       (round 05, P1): two days and five hours from now, in the fiction. */
+    { type: 'budget', budgetUsd: 10, spentUsd: 9.97, resetsInMs: 2 * 24 * 3_600_000 + 5 * 3_600_000 },
     { type: 'wait', ms: 500 },
     {
       type: 'say',

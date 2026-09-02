@@ -1423,6 +1423,159 @@ async function main() {
       failures.push(`restore-version: not straight into preview, or blocks duplicated — ${JSON.stringify({ preview, again })}`)
     await resetAndInspect('restore-version')
 
+    /* EVERY ENDING GETS ITS OWN EXIT (audit round 05, P1). Each ending's verb
+       says what the state promised and performs it through the runtime, from
+       a clean cold start via the rail; "Ask again" survives only where no
+       verb is stamped. Every verb is drawn with its own glyph (no repeated
+       generic arrow), sits on a target of at least 28px and answers a hit
+       test at its centre. Reset is pressed after each and must read empty. */
+    const verbIconPaths = new Set()
+    const verbTarget = async (where, expectedLabel) => {
+      const v = await page.evaluate(() => {
+        const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1)
+        const btn = turn?.querySelector('.lucet-actions__btn[data-recovery]')
+        if (!btn) return null
+        const r = btn.getBoundingClientRect()
+        btn.scrollIntoView({ block: 'center' })
+        const r2 = btn.getBoundingClientRect()
+        const hit = document.elementFromPoint(r2.left + r2.width / 2, r2.top + r2.height / 2)
+        return {
+          label: btn.textContent.trim(),
+          path: btn.querySelector('path')?.getAttribute('d') || '',
+          w: r.width,
+          h: r.height,
+          hitsItself: hit === btn || btn.contains(hit),
+          askAgain: [...turn.querySelectorAll('.lucet-actions__btn')].some((b) => b.textContent.trim() === 'Ask again'),
+        }
+      })
+      checks++
+      if (!v) failures.push(`${where}: no recovery verb on the ending`)
+      else {
+        if (v.label !== expectedLabel) failures.push(`${where}: verb reads "${v.label}", expected "${expectedLabel}"`)
+        if (v.w < 27.5 || v.h < 27.5) failures.push(`${where}: verb target ${Math.round(v.w)}x${Math.round(v.h)} is under the 28px standard`)
+        if (!v.hitsItself) failures.push(`${where}: the verb's centre does not hit the verb`)
+        if (v.askAgain) failures.push(`${where}: "Ask again" is shown beside a stamped verb`)
+        if (verbIconPaths.has(v.path)) failures.push(`${where}: the verb repeats another verb's glyph`)
+        verbIconPaths.add(v.path)
+      }
+      return v
+    }
+    const pressVerb = async () => {
+      const btn = page.locator('.lucet-thread__pair').last().locator('.lucet-actions__btn[data-recovery]')
+      await btn.focus()
+      await page.keyboard.press('Enter')
+    }
+    const lastTurn = () =>
+      page.evaluate(() => {
+        const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1)
+        return {
+          turns: document.querySelectorAll('.lucet-thread__pair').length,
+          ending: turn.querySelector('.lucet-thread__ended')?.textContent.trim() || null,
+          kinds: [...turn.querySelectorAll('.lucet-tool, .lucet-md, .lucet-sources, .lucet-notice')].map((e) => e.className.split(' ')[0].replace('lucet-', '')),
+          sourcesLabel: turn.querySelector('.lucet-sources__label')?.textContent.trim() || null,
+          rows: turn.querySelectorAll('.lucet-sources__list > li').length,
+          text: turn.querySelector('.lucet-md')?.textContent || '',
+          toolDetails: [...turn.querySelectorAll('.lucet-tool__detail')].map((d) => d.textContent.trim()),
+          staleRows: turn.querySelectorAll('[data-status="stale"]').length,
+          goneDetails: turn.querySelectorAll('details.lucet-source[data-status="gone"]').length,
+          goneRows: turn.querySelectorAll('.lucet-sources__row[data-status="gone"]').length,
+          titles: [...turn.querySelectorAll('.lucet-sources__title')].map((t) => t.textContent.trim()),
+          pending: turn.querySelector('.lucet-actions__pending')?.textContent.trim() || null,
+          verb: turn.querySelector('.lucet-actions__btn[data-recovery]')?.textContent.trim() || null,
+        }
+      })
+    const verbs = [
+      ['Refusal', 'States', 'Show proposed deletions', 'refusal'],
+      ['Low confidence', 'States', 'Check sources', 'low-confidence'],
+      ['Tool partly fails', 'States', 'Retry missing source', 'tool-partial-failure'],
+      ['Stream interrupted', 'States', 'Continue response', 'interrupted'],
+      ['Provider outage', 'States', 'Retry connection', 'service-down'],
+      ['Stale result', 'States', 'Refresh result', 'stale-data'],
+      ['Source updated since', 'States', 'Re-check answer', 'source-updated'],
+      ['Source no longer available', 'States', 'Replace source', 'source-gone'],
+    ]
+    for (const [label, tab, verb, id] of verbs) {
+      await coldStart()
+      await fireFromRail(label, tab)
+      await settled()
+      if (id === 'source-updated') await page.waitForSelector('[data-status="stale"]', { timeout: 15000 })
+      if (id === 'source-gone') await page.waitForSelector('[data-status="gone"]', { timeout: 15000 })
+      await page.waitForTimeout(150)
+      const before = await lastTurn()
+      const target = await verbTarget(id, verb)
+      if (id === 'service-down') {
+        const strip = await page.evaluate(() => { const s = document.querySelector('.lucet-prompt__status'); return s ? { tone: s.dataset.tone, text: s.textContent.trim() } : null })
+        const words = (t) => new Set((t || '').toLowerCase().match(/[a-z]{5,}/g) || [])
+        const shared = [...words(strip?.text)].filter((w) => words(before.ending).has(w))
+        checks++
+        if (!strip || strip.tone !== 'caution' || shared.length)
+          failures.push(`service-down: two levels not distinct — strip ${JSON.stringify(strip)}, ending "${before.ending}", shared ${JSON.stringify(shared)}`)
+      }
+      if (id === 'source-gone') {
+        checks++
+        if (before.goneDetails !== 0 || before.goneRows !== 1) failures.push(`source-gone: the removed source reads as openable — ${JSON.stringify({ goneDetails: before.goneDetails, goneRows: before.goneRows })}`)
+      }
+      if (target) {
+        await pressVerb()
+        await settled()
+        await page.waitForTimeout(150)
+        const after = await lastTurn()
+        checks++
+        const ok =
+          id === 'refusal' ? after.turns === 1 && /^Declined\./.test(after.ending || '') && after.sourcesLabel === 'Proposed deletions' && after.rows === 4 && after.verb === null
+          : id === 'low-confidence' ? after.turns === 1 && after.sourcesLabel === 'Checked against' && after.kinds.includes('tool')
+          : id === 'tool-partial-failure' ? after.turns === 2 && after.kinds.includes('tool')
+          : id === 'interrupted' ? after.turns === 1 && after.ending === null && /Previously that step was applied once per file/.test(after.text)
+          : id === 'service-down' ? after.turns === 2 && after.ending === null
+          : id === 'stale-data' ? after.turns === 1 && after.toolDetails.includes('Fresh — fetched just now')
+          : id === 'source-updated' ? after.turns === 1 && after.staleRows === 0 && after.kinds.filter((k) => k === 'tool').length === 1
+          : id === 'source-gone' ? after.turns === 1 && after.goneRows === 0 && after.titles.includes('Vendor quote (archived copy)')
+          : true
+        if (!ok) failures.push(`${id}: the verb did not do what it said — ${JSON.stringify(after)}`)
+        if (id === 'service-down') {
+          const svc = await page.evaluate(() => ({ status: window.__lucet.getState().service.status, strip: !!document.querySelector('.lucet-prompt__status') }))
+          checks++
+          if (svc.status !== 'operational' || svc.strip) failures.push(`service-down: Retry connection left the service ${svc.status}, strip ${svc.strip}`)
+        }
+      }
+      await resetAndInspect(id)
+    }
+    /* Rate limited: the exact reset time, and a retry armed for it — no
+       generic retry until then. Reset cancels the armed retry. */
+    await coldStart()
+    await fireFromRail('Rate limited', 'States')
+    await settled()
+    await page.waitForTimeout(150)
+    const limited = await lastTurn()
+    const limitTarget = await verbTarget('rate-limit', 'Retry when it resets')
+    checks++
+    if (!/Resets at \d\d:\d\d:\d\d/.test(limited.ending || '') || !(await page.evaluate(() => getComputedStyle(document.querySelector('.lucet-thread__at')).fontVariantNumeric.includes('tabular'))))
+      failures.push(`rate-limit: the ending does not show the exact reset time in tabular figures — "${limited.ending}"`)
+    if (limitTarget) {
+      await pressVerb()
+      await page.waitForTimeout(150)
+      const armed = await page.evaluate(() => ({ pending: document.querySelector('.lucet-actions__pending')?.textContent.trim() || null, verbs: document.querySelectorAll('.lucet-actions__btn[data-recovery]').length, scheduled: window.__lucet.inspect().scheduledRetries, draft: document.querySelector('.lucet-prompt__field')?.disabled === false }))
+      checks++
+      if (!/Retrying at \d\d:\d\d:\d\d/.test(armed.pending || '') || armed.verbs !== 0 || armed.scheduled !== 1 || !armed.draft)
+        failures.push(`rate-limit: the retry is not armed as a status — ${JSON.stringify(armed)}`)
+    }
+    await resetAndInspect('rate-limit')
+    /* Budget spent: the exact reset date, the price inert, and the one exit that will not fail again. */
+    await coldStart()
+    await fireFromRail('Budget spent', 'States')
+    await settled()
+    await page.waitForSelector('.lucet-prompt__status', { timeout: 15000 })
+    await page.waitForTimeout(150)
+    const spentState = await page.evaluate(() => { const s = document.querySelector('.lucet-prompt__status'); return { tone: s?.dataset.tone, text: s?.textContent.trim() || '', exit: s?.querySelector('.lucet-prompt__exit')?.textContent.trim() || null, price: !!document.querySelector('.lucet-budget__price'), tabular: getComputedStyle(document.querySelector('.lucet-prompt__at') || document.body).fontVariantNumeric.includes('tabular') } })
+    checks++
+    if (spentState.tone !== 'caution' || !/until it resets on \S+ \d/.test(spentState.text) || /resets Resets/i.test(spentState.text) || !spentState.tabular || spentState.exit !== 'New thread' || spentState.price)
+      failures.push(`budget-spent: reset date, inert price or exit missing — ${JSON.stringify(spentState)}`)
+    await page.locator('.lucet-prompt__exit').click()
+    await page.waitForTimeout(250)
+    const fresh = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, strip: !!document.querySelector('.lucet-prompt__status'), ...window.__lucet.inspect() }))
+    checks++
+    if (fresh.turns !== 0 || fresh.strip || fresh.pendingTimers !== 0) failures.push(`budget-spent: New thread did not start clean — ${JSON.stringify(fresh)}`)
+
     /* NOTHING CLIPS, AT MOBILE WIDTHS TOO (audit round 02): the components
        page scrolled sideways at 390 for weeks — a sources grid track sized
        to an unbreakable label, a code floor that did not yield to its

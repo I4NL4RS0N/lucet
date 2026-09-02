@@ -183,6 +183,38 @@ export interface ScopeState {
   readonly movedNote: string | null
 }
 
+/** The glyph a recovery verb is drawn with — its own, never a repeated
+ * generic arrow. */
+export type RecoveryIcon =
+  | 'list'
+  | 'check-sources'
+  | 'retry-one'
+  | 'continue'
+  | 'queue'
+  | 'connection'
+  | 'refresh'
+  | 'recheck'
+  | 'replace'
+
+/**
+ * EVERY ENDING GETS ITS OWN EXIT (audit round 05, P1). A settled response
+ * may carry the one verb its state promised, and the runtime performs it:
+ * 'retry' plays the scenario's recovery as a new turn of the same words;
+ * 'resume' continues THIS response with new parts; 'retry-at' schedules
+ * the retry for the moment a limit lifts. "Ask again" survives only where
+ * asking the same question is genuinely the right recovery — that is,
+ * where no verb is stamped.
+ */
+export interface RecoveryVerb {
+  readonly label: string
+  readonly icon: RecoveryIcon
+  readonly mode: 'retry' | 'resume' | 'retry-at'
+  /** For 'retry-at': the clock time (ms) the limit lifts. */
+  readonly at: number | null
+  /** Set once a scheduled retry is armed; the verb then reads as a status. */
+  readonly scheduledAt: number | null
+}
+
 export interface Message {
   readonly id: string
   readonly role: Role
@@ -191,6 +223,9 @@ export interface Message {
   readonly status: MessageStatus
   /** Set when status is 'refused', 'failed', or 'interrupted'. */
   readonly reason: string | null
+  /** The state's own exit, stamped when the response settles; null when
+   * the generic "Ask again" is the honest recovery. */
+  readonly recovery: RecoveryVerb | null
   /**
    * The reader's verdict on a response, revocable. In the contract rather
    * than fired-and-forgotten at an analytics endpoint, because a rating
@@ -332,6 +367,8 @@ export interface UsageState {
    */
   readonly monthlyBudgetUsd: number | null
   readonly monthlySpentUsd: number
+  /** When the month resets (clock ms); null when the host has not said. */
+  readonly monthlyResetAt: number | null
 }
 
 /**
