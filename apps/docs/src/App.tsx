@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createLucet, describeEvent, formatted, happyPath, reasoning, suggestionsVisible, toolSuccess } from 'lucet-core'
-import type { LucetEvent, Suggestion } from 'lucet-core'
+import { createLucet, describeEvent, doPlan, happyPath, reasoning, suggestionsVisible, toolSuccess } from 'lucet-core'
+import type { Lucet, LucetEvent, Suggestion } from 'lucet-core'
 import {
   LucetProvider,
   PromptInput,
@@ -45,7 +45,9 @@ const SUGGESTIONS: readonly Suggestion[] = (
   [
     [happyPath, 'ask', undefined, undefined],
     [reasoning, 'ask', undefined, undefined],
-    [formatted, 'do', 'Creates pages in Plans', '~2 min'],
+    /* Do visibly does (audit round 05): the chip's promise is kept by the
+       do-plan scenario — receipts, then the pages it created. */
+    [doPlan, 'do', 'Creates pages in Plans', '~2 min'],
     [toolSuccess, 'do', 'Reads the flagged sources', '~1 min'],
   ] as const
 ).map(([s, kind, effect, durationHint]) => ({
@@ -219,12 +221,20 @@ function TriggerRail({
          would do nothing says so by being disabled, and it disarms
          itself the moment it fires — that IS its feedback. No colour
          escalation on purpose: danger belongs to real endings, accent
-         to primary actions; presence is enough. */}
+         to primary actions; presence is enough. "Something to wipe" is
+         more than turns (audit round 05): a pre-send state leaves a
+         draft, a queued prompt or a seeded context with no turn at all,
+         and Reset must be able to clear those too. */}
       <button
         type="button"
         className="cfg__stage-reset"
         aria-label="Reset the thread"
-        disabled={thread.turns.length === 0}
+        disabled={
+          thread.turns.length === 0 &&
+          thread.composer.text === '' &&
+          thread.composer.queued === null &&
+          thread.usage.contextTokens === 0
+        }
         onClick={onReset}
       >
         <svg viewBox="0 0 24 24" aria-hidden>
@@ -488,6 +498,13 @@ function AppCore({
                 onRestore={(turnId) => lucet.store.dispatch({ type: 'restore/entered', turnId })}
                 onRestoreCommit={(turnId) => lucet.restore(turnId)}
                 onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
+                onNoticeAction={(action) => {
+                  /* Retry on Auto: the model control moves first, then the
+                     turn is asked again — the scenario's recovery answers
+                     on the model the person chose. */
+                  lucet.store.dispatch({ type: 'model/changed', modelId: action.modelId })
+                  void lucet.retry(action.turnId)
+                }}
               />
             )}
           </div>
@@ -828,6 +845,14 @@ export function App() {
      repeat visits never enter playback, so they are 'live' from the
      first frame. */
   const [playing, setPlaying] = useState(playbackWanted)
+  /* The instrument behind Reset, reachable by the audits: what is still
+     pending after a reset must be nothing. Assigned from an effect so it
+     can only ever name the MOUNTED instance — development double-invokes
+     state initializers and discards one result, and an assignment made
+     inside the initializer named the discarded twin. */
+  useEffect(() => {
+    ;(window as unknown as { __lucet?: Lucet }).__lucet = lucet
+  }, [lucet])
   useEffect(() => {
     if (!playbackWanted || playbackStarted.current) return
     playbackStarted.current = true
