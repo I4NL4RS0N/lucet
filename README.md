@@ -50,6 +50,14 @@ combinations, run in CI on every push to `main` and every pull request. It rende
 three of the first four contrast failures were cascade and paint behaviour that
 parsing tokens could never have seen.
 
+> **The behavior is one contract. The look is the host's.**
+> Theme, accent, material, typeface — every combination runs the
+> same states, the same announcements, the same geometry. Nothing
+> about a refusal or a restore changes because a host chose a
+> different accent.[^contract]
+
+[^contract]: Checked on every commit rather than claimed: the [overlay test](scripts/audit-expression-geometry.mjs) asserts identical geometry across the material axis, and the [theme-parity audit](scripts/audit-theme-parity.mjs) asserts identical tokens down both theme paths.
+
 <details>
 <summary><strong>The supporting material</strong> — the rationale docs, theme parity, dependencies, shadcn interop, the icon slot, and the token contract</summary>
 
