@@ -69,6 +69,40 @@ export type Radius = (typeof RADII)[number]
 export type Scale = (typeof SCALES)[number]
 export type Typeface = (typeof TYPEFACES)[number]
 export type Expression = 'paper' | 'glass'
+
+/* AUTHORED LABELS (typography pass, 2026-09-02): the exact strings the
+   selects show, in the data — never CSS capitalization, so every native
+   select implementation renders the same word. */
+export const ACCENT_LABELS: Record<Accent, string> = {
+  monochrome: 'Monochrome', slate: 'Slate', blue: 'Blue', indigo: 'Indigo', violet: 'Violet',
+  magenta: 'Magenta', rose: 'Rose', amber: 'Amber', green: 'Green', teal: 'Teal', cyan: 'Cyan',
+}
+const NEUTRAL_LABELS: Record<Neutral, string> = { subtle: 'Subtle', pure: 'Pure', cool: 'Cool', warm: 'Warm', accent: 'Accent' }
+const RADIUS_LABELS: Record<Radius, string> = { default: 'Default', none: 'None', small: 'Small', medium: 'Medium', large: 'Large', full: 'Full' }
+const TYPEFACE_LABELS: Record<Typeface, string> = { inter: 'Inter', plex: 'Plex', instrument: 'Instrument', reading: 'Reading', system: 'System' }
+
+/* The More panel's rows: label (META), key, options, authored labels,
+   and whether the value is a figure (tabular numerals). Scale keeps its
+   numbers as they are. */
+const MORE_ROWS: ReadonlyArray<{
+  label: string
+  key: 'neutral' | 'radius' | 'scale' | 'typeface'
+  options: readonly string[]
+  labels?: Record<string, string>
+  title?: string
+  figures?: boolean
+}> = [
+  {
+    label: 'Greys',
+    key: 'neutral',
+    options: NEUTRALS,
+    labels: NEUTRAL_LABELS,
+    title: "Which grey family the interface is mixed from. 'Accent' leans the greys toward the current accent.",
+  },
+  { label: 'Radius', key: 'radius', options: RADII, labels: RADIUS_LABELS },
+  { label: 'Scale', key: 'scale', options: SCALES, figures: true },
+  { label: 'Typeface', key: 'typeface', options: TYPEFACES, labels: TYPEFACE_LABELS },
+]
 const LEGACY_EXPRESSION: Record<string, Expression | undefined> = {
   system: 'paper',
   expressive: 'glass',
@@ -383,7 +417,7 @@ export function AppearancePrefs({
         >
           {ACCENTS.map((a) => (
             <option key={a} value={a}>
-              {a}
+              {ACCENT_LABELS[a]}
             </option>
           ))}
         </select>
@@ -414,31 +448,22 @@ export function AppearancePrefs({
           More
         </button>
         <div id="lucet-more-panel" popover="auto" className="cfg__more-panel" ref={moreRef}>
-          {(
-            [
-              [
-                'Greys',
-                'neutral',
-                NEUTRALS,
-                "Which grey family the interface is mixed from. 'accent' leans the greys toward the current accent.",
-              ],
-              ['Radius', 'radius', RADII, undefined],
-              ['Scale', 'scale', SCALES, undefined],
-              ['Typeface', 'typeface', TYPEFACES, undefined],
-            ] as const
-          ).map(([label, key, options, title]) => (
+          {MORE_ROWS.map(({ label, key, options, labels, title, figures }) => (
             <label className="cfg__more-row" key={key} title={title}>
               <span>{label}</span>
-              <select
-                value={state[key]}
-                onChange={(e) => onChange({ [key]: e.target.value } as Partial<ThemeState>)}
-              >
-                {options.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
+              <span className="cfg__pick">
+                <select
+                  value={state[key]}
+                  data-figures={figures ? '' : undefined}
+                  onChange={(e) => onChange({ [key]: e.target.value } as Partial<ThemeState>)}
+                >
+                  {options.map((o) => (
+                    <option key={o} value={o}>
+                      {labels?.[o] ?? o}
+                    </option>
+                  ))}
+                </select>
+              </span>
             </label>
           ))}
         </div>

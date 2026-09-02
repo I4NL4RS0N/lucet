@@ -303,6 +303,45 @@ async function main() {
       if (leaks.length) failures.push(`${where}  native button chrome on ${[...new Set(leaks)].join(', ')}`)
     }
 
+    /* ONE CONTROL FAMILY (typography pass, 2026-09-02): the stage bar and
+       the rail header are Paper chrome, so their type must not vary by
+       theme, accent, or expression. Every clickable value computes to
+       the CONTROL recipe (13/500/18, the sans stack, no tracking), the
+       More panel's labels to META (12/400/18), and no interactive value
+       wears muted ink unless disabled. Checked on every sweep so the
+       family cannot drift apart again. */
+    const checkControlFamily = async (where) => {
+      const res = await page.evaluate(() => {
+        const first = (v) => v.split(',')[0].replace(/['"]/g, '').trim()
+        const sans = first(getComputedStyle(document.documentElement).getPropertyValue('--lucet-font-sans'))
+        const probe = document.createElement('div')
+        probe.style.color = 'var(--lucet-muted-foreground)'
+        document.body.appendChild(probe)
+        const muted = getComputedStyle(probe).color
+        probe.remove()
+        const control = [...document.querySelectorAll('.cfg__views button, .cfg__prefs select, .cfg__more-trigger, .cfg__more-row select, .cfg__stage-reset')]
+        const meta = [...document.querySelectorAll('.cfg__more-row > span')]
+        const bad = []
+        const name = (el) => el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).split(' ')[0] : '')
+        for (const el of control) {
+          const cs = getComputedStyle(el)
+          const tracking = cs.letterSpacing === 'normal' || cs.letterSpacing === '0px'
+          if (cs.fontSize !== '13px' || cs.fontWeight !== '500' || cs.lineHeight !== '18px' || !tracking || first(cs.fontFamily) !== sans)
+            bad.push(`${name(el)} ${cs.fontSize}/${cs.fontWeight}/${cs.lineHeight}/${cs.letterSpacing}/${first(cs.fontFamily)}`)
+          if (!el.disabled && cs.color === muted) bad.push(`${name(el)} wears muted ink`)
+        }
+        for (const el of meta) {
+          const cs = getComputedStyle(el)
+          if (cs.fontSize !== '12px' || cs.fontWeight !== '400' || cs.lineHeight !== '18px' || first(cs.fontFamily) !== sans)
+            bad.push(`meta ${cs.fontSize}/${cs.fontWeight}/${cs.lineHeight}/${first(cs.fontFamily)}`)
+        }
+        return { n: control.length + meta.length, bad: [...new Set(bad)] }
+      })
+      checks++
+      if (res.n === 0) failures.push(`${where}  control family: no members found`)
+      else if (res.bad.length) failures.push(`${where}  control family drifts: ${res.bad.join('; ')}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -326,6 +365,7 @@ async function main() {
       await setState(theme, accent)
       await checkCanvas(`canvas ${theme}/${accent}`, theme)
       await checkNativeButtons(`buttons ${theme}/${accent}`)
+      await checkControlFamily(`family ${theme}/${accent}`)
       await page.waitForTimeout(50)
       let found = 0
       for (let i = 0; i < all.length; i++) {
@@ -965,6 +1005,7 @@ async function main() {
         const dSide = lFloor !== null && floor.sidebar ? lit(floor.sidebar) - lFloor : null
         const dCard = lFloor !== null ? lit(floor.card) - lFloor : null
         const fmt = (d) => (d === null ? 'n/a' : (d >= 0 ? '+' : '') + d.toFixed(3))
+        await checkControlFamily(`family konfabulator ${theme}/${expression}`)
         checks++
         if (floor.on !== 'cfg__stage-floor')
           failures.push(`floor (${theme}/${expression}): the frame floats on ${floor.on ?? 'nothing'} (${floor.floorBg}) — the stage floor must paint under it`)

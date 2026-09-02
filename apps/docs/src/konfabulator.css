@@ -410,8 +410,12 @@ body {
   box-shadow: var(--lucet-hairline);
   background: none;
   color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: 12.5px;
+  /* One control family: the CONTROL recipe from site-header.css. */
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-control-font-size);
+  font-weight: var(--cfg-control-font-weight);
+  line-height: var(--cfg-control-line-height);
+  letter-spacing: 0;
   cursor: pointer;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease),
@@ -1179,16 +1183,21 @@ body {
   min-block-size: 26px;
   border-radius: 8px;
   background: none;
-  color: var(--lucet-muted-foreground);
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 500;
+  /* One control family (typography pass, 2026-09-02): the CONTROL
+     recipe from site-header.css, and the family's ink — an unselected
+     cell is an interactive value, so it never wears muted ink. */
+  color: var(--lucet-subtle-foreground);
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-control-font-size);
+  font-weight: var(--cfg-control-font-weight);
+  line-height: var(--cfg-control-line-height);
+  letter-spacing: 0;
   cursor: pointer;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease),
     color var(--lucet-duration-fast) var(--lucet-ease);
 }
-.cfg__views button:hover:not([aria-pressed='true']) { background-color: var(--lucet-hover); color: var(--lucet-subtle-foreground); }
+.cfg__views button:hover:not([aria-pressed='true']) { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
 .cfg__views button[aria-pressed='true'] {
   background-color: var(--lucet-secondary);
   color: var(--lucet-foreground);

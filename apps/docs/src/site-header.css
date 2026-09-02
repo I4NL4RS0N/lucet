@@ -63,6 +63,27 @@ html { background-color: var(--lucet-background); }
    what keeps it from borrowing the specimens'. */
 :root { --cfg-display-font: 'Instrument Sans', 'Inter', ui-sans-serif, system-ui, sans-serif; }
 
+/* ONE CONTROL FAMILY (typography pass, 2026-09-02). The stage bar and
+   the rail header are chrome, pinned to Paper, so their type never
+   varies by theme, accent, or expression. Two recipes, declared here
+   and nowhere else — whole pixels, for native-select rasterization:
+   CONTROL for every clickable value (the view tabs, the Theme, Accent
+   and Expression selects, the More trigger, the panel's values, Reset,
+   the rail's States/Features switch) and META for the panel's labels,
+   which are metadata. Declared at :root because the family appears on
+   all three shells. Theme, accent, and expression selectors may change
+   the family's foreground and surface tokens, never these metrics; and
+   no interactive value wears muted ink unless it is actually disabled —
+   selection is never signalled by weight. */
+:root {
+  --cfg-control-font-size: 13px;
+  --cfg-control-line-height: 18px;
+  --cfg-control-font-weight: 500;
+  --cfg-meta-font-size: 12px;
+  --cfg-meta-line-height: 18px;
+  --cfg-meta-font-weight: 400;
+}
+
 .cfg__name {
   font-family: var(--cfg-display-font);
   font-size: 17px;
@@ -164,9 +185,14 @@ html { background-color: var(--lucet-background); }
   box-shadow: var(--lucet-hairline);
   background-color: transparent;
   color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: 12.5px;
-  text-transform: capitalize;
+  /* The control recipe, explicitly — a native select left to `font:
+     inherit` falls back to line-height: normal and rasterizes off the
+     family's baseline. Labels are authored strings, not capitalized. */
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-control-font-size);
+  font-weight: var(--cfg-control-font-weight);
+  line-height: var(--cfg-control-line-height);
+  letter-spacing: 0;
   cursor: pointer;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease),
@@ -178,14 +204,16 @@ html { background-color: var(--lucet-background); }
   outline-offset: var(--lucet-focus-offset);
 }
 /* The material axis sits with Theme and Accent (macro pass, 2026-09-02)
-   — the three axes the thesis names, one grammar — a step quieter in
-   ink, and at a FIXED width: content sizing would let "Paper" and
-   "Glass" move the More trigger on every flip. Hover and focus are the
+   — the three axes the thesis names, one grammar — at a FIXED width:
+   content sizing would let "Paper" and "Glass" move the More trigger
+   on every flip. Its ink is the family's (typography pass): "a step
+   quieter" was first implemented as muted ink, which is the disabled
+   grammar — an interactive value reads as disabled in it. Any quiet is
+   the container's to express, never the ink's. Hover and focus are the
    shared rules above. */
 .cfg__pick--expression select {
   field-sizing: fixed;
   inline-size: 74px;
-  color: var(--lucet-muted-foreground);
 }
 
 /* The rest of the appearance axes, behind one word. */
@@ -205,8 +233,11 @@ html { background-color: var(--lucet-background); }
   box-shadow: var(--lucet-hairline);
   background-color: transparent;
   color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: 12.5px;
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-control-font-size);
+  font-weight: var(--cfg-control-font-weight);
+  line-height: var(--cfg-control-line-height);
+  letter-spacing: 0;
   cursor: pointer;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease),
@@ -268,23 +299,43 @@ html { background-color: var(--lucet-background); }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12px;
+  /* The row's label is metadata: the META recipe, muted ink. The value
+     beside it is a control and takes the CONTROL recipe below. */
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-meta-font-size);
+  font-weight: var(--cfg-meta-font-weight);
+  line-height: var(--cfg-meta-line-height);
+  letter-spacing: 0;
   color: var(--lucet-muted-foreground);
 }
 .cfg__more-row select {
-  appearance: auto;
+  /* appearance: none, because the panel's selects now sit in the same
+     .cfg__pick wrapper as the bar's and take the site-drawn chevron —
+     one chevron, one token, everywhere. Chromium ignores author
+     line-height on a menulist (appearance: auto) select, which is
+     exactly how these fell back to line-height: normal. Platform menus
+     stay platform: <option> is never styled. */
+  appearance: none;
   min-block-size: 26px;
-  padding: 2px 8px;
+  padding: 2px 22px 2px 8px;
   border: 0;
   border-radius: var(--lucet-radius-control);
   box-shadow: var(--lucet-hairline);
   background-color: transparent;
   color: var(--lucet-subtle-foreground);
-  font: inherit;
-  font-size: 12px;
-  text-transform: capitalize;
+  font-family: var(--lucet-font-sans);
+  font-size: var(--cfg-control-font-size);
+  font-weight: var(--cfg-control-font-weight);
+  line-height: var(--cfg-control-line-height);
+  letter-spacing: 0;
   cursor: pointer;
 }
+/* The Scale value is a figure and sets in tabular numerals — the figure
+   grammar the budget pass declared for the library's priced and counted
+   figures. That rule is a library selector list (lucet-* classes) the
+   docs chrome cannot join without coupling the two, so it is joined by
+   name here, in one line. */
+.cfg__more-row select[data-figures] { font-variant-numeric: tabular-nums; }
 .cfg__more-row select:hover { background-color: var(--lucet-hover); }
 .cfg__more-row select:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
