@@ -182,7 +182,6 @@ html { background-color: var(--lucet-background); }
 
 /* The rest of the appearance axes, behind one word. */
 .cfg__more { position: relative; }
-.cfg__more summary,
 .cfg__more-trigger {
   display: inline-flex;
   align-items: center;
@@ -193,17 +192,15 @@ html { background-color: var(--lucet-background); }
   color: var(--lucet-subtle-foreground);
   font-size: 12.5px;
   cursor: pointer;
-  list-style: none;
   transition:
     background-color var(--lucet-duration-fast) var(--lucet-ease),
     color var(--lucet-duration-fast) var(--lucet-ease);
 }
-.cfg__more summary::-webkit-details-marker { display: none; }
-.cfg__more summary:hover,
 .cfg__more-trigger:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
-.cfg__more[open] summary,
-.cfg__more-trigger[aria-expanded='true'] { background-color: var(--lucet-subtle); color: var(--lucet-foreground); }
-.cfg__more summary:focus-visible,
+/* The open state reads from the popover itself: a popovertarget button
+   exposes expanded/collapsed natively and carries no aria-expanded
+   attribute, so an attribute hook here would never fire. */
+.cfg__more:has(.cfg__more-panel:popover-open) .cfg__more-trigger { background-color: var(--lucet-subtle); color: var(--lucet-foreground); }
 .cfg__more-trigger:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
@@ -211,15 +208,20 @@ html { background-color: var(--lucet-background); }
 .cfg__more-panel {
   /* Top layer (popover): no z-index can outrank it and none is
      carried. inset/margin/border reset the UA popover defaults; the
-     open placement is set inline from the trigger's rect. NO
-     view-transition-name here: naming a top-layer element inverted
-     its paint order in real Chrome builds (page text rendered
-     through the panel). The flip needs no exemption for it — the
-     panel closes on the press that starts the dissolve. */
+     open placement is set inline from the trigger's rect.
+     CLOSED IS display:none, DECLARED HERE. The UA rule that hides a
+     closed popover is normal-weight, so any author `display` on this
+     selector re-shows the panel while closed — a plain fixed box at
+     its static position, in page paint order, with the stage and the
+     rail drawing over it. That was the "page text through the panel"
+     bug, read twice as a top-layer paint inversion; only the open
+     state carries the grid (next rule). No view-transition-name here:
+     the panel closes on the press that starts the dissolve, so the
+     flip needs no exemption for it. */
+  display: none;
   margin: 0;
   inset: auto;
   border: 0;
-  display: grid;
   gap: 8px;
   min-inline-size: 220px;
   padding: 12px;
@@ -234,6 +236,7 @@ html { background-color: var(--lucet-background); }
   background-color: var(--lucet-popover);
   box-shadow: var(--lucet-material-overlay);
 }
+.cfg__more-panel:popover-open { display: grid; }
 
 /* Glass: the drawer's grammar — a high mix so every contrast pair
    behind stays honest, blur enough that text behind is a whisper.

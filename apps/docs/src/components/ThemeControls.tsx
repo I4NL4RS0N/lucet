@@ -260,10 +260,11 @@ export function useAppearance(fallback: {
       /* The More panel CLOSES on the press that flips the expression —
          before the snapshot, so the dissolve carries no floating
          settings object and the press is acknowledged by the instant
-         close. (A view-transition-name on the top-layer panel was the
-         previous exemption; real-Chrome builds inverted its paint
-         order and page text rendered through the panel. A menu closing
-         on selection is also just what menus do.) */
+         close. (This replaced a view-transition-name exemption on the
+         panel, which was blamed for page text rendering through it;
+         the real cause was the closed panel still displaying — see
+         the panel's CSS. A menu closing on selection is also just
+         what menus do.) */
       const panel = document.querySelector('.cfg__more-panel') as (HTMLElement & { hidePopover?: () => void; matches(s: string): boolean }) | null
       if (panel?.matches(':popover-open')) panel.hidePopover?.()
       doc.startViewTransition(() => {

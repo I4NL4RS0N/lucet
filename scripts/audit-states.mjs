@@ -265,6 +265,26 @@ async function main() {
       if (res !== 'ok') failures.push(`${where}  ${surfaceSel}: ${res}`)
     }
 
+    /* CLOSED MEANS GONE. The UA hides a closed popover with a
+       normal-weight display:none; one author `display` on the panel's
+       selector re-shows it, closed, in page paint order — the bug the
+       open-state probes above could never see. Asserted at rest,
+       before the first press, and again after dismissal. */
+    const checkClosed = async (where, surfaceSel) => {
+      const res = await page.evaluate((sel) => {
+        const el = document.querySelector(sel)
+        if (!el) return 'surface missing'
+        if (el.matches(':popover-open')) return 'still open'
+        const cs = getComputedStyle(el)
+        const r = el.getBoundingClientRect()
+        if (cs.display !== 'none')
+          return `closed popover still displays as ${cs.display} (${Math.round(r.width)}×${Math.round(r.height)} at ${Math.round(r.left)},${Math.round(r.top)})`
+        return 'ok'
+      }, surfaceSel)
+      checks++
+      if (res !== 'ok') failures.push(`${where}  ${surfaceSel}: ${res}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -416,11 +436,14 @@ async function main() {
         await page.evaluate((e) => document.querySelector('.prim')?.setAttribute('data-expression', e), expression)
         await page.waitForTimeout(60)
         const cell = `occlusion components/${theme}/${expression}`
+        await checkClosed(cell, '.cfg__more-panel')
         await page.click('.cfg__more-trigger')
         await page.waitForTimeout(120)
         await checkOcclusion(cell, '.cfg__more-panel')
         await checkVeil(cell, '.cfg__more-panel')
         await page.keyboard.press('Escape')
+        await page.waitForTimeout(60)
+        await checkClosed(cell, '.cfg__more-panel')
         await page.click('.lucet-budget__button')
         await page.waitForTimeout(120)
         await checkOcclusion(cell, '.lucet-budget__panel')
@@ -797,11 +820,14 @@ async function main() {
       for (const t of ['dark', 'light']) {
         await page.evaluate((th) => document.documentElement.setAttribute('data-theme', th), t)
         await page.waitForTimeout(60)
+        await checkClosed(`occlusion konfabulator/${t}`, '.cfg__more-panel')
         await page.click('.cfg__more-trigger')
         await page.waitForTimeout(120)
         await checkOcclusion(`occlusion konfabulator/${t}`, '.cfg__more-panel')
         await checkVeil(`occlusion konfabulator/${t}`, '.cfg__more-panel')
         await page.keyboard.press('Escape')
+        await page.waitForTimeout(60)
+        await checkClosed(`occlusion konfabulator/${t}`, '.cfg__more-panel')
         await page.click('.lucet-budget__button')
         await page.waitForTimeout(120)
         await checkOcclusion(`occlusion konfabulator/${t}`, '.lucet-budget__panel')
