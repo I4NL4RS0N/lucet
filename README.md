@@ -58,7 +58,7 @@ parsing tokens could never have seen.
 > about a refusal or a restore changes because a host chose a
 > different accent.[^contract]
 
-[^contract]: Checked on every commit rather than claimed: the [overlay test](scripts/audit-expression-geometry.mjs) asserts identical geometry across the material axis, and the [theme-parity audit](scripts/audit-theme-parity.mjs) asserts identical tokens down both theme paths.
+[^contract]: Checked on every commit rather than claimed: the [overlay test](https://github.com/I4NL4RS0N/lucet/blob/main/scripts/audit-expression-geometry.mjs) asserts identical geometry across the material axis, and the [theme-parity audit](https://github.com/I4NL4RS0N/lucet/blob/main/scripts/audit-theme-parity.mjs) asserts identical tokens down both theme paths.
 
 <details>
 <summary><strong>The supporting material</strong> — the rationale docs, theme parity, dependencies, shadcn interop, the icon slot, and the token contract</summary>
