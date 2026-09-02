@@ -915,8 +915,6 @@
      on thinking/working/streaming stay — they indicate ONGOING events,
      which is the indicator exception in motion.css. */
 }
-  50%      { opacity: 1;    scale: 1.05; }
-}
 
 /* BLOCKED ON YOU: nothing rotates, on purpose. A spinning mark next to
    "waiting for your answer" says the machine is busy when the person is the
