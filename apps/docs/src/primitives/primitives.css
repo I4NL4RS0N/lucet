@@ -175,10 +175,16 @@ body {
 
 .prim__bar-end { margin-inline-start: auto; display: flex; gap: 8px; }
 
+/* THE SITE SHELL (0.2 coherence pass): the lab's main column is the same
+   1240 shell at the same 32px padding as the header and the Konfabulator,
+   so titles, chapter headings and the primary grid sit on the site's
+   lines. The reference page's small primitives keep their narrower
+   tracks inside it; prose keeps its measure. The inline padding is the
+   shell's and does not ride the density dial. */
 .prim__main {
-  max-inline-size: 940px;
+  max-inline-size: var(--site-shell-max);
   margin: 0 auto;
-  padding: calc(56px * var(--lucet-density, 1)) calc(32px * var(--lucet-density, 1)) calc(160px * var(--lucet-density, 1));
+  padding: calc(56px * var(--lucet-density, 1)) var(--site-shell-pad) calc(160px * var(--lucet-density, 1));
 }
 
 .prim__title {
@@ -238,21 +244,25 @@ body {
    proposition share a baseline at width and stack with a fixed gap when
    narrow; the proposition's measure is capped and wraps without
    orphans; the title balances. Specimen-internal type is untouched.
-   CLOSED (audit round 03): the criterion is the contract — no deck line
-   begins under the title column at 1366 or 1440 — and wrapping flex is
-   the implementation. Verified three rounds running, 38 heads across
-   both lab pages, none under. */
+   CLOSED FOR GOOD (0.2 coherence pass): the criterion — no deck line
+   begins under the title column — was verified three rounds running
+   under wrapping flex; the grid below makes the rag deterministic. Two
+   tracks, the title at its own width and the deck capped at 32rem with
+   a 40ch measure, baseline-aligned; below the shell's 620 line the two
+   stack with a 5px gap. Type is unchanged. */
 .sec__head {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 32rem);
   align-items: baseline;
-  column-gap: calc(12px * var(--lucet-density, 1));
-  row-gap: 6px;
+  column-gap: 14px;
   margin-block-end: calc(var(--cfg-gap-heading) * var(--lucet-density, 1));
+}
+@media (max-width: 620px) {
+  .sec__head { grid-template-columns: minmax(0, 1fr); row-gap: 5px; }
 }
 
 .sec__name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
-.sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); max-inline-size: 44ch; }
+.sec__note { text-wrap: pretty; font-size: 13px; color: var(--ink-3); max-inline-size: 40ch; }
 
 /*
  * The stage. Every specimen sits on one. In Paper it is a step DOWN from the
@@ -2094,7 +2104,8 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
  * capped (lede 62ch, notes 40ch, rail demos 640px), so the width
  * goes to composition, never to line length. */
 
-.prim--comp .prim__main { max-inline-size: 1140px; }
+/* The components page once widened to 1140 on its own; both lab pages
+   now inherit the site shell (.prim__main above). */
 
 .prim--comp .sec { margin-block-start: var(--cfg-gap-feature); }
 .prim--comp .sec__head { margin-block-end: var(--cfg-gap-heading); }
@@ -2300,8 +2311,10 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
    breakout buys every trio cell ~388px at desktop and clamps to the
    viewport below it; the column collapse breakpoints still apply. */
 .prim--comp .stage--trio {
-  inline-size: min(1300px, calc(100vw - 64px));
-  margin-inline-start: calc((100% - min(1300px, 100vw - 64px)) / 2);
+  /* The one deliberate exception to the shell: 60px past it, derived
+     from it, and never past the viewport. */
+  inline-size: min(calc(var(--site-shell-max) + 60px), calc(100vw - 64px));
+  margin-inline-start: calc((100% - min(calc(var(--site-shell-max) + 60px), 100vw - 64px)) / 2);
 }
 
 /* Two-layer focus on the lab's accent-filled buttons — same rule as
