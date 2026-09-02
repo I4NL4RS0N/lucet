@@ -9,6 +9,17 @@
 
 import type { ServiceStatus, ToolStatus, NoticeAction, NoticeKind, NoticeTone, RecoveryIcon, SourceStatus } from '../types.js'
 
+/** One tool's run, as a step or as a member of a staged group. */
+export interface ToolWork {
+  name: string
+  ms: number
+  outcome: Extract<ToolStatus, 'succeeded' | 'failed' | 'partial'>
+  detail: string
+  /** The raw exchange, when the scenario models a host that shares it. */
+  args?: string
+  result?: string
+}
+
 export type Step =
   /** Dead air. Latency is a designed state, not an accident. */
   | { type: 'wait'; ms: number }
@@ -16,16 +27,11 @@ export type Step =
   | { type: 'say'; text: string; chunkMs?: number }
   /** Stream reasoning into a disclosure, not the response body. */
   | { type: 'think'; text: string; chunkMs?: number }
-  | {
-      type: 'tool'
-      name: string
-      ms: number
-      outcome: Extract<ToolStatus, 'succeeded' | 'failed' | 'partial'>
-      detail: string
-      /** The raw exchange, when the scenario models a host that shares it. */
-      args?: string
-      result?: string
-    }
+  | ({ type: 'tool' } & ToolWork)
+  /** A STAGED GROUP (round 06): every receipt enters pending at once, then
+      each runs and settles in order. A frame frozen mid-run shows the work
+      under way and what is still to come; no receipt enters complete. */
+  | { type: 'tools'; items: readonly ToolWork[] }
   /** Attach the response's bibliography, all sources arriving `ok`. */
   | {
       type: 'sources'

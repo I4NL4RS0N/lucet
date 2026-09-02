@@ -35,7 +35,7 @@ export function createInitialState(
     suggestions,
     turns: [],
     status: 'idle',
-    composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [] },
+    composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [], intercept: null },
     model: { selectedId: models[0]?.id ?? 'auto', options: models },
     service: { status: 'operational', message: null, dismissed: false },
     usage: {
@@ -104,7 +104,8 @@ export function reduce(
       }
 
     case 'composer/changed':
-      return { ...state, composer: { ...state.composer, text: event.text } }
+      /* New words, new projection: a hold on the old words lets go. */
+      return { ...state, composer: { ...state.composer, text: event.text, intercept: null } }
 
     /*
      * Queuing LODGES the prompt and clears the field: your message is on its
@@ -198,9 +199,29 @@ export function reduce(
     // arbitrary event streams, and a picker can never select a model the
     // thread does not offer.
     case 'model/changed':
+      /* A model change releases the hold (round 06): the cheaper choice
+         WAS the decision, and the next Send re-prices from scratch. */
       return state.model.options.some((option) => option.id === event.modelId)
-        ? { ...state, model: { ...state.model, selectedId: event.modelId } }
+        ? {
+            ...state,
+            model: { ...state.model, selectedId: event.modelId },
+            composer: { ...state.composer, intercept: null },
+          }
         : state
+
+    /* THE HOLD (round 06): the send that would cross the month stops
+       here, with its price and what remains, until the person decides. */
+    case 'budget/intercepted':
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          intercept: { text: event.text, costUsd: event.costUsd, remainingUsd: event.remainingUsd },
+        },
+      }
+
+    case 'budget/released':
+      return { ...state, composer: { ...state.composer, intercept: null } }
 
     case 'turn/submitted': {
       /*
@@ -248,6 +269,7 @@ export function reduce(
         status: 'submitting',
         composer: {
           ...state.composer,
+          intercept: null,
           /* A RETRY IS NOT THE COMPOSER'S SEND (round 05, P1): the words came
              from an earlier turn, so a draft in progress stays exactly as
              typed, attachments included. Only a fresh send empties the field. */
@@ -301,6 +323,17 @@ export function reduce(
             part.kind === 'text' || part.kind === 'reasoning'
               ? { ...part, text: part.text + event.delta }
               : part,
+          ),
+        ),
+      }
+
+    /* A staged receipt begins (round 06): pending becomes running, in place. */
+    case 'tool/started':
+      return {
+        ...state,
+        turns: mapResponse(state, event.messageId, (message) =>
+          mapPart(message, event.partId, (part) =>
+            part.kind === 'tool' ? { ...part, status: 'running' } : part,
           ),
         ),
       }

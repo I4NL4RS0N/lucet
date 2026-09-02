@@ -20,6 +20,7 @@ import type { TriggerRegistry } from './runtime/triggers.js'
 import type { Scenario } from './runtime/scenario.js'
 import { builtInScenarios } from './scenarios/index.js'
 import type { ModelOption, Suggestion, ThreadState } from './types.js'
+import { budgetHold } from './selectors.js'
 
 export * from './types.js'
 export * from './events.js'
@@ -56,8 +57,16 @@ export interface Lucet {
   getState(): ThreadState
   getLog(): readonly LoggedEvent[]
   subscribe(listener: Listener): () => void
-  /** Send a prompt. With the mock runtime, this runs the default script. */
+  /** Send a prompt. With the mock runtime, this runs the default script.
+      A send that would cost more than the month has left does not send:
+      it is HELD (composer.intercept) until confirmSpend() or a cheaper
+      model releases it (round 06). */
   submit(text: string): Promise<void>
+  /** Send the held words anyway, on the selected model — the explicit
+      way across the month's threshold. */
+  confirmSpend(): Promise<void>
+  /** Let the hold go without sending. The draft stays. */
+  dismissIntercept(): void
   /**
    * Ask again with the same words: a NEW turn that knows its ancestor
    * (Turn.retryOf), because every prompt is a commit and a retry is not an
@@ -191,10 +200,32 @@ export function createLucet(options: LucetOptions = {}): Lucet {
           store.dispatch({ type: 'composer/changed', text: queued })
         }
       } else {
-        store.dispatch({ type: 'composer/dequeued' })
-        await run(submitScenario(queued))
+        const hold = budgetHold({ ...after, composer: { ...after.composer, text: queued } })
+        if (hold) {
+          /* A queued prompt that would cross the month is not sent behind
+             your back (round 06): it comes back to the field, held, so the
+             decision is the same one a fresh send gets. A newer draft in the
+             field keeps its place, and the prompt stays queued for the next
+             completed turn, exactly as Stop leaves it. */
+          if (after.composer.text.trim() === '') {
+            store.dispatch({ type: 'composer/dequeued' })
+            store.dispatch({ type: 'composer/changed', text: queued })
+            store.dispatch({ type: 'budget/intercepted', ...hold })
+          }
+        } else {
+          store.dispatch({ type: 'composer/dequeued' })
+          await run(submitScenario(queued))
+        }
       }
     }
+  }
+
+  /* The send itself, once nothing holds it: a pre-send trigger that set the
+     world up gets its own reply, on the model the person chose. */
+  const send = (text: string): Promise<void> => {
+    const reply = pendingReply
+    pendingReply = null
+    return run(reply?.preSend ? { ...reply, prompt: text } : submitScenario(text))
   }
 
   return {
@@ -205,11 +236,26 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     subscribe: (listener) => store.subscribe(listener),
 
     submit(text) {
-      /* The pre-send decision, kept: a trigger that set the world up gets
-         its own reply when the person sends, on the model they chose. */
-      const reply = pendingReply
-      pendingReply = null
-      return run(reply?.preSend ? { ...reply, prompt: text } : submitScenario(text))
+      /* THE HOLD (round 06): a send that would cost more than the month
+         has left does not send. It opens the decision instead — and only
+         confirmSpend(), the explicit way through, crosses the line. The
+         threshold cannot be crossed without seeing the reason. */
+      const state = store.getState()
+      const hold = budgetHold({ ...state, composer: { ...state.composer, text } })
+      if (hold) {
+        store.dispatch({ type: 'budget/intercepted', ...hold })
+        return Promise.resolve()
+      }
+      return send(text)
+    },
+
+    confirmSpend() {
+      const { composer } = store.getState()
+      return send(composer.intercept?.text ?? composer.text)
+    },
+
+    dismissIntercept() {
+      if (store.getState().composer.intercept !== null) store.dispatch({ type: 'budget/released' })
     },
 
     retry(turnId) {

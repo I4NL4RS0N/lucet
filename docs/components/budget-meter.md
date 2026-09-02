@@ -107,3 +107,27 @@ top-layer mode for this surface (Popover API, keeping the current
 anchoring as fallback) is filed for 0.2. The states audit probes
 this surface open, in all four theme-and-expression cells, and fails
 on any occlusion.
+
+## The hold (2026-09-02)
+
+The caution note said what a turn would cost and what remains; the send
+button did not know. Now the first Send that would cost more than the
+month has left does not send. The runtime holds it (`composer.intercept`,
+one derived rule shared with the meter's own caution, so the two can
+never disagree) and this panel opens on the reason — the context that
+makes the turn expensive — with two explicit ways across:
+
+- **Use Fast · ≈$0.03** — the cheapest model whose next turn still fits.
+  Selecting it releases the hold and hands focus back to Send; the person
+  confirms with a second press, now within the month.
+- **Continue on Auto · ≈$0.14** — sends at once. The expensive choice is
+  the person's, made in words with its price beside it.
+
+Escape, or a click away, closes the panel without sending; the draft
+stays and focus returns to Send. A model change releases the hold on its
+own. A queued prompt that would cross the month is handed back to the
+field under the same hold rather than sending behind anyone's back. No
+modal: the panel is the meter's own, anchored in the composer, so the
+context explanation and the priced rows stay in view. The states audit
+walks the hold with mouse and keyboard on the full page and on the phone,
+where the panel must be entirely visible and reachable by Tab.

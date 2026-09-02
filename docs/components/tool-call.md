@@ -53,3 +53,25 @@ The machine did something in the world; this is the receipt.
 - **Approval gates** ("this tool wants to run — allow?") — that is the
   human-approval unhappy state, and it arrives with the Action Surface's
   agentic half, not this receipt.
+
+## Staged groups (2026-09-02)
+
+A request that changes several things in the world runs several tools,
+and the honest receipt for that is not three chips appearing one after
+another already finished. In a staged group (the runtime's `tools` step)
+every receipt enters together as **pending** — the work still to come is
+visible from the first frame — and then each runs and settles in order,
+roughly half a second apart, with the answer waiting for the last. A
+frame frozen in the first second shows agent work under way and what is
+queued behind it; no receipt ever enters complete.
+
+Every state has a static label, so the frame reads without motion:
+"Waiting to run", "Running" beside the live counter, the outcome words on
+settle, and "Failed" or "Partly done" in ink for the unhappy ends. The
+mark — orb while running, silhouette otherwise — lives in one fixed 16px
+slot, so the name beside it never moves. When the mark changes while the
+receipt is on screen it fades into place over the last one (the switch:
+no travel, no scale, no bounce); a receipt that mounts already settled
+paints still, because motion is evidence and nothing happened here.
+Reduced motion keeps the sequence and the labels and drops the fade.
+Reset mid-run cancels what remains.

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { Scheduler, ToolPart } from './index.js'
 import {
   createLucet,
   createManualClock,
@@ -457,10 +458,14 @@ describe('every trigger does what it says (round 05)', () => {
     expect(made && made.kind === 'sources' ? made.label : null).toBe('Created')
     expect(made && made.kind === 'sources' ? made.sources.map((x) => x.title) : []).toEqual(['brief.md', 'checklist.md', 'decisions.md'])
     expect(turn.response!.status).toBe('complete')
-    /* The receipts take real time on the real clock: about 2.3 seconds. */
-    const ms = lucet.triggers.get('do-plan')!.steps.reduce((sum, s) => sum + (s.type === 'tool' ? s.ms : 0), 0)
-    expect(ms).toBeGreaterThanOrEqual(2000)
-    expect(ms).toBeLessThanOrEqual(3000)
+    /* The receipts take real time on the real clock: about a second and a
+       half as a staged group (round 06), roughly half a second each. */
+    const ms = lucet.triggers.get('do-plan')!.steps.reduce(
+      (sum, s) => sum + (s.type === 'tools' ? s.items.reduce((a, i) => a + i.ms, 0) : s.type === 'tool' ? s.ms : 0),
+      0,
+    )
+    expect(ms).toBeGreaterThanOrEqual(1300)
+    expect(ms).toBeLessThanOrEqual(1800)
   })
 
   it('the fallback is told inline, the control agrees, and Retry on Auto recovers', async () => {
@@ -701,5 +706,193 @@ describe('every ending gets its own exit (round 05, P1)', () => {
     await armed
     expect(lucet.inspect()).toMatchObject({ scheduledRetries: 0, pendingTimers: 0, running: false })
     expect(lucet.getState().turns).toHaveLength(0)
+  })
+})
+
+/* A scheduler the test releases one sleep at a time, so a sequence can be
+   read mid-way: what is pending, what is running, what has not begun. */
+function stepper() {
+  const waiting: Array<() => void> = []
+  const scheduler: Scheduler = {
+    sleep: (_ms, signal) =>
+      new Promise<void>((resolve, reject) => {
+        if (signal?.aborted) {
+          reject(new Error('aborted'))
+          return
+        }
+        const done = () => {
+          signal?.removeEventListener('abort', onAbort)
+          resolve()
+        }
+        /* An aborted sleep leaves the queue too: what Reset cancelled is
+           no longer pending anywhere. */
+        const onAbort = () => {
+          const i = waiting.indexOf(done)
+          if (i >= 0) waiting.splice(i, 1)
+          reject(new Error('aborted'))
+        }
+        signal?.addEventListener('abort', onAbort, { once: true })
+        waiting.push(done)
+      }),
+  }
+  const tick = () => new Promise<void>((r) => setTimeout(r, 0))
+  const release = async () => {
+    waiting.shift()?.()
+    await tick()
+  }
+  return { scheduler, release, tick, pending: () => waiting.length }
+}
+
+describe('the hold at the threshold, and staged receipts (round 06)', () => {
+  const fresh = () => createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+  const eventTypes = (lucet: ReturnType<typeof createLucet>) =>
+    lucet.getLog().map((entry) => (entry as unknown as { event: { type: string } }).event.type)
+
+  it('the first Send over the month holds instead of sending; letting go keeps the draft', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-low')
+    const draft = lucet.getState().composer.text
+    expect(draft).not.toBe('')
+    await lucet.submit(draft)
+    const held = lucet.getState()
+    expect(held.turns).toHaveLength(0)
+    expect(held.composer.intercept).toMatchObject({ text: draft })
+    expect(held.composer.intercept!.costUsd).toBeGreaterThan(held.composer.intercept!.remainingUsd)
+    expect(eventTypes(lucet).at(-1)).toBe('budget/intercepted')
+    /* Nothing was spent and the pre-send reply still waits for the real send. */
+    expect(lucet.inspect().pendingReply).toBe('budget-low')
+    expect(lucet.inspect().running).toBe(false)
+    lucet.dismissIntercept()
+    const released = lucet.getState()
+    expect(released.composer.intercept).toBeNull()
+    expect(released.composer.text).toBe(draft)
+    expect(released.turns).toHaveLength(0)
+    expect(eventTypes(lucet).at(-1)).toBe('budget/released')
+    /* Pressing Send again holds again: the threshold is never crossed by repetition. */
+    await lucet.submit(draft)
+    expect(lucet.getState().turns).toHaveLength(0)
+    expect(lucet.getState().composer.intercept).not.toBeNull()
+  })
+
+  it('Continue sends the held words on the chosen model, and the pre-send reply plays', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-low')
+    const draft = lucet.getState().composer.text
+    await lucet.submit(draft)
+    expect(lucet.getState().composer.intercept).not.toBeNull()
+    await lucet.confirmSpend()
+    const s = lucet.getState()
+    expect(s.turns).toHaveLength(1)
+    expect(s.turns[0]!.prompt.parts[0]).toMatchObject({ kind: 'text', text: draft })
+    expect(s.model.selectedId).toBe('auto')
+    expect(s.composer.intercept).toBeNull()
+    expect(s.composer.text).toBe('')
+    expect(s.turns[0]!.response!.status).toBe('complete')
+    expect(lucet.inspect().pendingReply).toBeNull()
+  })
+
+  it('the cheaper model releases the hold, and the next Send goes through within the month', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-low')
+    const draft = lucet.getState().composer.text
+    await lucet.submit(draft)
+    expect(lucet.getState().composer.intercept).not.toBeNull()
+    lucet.store.dispatch({ type: 'model/changed', modelId: 'fast' })
+    expect(lucet.getState().composer.intercept).toBeNull()
+    await lucet.submit(draft)
+    const s = lucet.getState()
+    expect(s.turns).toHaveLength(1)
+    expect(s.model.selectedId).toBe('fast')
+    expect(s.composer.intercept).toBeNull()
+    expect(eventTypes(lucet).filter((t) => t === 'budget/intercepted')).toHaveLength(1)
+  })
+
+  it('a queued prompt that would cross the month comes back to the field under the hold, never sent behind your back', async () => {
+    const { scheduler, release, tick } = stepper()
+    const lucet = createLucet({ clock: createManualClock(0), scheduler })
+    lucet.store.dispatch({
+      type: 'usage/changed',
+      patch: { monthlyBudgetUsd: 10, monthlySpentUsd: 9.95, contextTokens: 46_000 },
+    })
+    const ada = lucet.trigger('multiplayer')
+    await tick()
+    expect(lucet.getState().composer.locked).toBe(true)
+    lucet.store.dispatch({ type: 'composer/queued', text: 'And the southern site, in full detail?' })
+    let done = false
+    void ada.then(() => {
+      done = true
+    })
+    for (let i = 0; i < 200 && !done; i++) await release()
+    expect(done).toBe(true)
+    const s = lucet.getState()
+    expect(s.turns).toHaveLength(1)
+    expect(s.turns[0]!.prompt.authorId).toBe('Ada')
+    expect(s.composer.queued).toBeNull()
+    expect(s.composer.locked).toBe(false)
+    expect(s.composer.text).toBe('And the southern site, in full detail?')
+    expect(s.composer.intercept).toMatchObject({ text: 'And the southern site, in full detail?' })
+  })
+
+  it('Reset lets the hold go with everything else', async () => {
+    const lucet = fresh()
+    await lucet.trigger('budget-low')
+    await lucet.submit(lucet.getState().composer.text)
+    expect(lucet.getState().composer.intercept).not.toBeNull()
+    lucet.reset()
+    expect(lucet.getState().composer.intercept).toBeNull()
+    expect(lucet.getState().turns).toHaveLength(0)
+    expect(lucet.inspect()).toEqual({ pendingTimers: 0, running: false, pendingReply: null, queued: null, locked: false, scheduledRetries: 0 })
+  })
+
+  it('Do stages its receipts: all pending at once, one running at a time, the answer after the last', async () => {
+    const { scheduler, release, tick } = stepper()
+    const lucet = createLucet({ clock: createManualClock(0), scheduler })
+    const run = lucet.trigger('do-plan')
+    let done = false
+    void run.then(() => {
+      done = true
+    })
+    const tools = () =>
+      (lucet.getState().turns.at(-1)?.response?.parts ?? [])
+        .filter((p): p is ToolPart => p.kind === 'tool')
+        .map((p) => p.status)
+    const texts = () => (lucet.getState().turns.at(-1)?.response?.parts ?? []).filter((p) => p.kind === 'text')
+    await tick()
+    /* The opening latency precedes the group: nothing has entered yet. */
+    expect(tools()).toEqual([])
+    await release()
+    /* One frame later every receipt is present — the first running, the rest waiting. */
+    expect(tools()).toEqual(['running', 'pending', 'pending'])
+    expect(texts()).toHaveLength(0)
+    await release()
+    expect(tools()).toEqual(['succeeded', 'running', 'pending'])
+    expect(texts()).toHaveLength(0)
+    await release()
+    expect(tools()).toEqual(['succeeded', 'succeeded', 'running'])
+    expect(texts()).toHaveLength(0)
+    await release()
+    expect(tools()).toEqual(['succeeded', 'succeeded', 'succeeded'])
+    for (let i = 0; i < 400 && !done; i++) await release()
+    expect(done).toBe(true)
+    const response = lucet.getState().turns.at(-1)!.response!
+    expect(response.status).toBe('complete')
+    const kinds = response.parts.map((p) => p.kind)
+    expect(kinds.indexOf('text')).toBe(3)
+    expect(eventTypes(lucet).filter((t) => t === 'tool/started')).toHaveLength(3)
+    expect(describeEvent({ type: 'tool/started', messageId: 'm', partId: 'p' })).toBe('Tool started')
+  })
+
+  it('Reset mid-group cancels what remains', async () => {
+    const { scheduler, release, tick, pending } = stepper()
+    const lucet = createLucet({ clock: createManualClock(0), scheduler })
+    void lucet.trigger('do-plan').catch(() => undefined)
+    await tick()
+    await release()
+    expect(lucet.getState().turns.at(-1)!.response!.parts.filter((p) => p.kind === 'tool')).toHaveLength(3)
+    lucet.reset()
+    await tick()
+    expect(lucet.getState().turns).toHaveLength(0)
+    expect(pending()).toBe(0)
+    expect(lucet.inspect().running).toBe(false)
   })
 })

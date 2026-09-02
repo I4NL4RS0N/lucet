@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useRef } from 'react'
 import type {
   ComposerAttachment,
   ComposerState,
@@ -55,6 +55,11 @@ export interface PromptInputProps {
   onQueue?: ((text: string) => void) | undefined
   /** The blocked month's other exit (round 05, P1): start a new thread. */
   onNewThread?: (() => void) | undefined
+  /** THE HOLD (round 06): Send at the month's threshold opened the meter's
+      panel; Continue there sends the held words. */
+  onConfirmSpend?: (() => void) | undefined
+  /** The panel closed on the hold without a decision. */
+  onDismissIntercept?: (() => void) | undefined
   onModelChange: (modelId: string) => void
   onRemoveAttachment: (id: string) => void
   /** Try a failed upload again. The person still has the file; "remove it"
@@ -224,6 +229,8 @@ export function PromptInput({
   onSubmit,
   onQueue,
   onNewThread,
+  onConfirmSpend,
+  onDismissIntercept,
   onModelChange,
   onRemoveAttachment,
   onRetryAttachment,
@@ -235,6 +242,8 @@ export function PromptInput({
   placeholder = 'Ask anything',
 }: PromptInputProps) {
   const id = useId()
+  const sendRef = useRef<HTMLButtonElement | null>(null)
+  const fieldRef = useRef<HTMLTextAreaElement | null>(null)
   const blocker = submitBlocker({ composer, service, restoredFrom, usage })
   /* When the month is spent: switch to a cheaper model if one still fits
      what remains, else a new thread — never a retry that will fail again. */
@@ -417,6 +426,7 @@ export function PromptInput({
       </label>
       <textarea
         id={id}
+        ref={fieldRef}
         className="lucet-prompt__field"
         rows={1}
         value={composer.text}
@@ -457,6 +467,22 @@ export function PromptInput({
           usage={usage}
           composerText={composer.text}
           disabled={composer.locked}
+          intercept={composer.intercept}
+          /* Focus goes back where the decision leaves the person: to Send
+             after the cheaper model (they confirm) or a dismissal (nothing
+             happened); to the field after Continue (the words went). */
+          onReroute={(modelId) => {
+            onModelChange(modelId)
+            requestAnimationFrame(() => sendRef.current?.focus())
+          }}
+          onDismiss={() => {
+            onDismissIntercept?.()
+            requestAnimationFrame(() => sendRef.current?.focus())
+          }}
+          onConfirm={() => {
+            onConfirmSpend?.()
+            requestAnimationFrame(() => fieldRef.current?.focus())
+          }}
         />
 
         {tools}
@@ -503,6 +529,7 @@ export function PromptInput({
             </button>
           ) : (
             <button
+              ref={sendRef}
               type="submit"
               className="lucet-button"
               data-variant="primary"

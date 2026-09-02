@@ -162,6 +162,43 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
         return null
       }
 
+      case 'tools': {
+        /* THE STAGED GROUP (round 06): all the receipts enter pending in one
+           frame, then run one at a time — pending, running, settled — so a
+           frozen frame in the first second shows work under way and work
+           still to come. The answer waits for the last. */
+        const ids = s.items.map(() => nextId('part'))
+        s.items.forEach((item, i) => {
+          store.dispatch({
+            type: 'part/added',
+            messageId,
+            part: {
+              kind: 'tool',
+              id: ids[i]!,
+              name: item.name,
+              status: 'pending',
+              detail: null,
+              args: item.args ?? null,
+              result: null,
+            },
+          })
+        })
+        for (const [i, item] of s.items.entries()) {
+          const partId = ids[i]!
+          store.dispatch({ type: 'tool/started', messageId, partId })
+          await sleep(item.ms, signal)
+          store.dispatch({
+            type: 'tool/settled',
+            messageId,
+            partId,
+            status: item.outcome,
+            detail: item.detail,
+            result: item.result ?? null,
+          })
+        }
+        return null
+      }
+
       case 'scope':
         store.dispatch({ type: 'scope/configured', levels: s.levels, selectedId: s.selectedId })
         return null
@@ -361,7 +398,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       for (const s of scenario.preSend ?? []) {
         /* No turn exists yet, so nothing that writes into a message may
            run here — a script that tries is a bug, and says so. */
-        if (s.type === 'say' || s.type === 'think' || s.type === 'tool' || s.type === 'notice' || s.type === 'sources' || s.type === 'sourceChange' || s.type === 'retryTurn' || s.type === 'restore' || s.type === 'refuse' || s.type === 'fail' || s.type === 'interrupt' || s.type === 'complete')
+        if (s.type === 'say' || s.type === 'think' || s.type === 'tool' || s.type === 'tools' || s.type === 'notice' || s.type === 'sources' || s.type === 'sourceChange' || s.type === 'retryTurn' || s.type === 'restore' || s.type === 'refuse' || s.type === 'fail' || s.type === 'interrupt' || s.type === 'complete')
           throw new Error(`preSend cannot run a '${s.type}' step`)
         await step(s, '', signal)
       }

@@ -34,28 +34,37 @@ export interface ActivityOrbProps {
   /** Elapsed or estimated time, rendered tabular. */
   time?: string
   size?: 'sm' | 'lg'
+  /** The orb alone, decorative, for a slot whose words sit beside it
+      (the tool receipt's mark, round 06). */
+  bare?: boolean
 }
 
-export function ActivityOrb({ state, label, time, size }: ActivityOrbProps) {
+export function ActivityOrb({ state, label, time, size, bare }: ActivityOrbProps) {
+  const orb = (
+    <span
+      className={`lucet-orb${size ? ` lucet-orb--${size}` : ''}`}
+      data-state={state}
+      role={bare ? undefined : 'img'}
+      aria-label={bare ? undefined : label}
+      aria-hidden={bare || undefined}
+    >
+      <svg viewBox="0 0 24 24" aria-hidden>
+        <circle className="lucet-orb__track" cx="12" cy="12" r="9" />
+        <circle className="lucet-orb__arc" cx="12" cy="12" r="9" />
+        {state === 'thinking' && <circle className="lucet-orb__arc lucet-orb__arc2" cx="12" cy="12" r="9" />}
+        {(state === 'thinking' || state === 'blocked' || state === 'ready') && (
+          <circle className="lucet-orb__core" cx="12" cy="12" r="2.5" />
+        )}
+      </svg>
+    </span>
+  )
+  if (bare) return orb
   return (
     <span className="lucet-orb-row">
-      <span
-        className={`lucet-orb${size ? ` lucet-orb--${size}` : ''}`}
-        data-state={state}
-        role="img"
-        aria-label={label}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden>
-          <circle className="lucet-orb__track" cx="12" cy="12" r="9" />
-          <circle className="lucet-orb__arc" cx="12" cy="12" r="9" />
-          {state === 'thinking' && <circle className="lucet-orb__arc lucet-orb__arc2" cx="12" cy="12" r="9" />}
-          {(state === 'thinking' || state === 'blocked' || state === 'ready') && (
-            <circle className="lucet-orb__core" cx="12" cy="12" r="2.5" />
-          )}
-        </svg>
-      </span>
+      {orb}
       <span className="lucet-orb-row__label">{label}</span>
       {time ? <span className="lucet-orb-row__time">{time}</span> : null}
     </span>
   )
 }
+

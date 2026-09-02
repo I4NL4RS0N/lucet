@@ -1,6 +1,7 @@
-import { projectNextTurn } from 'lucet-core'
+import { budgetHold, projectNextTurn } from 'lucet-core'
 import { useMenuGrammar } from '../menu-grammar.js'
-import type { ModelState, TurnProjection, UsageState } from 'lucet-core'
+import { useEffect, useRef } from 'react'
+import type { BudgetIntercept, ModelState, TurnProjection, UsageState } from 'lucet-core'
 
 /**
  * Budget Meter: the price before you spend it. The positions:
@@ -33,9 +34,20 @@ export interface BudgetMeterProps {
   /** The draft, so the projection moves while the person types. */
   composerText?: string | undefined
   disabled?: boolean | undefined
+  /** THE HOLD (round 06): a send stopped at the month's threshold. While
+      set, the panel opens itself on the reason and two explicit ways on. */
+  intercept?: BudgetIntercept | null | undefined
+  /** Continue on the selected model: the held words send. */
+  onConfirm?: (() => void) | undefined
+  /** The panel closed on the hold without a decision (Escape, a click away). */
+  onDismiss?: (() => void) | undefined
+  /** Use the cheaper model: it is selected and the hold releases; the host
+      returns focus to Send for the person to confirm. */
+  onReroute?: ((modelId: string) => void) | undefined
 }
 
-const NO_USAGE = { contextTokens: 0 }
+/* No budget concept: the projection still prices the turn, and nothing is ever held. */
+const NO_USAGE = { contextTokens: 0, monthlyBudgetUsd: null, monthlySpentUsd: 0 }
 
 function usd(value: number): string {
   const two = value.toFixed(2)
@@ -46,8 +58,32 @@ function tok(value: number): string {
   return value < 1000 ? String(value) : `${(value / 1000).toFixed(1)}k`
 }
 
-export function BudgetMeter({ model, onChange, usage, composerText, disabled }: BudgetMeterProps) {
+export function BudgetMeter({
+  model,
+  onChange,
+  usage,
+  composerText,
+  disabled,
+  intercept,
+  onConfirm,
+  onDismiss,
+  onReroute,
+}: BudgetMeterProps) {
   const menuRef = useMenuGrammar()
+  const details = useRef<HTMLDetailsElement | null>(null)
+  /* Set by the two actions so the close they cause is not read as a
+     dismissal. */
+  const decided = useRef(false)
+  /* The hold opens the panel and puts focus on the first way on. A new
+     hold (Send pressed again) re-opens it; an already-open panel just
+     moves focus. */
+  useEffect(() => {
+    const el = details.current
+    if (!intercept || !el) return
+    decided.current = false
+    if (!el.open) el.open = true
+    else el.querySelector<HTMLButtonElement>('.lucet-budget__decide button')?.focus()
+  }, [intercept])
   const selected = model.options.find((o) => o.id === model.selectedId) ?? model.options[0]
   if (!selected) return null
   const slice = { model, usage: usage ?? NO_USAGE, composer: { text: composerText ?? '' } }
@@ -57,9 +93,11 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
       ? Number((usage.monthlyBudgetUsd - usage.monthlySpentUsd).toFixed(4))
       : null
   const spent = remaining !== null && remaining <= 0
-  const caution = remaining !== null && !spent && projection !== null && projection.costUsd > remaining
+  /* One source with the runtime's hold: the meter says caution exactly
+     when a send would be held (round 06). */
+  const caution = !spent && budgetHold(slice) !== null
   /* The exit: the cheapest model whose next turn still fits the month. */
-  const fits = caution
+  const fits = caution && remaining !== null
     ? (model.options
         .map((o) => projectNextTurn(slice, o.id))
         .filter((p): p is TurnProjection => p !== null && p.costUsd <= remaining)
@@ -75,7 +113,20 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
     .join(' — ')
 
   return (
-    <details className="lucet-budget" ref={menuRef}>
+    <details
+      className="lucet-budget"
+      data-held={intercept ? 'true' : undefined}
+      ref={(el) => {
+        details.current = el
+        return menuRef(el)
+      }}
+      onToggle={(e) => {
+        const el = e.currentTarget
+        if (el.open) return
+        if (intercept && !decided.current) onDismiss?.()
+        decided.current = false
+      }}
+    >
       <summary
         className="lucet-budget__button"
         aria-label={label}
@@ -121,10 +172,47 @@ export function BudgetMeter({ model, onChange, usage, composerText, disabled }: 
               : selected.id === 'deep'
                 ? 'Deep reasoning prices every turn higher.'
                 : 'The draft itself is long.'}
-            {fits && fits.model.id !== selected.id
+            {!intercept && fits && fits.model.id !== selected.id
               ? ` Use ${fits.model.label} (≈${usd(fits.costUsd)}) or continue on ${selected.label} (≈${usd(projection.costUsd)}).`
               : ''}
           </p>
+        ) : null}
+        {intercept && caution && projection ? (
+          /* THE DECISION ITSELF (round 06): the Send that would have crossed
+             the month opened this panel instead, and these two are the only
+             ways across. The cheaper model that fits comes first and takes
+             focus; continuing on the chosen model sends at once — the
+             expensive choice made explicit, never made by accident. */
+          <div className="lucet-budget__decide">
+            {fits && fits.model.id !== selected.id ? (
+              <button
+                type="button"
+                className="lucet-button"
+                data-variant="primary"
+                data-first=""
+                onClick={(e) => {
+                  decided.current = true
+                  e.currentTarget.closest('details')?.removeAttribute('open')
+                  ;(onReroute ?? onChange)(fits.model.id)
+                }}
+              >
+                Use {fits.model.label} · <span className="lucet-budget__fig">≈{usd(fits.costUsd)}</span>
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="lucet-button"
+              data-variant="secondary"
+              data-first={fits && fits.model.id !== selected.id ? undefined : ''}
+              onClick={(e) => {
+                decided.current = true
+                e.currentTarget.closest('details')?.removeAttribute('open')
+                onConfirm?.()
+              }}
+            >
+              Continue on {selected.label} · <span className="lucet-budget__fig">≈{usd(projection.costUsd)}</span>
+            </button>
+          </div>
         ) : null}
         {model.options.map((option) => {
           const p = projectNextTurn(slice, option.id)

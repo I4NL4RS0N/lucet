@@ -1020,7 +1020,7 @@ async function main() {
       }
 
       /* At rest: no threshold state, no tone anywhere on the meter. */
-      await page.goto(url.replace('primitives.html', 'index.html'))
+      await page.goto(url.replace('primitives.html', 'index.html?instant=1'))
       await still()
       await page.waitForFunction(
         () => document.querySelector('.lucet-budget__button') && !document.querySelector('.lucet-thread__caret'),
@@ -1097,7 +1097,7 @@ async function main() {
      */
     for (const theme of ['dark', 'light']) {
       await page.emulateMedia({ colorScheme: theme })
-      await page.goto(url.replace('primitives.html', 'index.html'))
+      await page.goto(url.replace('primitives.html', 'index.html?instant=1'))
       await still()
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
       await page.waitForSelector('.lucet-thread__prompt', { timeout: 15000 })
@@ -1251,7 +1251,7 @@ async function main() {
        neutral line, never the application's border token, never the
        accent, present in every expression. */
     await page.setViewportSize({ width: 1280, height: 900 })
-    await page.goto(url.replace('primitives.html', 'index.html'))
+    await page.goto(url.replace('primitives.html', 'index.html?instant=1'))
     await still()
     await page.waitForSelector('.cfg__mock-logo', { timeout: 15000 })
     for (const theme of ['light', 'dark']) {
@@ -1334,22 +1334,81 @@ async function main() {
       if (r.pendingTimers !== 0 || r.running || r.pendingReply !== null || r.queued !== null || r.locked || r.turns !== 0 || r.banners !== 0)
         failures.push(`reset (${where}): not clean after Reset — ${JSON.stringify(r)}`)
     }
-    /* 1. Do visibly does. */
+    /* 0. One source (round 06, §0 B): the rail's two tabs list exactly the
+       registry's scenarios of each kind, same labels, same order. A stale
+       duplicate entry could never hide here. */
+    await coldStart()
+    const railLabels = async (tab) => {
+      await page.locator('.cfg__views--rail button', { hasText: tab }).first().click()
+      await page.waitForTimeout(120)
+      return page.evaluate(() => [...document.querySelectorAll('nav[aria-label="State triggers"] .cfg__trigger')].map((b) => b.textContent.trim()))
+    }
+    const railStates = await railLabels('States')
+    const railFeatures = await railLabels('Features')
+    await page.locator('.cfg__views--rail button', { hasText: 'States' }).first().click()
+    const registry = await page.evaluate(() => {
+      const all = window.__lucet.triggers.groups().flatMap((g) => g.scenarios)
+      return { states: all.filter((x) => (x.kind ?? 'state') === 'state').map((x) => x.label), features: all.filter((x) => x.kind === 'feature').map((x) => x.label) }
+    })
+    checks++
+    /* The rail's own cold start rides with the Baseline group, wherever that
+       group sits; everything else is the registry, in the registry's order. */
+    if (railStates.filter((l) => l === 'Empty & cold start').length !== 1
+      || railStates.filter((l) => l !== 'Empty & cold start').join('|') !== registry.states.join('|')
+      || railFeatures.join('|') !== registry.features.join('|'))
+      failures.push(`rail: the tabs do not mirror the registry — ${JSON.stringify({ railStates, railFeatures, registry })}`)
+    /* 1. Do visibly does — and STAGES it (round 06): every receipt enters
+       pending, one runs at a time, the answer waits for the last. Sampled
+       mid-sequence, not only at rest: the clock starts when the click has
+       landed, so the samples sit between the group's own boundaries
+       (250 → 730 → 1180 → 1700 ms). */
     await coldStart()
     await page.locator('.lucet-chips__chip', { hasText: 'Turn my notes into a short plan' }).first().click()
-    await page.waitForSelector('.lucet-tool', { timeout: 10000 })
+    const doT0 = Date.now()
+    const sampleDo = async (at) => {
+      const wait = at - (Date.now() - doT0)
+      if (wait > 0) await page.waitForTimeout(wait)
+      return page.evaluate(() => {
+        const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1)
+        const tools = turn ? [...turn.querySelectorAll('.lucet-tool')] : []
+        return {
+          statuses: tools.map((t) => t.dataset.status),
+          marks: tools.map((t) => t.querySelector('.lucet-tool__mark')?.dataset.status),
+          words: tools.map((t) => t.querySelector('.lucet-tool__state-word')?.textContent.trim() ?? (t.querySelector('.lucet-tool__detail')?.textContent.trim() ?? null)),
+          markBoxes: tools.map((t) => { const r = t.querySelector('.lucet-tool__mark')?.getBoundingClientRect(); return r ? `${Math.round(r.width)}x${Math.round(r.height)}` : null }),
+          nameX: tools.map((t) => Math.round(t.querySelector('.lucet-tool__name')?.getBoundingClientRect().left ?? 0)),
+          answer: !!turn?.querySelector('.lucet-md'),
+        }
+      })
+    }
+    const s1 = await sampleDo(480)
+    const s2 = await sampleDo(950)
+    const s3 = await sampleDo(1450)
+    checks++
+    if (s1.statuses.join() !== 'running,pending,pending' || s1.words.join('|') !== 'Running|Waiting to run|Waiting to run' || s1.marks.join() !== s1.statuses.join() || s1.answer
+      || s1.markBoxes.some((b) => b !== '16x16')
+      || s2.statuses.join() !== 'succeeded,running,pending' || s2.answer || s2.words[0] !== '4 sections from 2 notes' || s2.words[1] !== 'Running'
+      || s3.statuses.join() !== 'succeeded,succeeded,running' || s3.answer
+      || s1.nameX.join() !== s3.nameX.join())
+      failures.push(`do-plan: the receipts are not staged, or a mark moved the name — ${JSON.stringify({ s1, s2, s3 })}`)
     await settled()
     await page.waitForTimeout(150)
     const did = await page.evaluate(() => {
       const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1)
       const order = [...turn.querySelectorAll('.lucet-tool, .lucet-md, .lucet-sources')].map((e) => e.className.split(' ')[0])
       const created = turn.querySelector('.lucet-sources')
-      return { turns: document.querySelectorAll('.lucet-thread__pair').length, order, label: created?.querySelector('.lucet-sources__label')?.textContent.trim(), rows: created ? created.querySelectorAll('details.lucet-source').length : 0, ms: window.__lucet.triggers.get('do-plan').steps.reduce((a, s) => a + (s.type === 'tool' ? s.ms : 0), 0) }
+      const steps = window.__lucet.triggers.get('do-plan').steps
+      return { turns: document.querySelectorAll('.lucet-thread__pair').length, order, label: created?.querySelector('.lucet-sources__label')?.textContent.trim(), rows: created ? created.querySelectorAll('details.lucet-source').length : 0, ms: steps.reduce((a, s) => a + (s.type === 'tools' ? s.items.reduce((x, i) => x + i.ms, 0) : s.type === 'tool' ? s.ms : 0), 0), staged: steps.some((s) => s.type === 'tools' && s.items.length === 3) }
     })
     checks++
-    if (did.turns !== 1 || did.order.slice(0, 3).join() !== 'lucet-tool,lucet-tool,lucet-tool' || did.order.indexOf('lucet-md') !== 3 || did.label !== 'Created' || did.rows !== 3 || did.ms < 2000 || did.ms > 3000)
+    if (did.turns !== 1 || did.order.slice(0, 3).join() !== 'lucet-tool,lucet-tool,lucet-tool' || did.order.indexOf('lucet-md') !== 3 || did.label !== 'Created' || did.rows !== 3 || did.ms < 1300 || did.ms > 1800 || !did.staged)
       failures.push(`do-plan: receipts, summary and created rows are not in order — ${JSON.stringify(did)}`)
     await resetAndInspect('do-plan')
+    /* 1b. Reset mid-group cancels what remains. */
+    await coldStart()
+    await page.locator('.lucet-chips__chip', { hasText: 'Turn my notes into a short plan' }).first().click()
+    await page.waitForTimeout(600)
+    await resetAndInspect('do-plan mid-group')
     /* 2. Fallback model, told plainly: model, reason and impact without the rail. */
     await coldStart()
     await fireFromRail('Fallback model used', 'States')
@@ -1366,16 +1425,29 @@ async function main() {
     if (told.state !== 'degraded' || told.tone !== 'info' || told.label !== 'Using Fast instead of Auto.' || !/^Auto is temporarily unavailable/.test(told.text) || !told.beforeAnswer || told.action !== 'Retry on Auto' || !told.model || told.euphemism)
       failures.push(`degraded-model: the fallback is not told plainly — ${JSON.stringify(told)}`)
     await resetAndInspect('degraded-model')
-    /* 3. Another person's turn: ownership visible, typed input queued, then sent. */
+    /* 3. Another person's turn: ownership visible, typed input queued, then
+       sent — sampled LIVE (round 06): at 300 ms her prompt is new and her
+       answer empty; at 1500 ms it is streaming; the queue sends itself
+       when she lands; Send comes back when nothing was queued; Reset
+       cancels a run and its queue. */
     await coldStart()
     await fireFromRail('Another person', 'Features')
-    await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 10000 })
-    await page.waitForTimeout(150)
-    const owned = await page.evaluate(() => ({
-      strip: document.querySelector('.lucet-prompt__status')?.textContent.includes('Ada is taking a turn — yours sends next'),
-      typeable: (() => { const f = document.querySelector('.lucet-prompt__field'); return !!f && !f.disabled && !f.readOnly })(),
-      locked: window.__lucet.inspect().locked,
-    }))
+    const adaT0 = Date.now()
+    const sampleAda = async (at) => {
+      const wait = at - (Date.now() - adaT0)
+      if (wait > 0) await page.waitForTimeout(wait)
+      return page.evaluate(() => {
+        const s = window.__lucet.getState()
+        const last = s.turns.at(-1)
+        const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
+        const strip = document.querySelector('.lucet-prompt__status')
+        const f = document.querySelector('.lucet-prompt__field')
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, locked: s.composer.locked, by: s.composer.lockedBy, strip: strip?.textContent.includes('Ada is taking a turn — yours sends next'), stripRole: strip?.getAttribute('role'), face: !!strip?.querySelector('.lucet-avatar'), typeable: !!f && !f.disabled && !f.readOnly, chars: text.length, streaming: last?.response?.status === 'streaming' }
+      })
+    }
+    const a1 = await sampleAda(300)
+    const a2 = await sampleAda(1500)
+    const full = 'Gathered. The northern site peaks in March, and the one number that moved since last week — the survey figure — is flagged for review.'.length
     await page.locator('.lucet-prompt__field').fill('And the southern site?')
     const queueButton = page.locator('.lucet-prompt button', { hasText: 'Queue' }).first()
     const queueLabel = (await queueButton.textContent().catch(() => '')).trim()
@@ -1383,30 +1455,123 @@ async function main() {
     await page.waitForTimeout(120)
     const queuedStrip = await page.evaluate(() => document.querySelector('.lucet-prompt__status')?.textContent.includes('Queued — yours sends next'))
     await page.waitForFunction(() => document.querySelectorAll('.lucet-thread__pair').length >= 2 && !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
-    const sent = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, queued: window.__lucet.inspect().queued, last: [...document.querySelectorAll('.lucet-thread__prompt')].at(-1)?.textContent.trim() }))
+    const sent = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, queued: window.__lucet.inspect().queued, last: [...document.querySelectorAll('.lucet-thread__prompt')].at(-1)?.textContent.trim(), yours: window.__lucet.getState().turns.at(-1)?.prompt.authorId }))
     checks++
-    if (!owned.strip || !owned.typeable || !owned.locked || queueLabel !== 'Queue' || !queuedStrip || sent.turns !== 2 || sent.queued !== null || sent.last !== 'And the southern site?')
-      failures.push(`multiplayer: ownership and the queue are not live — ${JSON.stringify({ owned, queueLabel, queuedStrip, sent })}`)
+    if (a1.turns !== 1 || a1.author !== 'Ada' || !a1.locked || a1.by !== 'Ada' || !a1.strip || a1.stripRole !== 'status' || !a1.face || !a1.typeable || a1.chars !== 0 || !a1.streaming
+      || a2.turns !== 1 || !a2.locked || !a2.strip || a2.chars < 1 || a2.chars >= full || !a2.streaming
+      || queueLabel !== 'Queue' || !queuedStrip || sent.turns !== 2 || sent.queued !== null || sent.last !== 'And the southern site?' || sent.yours !== 'you')
+      failures.push(`multiplayer: ownership and the queue are not live — ${JSON.stringify({ a1, a2, full, queueLabel, queuedStrip, sent })}`)
     await resetAndInspect('multiplayer')
-    /* 4. Budget caution: the decision before the spend. */
+    /* 3b. Nothing queued: Send comes back when her turn lands, the draft untouched. */
     await coldStart()
-    await fireFromRail('Budget caution', 'States')
-    await page.waitForFunction(() => !window.__lucet.inspect().running && window.__lucet.inspect().pendingReply === 'budget-low', null, { timeout: 15000 })
-    await page.waitForTimeout(200)
+    await fireFromRail('Another person', 'Features')
+    await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 10000 })
+    await page.locator('.lucet-prompt__field').fill('Not yet sent')
+    await page.waitForFunction(() => !window.__lucet.inspect().locked && !window.__lucet.inspect().running, null, { timeout: 30000 })
+    await page.waitForTimeout(150)
+    const restored = await page.evaluate(() => { const b = document.querySelector('.lucet-prompt button[aria-label="Send"]'); return { send: !!b, enabled: !!b && !b.disabled, draft: document.querySelector('.lucet-prompt__field')?.value, turns: document.querySelectorAll('.lucet-thread__pair').length, strip: !!document.querySelector('.lucet-prompt__status') } })
+    checks++
+    if (!restored.send || !restored.enabled || restored.draft !== 'Not yet sent' || restored.turns !== 1 || restored.strip)
+      failures.push(`multiplayer: Send is not restored when nothing was queued — ${JSON.stringify(restored)}`)
+    await resetAndInspect('multiplayer (no queue)')
+    /* 3c. Reset mid-run cancels her timer and the queue together. */
+    await coldStart()
+    await fireFromRail('Another person', 'Features')
+    await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 10000 })
+    await page.locator('.lucet-prompt__field').fill('Cancelled with the run')
+    await page.locator('.lucet-prompt button', { hasText: 'Queue' }).first().click()
+    await page.waitForTimeout(120)
+    await resetAndInspect('multiplayer mid-run')
+    /* 4. Budget caution: the decision before the spend — now THE HOLD (round
+       06). The first Send over the month opens the meter's panel instead of
+       sending; focus lands on the cheaper way on; Escape closes and sends
+       nothing; Use Fast releases the hold and returns focus to Send; the
+       second press sends within the month. */
+    const armBudget = async () => {
+      await fireFromRail('Budget caution', 'States')
+      await page.waitForFunction(() => !window.__lucet.inspect().running && window.__lucet.inspect().pendingReply === 'budget-low', null, { timeout: 15000 })
+      await page.waitForTimeout(200)
+    }
+    const visibleChip = () => [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0)
+    await coldStart()
+    await armBudget()
     const pre = await page.evaluate(() => {
       const chip = [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0)
       chip.open = true
-      return { turns: document.querySelectorAll('.lucet-thread__pair').length, draft: document.querySelector('.lucet-prompt__field')?.value, caution: chip.querySelector('.lucet-budget__button')?.dataset.state, note: chip.querySelector('.lucet-budget__note')?.textContent.trim(), pending: window.__lucet.inspect().pendingReply, resetArmed: !document.querySelector('.cfg__stage-reset')?.disabled }
+      const out = { turns: document.querySelectorAll('.lucet-thread__pair').length, draft: document.querySelector('.lucet-prompt__field')?.value, caution: chip.querySelector('.lucet-budget__button')?.dataset.state, note: chip.querySelector('.lucet-budget__note')?.textContent.trim(), decide: chip.querySelectorAll('.lucet-budget__decide button').length, pending: window.__lucet.inspect().pendingReply, resetArmed: !document.querySelector('.cfg__stage-reset')?.disabled }
+      chip.open = false
+      return out
     })
-    await page.locator('.lucet-budget__row', { hasText: 'Fast' }).first().click()
-    await page.locator('.lucet-prompt button[type="submit"], .lucet-prompt button[aria-label="Send"]').first().click()
+    const sendButton = page.locator('.lucet-prompt button[aria-label="Send"]:visible').first()
+    await sendButton.click()
+    await page.waitForTimeout(250)
+    const held = await page.evaluate(() => {
+      const chip = [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0)
+      const btns = [...chip.querySelectorAll('.lucet-budget__decide button')]
+      return { open: chip.open, held: chip.dataset.held, turns: document.querySelectorAll('.lucet-thread__pair').length, labels: btns.map((b) => b.textContent.trim()), focusedFirst: document.activeElement === btns[0], intercept: window.__lucet.getState().composer.intercept, explanation: !!chip.querySelector('.lucet-budget__next') && /context is/.test(chip.querySelector('.lucet-budget__note')?.textContent || ''), targets: btns.map((b) => { const r = b.getBoundingClientRect(); return r.height >= 28 && r.width >= 28 }), modal: !!document.querySelector('[role="dialog"], dialog[open]') }
+    })
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    const escaped = await page.evaluate(() => ({ open: [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).open, turns: document.querySelectorAll('.lucet-thread__pair').length, intercept: window.__lucet.getState().composer.intercept, focusOnSend: document.activeElement?.getAttribute('aria-label') === 'Send', draft: document.querySelector('.lucet-prompt__field')?.value }))
+    await sendButton.click()
+    await page.waitForTimeout(250)
+    const reopened = await page.evaluate(() => ({ open: [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).open, turns: document.querySelectorAll('.lucet-thread__pair').length }))
+    await page.locator('.lucet-budget__decide button', { hasText: 'Use Fast' }).first().click()
+    await page.waitForTimeout(200)
+    const rerouted = await page.evaluate(() => ({ model: window.__lucet.getState().model.selectedId, intercept: window.__lucet.getState().composer.intercept, open: [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).open, turns: document.querySelectorAll('.lucet-thread__pair').length, focusOnSend: document.activeElement?.getAttribute('aria-label') === 'Send', chip: document.querySelector('.lucet-budget__button')?.textContent || '' }))
+    await sendButton.click()
     await settled()
     await page.waitForTimeout(150)
-    const spent = await page.evaluate(() => { const s = window.__lucet.getState(); return { turns: s.turns.length, model: s.model.selectedId, cost: s.usage.threadCostUsd, pending: window.__lucet.inspect().pendingReply } })
+    const spent = await page.evaluate(() => { const s = window.__lucet.getState(); return { turns: s.turns.length, model: s.model.selectedId, cost: s.usage.threadCostUsd, pending: window.__lucet.inspect().pendingReply, intercept: s.composer.intercept } })
     checks++
-    if (pre.turns !== 0 || pre.draft !== 'Compare the two proposals and recommend one.' || pre.caution !== 'caution' || !/Use Fast \(≈\$0\.0\d\) or continue on Auto \(≈\$0\.1\d\)/.test(pre.note || '') || !/context is ≈4\d(\.\d)?k tokens/.test(pre.note || '') || pre.pending !== 'budget-low' || !pre.resetArmed || spent.turns !== 1 || spent.model !== 'fast' || spent.pending !== null || Math.abs(spent.cost - 0.41 - ((46_000 + 2_400) / 1_000_000) * 0.6) > 0.001)
-      failures.push(`budget-low: the decision does not come before the spend — ${JSON.stringify({ pre, spent })}`)
+    if (pre.turns !== 0 || pre.draft !== 'Compare the two proposals and recommend one.' || pre.caution !== 'caution' || !/Use Fast \(≈\$0\.0\d\) or continue on Auto \(≈\$0\.1\d\)/.test(pre.note || '') || !/context is ≈4\d(\.\d)?k tokens/.test(pre.note || '') || pre.decide !== 0 || pre.pending !== 'budget-low' || !pre.resetArmed
+      || !held.open || held.held !== 'true' || held.turns !== 0 || held.labels.length !== 2 || !/^Use Fast · ≈\$0\.0\d$/.test(held.labels[0]) || !/^Continue on Auto · ≈\$0\.1\d$/.test(held.labels[1]) || !held.focusedFirst || !held.intercept || !held.explanation || held.targets.some((t) => !t) || held.modal
+      || escaped.open || escaped.turns !== 0 || escaped.intercept !== null || !escaped.focusOnSend || escaped.draft !== 'Compare the two proposals and recommend one.'
+      || !reopened.open || reopened.turns !== 0
+      || rerouted.model !== 'fast' || rerouted.intercept !== null || rerouted.open || rerouted.turns !== 0 || !rerouted.focusOnSend || !/Fast/.test(rerouted.chip)
+      || spent.turns !== 1 || spent.model !== 'fast' || spent.pending !== null || spent.intercept !== null || Math.abs(spent.cost - 0.41 - ((46_000 + 2_400) / 1_000_000) * 0.6) > 0.001)
+      failures.push(`budget-low: the hold does not gate the spend — ${JSON.stringify({ pre, held, escaped, reopened, rerouted, spent })}`)
     await resetAndInspect('budget-low')
+    /* 4b. Continue on Auto sends at once: the expensive choice, explicit. */
+    await coldStart()
+    await armBudget()
+    await sendButton.click()
+    await page.waitForTimeout(250)
+    await page.locator('.lucet-budget__decide button', { hasText: 'Continue on Auto' }).first().click()
+    await settled()
+    await page.waitForTimeout(150)
+    const onAuto = await page.evaluate(() => { const s = window.__lucet.getState(); const rate = s.model.options.find((o) => o.id === 'auto').usdPerMTok; return { turns: s.turns.length, model: s.model.selectedId, intercept: s.composer.intercept, pending: window.__lucet.inspect().pendingReply, cost: s.usage.threadCostUsd, expected: ((46_000 + 2_400) / 1_000_000) * rate + 0.41, open: [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).open, fieldFocused: document.activeElement?.classList.contains('lucet-prompt__field') } })
+    checks++
+    if (onAuto.turns !== 1 || onAuto.model !== 'auto' || onAuto.intercept !== null || onAuto.pending !== null || Math.abs(onAuto.cost - onAuto.expected) > 0.001 || onAuto.open || !onAuto.fieldFocused)
+      failures.push(`budget-low: Continue on Auto does not send the held words — ${JSON.stringify(onAuto)}`)
+    await resetAndInspect('budget-low (continue)')
+    /* 4c. On the phone the panel is entirely visible and reachable by Tab. */
+    await coldStart()
+    await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Mobile' }).first().click()
+    await page.waitForTimeout(300)
+    await armBudget()
+    await page.locator('.lucet-prompt button[aria-label="Send"]:visible').first().click()
+    await page.waitForTimeout(300)
+    const phone = await page.evaluate(() => {
+      const chip = [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0)
+      const panel = chip.querySelector('.lucet-budget__panel')
+      const frame = document.querySelector('.cfg__phone') ?? document.querySelector('.cfg__frame')
+      const p = panel.getBoundingClientRect(), f = frame.getBoundingClientRect()
+      const inside = p.top >= f.top && p.left >= f.left && p.bottom <= f.bottom && p.right <= f.right && p.top >= 0 && p.bottom <= window.innerHeight
+      const corners = [[p.left + 3, p.top + 3], [p.right - 3, p.top + 3], [p.left + 3, p.bottom - 3], [p.right - 3, p.bottom - 3]].map(([x, y]) => panel.contains(document.elementFromPoint(x, y)))
+      const btns = [...chip.querySelectorAll('.lucet-budget__decide button')]
+      return { open: chip.open, inside, corners, focusedFirst: document.activeElement === btns[0], count: btns.length, panel: `${Math.round(p.width)}x${Math.round(p.height)}` }
+    })
+    await page.keyboard.press('Tab')
+    const tabbed = await page.evaluate(() => { const btns = [...[...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).querySelectorAll('.lucet-budget__decide button')]; return document.activeElement === btns[1] })
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(150)
+    checks++
+    if (!phone.open || !phone.inside || phone.corners.some((c) => !c) || !phone.focusedFirst || phone.count !== 2 || !tabbed)
+      failures.push(`budget-low (mobile): the hold's panel is not fully visible and keyboard-reachable — ${JSON.stringify({ phone, tabbed })}`)
+    await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
+    await page.waitForTimeout(200)
+    await resetAndInspect('budget-low (mobile)')
     /* 5. Restore straight into preview, no duplicate blocks. */
     await coldStart()
     const logBefore = await page.evaluate(() => window.__lucet.getLog().length)
@@ -1587,7 +1752,8 @@ async function main() {
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 })
       for (const path of ['primitives.html', 'components.html', 'index.html']) {
-        await page.goto(url.replace('primitives.html', path))
+        /* ?instant=1: the audit says it wants the resting thread; the site no longer sniffs the browser (round 06). */
+        await page.goto(url.replace('primitives.html', path === 'index.html' ? 'index.html?instant=1' : path))
         await still()
         await page.waitForSelector(path === 'index.html' ? '.cfg__frame' : '.sec', { timeout: 15000 })
         await page.waitForTimeout(500)

@@ -7,7 +7,7 @@
  * first, and the component renders it as words.
  */
 
-import type { ModelOption, SubmitBlocker, ThreadState, UsageState } from './types.js'
+import type { BudgetIntercept, ModelOption, SubmitBlocker, ThreadState, UsageState } from './types.js'
 
 /** The slice the blocker logic actually reads, so components holding only
     composer + service can call it without inventing a whole thread. */
@@ -134,4 +134,24 @@ export function projectNextTurn(
     REPLY_ALLOWANCE_TOKENS
   const costUsd = Number(((tokens / 1_000_000) * model.usdPerMTok).toFixed(4))
   return { model, tokens, costUsd }
+}
+
+/**
+ * THE HOLD, DERIVED (round 06): the send that would cost more than the month
+ * has left, priced. Null when the month is spent (that is a wall, not a
+ * decision — see submitBlocker), when the host has no budget, when the model
+ * has no price, or when the turn fits. The meter's caution and the runtime's
+ * hold read this one function, so they can never disagree.
+ */
+export type BudgetHoldInput = Omit<ProjectionInput, 'usage'> & {
+  usage: Pick<UsageState, 'contextTokens' | 'monthlyBudgetUsd' | 'monthlySpentUsd'>
+}
+
+export function budgetHold(state: BudgetHoldInput): BudgetIntercept | null {
+  if (state.usage.monthlyBudgetUsd === null) return null
+  const remainingUsd = Number((state.usage.monthlyBudgetUsd - state.usage.monthlySpentUsd).toFixed(4))
+  if (remainingUsd <= 0) return null
+  const projection = projectNextTurn(state)
+  if (projection === null || projection.costUsd <= remainingUsd) return null
+  return { text: state.composer.text, costUsd: projection.costUsd, remainingUsd }
 }

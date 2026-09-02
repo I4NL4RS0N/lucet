@@ -389,6 +389,8 @@ function AppCore({
               onStop={() => lucet.abort()}
               onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
               onSubmit={() => void lucet.submit(state.composer.text)}
+              onConfirmSpend={() => void lucet.confirmSpend()}
+              onDismissIntercept={() => lucet.dismissIntercept()}
               onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
               onNewThread={() => {
                 /* The blocked month's exit: the same commit as the bar's

@@ -129,3 +129,11 @@ top-layer mode for this surface (Popover API, keeping the current
 anchoring as fallback) is filed for 0.2. The states audit probes
 this surface open, in all four theme-and-expression cells, and fails
 on any occlusion.
+
+## Send at the month's threshold (2026-09-02)
+
+Send has one more state it can refuse from, and it refuses by opening
+the decision rather than by going grey: when the projected turn would
+cost more than the month has left, the first press opens the Budget
+Meter's panel with the reason and the two ways across, and nothing sends
+until one is chosen. See the Budget Meter's rationale for the hold.

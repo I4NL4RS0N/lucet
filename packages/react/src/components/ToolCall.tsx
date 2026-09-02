@@ -46,11 +46,19 @@ const ICON: Record<Exclude<ToolStatus, 'running'>, IconName> = {
   failed: 'failed',
 }
 
-/** Spoken status, where the silhouette alone is not words enough. */
+/** Spoken status IN THE HEAD, where an unhappy settlement must be read
+    at once: the ink word beside the name. */
 const WORD: Partial<Record<ToolStatus, string>> = {
-  pending: 'Waiting to run',
   failed: 'Failed',
   partial: 'Partly done',
+}
+
+/** The quiet states' words, on the second line where the outcome will
+    land (round 06): a static label for every state, so a frozen frame
+    reads without motion. Success speaks through its `detail`. */
+const STATE_WORD: Partial<Record<ToolStatus, string>> = {
+  pending: 'Waiting to run',
+  running: 'Running',
 }
 
 /* The elapsed readout while the tool genuinely runs: it times the real
@@ -66,8 +74,15 @@ function LiveElapsed() {
     return () => clearInterval(t)
   }, [])
   /* Mono + tabular: a ticking counter in proportional digits wobbles in
-     width every tenth, and the eye reads the jitter as activity it isn't. */
-  return <span className="lucet-tool__detail lucet-tool__elapsed">{(tenths / 10).toFixed(1)}s</span>
+     width every tenth, and the eye reads the jitter as activity it isn't.
+     The word beside it is the static label (round 06): "Running" reads in
+     a frozen frame, where a counter is just a number. */
+  return (
+    <span className="lucet-tool__detail lucet-tool__state">
+      <span className="lucet-tool__state-word">{STATE_WORD.running}</span>
+      <span className="lucet-tool__elapsed">{(tenths / 10).toFixed(1)}s</span>
+    </span>
+  )
 }
 
 function Receipt({ label, text }: { label: string; text: string }) {
@@ -91,6 +106,16 @@ export function ToolCall({ name, status, detail, args, result, defaultOpen }: To
   const watchedRunning = useRef(false)
   if (status === 'running') watchedRunning.current = true
   const arrived = watchedRunning.current && status !== 'running'
+  /* THE SWITCH (round 06): a mark that changes while this instance watches
+     fades into the same fixed box — no travel, no scale, no bounce — and a
+     mark that mounts settled paints still. The flag stays up once a change
+     was seen, so a later re-render never cuts a fade short. */
+  const previous = useRef(status)
+  const switched = useRef(false)
+  if (previous.current !== status) {
+    switched.current = true
+    previous.current = status
+  }
   /*
    * Two lines, one register each: the first says WHO (mark, name, and the
    * status word when it must be spoken); the second says WHAT CAME OF IT,
@@ -100,19 +125,27 @@ export function ToolCall({ name, status, detail, args, result, defaultOpen }: To
   const head = (
     <>
       <span className="lucet-tool__head">
-        {status === 'running' ? (
-          <ActivityOrb state="searching" label={name} size="sm" />
-        ) : (
-          <>
-            <StateIcon name={ICON[status]} />
-            <span className="lucet-tool__name">{name}</span>
-            {WORD[status] ? <strong className="lucet-tool__word">{WORD[status]}</strong> : null}
-            {status === 'succeeded' ? <span className="lucet-visually-hidden">Done.</span> : null}
-          </>
-        )}
+        {/* One fixed 16px slot for every state's mark: the orb while it runs,
+            the silhouette otherwise. The name beside it never moves. */}
+        <span className="lucet-tool__mark" data-status={status}>
+          <span key={status} className="lucet-tool__mark-in" data-switch={switched.current || undefined}>
+            {status === 'running' ? (
+              <ActivityOrb state="searching" label={name} size="sm" bare />
+            ) : (
+              <StateIcon name={ICON[status]} />
+            )}
+          </span>
+        </span>
+        <span className="lucet-tool__name">{name}</span>
+        {WORD[status] ? <strong className="lucet-tool__word">{WORD[status]}</strong> : null}
+        {status === 'succeeded' ? <span className="lucet-visually-hidden">Done.</span> : null}
       </span>
       {status === 'running' ? (
         <LiveElapsed />
+      ) : status === 'pending' ? (
+        <span className="lucet-tool__detail lucet-tool__state">
+          <span className="lucet-tool__state-word">{STATE_WORD.pending}</span>
+        </span>
       ) : detail ? (
         <span className="lucet-tool__detail">{detail}</span>
       ) : null}

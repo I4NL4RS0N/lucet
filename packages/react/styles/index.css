@@ -269,12 +269,37 @@
 .lucet-tool[data-status='pending']::after {
   opacity: 0;
 }
-/* The check (or the partial / failed mark — the same choreography, no
-   extra drama: a failure is an event like any other) lands with one
-   small `enter` when this instance watched the run settle. */
-.lucet-tool[data-arrived] .lucet-icon {
-  animation: lucet-enter var(--lucet-duration-normal) var(--lucet-ease);
+/* THE MARK SLOT AND THE SWITCH (round 06). One fixed 16px box holds every
+   state's mark — the orb while the tool runs, the silhouette otherwise —
+   so the name beside it never moves and the row never reflows when a
+   state changes. A mark that changes while this instance watches fades in
+   over the last one's place: a switch, not an entrance — no travel, no
+   scale, no bounce. A mark that mounts settled paints still. */
+.lucet-tool__mark {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 16px;
+  block-size: 16px;
+  flex: none;
 }
+.lucet-tool__mark-in {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+}
+.lucet-tool__mark-in > .lucet-icon,
+.lucet-tool__mark-in > .lucet-orb { inline-size: 16px; block-size: 16px; }
+.lucet-tool__mark-in[data-switch] {
+  animation: lucet-switch-in var(--lucet-duration-fast) var(--lucet-ease) backwards;
+}
+@keyframes lucet-switch-in {
+  from { opacity: 0; }
+}
+/* The quiet states' words, second line: the same register as the outcome
+   that will replace them. The counter keeps its mono. */
+.lucet-tool__state { display: inline-flex; gap: 6px; align-items: baseline; }
+.lucet-tool__state .lucet-tool__elapsed { margin: 0; }
 
 /* Two lines, one register each: the head row (mark + name + word), then
    the outcome under the name, quiet. The detail indents past the chevron
@@ -399,6 +424,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .lucet-tool[data-status='running'] .lucet-tool__status { animation: none; }
+  /* The sequence and its labels stay; only the fade goes. */
+  .lucet-tool__mark-in[data-switch] { animation: none; }
 }
 
 /* ============================================================
@@ -2149,6 +2176,23 @@
   color: var(--lucet-tone-caution-foreground);
   font-size: var(--lucet-text-xs);
 }
+/* THE DECISION ROW (round 06): the two ways across the month's threshold,
+   under the reason. Real buttons in the library's own grammar — the
+   cheaper model primary, continuing secondary — each on the site's 28px
+   target, prices in tabular figures so the two compare at a glance. */
+.lucet-budget__decide {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0 9px;
+}
+.lucet-budget__decide .lucet-button {
+  min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
+  padding-inline: 10px;
+  font-size: var(--lucet-text-sm);
+}
+.lucet-budget__decide .lucet-budget__fig { font-variant-numeric: tabular-nums; }
 .lucet-budget__row {
   display: grid;
   gap: 1px;

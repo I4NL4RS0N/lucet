@@ -27,6 +27,10 @@ export type LucetEvent =
   | { type: 'composer/locked'; by: string }
   | { type: 'composer/unlocked' }
   | { type: 'composer/dequeued' }
+  /** A send held at the month's threshold (round 06): nothing sent, the decision opened. */
+  | { type: 'budget/intercepted'; text: string; costUsd: number; remainingUsd: number }
+  /** The hold let go without sending. */
+  | { type: 'budget/released' }
   | {
       type: 'attachment/added'
       id: string
@@ -53,6 +57,8 @@ export type LucetEvent =
   | { type: 'response/started'; turnId: string; messageId: string }
   | { type: 'part/added'; messageId: string; part: MessagePart }
   | { type: 'part/delta'; messageId: string; partId: string; delta: string }
+  /** A pending receipt in a staged group begins running (round 06). */
+  | { type: 'tool/started'; messageId: string; partId: string }
   | {
       type: 'tool/settled'
       messageId: string
@@ -159,6 +165,10 @@ export function describeEvent(event: LucetEvent): string {
       return 'Composer text changed'
     case 'composer/queued':
       return 'Next prompt queued while locked'
+    case 'budget/intercepted':
+      return 'Send held: the next turn costs more than the month has left'
+    case 'budget/released':
+      return 'Hold released without sending'
     case 'composer/locked':
       return `Composer locked by ${event.by}`
     case 'composer/unlocked':
@@ -185,6 +195,8 @@ export function describeEvent(event: LucetEvent): string {
       return `Added ${event.part.kind} part`
     case 'part/delta':
       return 'Streamed a chunk'
+    case 'tool/started':
+      return 'Tool started'
     case 'tool/settled':
       return `Tool ${event.status}`
     case 'response/settled':

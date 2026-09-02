@@ -294,12 +294,29 @@ export interface ComposerAttachment {
   readonly reason: string | null
 }
 
+/**
+ * THE HOLD (round 06). The first Send that would cost more than the month
+ * has left does not send: it opens the decision — the reason, the cheaper
+ * model that still fits, the explicit way through — and the runtime crosses
+ * the threshold no other way. Null when nothing is held.
+ */
+export interface BudgetIntercept {
+  /** The words that were about to send. */
+  readonly text: string
+  /** What that turn would cost on the selected model. */
+  readonly costUsd: number
+  /** What remains in the month. */
+  readonly remainingUsd: number
+}
+
 export interface ComposerState {
   readonly text: string
   readonly locked: boolean
   readonly lockedBy: string | null
   readonly queued: string | null
   readonly attachments: readonly ComposerAttachment[]
+  /** A send held at the month's threshold, awaiting the decision. */
+  readonly intercept: BudgetIntercept | null
 }
 
 /**

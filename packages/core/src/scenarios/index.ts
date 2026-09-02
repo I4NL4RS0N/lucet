@@ -975,32 +975,37 @@ export const doPlan = defineScenario({
   prompt: 'Turn my notes into a short plan.',
   steps: [
     { type: 'wait', ms: 250 },
+    /* Staged (round 06): the three operations enter together as pending
+       and run one after another — roughly half a second each, the answer
+       after the last — so the work is legible while it happens. */
     {
-      type: 'tool',
-      name: 'Drafting release plan',
-      ms: 900,
-      outcome: 'succeeded',
-      detail: '4 sections from 2 notes',
-      args: '{ "source": ["Kickoff notes", "Vendor call"], "shape": "release plan" }',
-      result: '{ "sections": ["Goal", "Scope", "Timeline", "Risks"] }',
-    },
-    {
-      type: 'tool',
-      name: 'Creating folder structure',
-      ms: 600,
-      outcome: 'succeeded',
-      detail: 'Plans / Release',
-      args: '{ "parent": "Plans", "name": "Release" }',
-      result: '{ "path": "Plans/Release", "created": true }',
-    },
-    {
-      type: 'tool',
-      name: 'Filing pages in Plans',
-      ms: 800,
-      outcome: 'succeeded',
-      detail: '3 pages filed',
-      args: '{ "folder": "Plans/Release", "pages": ["brief.md", "checklist.md", "decisions.md"] }',
-      result: '{ "filed": 3, "failed": 0 }',
+      type: 'tools',
+      items: [
+        {
+          name: 'Drafting release plan',
+          ms: 480,
+          outcome: 'succeeded',
+          detail: '4 sections from 2 notes',
+          args: '{ "source": ["Kickoff notes", "Vendor call"], "shape": "release plan" }',
+          result: '{ "sections": ["Goal", "Scope", "Timeline", "Risks"] }',
+        },
+        {
+          name: 'Creating folder structure',
+          ms: 450,
+          outcome: 'succeeded',
+          detail: 'Plans / Release',
+          args: '{ "parent": "Plans", "name": "Release" }',
+          result: '{ "path": "Plans/Release", "created": true }',
+        },
+        {
+          name: 'Filing pages in Plans',
+          ms: 520,
+          outcome: 'succeeded',
+          detail: '3 pages filed',
+          args: '{ "folder": "Plans/Release", "pages": ["brief.md", "checklist.md", "decisions.md"] }',
+          result: '{ "filed": 3, "failed": 0 }',
+        },
+      ],
     },
     {
       type: 'say',

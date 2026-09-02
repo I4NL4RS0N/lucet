@@ -31,7 +31,13 @@ export function useMenuGrammar(): (el: HTMLDetailsElement | null) => void | (() 
         return
       }
       const all = rows()
-      const target = all.find((r) => r.getAttribute('aria-pressed') === 'true') ?? all[0]
+      /* A row marked data-first takes focus over the pressed one: the
+         decision a panel opened FOR (the budget hold's cheaper model)
+         beats the state it happens to be in. */
+      const target =
+        all.find((r) => r.hasAttribute('data-first')) ??
+        all.find((r) => r.getAttribute('aria-pressed') === 'true') ??
+        all[0]
       target?.focus()
     }
     const onKeyDown = (e: KeyboardEvent) => {
