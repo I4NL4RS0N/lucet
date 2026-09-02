@@ -313,9 +313,17 @@ function AppCore({
   aside,
   chrome = 'window',
   narration = 'live',
+  geometryEpoch,
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
+  /** Bumped by the host when it changes the thread's box (a container
+      switch). The thread stays container-agnostic — it only learns that
+      its geometry moved and re-runs the resting placement, exactly as it
+      does on a state change. Without this, a scroll position from one
+      container's geometry survived into another's and could land the
+      viewport between content (the view-mode regression). */
+  geometryEpoch?: string
   /** 'history' while the scripted opening plays: narration follows
       initiation (the announcer's law) — the log fills silently and goes
       live when the playback ends. */
@@ -355,7 +363,7 @@ function AppCore({
     } else {
       el.scrollTop = el.scrollHeight
     }
-  }, [state])
+  }, [state, geometryEpoch])
 
   const composerNode = (
             <PromptInput
@@ -1134,6 +1142,7 @@ export function App() {
               aria-label="The running app"
             >
               <AppCore
+                geometryEpoch={`${view}:${drawerMode}`}
                 narration={playing ? 'history' : 'live'}
                 onSuggest={(s) => {
                   writeStateParam(s.id)
@@ -1449,6 +1458,7 @@ export function App() {
                     </div>
                     {drawerPane === 'thread' ? (
                       <AppCore
+                geometryEpoch={`${view}:${drawerMode}`}
                         narration={playing ? 'history' : 'live'}
                         chrome="bare"
                                 onSuggest={(s) => {
@@ -1488,6 +1498,7 @@ export function App() {
                 />
                 {phonePane === 'thread' ? (
                   <AppCore
+                geometryEpoch={`${view}:${drawerMode}`}
                     narration={playing ? 'history' : 'live'}
                     chrome="bare"
                     onSuggest={(s) => {
