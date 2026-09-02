@@ -326,3 +326,45 @@ html { background-color: var(--lucet-background); }
 .cfg__prefs select:active {
   background-color: var(--lucet-press);
 }
+
+/* ============================================================
+ * THE STUDIO GROUND — the host's choice (2026-09-01).
+ * Ruling (b) made the floor the host's; this is the host painting it. A
+ * .945 floor behind a pure-white frame read as a debug canvas, so the
+ * docs site — a host — lifts its own light-Glass ground to a studio
+ * value and keeps the sidebar a recess beneath it. These are SITE
+ * tokens: --lucet-surface-ground and --lucet-surface-sunken keep their
+ * 0.1.0 values until a deliberate 0.2 re-derivation, and no component
+ * is overridden — the stage floor, the lab page ground, and the mock
+ * app's sidebar read the site tokens, which default to the library's
+ * own ground and recess everywhere else (Paper, dark Glass). The ground
+ * chroma is capped at a quarter of the neutral's, .002 at most, so no
+ * neutral mode can tint it. The recess keeps the ratified room tint
+ * (three quarters of the neutral, .008 cap) one stride under the new
+ * ground: derived from the ladder's floors — card − sunken ≥ .06 and
+ * ground − sunken ≥ .015 both hold.
+ * VALUE BY INSTRUMENT, AS PAIRS (candidates .945 baseline / .965 / .972
+ * / .978 beside light Paper, 1×, shade stacks frozen at ea75039):
+ *   .965  card +.035 above the floor · lab stage +.035 (its ≥ .03 value
+ *         floor holds) · rim +.023 over the ground · edge reads at 1×
+ *   .972  card +.028 · lab stage +.028 — under the .03 floor
+ *   .978  card +.022 · lab stage +.022 — under the .03 floor
+ * The lightest candidate that passes every instrument is .965; the
+ * floors decided, not taste. Sidebar one stride under it at .932.
+ * ============================================================ */
+[data-expression] {
+  --cfg-stage-ground: var(--lucet-background);
+  --cfg-stage-sunken: var(--lucet-surface-sunken);
+}
+:root[data-theme='light'] [data-expression='glass'],
+:root[data-theme='light'][data-expression='glass'] {
+  --cfg-stage-ground: oklch(0.965 min(calc(var(--lucet-neutral-c) / 4), 0.002) var(--lucet-neutral-h));
+  --cfg-stage-sunken: oklch(0.932 min(calc(var(--lucet-neutral-c) * 0.75), 0.008) var(--lucet-neutral-h));
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) [data-expression='glass'],
+  :root:not([data-theme='dark'])[data-expression='glass'] {
+    --cfg-stage-ground: oklch(0.965 min(calc(var(--lucet-neutral-c) / 4), 0.002) var(--lucet-neutral-h));
+    --cfg-stage-sunken: oklch(0.932 min(calc(var(--lucet-neutral-c) * 0.75), 0.008) var(--lucet-neutral-h));
+  }
+}

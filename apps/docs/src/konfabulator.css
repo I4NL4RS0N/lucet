@@ -178,7 +178,10 @@ body {
   flex-shrink: 0;
   padding: calc(12px * var(--lucet-density, 1)) 10px;
   border-inline-end: 1px solid var(--lucet-border);
-  background: var(--lucet-surface-sunken);
+  /* The site's recess token: the library's sunken step everywhere, and
+     in light Glass one stride under the host's studio ground, so the
+     sidebar stays a recess when the floor moves (2026-09-01). */
+  background: var(--cfg-stage-sunken);
 }
 /* Collapsed, the claude.ai way: the rail leaves the flow and waits just
    off the left edge as a FLOATING panel. The hot strip slides it over
@@ -1123,17 +1126,26 @@ body {
    toolbar, rail, and header keep Paper's page — running from under the
    bar to the page's bottom and from the viewport's left edge to the
    rail's divider, painting --lucet-background as the exhibit resolves
-   it (dark Glass 0.105, light Glass's recessed ground; under Paper it
-   is the page itself and nothing shows). Absolutely positioned and
-   aria-hidden: no geometry moves and nothing else is scoped — the
-   exhibit still wears the axis on .cfg__frame; the desk matches it.
-   (Named stage-floor: .cfg__floor is already the composer's seat inside
-   the frame, and the first cut of this rule captured it.) */
+   it (dark Glass 0.105; under Paper it is the page itself and nothing
+   shows; in light Glass the host's STUDIO GROUND, --cfg-stage-ground in
+   site-header.css). Absolutely positioned and aria-hidden: no geometry
+   moves and nothing else is scoped — the exhibit still wears the axis
+   on .cfg__frame; the desk matches it. (Named stage-floor: .cfg__floor
+   is already the composer's seat inside the frame, and the first cut
+   of this rule captured it.)
+   THE SEAM, STRUCTURE FIRST (studio-ground pass, 2026-09-01): the floor
+   now spans the whole stage column, control row included, so its only
+   horizontal edge is the page-wide header divider — judged clean by
+   pair crop, so no fade was needed. Its vertical edge is the rail's own
+   divider; the rail stays on Paper's page. */
 .cfg__stage-floor {
   position: absolute;
-  grid-row: 2;
-  grid-column: 1 / -1;
-  inset-block: calc(-1 * var(--cfg-main-gap)) calc(-1 * var(--cfg-page-pad-bottom));
+  /* No grid placement: the floor spans the whole column, so its
+     containing block is the column's own box. (A `grid-row: 1 / -1`
+     here resolved to row 1 alone — `-1` counts EXPLICIT lines and the
+     column declares none — and the floor stopped above the frame; the
+     rendered floor check in audit-states caught it.) */
+  inset-block: calc(-1 * var(--cfg-page-pad-top)) calc(-1 * var(--cfg-page-pad-bottom));
   inset-inline:
     calc(-1 * (var(--cfg-page-pad-x) + max(0px, (100vw - var(--cfg-page-max)) / 2)))
     calc(-1 * var(--cfg-col-gap));
@@ -1141,7 +1153,7 @@ body {
   /* Hit-testable on purpose: it is inert (no handlers, aria-hidden), and
      the audits measure the floor where it paints with elementsFromPoint,
      which pointer-events: none would hide from them. */
-  background: var(--lucet-background);
+  background: var(--cfg-stage-ground);
 }
 
 .cfg__stagebar {

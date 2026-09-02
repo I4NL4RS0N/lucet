@@ -15,7 +15,10 @@
    * Change a value in core and this page moves with it.
    */
 
-  --page: var(--lucet-background);
+  /* The site's studio ground (site-header.css): the library's ground
+     everywhere, the host's lifted value in light Glass — one environment
+     across all three pages. */
+  --page: var(--cfg-stage-ground);
   --sunken: var(--lucet-subtle);
   /* The stage's own well value: everywhere else --sunken serves small
      recesses; the stage is the page-scale well, and dark Glass needs
@@ -247,7 +250,10 @@ body {
  */
 :root[data-theme='light'] .stage {
   background: var(--surface);
-  box-shadow: var(--ring-1), var(--cast-1);
+  /* The shared raised recipe, not a hand-picked pair: identical to
+     ring-1 + cast-1 in Paper, and in Glass the directional rim and
+     contact shadow every canvas carries (studio-ground pass). */
+  box-shadow: var(--lucet-material-raised);
 }
 
 .stage .spec { gap: 9px; }
