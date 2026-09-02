@@ -9,6 +9,8 @@ An open-source library of AI interface components, built around the states real
 AI features actually hit — refusals, interruptions, rate limits, stale answers, a
 silent downgrade to a cheaper model — with a written rationale for every one.
 
+https://github.com/user-attachments/assets/bf9d319b-1412-45e3-8d51-26e181151126
+
 Most component libraries ship the happy path. The happy path is the easy half.
 
 The argument is in **[docs/thesis.md](docs/thesis.md)**: existing AI interface
