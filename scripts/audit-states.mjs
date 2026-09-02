@@ -1241,6 +1241,56 @@ async function main() {
       }
     }
 
+    /* THE HOST'S MARK AND THE HOST'S HARDWARE (0.2 coherence pass). The brand
+       tile wears the host's accent — a dark plate tinted from the shared
+       curve — and the A glyph must stay legible on it under every accent,
+       both themes; amber and green are the warm, light hues where a tinted
+       dark can drift. The window bar's divider is hardware: a low-alpha
+       neutral line, never the application's border token, never the
+       accent, present in every expression. */
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(url.replace('primitives.html', 'index.html'))
+    await still()
+    await page.waitForSelector('.cfg__mock-logo', { timeout: 15000 })
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme)
+      for (const accent of [...ACCENTS, 'monochrome']) {
+        await page.evaluate((a) => document.documentElement.setAttribute('data-accent', a), accent)
+        await page.waitForTimeout(30)
+        const tile = await page.evaluate(() => {
+          const svg = document.querySelector('.cfg__mock-logo')
+          const probe = document.createElement('i')
+          probe.style.backgroundColor = getComputedStyle(svg).getPropertyValue('--cfg-tile-1')
+          svg.parentElement.appendChild(probe)
+          const plate = getComputedStyle(probe).backgroundColor
+          probe.remove()
+          /* The glyph's stroke as the browser computes it (rgb), not the
+             hex literal — the contrast helper parses rgb() and oklch(). */
+          return { plate, glyph: getComputedStyle(svg.querySelector('g[stroke]')).stroke }
+        })
+        checks++
+        const ratio = contrastRatio(tile.glyph, tile.plate)
+        if (!ratio || ratio < 4.5)
+          failures.push(`brand tile (${theme}/${accent}): glyph on plate is ${ratio ? ratio.toFixed(2) : 'unmeasurable'}:1 (plate ${tile.plate}) — the host's mark must stay legible under every accent`)
+      }
+      await page.evaluate(() => document.documentElement.setAttribute('data-accent', 'violet'))
+      for (const expression of ['paper', 'glass']) {
+        await page.evaluate((e) => document.querySelector('.cfg__frame')?.setAttribute('data-expression', e), expression)
+        await page.waitForTimeout(30)
+        const bar = await page.evaluate(() => {
+          const el = document.querySelector('.cfg__frame-bar')
+          const cs = getComputedStyle(el)
+          const probe = (name) => { const i = document.createElement('i'); i.style.color = `var(${name})`; el.appendChild(i); const c = getComputedStyle(i).color; i.remove(); return c }
+          return { line: cs.borderBottomColor, width: cs.borderBottomWidth, style: cs.borderBottomStyle, border: probe('--lucet-border'), primary: probe('--lucet-primary') }
+        })
+        checks++
+        const alpha = (() => { const m = bar.line.match(/\/\s*([\d.]+)\)$/) || bar.line.match(/rgba\([^)]*,\s*([\d.]+)\)/); return m ? parseFloat(m[1]) : 1 })()
+        if (bar.width !== '1px' || bar.style !== 'solid') failures.push(`window bar (${theme}/${expression}): the divider is ${bar.width} ${bar.style}, not a 1px line`)
+        else if (bar.line === bar.border || bar.line === bar.primary) failures.push(`window bar (${theme}/${expression}): the divider borrows ${bar.line === bar.primary ? 'the accent' : 'the application border token'} — hardware stays neutral`)
+        else if (alpha > 0.2) failures.push(`window bar (${theme}/${expression}): the divider is opaque (${bar.line}) — hardware is a low-alpha neutral line`)
+      }
+    }
+
     /* NOTHING CLIPS, AT MOBILE WIDTHS TOO (audit round 02): the components
        page scrolled sideways at 390 for weeks — a sources grid track sized
        to an unbreakable label, a code floor that did not yield to its
