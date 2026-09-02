@@ -176,6 +176,18 @@
     --lucet-tone-caution-foreground: oklch(0.86 var(--lucet-tone-caution-c) var(--lucet-tone-caution-h));
     --lucet-tone-caution-border: oklch(0.35 calc(var(--lucet-tone-caution-c) * 0.7) var(--lucet-tone-caution-h));
 
+    /* DERIVATION REVIEWED AND CLOSED (audit round 04, 2026-09-02). The dark
+       danger surface measures oklch(0.28 0.1235 25) against caution's
+       0.055 at 75: 2.2x the chroma. The ratio is not an accident of the
+       dark multipliers — the light pair carries the same 2.2x (0.1105 to
+       0.0495), because caution is cut hardest in both themes for the
+       reason above (the eye weights yellow harder than red at equal
+       chroma) and danger keeps most of its tone. At L 0.28 that chroma
+       reads as depth, not brightness: a dark red plate is loud through
+       lightness, and this one has none to spare. The floors hold with
+       room (the danger foreground below sits at L 0.78 on it) and the
+       severity order info < caution < danger is preserved. Left as
+       derived; light Paper is tuned separately and stays so. */
     --lucet-tone-danger-surface: oklch(0.28 calc(var(--lucet-tone-danger-c) * 0.95) var(--lucet-tone-danger-h));
     /* Redder than the other tones are brighter — see the [data-theme] twin. */
     --lucet-tone-danger-foreground: oklch(0.78 0.16 var(--lucet-tone-danger-h));
