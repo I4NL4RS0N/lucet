@@ -390,6 +390,12 @@ function AppCore({
               onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
               onSubmit={() => void lucet.submit(state.composer.text)}
               onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
+              onNewThread={() => {
+                /* The blocked month's exit: the same commit as the bar's
+                   Reset and the sidebar's New thread. */
+                lucet.reset()
+                lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
+              }}
               onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
               onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
               onRetryAttachment={(id) => {
@@ -498,6 +504,7 @@ function AppCore({
                 onRestore={(turnId) => lucet.store.dispatch({ type: 'restore/entered', turnId })}
                 onRestoreCommit={(turnId) => lucet.restore(turnId)}
                 onExitRestore={() => lucet.store.dispatch({ type: 'restore/exited' })}
+                onRecover={(turnId) => void lucet.recover(turnId)}
                 onNoticeAction={(action) => {
                   /* Retry on Auto: the model control moves first, then the
                      turn is asked again — the scenario's recovery answers
