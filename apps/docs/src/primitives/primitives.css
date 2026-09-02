@@ -2357,3 +2357,13 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 }
 .prim .chapter + .sec { margin-block-start: calc(var(--cfg-gap-supporting) / 2); }
 .prim .prim__lede + .chapter { margin-block-start: var(--cfg-gap-opening); }
+
+/* A SECTION MAY BE COMPOSED OF SEVERAL STAGES (audit round 02, the
+   thread section): consecutive groups sit one row-gap apart — the same
+   30px the duet and trio grids use between rows — so the stack reads as
+   one composition, wells and rails alike. */
+.prim--comp .sec > .stage + .stage { margin-block-start: 30px; }
+
+/* The inset: a compact secondary example beside a dominant one, sized to
+   its content, explanation 12px beneath. */
+.prim--comp .spec--inset { gap: 12px; }

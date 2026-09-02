@@ -524,6 +524,39 @@ const THREAD_FIXTURES: readonly Fixture[] = [
   },
 ]
 
+/* THE SECTION'S COMPOSITION (audit round 02): composed, not listed, and
+   it tells the story in order. The finished turn opens on the rail; the
+   three arriving states sit as one trio — text streaming, thinking live,
+   thinking settled — because they are short and belong together; the
+   formatted answer takes the rail at full measure, since the response is
+   a document and that is the thesis; the code pair shares a well; the
+   three endings sit side by side, because the contrast between Stopped
+   early, Failed and Declined is the pedagogy; the shared thread closes
+   on the rail its grammar needs. Pairing by height matters as much as
+   pairing by meaning: a short example beside a tall one leaves a void.
+   Specimen text and reducer states are untouched. Every fixture is
+   placed exactly once — asserted below, so a fixture added to the list
+   cannot fall out of the page. */
+const THREAD_LAYOUT: ReadonlyArray<{ kind: 'rail' | 'duet' | 'trio'; labels: readonly string[] }> = [
+  { kind: 'rail', labels: ['A finished turn, attachments and all'] },
+  { kind: 'trio', labels: ['Streaming', 'Thinking, live', 'Thought about it'] },
+  { kind: 'rail', labels: ['A formatted answer'] },
+  { kind: 'duet', labels: ['Streaming into a code block', 'Stopped inside a code block'] },
+  { kind: 'trio', labels: ['Stopped early', 'Failed', 'Declined'] },
+  { kind: 'rail', labels: ['Multiplayer — two people, one thread'] },
+]
+const threadFixture = (label: string): Fixture => {
+  const f = THREAD_FIXTURES.find((x) => x.label === label)
+  if (!f) throw new Error(`Thread layout names a fixture that does not exist: ${label}`)
+  return f
+}
+{
+  const placed = THREAD_LAYOUT.flatMap((g) => g.labels)
+  const all = THREAD_FIXTURES.map((f) => f.label)
+  if (placed.length !== all.length || new Set(placed).size !== placed.length || all.some((l) => !placed.includes(l)))
+    throw new Error('Thread layout must place every fixture exactly once')
+}
+
 /* The single-player state matrix. */
 const CORE_FIXTURES: readonly Fixture[] = [
   {
@@ -942,9 +975,13 @@ export function ComponentsStage() {
                 They show on an empty, idle thread and leave the moment the conversation exists.
               </p>
             </div>
-            <div className="spec spec--wide">
+            {/* A compact INSET beside the dominant example (audit round 02):
+                top-aligned, sized to its two disabled suggestions, the
+                explanation 12px beneath — the height follows the content
+                and disabled rows are never stretched to fill a cell. */}
+            <div className="spec spec--wide spec--inset">
               <span className="spec__label">Locked — another person’s turn</span>
-              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '460px' } as React.CSSProperties}>
+              <div className="spec__demo spec__demo--fit" style={{ '--demo-max': '320px' } as React.CSSProperties}>
                 <SuggestionChips
                   suggestions={[
                     { id: 's1', prompt: 'Summarise the three documents I shared.' },
@@ -965,13 +1002,15 @@ export function ComponentsStage() {
         <Chapter name="Respond and recover" note="What comes back, how it can end, where it came from, and how to return to an earlier turn." />
 
         <Section name="Thread — every ending" note="a response is never simply loading or done">
-          <div className="stage stage--rail">
-            {THREAD_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
-              </Example>
-            ))}
-          </div>
+          {THREAD_LAYOUT.map((group) => (
+            <div key={group.labels.join('|')} className={`stage stage--${group.kind}`}>
+              {group.labels.map(threadFixture).map((f) => (
+                <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+                  <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+                </Example>
+              ))}
+            </div>
+          ))}
         </Section>
 
         <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
