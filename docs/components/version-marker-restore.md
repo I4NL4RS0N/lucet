@@ -111,12 +111,21 @@ which only ever adds) — the VERSIONS group on the Features tab.
 
 ## How far aside
 
-The set-aside turns dim to 0.48 opacity. The value was chosen by
-measurement: it is the smallest at which the turn's body text keeps
-4.5:1 against the plane it sits on in the dark cells (4.62:1 in dark
-Glass, 4.67:1 in dark Paper). The earlier 0.35 read as gone rather than
-as the past — 2.9:1 in the dark cells. The light cells reach about 3.2:1
-at this value; the turn is inert and hidden from assistive technology,
-so the dimming is the visible half of a state that is also carried by
-the marker's word, and taking light to 4.5:1 would need about 0.72,
-which no longer reads as set aside.
+The set-aside turns dim to 0.48 opacity, in every theme and expression.
+The rule: active text meets 4.5:1; inert, aria-hidden content meets the
+inactive floor of 3:1. A set-aside turn is inert and hidden from
+assistive technology, so the floor applies, and 0.48 is the smallest
+value that clears it everywhere while carrying the dark cells past 4.5:1
+as well, measured against the plane each turn sits on:
+
+| Cell | Body text at 0.35 | Body text at 0.48 |
+| --- | --- | --- |
+| Dark Glass | 2.91:1 | 4.62:1 |
+| Dark Paper | 2.97:1 | 4.67:1 |
+| Light Glass | 2.19:1 | 3.14:1 |
+| Light Paper | 2.22:1 | 3.22:1 |
+
+The earlier 0.35 read as gone rather than as the past, and fell under
+the floor in every cell. Taking light to 4.5:1 would need about 0.72,
+which no longer reads as set aside; the marker's word carries the state
+alongside the dimming, so the floor is the right bar for it.
