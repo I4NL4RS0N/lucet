@@ -389,6 +389,50 @@ async function main() {
       else if (res.bad.length) failures.push(`${where}  self turns: ${res.bad.join('; ')}`)
     }
 
+    /* TARGET SIZE INSIDE CHIPS AND STRIPS (audit round 02): the a11y audit
+       counted a 24px pseudo region honestly and passed an 18px box — the
+       site's own floor for these actions is 28. Every interactive element
+       inside an attachment chip or a status strip must present an
+       effective region (its box, or its ::before hit area) of at least
+       24x24 (2.5.8), chip actions at least 28x28, and sibling regions must
+       sit at least 4px apart without overlapping. */
+    const checkChipTargets = async (where) => {
+      const res = await page.evaluate(() => {
+        const region = (el) => {
+          const r = el.getBoundingClientRect()
+          const ps = getComputedStyle(el, '::before')
+          const pw = parseFloat(ps.width), ph = parseFloat(ps.height)
+          const usesPseudo = ps.position === 'absolute' && ps.content !== 'none' && pw > 0
+          const w = usesPseudo ? Math.max(r.width, pw) : r.width
+          const h = usesPseudo ? Math.max(r.height, ph) : r.height
+          const cx = r.left + r.width / 2, cy = r.top + r.height / 2
+          return { w, h, left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2 }
+        }
+        const bad = []
+        let n = 0
+        for (const host of document.querySelectorAll('.lucet-prompt__att, .lucet-att, .lucet-prompt__status, .lucet-notice')) {
+          const targets = [...host.querySelectorAll('button, a')].filter((t) => t.getClientRects().length)
+          const regions = targets.map(region)
+          const min = host.matches('.lucet-prompt__att, .lucet-att') ? 28 : 24
+          regions.forEach((g, i) => {
+            n++
+            if (g.w < min - 0.5 || g.h < min - 0.5) bad.push(`${host.className.split(' ')[0]} action ${i + 1} region ${Math.round(g.w)}x${Math.round(g.h)} < ${min}`)
+            for (let j = i + 1; j < regions.length; j++) {
+              const o = regions[j]
+              const overlap = g.right > o.left && o.right > g.left && g.bottom > o.top && o.bottom > g.top
+              const apart = Math.max(o.left - g.right, g.left - o.right)
+              if (overlap) bad.push(`${host.className.split(' ')[0]} actions ${i + 1} and ${j + 1} overlap`)
+              else if (apart < 4 - 0.5) bad.push(`${host.className.split(' ')[0]} actions ${i + 1} and ${j + 1} only ${apart.toFixed(1)}px apart`)
+            }
+          })
+        }
+        return { n, bad: [...new Set(bad)] }
+      })
+      checks++
+      if (res.n === 0) failures.push(`${where}  chip targets: no chip or strip actions found`)
+      else if (res.bad.length) failures.push(`${where}  chip targets: ${res.bad.join('; ')}`)
+    }
+
     const checkCanvas = async (where, theme) => {
       await page.waitForTimeout(50)
       const r = await page.evaluate(() => {
@@ -534,6 +578,7 @@ async function main() {
     await page.waitForSelector('.lucet-prompt', { timeout: 15000 })
     await tagProbes(COMPONENT_PROBES)
     await checkSelfTurns('registers components')
+    await checkChipTargets('targets components')
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
 
     /* Occlusion, all four cells on the components page: the chrome

@@ -1,5 +1,12 @@
 # lucet-react
 
+## 0.1.2
+
+### Patch Changes
+
+- Raise the attachment chip's Retry and Remove hit regions to 28×28 with the two regions 4px apart, widen their focus ring offset to 2px, and dim the set-aside turn to 0.48 opacity — the smallest value at which its body text keeps 4.5:1 against the dark planes.
+  - lucet-core@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

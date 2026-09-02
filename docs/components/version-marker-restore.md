@@ -108,3 +108,15 @@ shouts at distance contradicts the calm-boundary position.
 recedes instead of vanishing) and `restore-version` (preview an
 earlier version, see later turns set aside, return — or restore,
 which only ever adds) — the VERSIONS group on the Features tab.
+
+## How far aside
+
+The set-aside turns dim to 0.48 opacity. The value was chosen by
+measurement: it is the smallest at which the turn's body text keeps
+4.5:1 against the plane it sits on in the dark cells (4.62:1 in dark
+Glass, 4.67:1 in dark Paper). The earlier 0.35 read as gone rather than
+as the past — 2.9:1 in the dark cells. The light cells reach about 3.2:1
+at this value; the turn is inert and hidden from assistive technology,
+so the dimming is the visible half of a state that is also carried by
+the marker's word, and taking light to 4.5:1 would need about 0.72,
+which no longer reads as set aside.

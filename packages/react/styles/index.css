@@ -668,13 +668,13 @@
   font-size: 11px;
   opacity: 0.7;
 }
-/* Retry and Remove are a group: separated by a full spacing token so
-   each 24px hit target is its own — at the chip's 6px gap the two zones
-   touched edge to edge. */
+/* Retry and Remove are a group. Each carries a 28px hit region (below);
+   at 14px apart their centres sit 32px apart, so the two regions stay
+   4px clear of each other — neither reaches the other or the name. */
 .lucet-prompt__att-actions {
   display: inline-flex;
   align-items: center;
-  gap: var(--lucet-space-2);
+  gap: 14px;
   flex: none;
 }
 
@@ -712,17 +712,21 @@
   cursor: pointer;
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
-/* 24px, DELIBERATELY not larger: chips sit a few pixels apart, and a wider
-   pseudo would reach over the neighbouring chip's name -- the misclick this
-   library already shipped once. 24 clears 2.5.8 without trespassing. */
+/* 28px — the site's preferred target (2.5.8 asks 24; audit round 02
+   found the audits passing an 18px box on a 24px region and raised the
+   floor). The glyph stays 12px; the region is invisible. It reaches 5px
+   past the button on each side: 1px into the 4px gap between chips,
+   never over a neighbour's name — the misclick this library already
+   shipped once — and the states audit asserts every chip and strip
+   action at >= 28 with >= 4px between siblings. */
 .lucet-prompt__att-remove::before {
   content: '';
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
   translate: -50% -50%;
-  inline-size: 24px;
-  block-size: 24px;
+  inline-size: 28px;
+  block-size: 28px;
 }
 .lucet-prompt__att-remove svg {
   inline-size: 12px;
@@ -735,8 +739,9 @@
 .lucet-prompt__att-remove:hover { background-color: var(--lucet-hover); }
 .lucet-prompt__att-remove:active { background-color: var(--lucet-press); }
 .lucet-prompt__att-remove:focus-visible {
+  /* Two layers: the chip's own surface shows between glyph box and ring. */
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 /* ---- the bar ---- */
@@ -1738,9 +1743,15 @@
   opacity: 1;
 }
 /* Set aside: still there, visibly the past. Inert + aria-hidden are set
-   by the component; the veil here is only the visible half. */
+   by the component; the veil here is only the visible half.
+   0.48 is chosen by measurement, not feel (audit round 02): it is the
+   smallest value at which the turn's body text keeps 4.5:1 against the
+   plane it sits on in the dark cells — 4.62:1 in dark Glass, 4.67:1 in
+   dark Paper (at 0.35 it was 2.9:1; 0.44 gives 4.0, 0.46 gives 4.3). The
+   light cells read 3.1–3.2:1 at this value, up from 2.2; reaching 4.5
+   there would take about 0.72, which no longer reads as set aside. */
 .lucet-thread__pair[data-aside] {
-  opacity: 0.35;
+  opacity: 0.48;
 }
 .lucet-thread__restored {
   display: flex;
