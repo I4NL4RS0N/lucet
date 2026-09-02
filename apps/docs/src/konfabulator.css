@@ -73,10 +73,12 @@ body {
      rows wrapped into the fold, and the drawer's host page lost the
      breadcrumb behind it. The dial is for interior space; the shell is
      the site's, and it holds still. */
-  /* The shell's measures, named once: the stage floor below derives its
-     extents from these same numbers. */
-  --cfg-page-max: 1200px;
-  --cfg-page-pad-x: 28px;
+  /* The shell's measures are the SITE's (site-header.css, 0.2 coherence
+     pass): the app and the rail fill the same 1240 shell the header and
+     both lab pages use, at the same 32px padding. The stage floor below
+     derives its extents from these same numbers. */
+  --cfg-page-max: var(--site-shell-max);
+  --cfg-page-pad-x: var(--site-shell-pad);
   --cfg-page-pad-top: 48px;
   --cfg-page-pad-bottom: 80px;
   --cfg-col-gap: 64px;
@@ -136,6 +138,11 @@ body {
    pinned only the scroll area, and the frame still breathed ~33px every
    time the composer grew its strip mid-run. */
 .cfg__frame {
+  /* Hardware line (0.2 coherence pass): the window bar's divider is the
+     OS's, not the application's — low-alpha black in light, low-alpha
+     white in dark (twins beside the bar), never accent, never a surface
+     token, the same in every expression. Clipped by the frame's radius. */
+  --cfg-hardware-line: oklch(0 0 0 / 0.12);
   display: flex;
   flex-direction: column;
   block-size: var(--cfg-stage-h, min(72vh, 760px));
@@ -360,6 +367,24 @@ body {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: var(--lucet-focus-offset);
 }
+/* IN GLASS THE CONTROL WEARS THE CONTROL MATERIAL (0.2 coherence pass):
+   rim and edge-top from --lucet-material-control on a transparent fill —
+   not a border, not a hairline of its own — and hover lifts it one rung
+   to the raised material instead of tinting the fill. Focus keeps the
+   two-layer indicator: the ring's offset shows the sidebar between glyph
+   box and ring. Light Glass arrives through the same token. The radius
+   stays the control radius: the button sits under the window bar, away
+   from any rounded frame corner, so there is no arc to be concentric
+   with. */
+[data-expression='glass'] .cfg__side-new {
+  box-shadow: var(--lucet-material-control);
+  background: transparent;
+}
+[data-expression='glass'] .cfg__side-new:hover {
+  box-shadow: var(--lucet-material-raised);
+  background: transparent;
+  color: var(--lucet-foreground);
+}
 .cfg__side-group {
   margin-block: 16px 4px;
   /* Tracks the rows' text indent (rail 10 + row 5). */
@@ -453,13 +478,18 @@ body {
   margin-inline: auto;
 }
 
+:root[data-theme='dark'] .cfg__frame { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .cfg__frame { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
+}
+
 .cfg__frame-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   block-size: 40px;
   padding-inline: 14px 8px;
-  border-block-end: 1px solid var(--lucet-border);
+  border-block-end: 1px solid var(--cfg-hardware-line);
   font-size: 12px;
   color: var(--lucet-muted-foreground);
 }
@@ -479,7 +509,15 @@ body {
 /* Window dots: honestly generic set dressing — a window is a window. They
    belong to the desktop containers only; the phone hides them. */
 .cfg__dots { display: inline-flex; gap: 6px; margin-inline-end: 4px; }
-/* The traffic lights are the OS's, so they wear the OS's colours — the
+/* HARDWARE STAYS NEUTRAL; THE HOST'S IDENTITY WEARS THE HOST'S ACCENT
+   (ruled, 0.2 coherence pass). The mock window is set dressing: its
+   furniture — the traffic lights below and the bar's 1px divider
+   (--cfg-hardware-line, on .cfg__frame) — does not ride the theme, the
+   accent or the expression axis. The one thing inside the window that
+   is the host's own is the brand tile, and that takes the host's accent
+   (.cfg__mock-logo). Lucet's own header mark is site chrome, pinned to
+   Paper, unchanged.
+   The traffic lights are the OS's, so they wear the OS's colours — the
    monochrome try read as unfinished, not restrained (Ian). Literal hex
    on purpose: window hardware does not follow the app's theme. */
 .cfg__dots i {
@@ -1303,15 +1341,37 @@ body {
   letter-spacing: -0.01em;
 }
 /* The B2 tile, now wearing the Aquilo wind-stroke A — real
-   enough to sell the host, and deliberately nobody's. */
+   enough to sell the host, and deliberately nobody's.
+   THE HOST'S MARK WEARS THE HOST'S ACCENT (ruled, 0.2 coherence pass):
+   the plate's three stops keep today's lightnesses — 0.31, 0.20, 0.12,
+   the neutral tile's own — and take the accent's hue at the shared
+   curve's dark-end chroma (0.48 of the peak, the light scale's ac-12,
+   held literal so the tile is the same in both themes), scaled down
+   the ramp so the base stays a dark plate and never a swatch. A
+   restrained accent top edge; the A and the wordmark stay neutral; no
+   glow. With no accent, and in monochrome, the stops are the neutral
+   tile exactly (the literal values below). The states audit asserts
+   the glyph's contrast on the plate across every accent — amber and
+   green are the warm, light hues where a tinted dark can drift. */
 .cfg__mock-logo {
   inline-size: 20px;
   block-size: 20px;
   border-radius: 6px;
+  --cfg-tile-1: #34343f;
+  --cfg-tile-2: #191920;
+  --cfg-tile-3: #0a0a0f;
+  --cfg-tile-edge: oklch(1 0 0 / 0.14);
   box-shadow:
+    inset 0 1px 0 var(--cfg-tile-edge),
     0 0 0 0.5px oklch(0 0 0 / 0.55),
     0 1px 1px oklch(0 0 0 / 0.35),
     0 4px 10px -3px oklch(0 0 0 / 0.35);
+}
+:root[data-accent]:not([data-accent='monochrome']) .cfg__mock-logo {
+  --cfg-tile-1: oklch(0.31 calc(var(--lucet-accent-c) * 0.48) var(--lucet-accent-h));
+  --cfg-tile-2: oklch(0.2 calc(var(--lucet-accent-c) * 0.48 * 0.7) var(--lucet-accent-h));
+  --cfg-tile-3: oklch(0.12 calc(var(--lucet-accent-c) * 0.48 * 0.45) var(--lucet-accent-h));
+  --cfg-tile-edge: oklch(0.8 calc(var(--lucet-accent-c) * 0.6) var(--lucet-accent-h) / 0.38);
 }
 .cfg__mock-tabs {
   display: flex;

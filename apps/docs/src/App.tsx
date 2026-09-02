@@ -539,10 +539,14 @@ function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
   return (
     <svg className="cfg__mock-logo" viewBox="0 0 96 96">
       <defs>
+        {/* The plate's stops come from the tile's custom properties (see
+            .cfg__mock-logo): neutral by default and in monochrome, the
+            host's accent otherwise. Inline style, because var() is not
+            honoured in a presentation attribute. */}
         <linearGradient id={`${idp}-p`} x1="0" y1="0" x2="0.45" y2="1">
-          <stop offset="0" stopColor="#34343f" />
-          <stop offset="0.52" stopColor="#191920" />
-          <stop offset="1" stopColor="#0a0a0f" />
+          <stop offset="0" style={{ stopColor: 'var(--cfg-tile-1)' }} />
+          <stop offset="0.52" style={{ stopColor: 'var(--cfg-tile-2)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--cfg-tile-3)' }} />
         </linearGradient>
         <linearGradient id={`${idp}-s`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#fff" stopOpacity="0.17" />
