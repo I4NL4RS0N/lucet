@@ -1,11 +1,23 @@
 # lucet-react
 
+## 0.3.0
+
+### Minor Changes
+
+- Every ending gets its own exit. A settled response carries the one verb its state promised and the runtime performs it: a refusal lists the proposed deletions and deletes nothing; low confidence checks its sources without re-asking; a partial tool failure retries only the missing source; an interrupted response continues from where it stopped; a rate limit shows its exact reset time and arms a retry for that moment while the draft stays; an outage retries the connection, with the composer strip and the ending in two levels and no shared wording; a stale result refreshes; an updated source is re-checked and its flag clears; a removed source is replaced in place and never reads as openable; a spent month shows its reset date, hides the inert price and offers the one exit that will not fail again. Three new events carry it (a resumed response, a scheduled retry, a replaced source), the scenario DSL's `recovery` becomes a verb, a mode and steps, and `recover()` joins the API. Retries keep the composer's draft.
+- The threshold has a hold, and the receipts stage. The first Send that would cost more than the month has left no longer sends: the runtime holds it (`composer.intercept`, with the `budget/intercepted` and `budget/released` events) and the meter's anchored panel opens on the reason and two explicit ways on — the cheaper model that still fits, or continuing on the chosen one, which sends. `confirmSpend()` and `dismissIntercept()` join the API, a model change releases the hold, and a queued prompt that would cross the month is handed back to the field under the hold instead of sending behind your back. Tool receipts can run as a staged group (the `tools` step and the `tool/started` event): every receipt enters pending, each runs and settles in order, the answer begins after the last, and the receipt's mark changes state in a fixed slot with a static label for every state. The Do path uses it.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies
+  - lucet-core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
 
 - Every trigger does what it says. The runtime gains a `notice` part (an inline notice inside a response, with an optional named action), `model` and `draft` steps, pre-send scenarios that set the world up and answer the person's own send on the model they chose, instant once-per-thread scenarios, computed turn cost at the selected model's rate, and `inspect()` behind Reset. Scenarios: the Do path runs three receipts and lists the pages it created; the fallback model is told inline with Retry on Auto; another person's turn runs live and queued input sends itself; the budget caution decides before the spend; restore lands straight in its preview. The thread renders notice parts, the sources block takes a label, and the meter states the cause and the two exits.
-- Every ending gets its own exit. A settled response carries the one verb its state promised and the runtime performs it: a refusal lists the proposed deletions and deletes nothing; low confidence checks its sources without re-asking; a partial tool failure retries only the missing source; an interrupted response continues from where it stopped; a rate limit shows its exact reset time and arms a retry for that moment while the draft stays; an outage retries the connection, with the composer strip and the ending in two levels and no shared wording; a stale result refreshes; an updated source is re-checked and its flag clears; a removed source is replaced in place and never reads as openable; a spent month shows its reset date, hides the inert price and offers the one exit that will not fail again. Three new events carry it (a resumed response, a scheduled retry, a replaced source), the scenario DSL's `recovery` becomes a verb, a mode and steps, and `recover()` joins the API. Retries keep the composer's draft.
 
 ### Patch Changes
 
