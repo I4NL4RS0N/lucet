@@ -417,6 +417,20 @@ async function main() {
           const targets = [...host.querySelectorAll('button, a')].filter((t) => t.getClientRects().length)
           const regions = targets.map(region)
           const min = host.matches('.lucet-prompt__att, .lucet-att') ? 28 : 24
+          /* SETTLED BY HIT TEST (audit round 04): the region is a
+             pseudo-element, which a bounding-rect measurement cannot see.
+             The point 3px outside the glyph box on either side must hit
+             the button itself — it does on the live build, both themes. */
+          if (host.matches('.lucet-prompt__att, .lucet-att')) {
+            host.scrollIntoView({ block: 'center' })
+            targets.forEach((t, i) => {
+              const r = t.getBoundingClientRect(), cy = r.top + r.height / 2
+              for (const x of [r.left - 3, r.right + 3]) {
+                const hit = document.elementFromPoint(x, cy)
+                if (!(hit === t || t.contains(hit))) bad.push(`${host.className.split(' ')[0]} action ${i + 1}: the point 3px outside the glyph box hits ${hit ? (hit.className || hit.tagName).toString().split(' ')[0] : 'nothing'}, not the button`)
+              }
+            })
+          }
           regions.forEach((g, i) => {
             n++
             if (g.w < min - 0.5 || g.h < min - 0.5) bad.push(`${host.className.split(' ')[0]} action ${i + 1} region ${Math.round(g.w)}x${Math.round(g.h)} < ${min}`)
@@ -434,6 +448,47 @@ async function main() {
       checks++
       if (res.n === 0) failures.push(`${where}  chip targets: no chip or strip actions found`)
       else if (res.bad.length) failures.push(`${where}  chip targets: ${res.bad.join('; ')}`)
+    }
+
+    /* THE RESTORE PAIR (audit round 04): a control labelled Restore must
+       restore. The older version's action is Preview version and carries
+       its tip; the banner pairs a ghost Return to latest with a primary
+       Restore version — hierarchy by silhouette (a fill against none),
+       labels that never wrap, 32–36px visible and at least 40 effective.
+       Nothing on the page may still say "Restore this version". */
+    const checkRestoreLabels = async (where) => {
+      const res = await page.evaluate(() => {
+        const bad = []
+        if ([...document.querySelectorAll('button')].some((b) => /Restore this version/i.test(b.textContent))) bad.push('a button still says "Restore this version"')
+        const previews = [...document.querySelectorAll('.lucet-actions__btn')].filter((b) => b.textContent.trim() === 'Preview version')
+        if (!previews.length) bad.push('no Preview version action found')
+        for (const p of previews) {
+          const tip = document.getElementById(p.getAttribute('aria-describedby') || '')
+          if (!tip || !/nothing changes until you restore/.test(tip.textContent)) { bad.push('Preview version lacks its tip'); break }
+        }
+        const banners = [...document.querySelectorAll('.lucet-thread__restored')]
+        if (!banners.length) bad.push('no preview banner found')
+        for (const banner of banners) {
+          if (!/^Previewing an earlier version/.test((banner.querySelector('.lucet-thread__restored-text')?.textContent || '').trim())) bad.push('banner sentence does not begin "Previewing an earlier version"')
+          const ghost = banner.querySelector('.lucet-thread__return[data-variant="ghost"]')
+          const primary = banner.querySelector('.lucet-thread__return[data-variant="primary"][data-commit]')
+          if (!ghost || ghost.textContent.trim() !== 'Return to latest') bad.push('banner ghost is not "Return to latest"')
+          if (!primary || primary.textContent.trim() !== 'Restore version') bad.push('banner primary is not "Restore version"')
+          if (!ghost || !primary) continue
+          if (getComputedStyle(ghost).backgroundColor === getComputedStyle(primary).backgroundColor) bad.push('primary and ghost share a fill — hierarchy would be hue alone')
+          for (const [name, el] of [['ghost', ghost], ['primary', primary]]) {
+            const cs = getComputedStyle(el), r = el.getBoundingClientRect(), ps = getComputedStyle(el, '::before')
+            const ext = ps.position === 'absolute' && ps.content !== 'none' ? -(parseFloat(ps.top) || 0) - (parseFloat(ps.bottom) || 0) : 0
+            if (cs.whiteSpace !== 'nowrap') bad.push(`${name} may wrap`)
+            if (r.height < 31.5 || r.height > 36.5) bad.push(`${name} visible height ${r.height.toFixed(1)} outside 32–36`)
+            if (r.height + ext < 39.5) bad.push(`${name} effective height ${(r.height + ext).toFixed(1)} < 40`)
+            if (el.scrollWidth > el.clientWidth + 1) bad.push(`${name} label overflows its box`)
+          }
+        }
+        return [...new Set(bad)]
+      })
+      checks++
+      if (res.length) failures.push(`${where}  restore pair: ${res.join('; ')}`)
     }
 
     const checkCanvas = async (where, theme) => {
@@ -582,6 +637,7 @@ async function main() {
     await tagProbes(COMPONENT_PROBES)
     await checkSelfTurns('registers components')
     await checkChipTargets('targets components')
+    await checkRestoreLabels('registers components')
     for (const theme of ['dark', 'light']) await sweep(theme, 'monochrome', COMPONENT_PROBES, COMPONENT_PROBES)
 
     /* Occlusion, all four cells on the components page: the chrome

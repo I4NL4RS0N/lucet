@@ -1089,6 +1089,15 @@
   transition-duration: 130ms;
 }
 
+/* A sentence-long tip on a message action wraps under a measure instead
+   of running as one nowrap line (Preview version's reassurance). */
+.lucet-actions .lucet-tip {
+  white-space: normal;
+  inline-size: max-content;
+  max-inline-size: 34ch;
+  text-align: start;
+}
+
 /* A tip on an inline-end control grows leftward instead: centred, its
    idle box hung past the last button and widened the page on narrow
    hosts. The invisible tooltip must never be the widest thing on the
@@ -1773,8 +1782,10 @@
 }
 .lucet-thread__restored {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 9px;
+  row-gap: var(--lucet-space-2);
   margin-block-start: var(--lucet-space-3);
   padding: var(--lucet-space-2) var(--lucet-space-3);
   border-radius: var(--lucet-radius-control);
@@ -1793,32 +1804,34 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.lucet-thread__return {
+/* The sentence yields first: it shrinks and wraps while the pair stays
+   whole, and when the pair no longer fits beside it the pair takes the
+   next row (flex-wrap on the banner). */
+.lucet-thread__restored-text { flex: 1 1 18ch; min-inline-size: 0; }
+/* THE PAIR (audit round 04): Return to latest is a ghost, Restore version
+   is the primary — the library's own button recipes, so fill against no
+   fill carries the hierarchy without hue, hover and focus follow the
+   button's rules, and the Glass twins arrive for free. The earlier pair
+   wore two identical quiet cards, whose only difference was a word, and
+   at drawer width they wrapped mid-label. */
+.lucet-thread__restored-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lucet-space-2);
   margin-inline-start: auto;
-  min-block-size: max(24px, calc(26px * var(--lucet-density, 1))); /* 24px = 2.5.8 floor, not a density decision */
-  padding-inline: 10px;
-  border: 0;
-  border-radius: var(--lucet-radius-control);
-  box-shadow: var(--lucet-hairline);
-  background-color: var(--lucet-card);
-  color: var(--lucet-foreground);
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
+  flex: none;
 }
-/* The commit half of the banner's pair: same quiet control, its words
-   and its ink do the emphasis — no heavier weight. (It asked for 550;
-   the loaded faces ship 400/500/600, so 550 rendered as a synthesized
-   600. Weights are shipped weights only.) */
-.lucet-thread__return[data-commit] {
-  color: var(--lucet-foreground);
+.lucet-thread__return {
+  position: relative;
+  white-space: nowrap;
 }
-.lucet-thread__return:hover { background-color: var(--lucet-hover); }
-.lucet-thread__return:focus-visible {
-  outline: var(--lucet-focus-width) solid var(--lucet-ring);
-  outline-offset: var(--lucet-focus-offset);
+/* 32px visible (the control height), 40 effective: the region grows 4px
+   above and below into the banner's own padding, never sideways into
+   its sibling. */
+.lucet-thread__return::before {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
 }
 
 /* ============================================================

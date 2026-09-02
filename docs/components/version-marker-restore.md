@@ -49,25 +49,33 @@ stays restorable, forward as well as back.
   wins — it narrates the story — and "current" joins the metadata.)
 - **Markers only where history is non-linear.** A plain thread stays
   plain: a single-version turn wears nothing.
-- **Restore is safe to press because pressing it first shows you, and
-  committing it only adds.** First activation previews: the thread
-  renders as of that version — later turns dimmed for the eyes,
-  `inert` for pointer and tab order, `aria-hidden` for the reader, so
-  all three agree about what "earlier" means. The banner at the seam
-  states it plainly ("Viewing an earlier version — N later turns are
-  set aside, not deleted") and offers both ways out: **Return to
-  latest**, and **Restore this version**, the commit. The banner is
-  the feature's own explanation — a control that appears with its
-  consequences stated needs no tutorial. Commit is an ordinary event
-  through the reducer, covered by a runtime test that walks backward
-  and forward through the same history and asserts the store only
-  ever grows.
+- **A control labelled Restore must restore.** Two stages, two names
+  (audit round 04; the first cut called both "Restore this version",
+  and the label was false on the first click). On an older version's
+  actions, **Preview version** shows the thread as of that version and
+  changes nothing — its tip says so: "Look at this version — nothing
+  changes until you restore." Later turns dim for the eyes, go `inert`
+  for pointer and tab order, and `aria-hidden` for the reader, so all
+  three agree about what "earlier" means. The banner at the seam states
+  it plainly ("Previewing an earlier version — N later turns are set
+  aside, not deleted") and offers both ways out as a pair with a
+  hierarchy: **Return to latest**, a ghost, and **Restore version**,
+  the primary, which commits in one click. The pair is the library's
+  own button grammar, so fill against no fill carries the difference
+  without hue; the labels never wrap, and at drawer width the pair
+  takes a row of its own. After the commit the preview chrome is gone
+  at once, the restored copy wears `Restored`, and the new current
+  turn offers no restore control. Commit is an ordinary event through
+  the reducer, covered by a runtime test that walks backward and
+  forward through the same history and asserts the store only ever
+  grows.
 - **The past does not take new prompts.** While previewing, the
-  composer is blocked with words, above even the lock: "Viewing an
+  composer is blocked with words, above even the lock: "Previewing an
   earlier version — return to latest to continue." The announce layer
-  narrates all three moves in the banner's own language: "Viewing an
-  earlier version", "Returned to latest", "Restored an earlier
-  version — the thread continues from it".
+  narrates all three moves in the banner's own language: "Previewing
+  an earlier version — nothing changes until you restore", "Returned
+  to latest", "Restored an earlier version — the thread continues from
+  it".
 - **Affordances follow attention.** History keeps its rights — any
   version can still be retried or restored — but the newest version
   earns the resting-state microphone. A turn with a newer version

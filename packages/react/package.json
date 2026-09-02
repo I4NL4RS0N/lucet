@@ -1,6 +1,6 @@
 {
   "name": "lucet-react",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "React bindings for Lucet. A thin wrapper over the lucet core.",
   "license": "MIT",
   "author": "Ian Larson",
@@ -37,7 +37,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "lucet-core": "0.1.2"
+    "lucet-core": "0.1.3"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

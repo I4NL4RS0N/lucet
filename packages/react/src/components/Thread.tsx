@@ -466,25 +466,39 @@ export function Thread({
                 <svg className="lucet-thread__restored-glyph" viewBox="0 0 24 24" aria-hidden>
                   <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
                 </svg>
-                <span>
-                  Viewing an earlier version — {setAside} later{' '}
+                <span className="lucet-thread__restored-text">
+                  Previewing an earlier version — {setAside} later{' '}
                   {setAside === 1 ? 'turn is' : 'turns are'} set aside, not deleted.
                 </span>
-                {onExitRestore ? (
-                  <button type="button" className="lucet-thread__return" onClick={onExitRestore}>
-                    Return to latest
-                  </button>
-                ) : null}
-                {onRestoreCommit ? (
-                  <button
-                    type="button"
-                    className="lucet-thread__return"
-                    data-commit
-                    title="Bring this version back as the newest — everything stays"
-                    onClick={() => onRestoreCommit(turn.id)}
-                  >
-                    Restore this version
-                  </button>
+                {/* THE PAIR (audit round 04): the way back is a ghost, the
+                    commit is the primary — the library's own button grammar,
+                    so the hierarchy is silhouette (a fill against none), not
+                    hue. Labels never wrap; below the width where both fit
+                    beside the sentence the pair takes a row of its own. */}
+                {onExitRestore || onRestoreCommit ? (
+                  <span className="lucet-thread__restored-actions">
+                    {onExitRestore ? (
+                      <button
+                        type="button"
+                        className="lucet-button lucet-thread__return"
+                        data-variant="ghost"
+                        onClick={onExitRestore}
+                      >
+                        Return to latest
+                      </button>
+                    ) : null}
+                    {onRestoreCommit ? (
+                      <button
+                        type="button"
+                        className="lucet-button lucet-thread__return"
+                        data-variant="primary"
+                        data-commit
+                        onClick={() => onRestoreCommit(turn.id)}
+                      >
+                        Restore version
+                      </button>
+                    ) : null}
+                  </span>
                 ) : null}
               </div>
             ) : null}

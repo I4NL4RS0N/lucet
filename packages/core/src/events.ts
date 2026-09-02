@@ -190,7 +190,7 @@ export function describeEvent(event: LucetEvent): string {
           ? 'Marked unhelpful'
           : 'Feedback taken back'
     case 'restore/entered':
-      return 'Viewing an earlier version'
+      return 'Previewing an earlier version — nothing changes until you restore'
     case 'turn/restored':
       return 'Restored an earlier version — the thread continues from it'
     case 'restore/exited':

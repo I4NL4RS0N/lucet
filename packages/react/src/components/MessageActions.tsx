@@ -110,17 +110,26 @@ export function MessageActions({ message, onRetry, onFeedback, onRestore }: Mess
       ) : null}
 
       {onRestore ? (
-        <button
-          type="button"
-          className="lucet-actions__btn"
-          title="Go back to this version — nothing is deleted"
-          onClick={onRestore}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden>
-            <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
-          </svg>
-          Restore this version
-        </button>
+        /* PREVIEW, NAMED AS WHAT IT DOES (audit round 04): the first stage
+           only shows the thread as of this version; the commit lives in
+           the banner, and a control labelled Restore must restore. The
+           tip carries the reassurance, shown on hover and on focus. */
+        <span className="lucet-tipwrap lucet-actions__tipwrap" data-tip-align="end">
+          <button
+            type="button"
+            className="lucet-actions__btn"
+            aria-describedby={`${message.id}-preview-tip`}
+            onClick={onRestore}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden>
+              <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
+            </svg>
+            Preview version
+          </button>
+          <span className="lucet-tip" role="tooltip" id={`${message.id}-preview-tip`}>
+            Look at this version — nothing changes until you restore.
+          </span>
+        </span>
       ) : null}
 
       {onFeedback ? (
