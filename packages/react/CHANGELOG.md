@@ -1,5 +1,20 @@
 # lucet-react
 
+## 0.4.1
+
+### Patch Changes
+
+- 7f73143: Fix the React package's smallest example so it compiles
+
+  The published example passed `value` to `LucetProvider`, whose prop is
+  `lucet`, and left out `onModelChange` and `onRemoveAttachment`, which
+  `PromptInput` requires. Copied verbatim into a fresh project it did not
+  typecheck. Found by installing the published packages into a disposable
+  project and following the README exactly.
+
+- Updated dependencies [7f73143]
+  - lucet-core@0.4.1
+
 ## 0.4.0
 
 ### Minor Changes
