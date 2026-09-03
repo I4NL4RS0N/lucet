@@ -2174,6 +2174,199 @@ async function main() {
         await touch.close()
       }
     }
+    /* 3g. NAVIGATION: THE LIVE THREAD, NEW THREAD, THE MENUS (component audit
+       08). Exactly one row is current — the live thread, a real button named
+       by its first prompt, "New thread" while empty; dressing rows are hidden
+       from AT, titled for the pointer, and do nothing. New thread with nothing
+       at stake is immediate, spoken once and lands in the composer; with
+       unsent work or a response arriving it is blocked with an exit: a focused
+       notice by the composer, Keep writing (Escape) or Discard and start new,
+       that leaves when its reason does. The menus use the library's grammar.
+       Targets: 40px zones for a fine pointer, 44 under a coarse one. */
+    {
+      const home = url.replace('primitives.html', 'index.html?instant=1')
+      const listen = () => page.evaluate(() => {
+        window.__nav = []
+        const regions = () => [...document.querySelectorAll('[aria-live], [role="status"]')]
+        const last = new Map()
+        const snap = () => { for (const r of regions()) { const t = r.textContent.replace(/\s+/g, ' ').trim(); if (last.get(r) !== t) { last.set(r, t); if (t) window.__nav.push(t) } } }
+        snap(); window.__nav = []
+        window.__navObs?.disconnect(); window.__navObs = new MutationObserver(snap); window.__navObs.observe(document.body, { subtree: true, childList: true, characterData: true })
+      })
+      const spoken = () => page.evaluate(() => { const l = window.__nav; window.__nav = []; return l })
+      const look = () => page.evaluate(() => {
+        const s = window.__lucet.getState(); const a = document.activeElement
+        const vis = (e) => e.getBoundingClientRect().width > 0
+        const notice = [...document.querySelectorAll('.cfg__unsent')].find(vis)
+        const desc = (el) => !el || el === document.body ? 'body' : (el.getAttribute('aria-label') || el.className.toString().split(' ')[0] || el.tagName.toLowerCase())
+        return {
+          turns: s.turns.length, text: s.composer.text, atts: s.composer.attachments.length, queued: s.composer.queued, locked: s.composer.locked,
+          focus: desc(a), focusIsField: a?.classList.contains('lucet-prompt__field') ?? false,
+          notice: notice ? { reason: notice.dataset.reason, text: notice.querySelector('.cfg__unsent-text')?.textContent, focused: a === notice, actions: [...notice.querySelectorAll('button')].map((b) => b.textContent.trim()) } : null,
+          current: [...document.querySelectorAll('[aria-current="page"]')].filter(vis).filter((e) => e.closest('.cfg__frame, .cfg__mock, .cfg__phone')).map((e) => e.textContent.trim()),
+        }
+      })
+      const newThread = () => page.locator('.cfg__side-new').first().click()
+      const field = () => page.locator('.lucet-prompt__field:visible').first()
+      const zoneOf = (p, sel) => p.evaluate((sel) => { const el = [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0); if (!el) return null; el.scrollIntoView({ block: 'center' }); const b = el.getBoundingClientRect(); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (let x = Math.floor(b.left) - 30; x <= Math.ceil(b.right) + 14; x++) for (let y = Math.floor(b.top) - 12; y <= Math.ceil(b.bottom) + 12; y++) { const t = document.elementFromPoint(x, y); if (t && (t === el || el.contains(t))) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y } } return x0 === Infinity ? null : [x1 - x0 + 1, y1 - y0 + 1] }, sel)
+
+      /* the rows */
+      await page.goto(home); await page.waitForSelector('.lucet-prompt__field'); await page.waitForTimeout(400)
+      const rows = await page.evaluate(() => {
+        const nav = document.querySelector('.cfg__side-list'); const live = nav?.querySelector('.cfg__side-row--live'); const dressing = [...(nav?.querySelectorAll('.cfg__side-row:not(.cfg__side-row--live)') ?? [])]
+        const first = window.__lucet.getState().turns[0]?.prompt.parts.flatMap((p) => (p.kind === 'text' ? [p.text] : [])).join(' ') ?? ''
+        const before = window.__lucet.getState().turns.length; dressing[0]?.click(); const after = window.__lucet.getState().turns.length
+        return { navLabel: nav?.getAttribute('aria-label'), live: live ? { tag: live.tagName, current: live.getAttribute('aria-current'), text: live.textContent.trim(), marker: getComputedStyle(live, '::before').width } : null, firstPrompt: first.slice(0, 12), dressing: dressing.map((d) => [d.getAttribute('aria-hidden'), d.getAttribute('title'), d.tabIndex]), turnsBefore: before, turnsAfter: after, currents: document.querySelectorAll('.cfg__frame [aria-current="page"]').length }
+      })
+      checks++
+      if (rows.navLabel !== 'Threads' || rows.live?.tag !== 'BUTTON' || rows.live?.current !== 'page' || !rows.live?.text.startsWith(rows.firstPrompt) || rows.live?.marker !== '2px' || rows.dressing.length !== 5 || rows.dressing.some(([h, t, ti]) => h !== 'true' || t !== 'Not in this demo' || ti !== -1) || rows.turnsAfter !== rows.turnsBefore || rows.currents !== 1)
+        failures.push(`navigation: one current row, the live thread named by its first prompt; five dressing rows hidden, titled, inert — ${JSON.stringify(rows)}`)
+
+      /* New thread, nothing at stake: immediate, spoken once, focus in the composer; twice is one thread and one sentence */
+      await listen()
+      await newThread(); await page.waitForTimeout(300)
+      const fresh = await look(); const said1 = await spoken()
+      await newThread(); await newThread(); await page.waitForTimeout(300)
+      const twice = await look(); const said2 = await spoken()
+      checks++
+      if (fresh.turns !== 0 || !fresh.focusIsField || JSON.stringify(fresh.current) !== JSON.stringify(['New thread']) || JSON.stringify(said1) !== JSON.stringify(['New thread.']) || twice.turns !== 0 || said2.length !== 0 || fresh.notice !== null)
+        failures.push(`navigation: New thread with nothing at stake is immediate, spoken once, lands in the composer, and twice is one thread — ${JSON.stringify({ fresh, said1, twice, said2 })}`)
+
+      /* unsent work: blocked with an exit */
+      await field().click(); await page.keyboard.type('Draft for the kickoff note, not yet sent.')
+      await page.evaluate(() => { const f = [...document.querySelectorAll('.lucet-prompt__field')].find((e) => e.getBoundingClientRect().width > 0); f.focus(); f.setSelectionRange(6, 25); window.__lucet.store.dispatch({ type: 'attachment/added', id: 'nav1', name: 'quarterly-summary.pdf', fileKind: 'document', sizeBytes: 240_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'nav1', status: 'ready', reason: null }) }); await page.waitForTimeout(300)
+      await listen(); await newThread(); await page.waitForTimeout(250)
+      const blocked = await look(); const blockedSaid = await spoken()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(250)
+      const kept = await look()
+      const selection = await page.evaluate(() => { const f = [...document.querySelectorAll('.lucet-prompt__field')].find((e) => e.getBoundingClientRect().width > 0); return [f.selectionStart, f.selectionEnd] })
+      await newThread(); await page.waitForTimeout(200); await page.locator('.cfg__unsent button', { hasText: 'Keep writing' }).click(); await page.waitForTimeout(250)
+      const keptByButton = await look()
+      await newThread(); await page.waitForTimeout(200); await listen(); await page.locator('.cfg__unsent button', { hasText: 'Discard and start new' }).click(); await page.waitForTimeout(300)
+      const discarded = await look(); const discardSaid = await spoken()
+      checks++
+      if (!blocked.notice || blocked.notice.reason !== 'unsent' || blocked.notice.text !== 'You have unsent work in this thread.' || !blocked.notice.focused || JSON.stringify(blocked.notice.actions) !== JSON.stringify(['Keep writing', 'Discard and start new']) || blocked.turns !== 0 || blocked.text === '' || blocked.atts !== 1 || blockedSaid.length !== 0
+        || kept.notice !== null || !kept.focusIsField || kept.text === '' || kept.atts !== 1 || JSON.stringify(selection) !== JSON.stringify([6, 25]) || keptByButton.notice !== null || !keptByButton.focusIsField
+        || discarded.notice !== null || discarded.turns !== 0 || discarded.text !== '' || discarded.atts !== 0 || !discarded.focusIsField || JSON.stringify(discardSaid) !== JSON.stringify(['New thread.']))
+        failures.push(`navigation: unsent work blocks New thread with a focused notice; Escape and Keep writing return to the draft intact; Discard starts new, spoken once — ${JSON.stringify({ blocked, blockedSaid, kept, selection, keptByButton, discarded, discardSaid })}`)
+
+      /* the notice leaves with its reason: the draft sent */
+      await field().click(); await page.keyboard.type('Send this.'); await newThread(); await page.waitForTimeout(200)
+      const beforeSend = (await look()).notice !== null
+      await page.locator('.lucet-prompt__actions button:visible').last().click(); await page.waitForTimeout(300)
+      const afterSend = (await look()).notice
+      await page.waitForFunction(() => !window.__lucet.getState().composer.locked, null, { timeout: 40000 })
+      checks++
+      if (!beforeSend || afterSend !== null) failures.push(`navigation: the notice leaves when the draft is sent — ${JSON.stringify({ beforeSend, afterSend })}`)
+
+      /* a response arriving: yours, then Jennifer's, and the notice leaves when it settles */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      await field().click(); await page.keyboard.type('Summarise the review notes.'); await page.locator('.lucet-prompt__actions button:visible').last().click()
+      await page.waitForFunction(() => window.__lucet.getState().composer.locked, null, { timeout: 8000 }).catch(() => null)
+      await newThread(); await page.waitForTimeout(250)
+      const mine = await look()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(200)
+      const stayed = await look()
+      await page.waitForFunction(() => !window.__lucet.getState().composer.locked, null, { timeout: 40000 })
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      await page.evaluate(() => { void window.__lucet.trigger('multiplayer') }); await page.waitForFunction(() => window.__lucet.getState().composer.locked, null, { timeout: 15000 }); await page.waitForTimeout(300)
+      await newThread(); await page.waitForTimeout(250)
+      const hers = await look()
+      await page.waitForFunction(() => !window.__lucet.getState().composer.locked, null, { timeout: 40000 }); await page.waitForTimeout(300)
+      const settled = await look()
+      checks++
+      if (mine.notice?.reason !== 'running' || mine.notice?.text !== 'Your response is still arriving in this thread.' || !mine.notice?.focused || JSON.stringify(mine.notice?.actions) !== JSON.stringify(['Stay here', 'Discard and start new']) || mine.turns !== 1
+        || stayed.notice !== null || stayed.focus !== 'cfg__side-new' || stayed.turns !== 1
+        || hers.notice?.text !== 'Jennifer’s response is still arriving in this thread.' || settled.notice !== null || settled.focus !== 'cfg__side-new' || settled.turns !== 1)
+        failures.push(`navigation: a response arriving blocks New thread, named for whose it is; Stay here and Escape return to the control; the notice leaves when the response settles — ${JSON.stringify({ mine, stayed, hers, settled })}`)
+
+      /* a queued message with a file is unsent work; Discard is the person's choice */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      await page.evaluate(() => { void window.__lucet.trigger('multiplayer') }); await page.waitForFunction(() => window.__lucet.getState().composer.locked, null, { timeout: 15000 }); await page.waitForTimeout(300)
+      await page.evaluate(() => { window.__lucet.store.dispatch({ type: 'attachment/added', id: 'nav2', name: 'site-photograph.jpg', fileKind: 'image', sizeBytes: 1_800_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'nav2', status: 'ready', reason: null }) }); await page.waitForTimeout(150)
+      await field().click(); await page.keyboard.type('After Jennifer, with the photo.')
+      await page.locator('.lucet-prompt__actions button:visible', { hasText: /^Queue$/ }).first().click({ timeout: 4000 }); await page.waitForTimeout(200)
+      await newThread(); await page.waitForTimeout(250)
+      const queuedBlock = await look()
+      await listen(); await page.locator('.cfg__unsent button', { hasText: 'Discard and start new' }).click(); await page.waitForTimeout(300)
+      const queuedGone = await look(); const queuedSaid = await spoken()
+      checks++
+      if (queuedBlock.notice?.reason !== 'unsent' || queuedBlock.queued === null || queuedGone.turns !== 0 || queuedGone.queued !== null || queuedGone.notice !== null || !queuedGone.focusIsField || JSON.stringify(queuedSaid) !== JSON.stringify(['New thread.']))
+        failures.push(`navigation: a queued message blocks New thread as unsent work; Discard clears it by choice, spoken once — ${JSON.stringify({ queuedBlock, queuedGone, queuedSaid })}`)
+
+      /* collapse and expand: focus follows, the current row survives */
+      await page.goto(home); await page.waitForSelector('.lucet-prompt__field'); await page.waitForTimeout(300)
+      await page.locator('.cfg__side .cfg__side-toggle').click(); await page.waitForTimeout(350)
+      const hid = await look()
+      const hiddenTabbable = await page.evaluate(() => [...document.querySelectorAll('.cfg__side button')].some((b) => getComputedStyle(b).visibility === 'visible'))
+      await page.locator('.cfg__side-float').click(); await page.waitForTimeout(350)
+      const shown = await look()
+      checks++
+      if (hid.focus !== 'Show the sidebar' || hiddenTabbable || shown.focus !== 'Hide the sidebar' || shown.current.length !== 1)
+        failures.push(`navigation: Hide moves focus to the floating toggle and hides the sidebar's controls; Show returns it; one current row survives — ${JSON.stringify({ hid, hiddenTabbable, shown })}`)
+
+      /* fine-pointer zones at the desktop */
+      const fine = { newThread: await zoneOf(page, '.cfg__side-new'), liveRow: await zoneOf(page, '.cfg__side-row--live'), toggle: await zoneOf(page, '.cfg__side .cfg__side-toggle') }
+      await field().click(); await page.keyboard.type('x'); await newThread(); await page.waitForTimeout(200)
+      fine.keep = await zoneOf(page, '.cfg__unsent button:first-child'); fine.discard = await zoneOf(page, '.cfg__unsent-discard')
+      await page.keyboard.press('Escape'); await page.waitForTimeout(150)
+      checks++
+      if (Object.values(fine).some((z) => !z || z[0] < 40 || z[1] < 40)) failures.push(`navigation: every control offers a 40px zone to a fine pointer — ${JSON.stringify(fine)}`)
+
+      /* the phone: the menu grammar, the history pane's live row, New thread from the pane */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Mobile' }).first().click(); await page.waitForTimeout(600)
+      const summary = () => page.locator('.cfg__phone-bar summary[aria-label="Menu"]')
+      await summary().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(250)
+      const opened = await look()
+      const rowsInfo = await page.evaluate(() => [...document.querySelectorAll('.cfg__phone-bar .cfg__dmenu-row')].map((r) => [r.textContent.trim(), r.getAttribute('aria-pressed'), Math.round(r.getBoundingClientRect().height)]))
+      await page.keyboard.press('ArrowDown'); await page.waitForTimeout(100)
+      const arrowed = await look()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(200)
+      const escaped = { focus: (await look()).focus, open: await page.evaluate(() => document.querySelector('.cfg__phone-bar details.cfg__dmenu').hasAttribute('open')) }
+      await page.keyboard.press('Enter'); await page.waitForTimeout(150); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); await page.waitForTimeout(300)
+      const chose = await look()
+      const pane = await page.evaluate(() => { const nav = document.querySelector('.cfg__history'); return { label: nav?.getAttribute('aria-label'), live: nav?.querySelector('.cfg__history-row--live')?.getAttribute('aria-current'), dressingHidden: [...(nav?.querySelectorAll('.cfg__history-row:not(.cfg__history-row--live)') ?? [])].every((r) => r.getAttribute('aria-hidden') === 'true') } })
+      await page.locator('.cfg__history-row--live').click(); await page.waitForTimeout(300)
+      const backToThread = await look()
+      await field().click(); await page.keyboard.type('Phone draft.')
+      await summary().click(); await page.locator('.cfg__phone-bar .cfg__dmenu-row', { hasText: 'Chat history' }).click(); await page.waitForTimeout(300)
+      await page.locator('.cfg__phone-new').click(); await page.waitForTimeout(300)
+      const phoneNotice = await look()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(150)
+      checks++
+      if (opened.focus !== 'cfg__dmenu-row' || JSON.stringify(rowsInfo.map((r) => r[1])) !== JSON.stringify(['true', 'false', null]) || rowsInfo.some((r) => r[2] < 40) || arrowed.focus !== 'cfg__dmenu-row' || escaped.open || escaped.focus !== 'Menu'
+        || chose.focus !== 'Menu' || pane.label !== 'Chat history' || pane.live !== 'page' || !pane.dressingHidden || chose.current.length !== 1 || !backToThread.focusIsField
+        || phoneNotice.notice?.reason !== 'unsent' || !phoneNotice.notice?.focused)
+        failures.push(`navigation (phone): the menu opens on the current row, arrows rove, Escape and a choice return focus to the trigger; the history pane has one current row that returns to the composer; New thread from the pane lands the notice by the composer — ${JSON.stringify({ opened, rowsInfo, arrowed, escaped, chose, pane, backToThread, phoneNotice })}`)
+      await page.evaluate(() => window.__lucet.reset())
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click(); await page.waitForTimeout(400)
+
+      /* coarse-pointer zones on the phone, and the notice at 320 adds no overflow */
+      /* 480 wide: the phone mock is 390 plus its stage margins, and a zone at the bar's edge can only be measured with the whole phone on screen. */
+      const touch = await browser.newPage({ viewport: { width: 480, height: 844 }, hasTouch: true })
+      try {
+        await touch.goto(home); await touch.waitForSelector('.lucet-prompt__field'); await touch.waitForTimeout(300)
+        await touch.locator('[role="group"][aria-label="Container"] button', { hasText: 'Mobile' }).first().click(); await touch.waitForTimeout(600)
+        await touch.locator('.cfg__phone-bar summary[aria-label="Menu"]').click(); await touch.waitForTimeout(300)
+        const coarse = { menu: await zoneOf(touch, '.cfg__phone-bar summary'), row: await zoneOf(touch, '.cfg__phone-bar .cfg__dmenu-row'), phoneNew: await zoneOf(touch, '.cfg__phone-new') }
+        await touch.keyboard.press('Escape'); await touch.waitForTimeout(150)
+        await touch.locator('.lucet-prompt__field:visible').first().click(); await touch.keyboard.type('x'); await touch.locator('.cfg__phone-new').click(); await touch.waitForTimeout(300)
+        coarse.keep = await zoneOf(touch, '.cfg__unsent button:first-child'); coarse.discard = await zoneOf(touch, '.cfg__unsent-discard')
+        checks++
+        if (Object.values(coarse).some((z) => !z || z[0] < 44 || z[1] < 44)) failures.push(`navigation: every control offers a 44px zone to a coarse pointer — ${JSON.stringify(coarse)}`)
+        await touch.setViewportSize({ width: 320, height: 760 }); await touch.waitForTimeout(200)
+        await touch.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click(); await touch.waitForTimeout(500)
+        const narrow = await touch.evaluate(() => ({ notice: !![...document.querySelectorAll('.cfg__unsent')].find((e) => e.getBoundingClientRect().width > 0), over: document.documentElement.scrollWidth - innerWidth }))
+        checks++
+        if (!narrow.notice || narrow.over > 0) failures.push(`navigation: the notice at 320px stays and adds no horizontal overflow — ${JSON.stringify(narrow)}`)
+      } catch (e) {
+        checks++
+        failures.push(`navigation: the touch context could not complete its checks — ${e.message.split('\n')[0]}`)
+      } finally {
+        await touch.close()
+      }
+    }
     /* 3b. Nothing queued: Send comes back when her turn lands, the draft untouched. */
     await coldStart()
     await fireFromRail('Another person', 'Features')

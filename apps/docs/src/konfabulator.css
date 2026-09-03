@@ -411,10 +411,6 @@ body {
   text-overflow: ellipsis;
 }
 .cfg__side-row + .cfg__side-row { margin-block-start: 1px; }
-.cfg__side-row[data-active] {
-  background: var(--lucet-subtle);
-  color: var(--lucet-foreground);
-}
 /* The demo's reset: the rail's inverse, beside the rail's tabs. */
 .cfg__rail-top {
   display: flex;
@@ -539,7 +535,14 @@ body {
 
 /* The phone's nav bar: the menu and a working + as bookends, the title
    honestly live and centred between them. */
-.cfg__phone-bar { padding-inline: 8px; }
+/* 44, the genre's own bar height (audit 08): the menu and New thread keep
+   their 28px glyph boxes and their 44px zones fit the bar under a coarse
+   pointer. New thread's zone leans 4px inward, the bar's edge being where
+   the finger cannot go. */
+.cfg__phone-bar {
+  padding-inline: 8px;
+  block-size: 44px;
+}
 .cfg__phone-new { margin-inline-start: 0; }
 .cfg__phone-title {
   flex: 1;
@@ -981,6 +984,13 @@ body {
   inline-size: 100%;
   max-inline-size: calc(620px * var(--lucet-density, 1));
   display: grid;
+  /* minmax(0, 1fr): the column is the floor's width, never a child's
+     minimum content. Twice a child's minimum grew it past the frame at a
+     phone width — the chips' 230px column, then the notice's two buttons
+     on one line (component audit 08) — so the column now refuses, and
+     each child handles narrowness itself: the chips yield a column, the
+     notice wraps its actions, the composer contains its inline size. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--cfg-content-gap, var(--lucet-space-6));
 }
 .cfg__composer {
@@ -1956,3 +1966,177 @@ body {
   backdrop-filter: blur(10px);
   box-shadow: var(--lucet-material-overlay);
 }
+
+/* ===== Component audit 08: the sidebar, the history panes, New thread ===== */
+
+/* THE ONE REAL ROW. The live thread is current by a marker and its ink,
+   never colour alone, and it is a button: reachable, and it says where it
+   goes (the conversation). Dressing rows keep the drawer's honest grammar
+   — the veil and the cursor make the shelf feel real, the title tells the
+   truth to anyone who lingers, aria-hidden keeps the fiction from AT. */
+.cfg__side-list { display: block; }
+.cfg__side-row--live {
+  position: relative;
+  display: block;
+  inline-size: calc(100% + 20px);
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+  overflow: visible;
+  color: var(--lucet-foreground);
+  background: var(--lucet-subtle);
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
+}
+.cfg__side-row-text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cfg__side-row--live::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 6px;
+  inset-block: 9px;
+  inline-size: 2px;
+  border-radius: 1px;
+  background: var(--lucet-primary);
+}
+/* 40px to the pointer without growing the row: the zone reaches 4px past
+   the row's top and bottom, over dressing that takes no press. */
+.cfg__side-row--live::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block: -4px;
+}
+.cfg__side-row--live:hover { background: var(--lucet-secondary); }
+.cfg__side-row--live:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -2px;
+}
+.cfg__side-row[aria-hidden] {
+  cursor: pointer;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
+}
+.cfg__side-row[aria-hidden]:hover { background-color: var(--lucet-hover); }
+
+/* The history pane's live row: the same marker, the pane's own row. */
+.cfg__history-row--live {
+  position: relative;
+  inline-size: 100%;
+  border: 0;
+  border-block-end: 1px solid var(--lucet-border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+.cfg__history-row--live::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 16px;
+  inline-size: 2px;
+  border-radius: 1px;
+  background: var(--lucet-primary);
+}
+.cfg__history-row--live .cfg__history-title { font-weight: 500; }
+.cfg__history-row--live:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: -2px;
+}
+
+/* TARGETS. New thread keeps its 30px box and takes a 40px zone; the menu
+   trigger keeps its 28px glyph box and takes 40; menu rows stand at 40.
+   Under a coarse pointer every zone and row is 44. */
+.cfg__side-new { position: relative; }
+.cfg__side-new::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block: -5px;
+}
+.cfg__dmenu summary { position: relative; }
+.cfg__dmenu summary::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  inline-size: 40px;
+  block-size: 40px;
+}
+.cfg__dmenu-row { min-block-size: 40px; }
+@media (pointer: coarse) {
+  .cfg__reset::before,
+  .cfg__dmenu summary::before {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+  .cfg__dmenu-row { min-block-size: 44px; }
+  .cfg__side-new::before { inset-block: -7px; }
+  .cfg__side-row--live::after { inset-block: -6px; }
+}
+
+/* THE NOTICE New thread raises over unsent work (Ian's contract): compact,
+   by the composer, a group and not a dialog. Keep writing is the safe
+   default and wears the secondary button; Discard and start new is the
+   destructive one and wears the quiet ghost in danger ink. Its buttons take
+   40px zones (44 coarse) like the queued item's. */
+.cfg__unsent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-inline-size: 0;
+  gap: 8px 16px;
+  padding: 10px 12px 10px 14px;
+  border-radius: var(--lucet-radius-panel);
+  background: var(--lucet-card);
+  box-shadow: var(--lucet-hairline-raised);
+  color: var(--lucet-foreground);
+  font-size: 13px;
+}
+.cfg__unsent:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: 2px;
+}
+.cfg__unsent-text {
+  margin: 0;
+  min-inline-size: 0;
+}
+/* The two actions wrap when the row cannot hold them both (a phone with
+   the sidebar folded): Keep writing, then Discard beneath it, each whole. */
+.cfg__unsent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.cfg__unsent-actions .lucet-button { position: relative; }
+.cfg__unsent-actions .lucet-button::before {
+  content: '';
+  position: absolute;
+  inset-block: -6px;
+  inset-inline: -1px;
+}
+/* Two selectors deep, like the variant rule it outranks in the cascade:
+   the destructive one is told by its ink as well as its words. */
+.cfg__unsent-actions .cfg__unsent-discard,
+.cfg__unsent-actions .cfg__unsent-discard:hover:not(:disabled) {
+  color: var(--lucet-tone-danger-foreground);
+}
+[data-expression='glass'] .cfg__unsent {
+  box-shadow: var(--lucet-material-control);
+  background: transparent;
+}
+@media (pointer: coarse) {
+  .cfg__unsent-actions .lucet-button::before { inset-block: -8px; }
+}
+/* New thread's zone on the phone leans 4px inward: the bar's edge is where
+   the finger cannot go. Declared after .cfg__reset::before, which it
+   outranks only by order. */
+.cfg__phone-new::before { translate: calc(-50% - 4px) -50%; }

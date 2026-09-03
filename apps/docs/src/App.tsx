@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createLucet, describeEvent, doPlan, happyPath, reasoning, suggestionsVisible, toolSuccess } from 'lucet-core'
 import type { Lucet, LucetEvent, Suggestion } from 'lucet-core'
 import {
+  Button,
   LucetProvider,
   PromptInput,
   SuggestionChips,
   Thread,
   useEventLog,
   useLucet,
+  useMenuGrammar,
   useThread,
   useTriggerGroups,
 } from 'lucet-react'
@@ -326,12 +328,16 @@ function EventLog() {
 function AppCore({
   onSuggest,
   aside,
+  beforeComposer,
   chrome = 'window',
   narration = 'live',
   geometryEpoch,
 }: {
   onSuggest?: ((suggestion: Suggestion) => void) | undefined
   aside?: React.ReactNode
+  /** The host's notice when New thread would discard unsent work, rendered
+      in the floor above the composer (component audit 08). */
+  beforeComposer?: React.ReactNode
   /** Bumped by the host when it changes the thread's box (a container
       switch). The thread stays container-agnostic — it only learns that
       its geometry moved and re-runs the resting placement, exactly as it
@@ -538,7 +544,11 @@ function AppCore({
                   the chips' departure on the first message is absorbed by
                   the 1fr above and the composer does not move a pixel. (Also
                   claude.ai's grammar, which this pattern follows.) */}
-              {suggestionsVisible(state) ? (
+              {/* While the notice asks about unsent work the suggestions step
+                  aside: they are ways to start, and the question is whether to
+                  leave — and on a short phone the two together pushed the
+                  composer out of the frame (component audit 08). */}
+              {suggestionsVisible(state) && !beforeComposer ? (
                 <SuggestionChips
                   /* ONE-TO-ONE (review): two-versus-two read as a four-item
                      menu; one plain row against one bordered card carrying
@@ -552,6 +562,7 @@ function AppCore({
                   onPick={(s) => onSuggest?.(s)}
                 />
               ) : null}
+              {beforeComposer}
               <div className="cfg__composer">{composerNode}</div>
             </div>
           </div>
@@ -610,54 +621,155 @@ function MockBrandMark({ idp = 'fbm' }: { idp?: string }) {
   )
 }
 
-/** The chat-history dressing, shared by the drawer's pane and the
- * phone's: real words, marked decorative — the conversations do not
- * exist, and the same list must not lie twice differently. */
-function MockHistory() {
+/* Truncation lands ON THE WORD (review: the title read "since las…").
+   The budget is sized to the narrowest bar at the largest scale and
+   the cut walks back to the last whole word; the CSS ellipsis stays
+   underneath as the backstop for widths this arithmetic cannot see. */
+function truncateWords(text: string | undefined, budget = 30) {
+  if (!text || text.length <= budget) return text ?? ''
+  const cut = text.slice(0, budget + 1)
+  const atSpace = cut.lastIndexOf(' ')
+  return `${cut.slice(0, atSpace > 8 ? atSpace : budget).trimEnd()}…`
+}
+
+/** The live thread's name: its first prompt, cut on a whole word — the
+ * words the phone bar shows. Null until the first message; each surface
+ * decides what an empty thread is called where it stands. */
+function useThreadTitle(): string | null {
+  const state = useThread()
+  const first = state.turns[0]?.prompt.parts
+    .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
+    .join(' ')
+  return first ? truncateWords(first) : null
+}
+
+/** Focus the composer field that is on screen: where a new thread, or a
+ * kept draft, continues. */
+function focusComposer() {
+  requestAnimationFrame(() => {
+    const fields = [...document.querySelectorAll<HTMLTextAreaElement>('.lucet-prompt__field')]
+    fields.find((e) => e.getBoundingClientRect().width > 0)?.focus()
+  })
+}
+
+/** The notice New thread raises when it would discard something (component
+ * audit 08, the contract): a group by the composer, not a dialog — the
+ * composer stays usable behind it. It takes focus when it appears so its
+ * sentence is read; Escape is Keep writing; Discard, the destructive one,
+ * is the quieter button. */
+function NewThreadNotice({
+  reason,
+  who,
+  onKeep,
+  onDiscard,
+}: {
+  reason: 'unsent' | 'running'
+  /** Whose response is arriving, by first name, when it is not yours. */
+  who: string | null
+  onKeep: () => void
+  onDiscard: () => void
+}) {
+  const id = useId()
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    ref.current?.focus()
+  }, [])
   return (
-    <div className="cfg__history" aria-hidden>
-      <div className="cfg__history-group">Today</div>
-      {(
-        [
-          ['Quarterly planning', 'Today · 10:24'],
-          ['Draft the kickoff note', 'Today · 8:12'],
-        ] as const
-      ).map(([t, d]) => (
-        <div className="cfg__history-row" key={t} title="Not in this demo">
-          <span className="cfg__history-text">
-            <span className="cfg__history-title">{t}</span>
-            <span className="cfg__history-date">{d}</span>
-          </span>
-          <svg viewBox="0 0 24 24">
-            <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
-          </svg>
-          <svg viewBox="0 0 24 24">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </div>
-      ))}
-      <div className="cfg__history-group">Earlier</div>
-      {(
-        [
-          ['Compare the two carrier quotes', 'Tue · 16:02'],
-          ['Rename the workstreams', 'Mon · 11:30'],
-          ['Last week\u2019s review notes', 'Fri · 15:45'],
-        ] as const
-      ).map(([t, d]) => (
-        <div className="cfg__history-row" key={t} title="Not in this demo">
-          <span className="cfg__history-text">
-            <span className="cfg__history-title">{t}</span>
-            <span className="cfg__history-date">{d}</span>
-          </span>
-          <svg viewBox="0 0 24 24">
-            <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
-          </svg>
-          <svg viewBox="0 0 24 24">
-            <path d="M9 6l6 6-6 6" />
-          </svg>
-        </div>
-      ))}
+    <div
+      ref={ref}
+      className="cfg__unsent"
+      role="group"
+      aria-labelledby={`${id}-text`}
+      tabIndex={-1}
+      data-reason={reason}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          e.stopPropagation()
+          onKeep()
+        }
+      }}
+    >
+      <p id={`${id}-text`} className="cfg__unsent-text">
+        {reason === 'unsent'
+          ? 'You have unsent work in this thread.'
+          : who
+            ? `${who}’s response is still arriving in this thread.`
+            : 'Your response is still arriving in this thread.'}
+      </p>
+      <div className="cfg__unsent-actions">
+        <Button variant="secondary" onClick={onKeep}>
+          {reason === 'unsent' ? 'Keep writing' : 'Stay here'}
+        </Button>
+        <Button variant="ghost" className="cfg__unsent-discard" onClick={onDiscard}>
+          Discard and start new
+        </Button>
+      </div>
     </div>
+  )
+}
+
+/** The sidebar's one real row: the live thread, current, named by its
+ * first prompt. Choosing it goes to the conversation — the composer. */
+function SidebarLiveRow() {
+  const title = useThreadTitle()
+  return (
+    <button type="button" className="cfg__side-row cfg__side-row--live" aria-current="page" onClick={() => focusComposer()}>
+      <span className="cfg__side-row-text">{title ?? 'New thread'}</span>
+    </button>
+  )
+}
+
+/** The chat-history pane, shared by the drawer and the phone. One row is
+ * real: the live thread, marked current, and choosing it returns to the
+ * conversation. The rest is dressing with real words — the conversations
+ * do not exist — each row marked decorative so it cannot lie to a screen
+ * reader, and titled "Not in this demo" so it cannot lie to a pointer
+ * either (component audit 08). */
+function MockHistory({ onOpen }: { onOpen: () => void }) {
+  const title = useThreadTitle()
+  const dressing = (rows: ReadonlyArray<readonly [string, string]>) =>
+    rows.map(([t, d]) => (
+      <div className="cfg__history-row" key={t} title="Not in this demo" aria-hidden>
+        <span className="cfg__history-text">
+          <span className="cfg__history-title">{t}</span>
+          <span className="cfg__history-date">{d}</span>
+        </span>
+        <svg viewBox="0 0 24 24">
+          <path d="M5 7h14M10 7V5h4v2M8 7l1 13h6l1-13" />
+        </svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </div>
+    ))
+  return (
+    <nav className="cfg__history" aria-label="Chat history">
+      <div className="cfg__history-group" aria-hidden>
+        Today
+      </div>
+      <button type="button" className="cfg__history-row cfg__history-row--live" aria-current="page" onClick={onOpen}>
+        <span className="cfg__history-text">
+          <span className="cfg__history-title">{title ?? 'New thread'}</span>
+          <span className="cfg__history-date">{title ? 'Today · now' : 'Nothing sent yet'}</span>
+        </span>
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <path d="M9 6l6 6-6 6" />
+        </svg>
+      </button>
+      {dressing([
+        ['Quarterly planning', 'Today · 10:24'],
+        ['Draft the kickoff note', 'Today · 8:12'],
+      ] as const)}
+      <div className="cfg__history-group" aria-hidden>
+        Earlier
+      </div>
+      {dressing([
+        ['Compare the two carrier quotes', 'Tue · 16:02'],
+        ['Rename the workstreams', 'Mon · 11:30'],
+        ['Last week\u2019s review notes', 'Fri · 15:45'],
+      ] as const)}
+    </nav>
   )
 }
 
@@ -676,33 +788,23 @@ function PhoneNav({
 }: {
   pane: 'thread' | 'history'
   onPane: (pane: 'thread' | 'history') => void
-  onNew: () => void
+  onNew: (from: HTMLElement) => void
 }) {
-  const state = useThread()
-  /* Truncation lands ON THE WORD (review: the title read "since las…").
-     The budget is sized to the narrowest bar at the largest scale and
-     the cut walks back to the last whole word; the CSS ellipsis stays
-     underneath as the backstop for widths this arithmetic cannot see. */
-  const truncateWords = (text: string | undefined, budget = 30) => {
-    if (!text || text.length <= budget) return text ?? ''
-    const cut = text.slice(0, budget + 1)
-    const atSpace = cut.lastIndexOf(' ')
-    return `${cut.slice(0, atSpace > 8 ? atSpace : budget).trimEnd()}…`
-  }
+  const liveTitle = useThreadTitle()
+  /* The menus share the library's disclosure grammar (component audit 08):
+     opening lands on the current pane's row, arrows rove, Escape and a
+     chosen row hand focus back to the trigger, a press outside closes. */
+  const menuRef = useMenuGrammar()
   const title =
     pane === 'history'
       ? 'Chat history'
-      : truncateWords(
-          state.turns[0]?.prompt.parts
-            .flatMap((p) => (p.kind === 'text' ? [p.text] : []))
-            .join(' '),
-        ) ||
+      : liveTitle ??
         /* An empty thread is the APP'S home screen, so the app's name —
            the title becomes a conversation's only once one exists. */
         'Aquilo'
   return (
     <div className="cfg__frame-bar cfg__phone-bar">
-      <details className="cfg__dmenu">
+      <details className="cfg__dmenu" ref={menuRef}>
         <summary aria-label="Menu">
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M4 7h16M4 12h16M4 17h16" />
@@ -719,6 +821,7 @@ function PhoneNav({
               key={p}
               type="button"
               className="cfg__dmenu-row"
+              aria-pressed={pane === p}
               onClick={(e) => {
                 onPane(p)
                 e.currentTarget.closest('details')?.removeAttribute('open')
@@ -745,7 +848,7 @@ function PhoneNav({
         </div>
       </details>
       <span className="cfg__frame-title cfg__phone-title">{title}</span>
-      <button type="button" className="cfg__reset cfg__phone-new" aria-label="New thread" onClick={onNew}>
+      <button type="button" className="cfg__reset cfg__phone-new" aria-label="New thread" onClick={(e) => onNew(e.currentTarget)}>
         <svg viewBox="0 0 24 24" aria-hidden>
           <path d="M12 5v14M5 12h14" />
         </svg>
@@ -997,6 +1100,91 @@ export function App() {
      drawer product ends up offering. */
   const [drawerPane, setDrawerPane] = useState<'thread' | 'history'>('thread')
   const [phonePane, setPhonePane] = useState<'thread' | 'history'>('thread')
+  /* NEW THREAD, BLOCKED WITH AN EXIT (component audit 08, the contract).
+     With nothing at stake New thread is immediate: the thread empties, the
+     act is spoken once, and focus lands in the new composer. When it would
+     discard unsent work — draft text, staged files, a queued message — or
+     erase a response still arriving, it does nothing destructive: a compact
+     notice by the composer names the stake and offers Keep writing (the
+     safe default; Escape) or Discard and start new. The runtime holds one
+     thread and no background state, so a running response cannot be kept
+     across a new thread here; the notice is how it is never erased in
+     silence. A host with real threads simply navigates. */
+  const [unsent, setUnsent] = useState<{ reason: 'unsent' | 'running'; who: string | null; from: HTMLElement | null } | null>(null)
+  const [announced, setAnnounced] = useState('')
+  const announceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const announce = (text: string) => {
+    setAnnounced(text)
+    if (announceTimer.current !== null) clearTimeout(announceTimer.current)
+    announceTimer.current = setTimeout(() => setAnnounced(''), 2000)
+  }
+  /* Read from state alone: the lock lifts in the same breath as the last
+     event of a response, while the runtime's running flag clears only
+     after, with no event to say so. */
+  const stakeOf = () => {
+    const c = lucet.getState().composer
+    if (c.text.trim() || c.attachments.length > 0 || c.queued !== null || c.queuedAttachments.length > 0) return 'unsent' as const
+    if (c.locked) return 'running' as const
+    return null
+  }
+  const floorHolder = () => {
+    const by = lucet.getState().composer.lockedBy
+    return by && by !== 'you' ? (by.split(/\s+/)[0] ?? by) : null
+  }
+  const startNewThread = () => {
+    lucet.reset()
+    setActive(null)
+    setDrawerPane('thread')
+    setPhonePane('thread')
+    setUnsent(null)
+    announce('New thread.')
+    focusComposer()
+  }
+  const requestNewThread = (from: HTMLElement | null) => {
+    const stake = stakeOf()
+    if (stake === null) {
+      startNewThread()
+      return
+    }
+    /* The notice sits by the composer, so a history pane hands over to the
+       thread first. */
+    setDrawerPane('thread')
+    setPhonePane('thread')
+    setUnsent({ reason: stake, who: floorHolder(), from })
+  }
+  /* Focus goes back to the control that raised the notice; if that control
+     is gone or hidden meanwhile (the sidebar folded), the composer takes it
+     — focus never falls to the page. */
+  const focusTriggerOrComposer = (from: HTMLElement | null) =>
+    requestAnimationFrame(() => {
+      from?.focus()
+      if (document.activeElement !== from) focusComposer()
+    })
+  const keepWriting = () => {
+    const was = unsent
+    setUnsent(null)
+    if (was?.reason === 'unsent') focusComposer()
+    else focusTriggerOrComposer(was?.from ?? null)
+  }
+  /* The notice does not outlive its reason: the draft sent, the queue
+     cancelled, the response settled — it leaves on its own, and focus that
+     was on it goes back to the trigger. A stake that changes kind (a draft
+     sent while a response then runs) is a question answered, not a new
+     one: the notice leaves, and New thread asks again if pressed. */
+  useEffect(() => {
+    if (!unsent) return
+    return lucet.subscribe(() => {
+      if (stakeOf() === unsent.reason) return
+      const held = !!document.activeElement?.closest('.cfg__unsent')
+      setUnsent(null)
+      if (held) focusTriggerOrComposer(unsent.from)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unsent])
+  const unsentNotice = unsent ? (
+    <NewThreadNotice reason={unsent.reason} who={unsent.who} onKeep={keepWriting} onDiscard={startNewThread} />
+  ) : null
+  const drawerMenuRef = useMenuGrammar()
   /* Which of the host's pages is open behind the drawer. */
   const [mockPage, setMockPage] = useState(0)
   /* Scope keeps whatever rung the person chose when the page moves;
@@ -1109,26 +1297,9 @@ export function App() {
   /* Focus follows the drawer honestly: opening it by the button moves
      focus in; closing it hands focus back to the button. A view switch
      that happens to mount the drawer steals nothing. */
-  /* The drawer's menu closes like a popover — same manners as More. */
-  useEffect(() => {
-    const close = (e: PointerEvent) => {
-      const menu = document.querySelector('details.cfg__dmenu[open]')
-      if (menu && e.target instanceof Node && !menu.contains(e.target)) {
-        menu.removeAttribute('open')
-      }
-    }
-    const esc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        document.querySelector('details.cfg__dmenu[open]')?.removeAttribute('open')
-      }
-    }
-    document.addEventListener('pointerdown', close)
-    document.addEventListener('keydown', esc)
-    return () => {
-      document.removeEventListener('pointerdown', close)
-      document.removeEventListener('keydown', esc)
-    }
-  }, [])
+  /* The menus' dismissal — Escape, a press outside, focus back to the
+     trigger — is the library's menu grammar now, attached to each <details>
+     (component audit 08). */
 
   useEffect(() => {
     if (drawerOpen && drawerViaButton.current) {
@@ -1161,6 +1332,9 @@ export function App() {
       <SiteHeader page="konfabulator" />
 
       <div className="cfg__layout">
+        <span className="lucet-visually-hidden" role="status" aria-live="polite">
+          {announced}
+        </span>
         <div className="cfg__main">
           {/* The floor the frame floats on is the host's, and follows the
               exhibit (ruling, 2026-09-01) — see .cfg__stage-floor in
@@ -1207,6 +1381,7 @@ export function App() {
               aria-label="The running app"
             >
               <AppCore
+                beforeComposer={unsentNotice}
                 geometryEpoch={`${view}:${drawerMode}`}
                 narration={playing ? 'history' : 'live'}
                 onSuggest={(s) => {
@@ -1260,28 +1435,41 @@ export function App() {
                         </svg>
                       </button>
                     </span>
-                    <button
-                      type="button"
-                      className="cfg__side-new"
-                      onClick={() => {
-                        lucet.reset()
-                        setActive(null)
-                      }}
-                    >
+                    <button type="button" className="cfg__side-new" onClick={(e) => requestNewThread(e.currentTarget)}>
                       <svg viewBox="0 0 24 24" aria-hidden>
                         <path d="M12 5v14M5 12h14" />
                       </svg>
                       New thread
                     </button>
-                    <div className="cfg__side-list" aria-hidden>
-                      <div className="cfg__side-group">Today</div>
-                      <div className="cfg__side-row" data-active>Quarterly planning</div>
-                      <div className="cfg__side-row">Draft the kickoff note</div>
-                      <div className="cfg__side-group">Earlier</div>
-                      <div className="cfg__side-row">Compare the two carrier quotes</div>
-                      <div className="cfg__side-row">Rename the workstreams</div>
-                      <div className="cfg__side-row">Last week&rsquo;s review notes</div>
-                    </div>
+                    {/* One row is real: the live thread, marked current, named by
+                        its first prompt the way the phone bar names it. The rest
+                        is dressing — each row hidden from AT and titled "Not in
+                        this demo" for the pointer, so nobody is told a thread
+                        exists that does not (component audit 08). */}
+                    <nav className="cfg__side-list" aria-label="Threads">
+                      <div className="cfg__side-group" aria-hidden>
+                        Today
+                      </div>
+                      <SidebarLiveRow />
+                      <div className="cfg__side-row" aria-hidden title="Not in this demo">
+                        Quarterly planning
+                      </div>
+                      <div className="cfg__side-row" aria-hidden title="Not in this demo">
+                        Draft the kickoff note
+                      </div>
+                      <div className="cfg__side-group" aria-hidden>
+                        Earlier
+                      </div>
+                      <div className="cfg__side-row" aria-hidden title="Not in this demo">
+                        Compare the two carrier quotes
+                      </div>
+                      <div className="cfg__side-row" aria-hidden title="Not in this demo">
+                        Rename the workstreams
+                      </div>
+                      <div className="cfg__side-row" aria-hidden title="Not in this demo">
+                        Last week&rsquo;s review notes
+                      </div>
+                    </nav>
                     {/* The classic sidebar footer: settings (honest about
                         being dressing) and the person, pinned to the floor. */}
                     <div className="cfg__side-foot">
@@ -1419,7 +1607,7 @@ export function App() {
                         drawer can sit on the page, and settings. Right, the
                         two verbs used constantly: new thread, and out. */}
                     <div className="cfg__frame-bar cfg__drawer-bar" onPointerDown={dragDrawer}>
-                      <details className="cfg__dmenu">
+                      <details className="cfg__dmenu" ref={drawerMenuRef}>
                         <summary aria-label="Panel menu">
                           <svg viewBox="0 0 24 24" aria-hidden>
                             <path d="M4 7h16M4 12h16M4 17h16" />
@@ -1436,6 +1624,7 @@ export function App() {
                               key={pane}
                               type="button"
                               className="cfg__dmenu-row"
+                              aria-pressed={drawerPane === pane}
                               onClick={(e) => {
                                 setDrawerPane(pane)
                                 e.currentTarget.closest('details')?.removeAttribute('open')
@@ -1464,6 +1653,7 @@ export function App() {
                               key={mode}
                               type="button"
                               className="cfg__dmenu-row"
+                              aria-pressed={drawerMode === mode}
                               onClick={(e) => {
                                 setDrawerMode(mode)
                                 e.currentTarget.closest('details')?.removeAttribute('open')
@@ -1506,11 +1696,7 @@ export function App() {
                         type="button"
                         className="cfg__reset cfg__drawer-new"
                         aria-label="New thread"
-                        onClick={() => {
-                          lucet.reset()
-                          setActive(null)
-                          setDrawerPane('thread')
-                        }}
+                        onClick={(e) => requestNewThread(e.currentTarget)}
                       >
                         <svg viewBox="0 0 24 24" aria-hidden>
                           <path d="M12 5v14M5 12h14" />
@@ -1532,6 +1718,7 @@ export function App() {
                     </div>
                     {drawerPane === 'thread' ? (
                       <AppCore
+                        beforeComposer={unsentNotice}
                 geometryEpoch={`${view}:${drawerMode}`}
                         narration={playing ? 'history' : 'live'}
                         chrome="bare"
@@ -1544,7 +1731,12 @@ export function App() {
                       /* The history pane: the same dressing law as the full
                          page's sidebar — real words, marked decorative,
                          because these conversations do not exist. */
-                      <MockHistory />
+                      <MockHistory
+                        onOpen={() => {
+                          setDrawerPane('thread')
+                          focusComposer()
+                        }}
+                      />
                     )}
                   </div>
                 ) : null}
@@ -1564,14 +1756,11 @@ export function App() {
                 <PhoneNav
                   pane={phonePane}
                   onPane={setPhonePane}
-                  onNew={() => {
-                    lucet.reset()
-                    setActive(null)
-                    setPhonePane('thread')
-                  }}
+                  onNew={(from) => requestNewThread(from)}
                 />
                 {phonePane === 'thread' ? (
                   <AppCore
+                    beforeComposer={unsentNotice}
                 geometryEpoch={`${view}:${drawerMode}`}
                     narration={playing ? 'history' : 'live'}
                     chrome="bare"
@@ -1581,7 +1770,12 @@ export function App() {
                     }}
                   />
                 ) : (
-                  <MockHistory />
+                  <MockHistory
+                    onOpen={() => {
+                      setPhonePane('thread')
+                      focusComposer()
+                    }}
+                  />
                 )}
                 <div className="cfg__phone-home" aria-hidden />
               </div>
