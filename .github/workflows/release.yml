@@ -37,7 +37,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # The Changesets action reads history to write the PR.
           fetch-depth: 0
@@ -45,7 +45,7 @@ jobs:
       # No registry-url here on purpose: setup-node would write an _authToken
       # line into .npmrc, and there is no token. Trusted publishing
       # authenticates each npm publish with this job's OIDC token instead.
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           cache: npm
