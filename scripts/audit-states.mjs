@@ -1519,6 +1519,82 @@ async function main() {
       failures.push(`multiplayer (deep link): Ada's turn is not live from the deep link — ${JSON.stringify({ l1, l2 })}`)
     await page.waitForFunction(() => !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
     await resetAndInspect('multiplayer via the deep link')
+    /* 3a'. GATE 0 OF THE COMPOSER AUDIT (round 01): the Queue interaction,
+       asserted rather than eyeballed. Send → Queue → Stop moves nothing but
+       the action group's own width; the queued feedback is immediate, read
+       synchronously after the press with no wait; focus returns to the
+       field, where the next words go; under reduced motion nothing in the
+       composer animates. */
+    await coldStart()
+    const composerGeo = () => page.evaluate(() => {
+      const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0)
+      const R = (el) => { if (!el) return null; const b = el.getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)] }
+      const buttons = [...(vis('.lucet-prompt__actions')?.querySelectorAll('button') ?? [])]
+      return { bar: R(vis('.lucet-prompt__bar')), field: R(vis('.lucet-prompt__field')), tool: R(vis('.lucet-prompt__tool')), chip: R(vis('.lucet-budget__button')), buttons: buttons.map((b) => (b.textContent.trim() || b.getAttribute('aria-label')) + ':' + R(b).slice(1, 4).join('x')), heights: buttons.map((b) => Math.round(b.getBoundingClientRect().height)), tops: buttons.map((b) => Math.round(b.getBoundingClientRect().top)) }
+    })
+    await fireFromRail('Another person', 'Features')
+    await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 10000 })
+    await page.waitForTimeout(200)
+    const g0 = await composerGeo()
+    await page.locator('.lucet-prompt__field').fill('And the southern site?')
+    await page.waitForTimeout(100)
+    const g1 = await composerGeo()
+    const queueBtn = page.locator('.lucet-prompt button', { hasText: 'Queue' }).first()
+    await queueBtn.click()
+    const immediate = await page.evaluate(() => ({ queued: window.__lucet.getState().composer.queued, strip: document.querySelector('.lucet-prompt__status')?.textContent.trim(), tone: document.querySelector('.lucet-prompt__status')?.dataset.tone, field: document.querySelector('.lucet-prompt__field')?.value, focusOnField: document.activeElement === document.querySelector('.lucet-prompt__field') }))
+    const g2 = await composerGeo()
+    await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2 && !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
+    await page.waitForTimeout(150)
+    const g3 = await composerGeo()
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    /* The chip's WIDTH follows its price, which re-prices after a turn; its
+       place and height are what the swap must not move. */
+    const seat = (c) => (c ? [c[0], c[1], c[3]] : null)
+    const stable = (x, y) => same(x.bar, y.bar) && same(x.field, y.field) && same(x.tool, y.tool) && same(seat(x.chip), seat(y.chip)) && x.heights.every((h) => h === 32) && y.heights.every((h) => h === 32) && same([...new Set(x.tops)], [...new Set(y.tops)])
+    checks++
+    if (!stable(g0, g1) || !stable(g1, g2) || !stable(g2, g3) || !g1.buttons.some((b) => b.startsWith('Queue:')) || g2.buttons.some((b) => b.startsWith('Queue')))
+      failures.push(`composer gate 0: the action swap moved the composer — ${JSON.stringify({ g0, g1, g2, g3 })}`)
+    checks++
+    if (immediate.queued !== 'And the southern site?' || immediate.strip !== 'Queued — yours sends next' || immediate.tone !== 'info' || immediate.field !== '' || !immediate.focusOnField)
+      failures.push(`composer gate 0: queued feedback is not immediate, or focus left the field — ${JSON.stringify(immediate)}`)
+    await resetAndInspect('composer gate 0')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await coldStart()
+    await fireFromRail('Another person', 'Features')
+    await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 10000 })
+    await page.locator('.lucet-prompt__field').fill('Quietly')
+    await page.locator('.lucet-prompt button', { hasText: 'Queue' }).first().click()
+    await page.waitForTimeout(200)
+    const quiet = await page.evaluate(() => { const p = [...document.querySelectorAll('.lucet-prompt')].find((e) => e.getBoundingClientRect().width > 0); return { running: p.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length, strip: document.querySelector('.lucet-prompt__status')?.textContent.trim() } })
+    checks++
+    if (quiet.running !== 0 || quiet.strip !== 'Queued — yours sends next')
+      failures.push(`composer gate 0: reduced motion still animates the composer — ${JSON.stringify(quiet)}`)
+    await page.emulateMedia({ reducedMotion: null })
+    await resetAndInspect('composer gate 0 (reduced motion)')
+    /* The empty field's one instruction reads as text in every cell (composer audit, round 01). */
+    const savedForPlaceholder = await page.evaluate(() => localStorage.getItem('lucet-docs-appearance'))
+    const placeholderContrast = []
+    for (const [theme, expression] of [['dark', 'paper'], ['dark', 'glass'], ['light', 'paper'], ['light', 'glass']]) {
+      await page.evaluate(([t, e]) => localStorage.setItem('lucet-docs-appearance', JSON.stringify({ theme: t, expression: e, accent: 'violet', neutral: 'accent' })), [theme, expression])
+      await page.emulateMedia({ colorScheme: theme })
+      await coldStart()
+      const c = await page.evaluate(() => {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1; const g = canvas.getContext('2d', { willReadFrequently: true })
+        const px = (color, under) => { g.clearRect(0, 0, 1, 1); if (under) { g.fillStyle = under; g.fillRect(0, 0, 1, 1) } g.fillStyle = color; g.fillRect(0, 0, 1, 1); return [...g.getImageData(0, 0, 1, 1).data] }
+        const lum = ([r, gg, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4 }; return 0.2126 * f(r) + 0.7152 * f(gg) + 0.0722 * f(b) }
+        const field = [...document.querySelectorAll('.lucet-prompt__field')].find((e) => e.getBoundingClientRect().width > 0)
+        let e = field; const stack = []; while (e && e !== document.documentElement) { const bg = getComputedStyle(e).backgroundColor; if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') stack.push(bg); e = e.parentElement } stack.push(getComputedStyle(document.body).backgroundColor)
+        let under = null; for (const bg of stack.reverse()) { const p = px(bg, under ? 'rgba(' + under.join(',') + ')' : null); under = [p[0], p[1], p[2], 255] }
+        const fg = px(getComputedStyle(field, '::placeholder').color, 'rgba(' + under.join(',') + ')')
+        const a = lum(fg), b = lum(under); return +(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05))).toFixed(2)
+      })
+      placeholderContrast.push({ theme, expression, contrast: c })
+    }
+    checks++
+    if (placeholderContrast.some((p) => p.contrast < 4.5))
+      failures.push(`composer: the placeholder falls under 4.5:1 — ${JSON.stringify(placeholderContrast)}`)
+    await page.evaluate((saved) => { if (saved === null) localStorage.removeItem('lucet-docs-appearance'); else localStorage.setItem('lucet-docs-appearance', saved) }, savedForPlaceholder)
+    await page.emulateMedia({ colorScheme: null })
     /* 3b. Nothing queued: Send comes back when her turn lands, the draft untouched. */
     await coldStart()
     await fireFromRail('Another person', 'Features')

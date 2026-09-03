@@ -358,7 +358,13 @@ export function PromptInput({
 
   const trySend = () => {
     if (blocker === null) onSubmit()
-    else if (canQueue && composer.text.trim()) onQueue(composer.text)
+    else if (canQueue && composer.text.trim()) {
+      onQueue(composer.text)
+      /* Queueing empties the field and the Queue button leaves with the
+         words, so a pointer press on it would drop focus to the page.
+         The field is where the next words go (composer audit, round 01). */
+      fieldRef.current?.focus()
+    }
   }
 
   return (

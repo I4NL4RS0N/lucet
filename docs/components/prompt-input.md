@@ -137,3 +137,14 @@ the decision rather than by going grey: when the projected turn would
 cost more than the month has left, the first press opens the Budget
 Meter's panel with the reason and the two ways across, and nothing sends
 until one is chosen. See the Budget Meter's rationale for the hold.
+
+## Composer audit, round 01 (2026-09-03)
+
+Every state was captured in the four cells at desktop and phone widths and
+measured. Geometry held everywhere: the swap from Send to Queue to Stop
+moves nothing but the action group's own width. Two defects were fixed.
+Pressing Queue with a pointer dropped focus to the page, because the button
+leaves with the words; focus now returns to the field. The placeholder,
+mixed against the Paper composer's surface token, fell to 2.6:1 on the Glass
+composer; it now mixes toward transparent and reads at 4.5:1 or better in
+every cell. Low-severity observations were filed for a later sweep.

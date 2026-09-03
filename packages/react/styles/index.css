@@ -671,9 +671,13 @@
 }
 
 .lucet-prompt__field::placeholder {
-  /* Same recipe as the primitives page: quieter than real text on purpose,
-     legal because the field always carries a programmatic label. */
-  color: color-mix(in oklab, var(--lucet-muted-foreground) 62%, var(--lucet-muted));
+  /* Quieter than real text on purpose, but still text: the empty field's
+     one instruction reads at 4.5:1 or better in all four cells (composer
+     audit, round 01 — the old mix against --lucet-muted fell to 2.6:1 on
+     the Glass composer, whose surface is a different token). Mixing toward
+     transparent composites over whatever surface the composer actually
+     wears, so the step stays the same in every expression. */
+  color: color-mix(in oklab, var(--lucet-muted-foreground) 88%, transparent);
 }
 
 /* ---- attachments ---- */
