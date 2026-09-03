@@ -112,9 +112,11 @@ navigates, because states viewed in isolation teach you nothing about behavior.
 
 - **Headless core, zero framework imports.** All state logic lives in one
   framework-free package. React is a thin wrapper. Other wrappers are small.
-- **No Tailwind dependency.** Vanilla CSS with custom properties, so styling
-  never assumes a stack. Token names map onto shadcn's CSS variable names, so
-  projects already using it can adopt this without a fight.
+- **No styling dependencies.** Plain CSS custom properties — no Tailwind, no
+  CSS-in-JS, no build step — so styling never assumes a stack, and a host that
+  defines nothing gets Lucet's own palette. Token names also map onto shadcn's
+  CSS variable names, so a project already using it inherits its theme without
+  a fight.
 - **Rationale is part of the deliverable.** A component without a documented
   reason is a shape, not a decision.
 - **Accessibility is load bearing.** Screen readers plus streaming text is an

@@ -51,6 +51,10 @@ Guards: a version the registry already has is never published; one of two
 packages already published stops the job for a person to look; one release
 runs at a time; `verify` must be green first.
 
+When the Version Packages PR bumps a minor, review the README's Shipped
+contents in that same PR. The number is never what needs updating — the
+badges carry it live from the registry — the contents are.
+
 Nobody runs `npm publish`, `changeset version` or `changeset publish`
 locally.
 

@@ -101,6 +101,9 @@ Releases happen in GitHub Actions, never from a laptop.
   locally. `npm run release` exists for the workflow only. A version the
   registry already has is never published again; half a release stops the
   job until a person looks; one release runs at a time.
+- When the Version Packages PR bumps a minor, the README's Shipped contents
+  are reviewed in that same PR. The number is never the thing that needs
+  updating — the badges carry it live from the registry; the contents are.
 - Ian's part is one merge click on the Version Packages PR at the end of a
   review cycle. The one-time npm setup (a trusted publisher per package) is
   in CONTRIBUTING.md; until it exists the publish step fails with that

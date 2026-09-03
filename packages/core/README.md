@@ -36,9 +36,12 @@ await lucet.submit('Summarise the three documents I shared.')
 // earlier version — every path is an ordinary event.
 ```
 
-Tokens ship at `lucet-core/styles.css` — vanilla CSS custom properties,
-mapped onto shadcn's variable names, with light/dark themes and the
-Paper/Glass material axis at identical geometry.
+Tokens ship at `lucet-core/styles.css` — plain CSS custom properties
+with no styling dependencies: import the stylesheet and the components
+are themed, with light/dark themes and the Paper/Glass material axis at
+identical geometry. If you already use shadcn, the tokens inherit your
+theme: each reads `var(--shadcn-name, our-default)`, and a host that
+defines nothing gets Lucet's own palette.
 
 ## Where the thinking lives
 

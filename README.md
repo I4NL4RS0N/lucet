@@ -66,7 +66,8 @@ parsing tokens could never have seen.
 **A written rationale for every component.** Each one ships with its
 positions, the alternatives that were tried and cut, and what is
 deliberately deferred — with the reason. The judgment is the product;
-the components are its proof.
+the components are its proof. The cross-cutting rules sit beside them:
+[docs/waiting.md](docs/waiting.md) is the five named ways to wait.
 
 **A theme cannot depend on how you reached it.** Dark is declared twice — once
 under `prefers-color-scheme`, once under `[data-theme]` — because CSS gives no
@@ -78,9 +79,16 @@ property down both paths and fails if they disagree.
 on `lucet-core` and takes React as a peer — nothing further. **No Tailwind**, anywhere — vanilla CSS with custom
 properties.
 
-**It drops into shadcn projects.** Every token in the semantic layer — the
-colour roles, 21 of them — reads `var(--shadcn-name, our-default)`, so setting
-the bare shadcn variable themes Lucet without knowing Lucet exists.
+**It has no styling dependencies.** The whole system is plain CSS
+custom properties — no Tailwind, no CSS-in-JS, no build step, no
+configuration. Import one stylesheet and the components are
+themed. Set your own values on the 21 colour roles and they're
+yours.
+
+**If you already use shadcn, it inherits your theme.** Every
+semantic token reads `var(--shadcn-name, our-default)`, so a
+project running shadcn gets Lucet on its palette without knowing
+Lucet exists. Nothing is required of hosts that don't.
 
 **Icons are a slot, not a dependency.** A default set ships vendored and
 attributed; any of it can be replaced without forking.
@@ -93,9 +101,9 @@ a test fails if a token is added to the CSS without being classified.
 
 ## Status
 
-**Shipped, 0.1.0** — on npm as of September 2026. The event-sourced
-core: streaming, aborts, the tool lifecycle, versioning and
-restore-as-copy, scope, usage and budget projection, and the
+**Shipped** — on npm; the badges above carry the current version. The
+event-sourced core: streaming, aborts, the tool lifecycle, versioning
+and restore-as-copy, scope, usage and budget projection, and the
 screen-reader announcement plan. The React layer: twelve baseline
 components with every state reachable — streaming markdown, reasoning
 disclosure, tool calls with receipts, suggestion chips with the ask/do
@@ -103,8 +111,15 @@ split, feedback controls, citations & sources with aging, version
 marker + restore — demonstrated in one persistent interface across
 three honest containers (a full-page app, a drawer over a host
 application, a phone). All four of the thesis's surfaces run: scope,
-versions, multiplayer, budget. The bar for publishing was the same as
-the bar for everything else here.
+versions, multiplayer, budget. Since then: triggers that perform what
+they say — Do executes and files its pages, a fallback model is
+disclosed inline, another person's turn runs live with your input
+queued behind it; a recovery verb for every ending, each doing what
+its state promised; a pre-send budget gate that decides before the
+spend; version history you preview before you restore; and five named
+ways to wait — long and unknown, staggered, named activity with elapsed
+time, text still arriving, staged work with a known sequence. The bar
+for publishing was the same as the bar for everything else here.
 
 **Next** — one component at a time, each with its written rationale:
 
