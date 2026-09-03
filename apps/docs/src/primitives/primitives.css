@@ -59,6 +59,15 @@
   --cfg-gap-feature: 96px;
   --cfg-gap-supporting: 72px;
   --cfg-gap-heading: 22px;
+  /* The horizontal half of the same scale. A cell-to-cell gap is a
+     cell-to-cell gap on either axis, so this is the column gap AND the
+     row gap of a wrapped group — and it is the related-section step
+     exactly: pinned from both sides, because two specimens must never
+     sit closer than two sections of the same family, and a section's
+     end must never sit closer than its own cells do. At the 36px
+     literal this replaces, adjacent cells read as one object
+     (audit round 09). */
+  --cfg-gap-cell: var(--cfg-gap-supporting);
   /* The measured minimum a specimen cell may shrink to before its text
      compresses: the truncation grammar's floor, the width the sources
      block is proven at. Grids break from this, never from a device. */
@@ -2161,7 +2170,7 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .prim--comp .stage--duet,
 .prim--comp .stage--trio {
   display: grid;
-  gap: 30px 36px;
+  gap: var(--cfg-gap-cell);
   align-items: start;
 }
 /* Columns break from the cell's MEASURED minimum (--cfg-cell-min), never
@@ -2308,8 +2317,9 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
    sources columns at the 1140 grid gave each cell 313px, under the
    truncation grammar's ~354px floor (the mobile width it is proven
    at) — the row's own min-content squeezed 39px past the block. The
-   breakout buys every trio cell ~388px at desktop and clamps to the
-   viewport below it; the column collapse breakpoints still apply. */
+   breakout buys every trio cell 385px at desktop (audit round 09,
+   measured at the 72px gutter) and clamps to the viewport below it;
+   the column collapse breakpoints still apply. */
 .prim--comp .stage--trio {
   /* The one deliberate exception to the shell: 60px past it, derived
      from it, and never past the viewport. */
@@ -2392,10 +2402,11 @@ code:not(.lucet-md *):not(.lucet-codeblock *):not(.lucet-tool__io *):not(.spec__
 .prim .prim__lede + .chapter { margin-block-start: var(--cfg-gap-opening); }
 
 /* A SECTION MAY BE COMPOSED OF SEVERAL STAGES (audit round 02, the
-   thread section): consecutive groups sit one row-gap apart — the same
-   30px the duet and trio grids use between rows — so the stack reads as
-   one composition, wells and rails alike. */
-.prim--comp .sec > .stage + .stage { margin-block-start: 30px; }
+   thread section): consecutive groups sit one cell gap apart — the same
+   interval the duet and trio grids put between two cells — so the stack
+   reads as one composition, wells and rails alike, and no group is ever
+   closer to the next than its own cells are to each other. */
+.prim--comp .sec > .stage + .stage { margin-block-start: var(--cfg-gap-cell); }
 
 /* The inset: a compact secondary example beside a dominant one, sized to
    its content, explanation 12px beneath. */

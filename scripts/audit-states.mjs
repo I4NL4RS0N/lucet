@@ -3087,6 +3087,128 @@ async function main() {
     if (cleared.spent !== 6.24 || cleared.budget !== 10 || cleared.strip || cleared.turns !== 0 || cleared.pendingTimers !== 0)
       failures.push(`budget-spent: only the demo's Reset clears the month, and it must restore the seed — ${JSON.stringify(cleared)}`)
 
+    /* PAGE RHYTHM — THE HORIZONTAL HALF OF THE SCALE (audit round 09).
+       The vertical gaps were named in the macro pass; the gutter between
+       two cells was a literal 36px, half the smallest interval between two
+       sections, and adjacent specimens read as one object. --cfg-gap-cell
+       is that gutter, on both axes, and it is pinned from both sides: a
+       cell-to-cell gap is never tighter than the step between two related
+       sections (72px), and a section's end is never tighter than its own
+       cells are to each other — so the token IS the supporting step, 72px,
+       the only value satisfying both. Measured at Gate 0 and after:
+       heading→specimen 22, gutter 36→72, section step 72 (kin) / 96, chapter
+       160. The ordering below is the invariant; the cell floor wins over the
+       column count, so a group that can no longer hold its columns above
+       --cfg-cell-min drops one instead of compressing its text. */
+    for (const width of [1440, 1366, 1024]) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto(url.replace('primitives.html', 'components.html'))
+      await still()
+      await page.waitForSelector('.sec', { timeout: 15000 })
+      await page.waitForTimeout(300)
+      const r = await page.evaluate(() => {
+        const px = (v) => parseFloat(v) || 0
+        const root = document.querySelector('.prim--comp')
+        const cell = px(getComputedStyle(root).getPropertyValue('--cfg-gap-cell'))
+        const R = (el) => el.getBoundingClientRect()
+        const groups = [...document.querySelectorAll('.stage--duet, .stage--trio')].map((g) => {
+          const cs = getComputedStyle(g)
+          const cells = [...g.children].filter((c) => c.classList.contains('spec'))
+          const rows = new Map()
+          for (const c of cells) {
+            const t = Math.round(R(c).top)
+            if (!rows.has(t)) rows.set(t, [])
+            rows.get(t).push(c)
+          }
+          const tops = [...rows.keys()].sort((a, b) => a - b)
+          const gutters = []
+          for (const t of tops) {
+            const row = rows.get(t).sort((a, b) => R(a).left - R(b).left)
+            for (let i = 1; i < row.length; i++) gutters.push(R(row[i]).left - R(row[i - 1]).right)
+          }
+          const rowGaps = []
+          for (let i = 1; i < tops.length; i++)
+            rowGaps.push(tops[i] - Math.max(...rows.get(tops[i - 1]).map((c) => R(c).bottom)))
+          return {
+            kind: g.classList.contains('stage--trio') ? 'trio' : 'duet',
+            sec: g.closest('.sec')?.querySelector('.sec__name')?.textContent?.trim() ?? '?',
+            colGap: px(cs.columnGap), rowGap: px(cs.rowGap), gutters, rowGaps,
+            /* The widest row, not the first: a showcase band spans the
+               whole group and would otherwise report the group as one
+               column. The floor is only owed to cells that share a row —
+               a single column is allowed under it (min(100%, floor)). */
+            cols: Math.max(...[...rows.values()].map((r) => r.length)),
+            floor: px(getComputedStyle(g).getPropertyValue('--cfg-cell-min')),
+            sharedWidths: [...rows.values()].filter((r) => r.length > 1).flatMap((r) => r.map((c) => R(c).width)),
+            /* Every cell says which state it is and what to make of it: a
+               label above, its own caption beneath, one of each. A group
+               caption standing in for several cells is the thing this
+               forbids, so the note count must equal the cell count. */
+            labels: cells.map((c) => c.querySelectorAll(':scope > .spec__head > .spec__label, :scope > .spec__label').length),
+            notes: cells.map((c) => c.querySelectorAll(':scope > .spec__note').length),
+            groupNotes: g.querySelectorAll('.spec__note').length,
+          }
+        })
+        /* The four named intervals, from the cascade rather than from a
+           screenshot: the step under a heading, the gutter, the smallest
+           true section-to-section step (a section that follows a chapter
+           label is attached to it, not separated from it), the chapter. */
+        const secs = [...document.querySelectorAll('.sec')]
+        const head = secs
+          .map((s) => {
+            const h = s.querySelector(':scope > .sec__head')
+            const first = [...s.children].find((c) => c !== h)
+            return h && first ? Math.round(R(first).top - R(h).bottom) : null
+          })
+          .filter((n) => n !== null)
+        const stepOf = (s) => px(getComputedStyle(s).marginBlockStart)
+        const sectionSteps = secs
+          .filter((s) => s.previousElementSibling?.classList.contains('sec'))
+          .map(stepOf)
+        const chapterSteps = [...document.querySelectorAll('.chapter')]
+          .filter((c) => c.previousElementSibling?.classList.contains('sec'))
+          .map(stepOf)
+        return {
+          cell, groups, headMax: Math.max(...head), headMin: Math.min(...head),
+          sectionMin: Math.min(...sectionSteps), chapterMin: Math.min(...chapterSteps),
+          over: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        }
+      })
+      const near = (a, b) => Math.abs(a - b) <= 1.5
+      checks++
+      if (r.over > 0) failures.push(`page rhythm  components.html at ${width}px scrolls sideways by ${r.over}px`)
+      checks++
+      if (r.cell !== 72) failures.push(`page rhythm  --cfg-gap-cell resolves to ${r.cell}px at ${width}px, not the supporting step (72px)`)
+      checks++
+      if (!(r.headMax < r.cell && r.cell <= r.sectionMin && r.sectionMin < r.chapterMin))
+        failures.push(
+          `page rhythm  the ordering inverts at ${width}px: heading→specimen ${r.headMin}–${r.headMax}, gutter ${r.cell}, section ${r.sectionMin}, chapter ${r.chapterMin} — it must read heading < gutter <= section < chapter`,
+        )
+      if (r.groups.length === 0) failures.push(`page rhythm  no duet or trio found at ${width}px`)
+      for (const g of r.groups) {
+        const where = `page rhythm  ${g.kind} in "${g.sec}" at ${width}px`
+        checks++
+        if (!near(g.colGap, r.cell) || !near(g.rowGap, r.cell))
+          failures.push(`${where}: gaps are ${g.colGap}/${g.rowGap}, not the cell token on both axes (${r.cell})`)
+        checks++
+        if (g.gutters.some((x) => !near(x, r.cell)) || g.rowGaps.some((x) => !near(x, r.cell)))
+          failures.push(`${where}: measured separations ${JSON.stringify([...g.gutters, ...g.rowGaps].map((x) => Math.round(x)))} — every one must be the cell gap ${r.cell}`)
+        checks++
+        if (g.labels.some((n) => n !== 1) || g.notes.some((n) => n !== 1) || g.groupNotes !== g.notes.length)
+          failures.push(`${where}: every cell carries one label and its own caption — labels ${JSON.stringify(g.labels)}, captions ${JSON.stringify(g.notes)}, captions in the group ${g.groupNotes}`)
+        checks++
+        if (g.sharedWidths.some((w) => w < g.floor - 1))
+          failures.push(`${where}: ${g.cols} columns put a cell under its ${g.floor}px floor — ${JSON.stringify(g.sharedWidths.map(Math.round))}; the floor wins over the count`)
+      }
+      if (width !== 1024) {
+        const trios = r.groups.filter((g) => g.kind === 'trio')
+        checks++
+        if (trios.length === 0 || trios.some((g) => g.cols !== 3))
+          failures.push(`page rhythm  a trio must still hold three columns at ${width}px — ${JSON.stringify(trios.map((g) => g.cols))}`)
+      }
+    }
+    await page.setViewportSize({ width: 1280, height: 900 })
+
     /* NOTHING CLIPS, AT MOBILE WIDTHS TOO (audit round 02): the components
        page scrolled sideways at 390 for weeks — a sources grid track sized
        to an unbreakable label, a code floor that did not yield to its
