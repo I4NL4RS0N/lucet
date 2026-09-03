@@ -667,6 +667,24 @@ const SCOPE_FIXTURES: readonly Fixture[] = [
       },
     ],
   },
+  {
+    label: 'Scope kept on the previous page',
+    note: 'The person kept Quarterly planning while the page beneath became Vendor call. The chip and the picker name the kept page; "This page" is offered as the first row and means the page on screen, and nothing else.',
+    events: [
+      { type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' },
+      { type: 'composer/changed' as const, text: 'Summarise what changed in the review for the vendor.' },
+      {
+        type: 'scope/moved' as const,
+        levels: SCOPE_LADDER.map((l) =>
+          l.id === 'page' ? { ...l, name: 'Vendor call', summary: 'Vendor call — the notes and the quote', itemCount: 2 } : l,
+        ),
+        selectedId: 'page',
+        note: 'Scope updated to Vendor call.',
+        pageName: 'Vendor call',
+      },
+      { type: 'scope/updateDeclined' as const },
+    ],
+  },
 ]
 
 const BUDGET_FIXTURES: readonly Fixture[] = [
@@ -894,6 +912,7 @@ export function ComponentsStage() {
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
                     onScopeUpdate={noop}
+                    onScopeRebind={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -920,6 +939,7 @@ export function ComponentsStage() {
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
                     onScopeUpdate={noop}
+                    onScopeRebind={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}
@@ -977,6 +997,7 @@ export function ComponentsStage() {
                     scope={stateOf(f).scope}
                     onScopeChange={noop}
                     onScopeUpdate={noop}
+                    onScopeRebind={noop}
                     selfId="you"
                     onChange={noop}
                     onSubmit={noop}

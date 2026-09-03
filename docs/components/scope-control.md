@@ -165,3 +165,34 @@ thread), per-turn scope provenance (turns record no scope today), a
 full-page context bar and a mobile bottom sheet (the full page and the
 phone are hosts without a scope feature), and section-level rungs (the
 ladder is the host's; it may publish any rungs it has).
+
+## "This page" is the page on screen (2026-09-03, independent verification)
+
+The verification found the one place the round had left "This page"
+meaning two things: after *Keep Reports review*, with Quarterly planning
+on screen, the chip named the kept page but the picker's selected row
+still read *This page*, its accessible name still began "Scope: This
+page", and nothing in the picker offered the page actually on screen.
+
+- **One derived model.** `scopeDisplay(scope)` in core produces the
+  chip's words, its accessible name and every row, so the visible and the
+  spoken cannot drift. The state keeps the host's ladder for the page on
+  screen (`onScreen`) while the scope stays behind on another page's
+  ladder — a move held, or the previous page kept.
+- **While the pages agree** the picker is unchanged: *This page ✓ · Plans
+  · All of Aquilo*, and the name reads "Scope: This page — Quarterly
+  planning — the plan and its 4 linked notes".
+- **While they differ** the picker offers *This page* first, from the
+  ladder on screen, unselected; the kept page appears by its own name
+  with the check and the line *Previously selected page · the summary and
+  its 2 appendices*; its wider rungs follow beneath. The chip reads
+  *Reports review*; the name reads "Scope: Reports review — the summary
+  and its 2 appendices", with no "This page" in it.
+- **Choosing the page on screen** (`scope/rebound`) brings its ladder into
+  force at that rung in one step, the note says *Scope updated to
+  Quarterly planning.*, the chip reads *This page* again, focus returns
+  to the trigger as every selection does, the draft and its selection
+  survive, and nothing is sent.
+- **A kept scope follows the page once the field is empty** — after a
+  fresh send, or on a new thread — because the pin protected a draft. A
+  wider scope never diverges and never gains an on-screen row.

@@ -48,7 +48,22 @@ export function createInitialState(
       monthlyResetAt: null,
     },
     restoredFrom: null,
-    scope: { levels: [], selectedId: null, movedNote: null, pending: null, pageName: null },
+    scope: { levels: [], selectedId: null, movedNote: null, pending: null, onScreen: null },
+  }
+}
+
+/* A scope left behind on another page's ladder follows the page once the
+   field is empty (component audit 04): the pin protected a draft. */
+function followOnScreen(scope: ThreadState['scope']): ThreadState['scope'] {
+  const ladder = scope.onScreen
+  if (!ladder) return scope
+  const keep = ladder.find((l) => l.id === scope.selectedId) ?? ladder[0]
+  return {
+    levels: ladder,
+    selectedId: keep?.id ?? null,
+    movedNote: keep ? `Scope updated to ${keep.name ?? keep.label}.` : null,
+    pending: null,
+    onScreen: null,
   }
 }
 
@@ -95,15 +110,27 @@ export function reduce(
         ),
         /* A new thread is an act on scope: a page change held behind the
            old draft applies now — the draft is gone with the thread. */
+        /* ...and a scope kept behind on another page's ladder follows the page
+           now, for the same reason. */
         scope: state.scope.pending
           ? {
               levels: state.scope.pending.levels,
               selectedId: state.scope.pending.selectedId,
               movedNote: null,
               pending: null,
-              pageName: state.scope.pageName,
+              onScreen: null,
             }
-          : { ...state.scope, movedNote: null, pending: null },
+          : state.scope.onScreen
+            ? {
+                levels: state.scope.onScreen,
+                selectedId: state.scope.onScreen.some((l) => l.id === state.scope.selectedId)
+                  ? state.scope.selectedId
+                  : (state.scope.onScreen[0]?.id ?? null),
+                movedNote: null,
+                pending: null,
+                onScreen: null,
+              }
+            : { ...state.scope, movedNote: null, pending: null },
         /* The month outlives the thread. A new conversation empties the
            window and the thread's tally, never the account's. */
         usage: {
@@ -291,9 +318,11 @@ export function reduce(
                 selectedId: state.scope.pending.selectedId,
                 movedNote: state.scope.pending.note,
                 pending: null,
-                pageName: state.scope.pageName,
+                onScreen: null,
               }
-            : state.scope,
+            : state.scope.onScreen && event.retryOf === null
+              ? followOnScreen(state.scope)
+              : state.scope,
         composer: {
           ...state.composer,
           intercept: null,
@@ -459,7 +488,7 @@ export function reduce(
     case 'scope/configured':
       return {
         ...state,
-        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null, pending: null, pageName: null },
+        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null, pending: null, onScreen: null },
       }
 
     case 'scope/changed':
@@ -488,11 +517,10 @@ export function reduce(
         (before.name ?? before.label) === (after.name ?? after.label) &&
         before.summary === after.summary &&
         before.itemCount === after.itemCount
-      const pageName = event.pageName ?? state.scope.pageName
       if (same)
         return {
           ...state,
-          scope: { ...state.scope, levels: event.levels, selectedId: event.selectedId, pending: null, pageName },
+          scope: { ...state.scope, levels: event.levels, selectedId: event.selectedId, pending: null, onScreen: null },
         }
       const move: ScopeMove = {
         levels: event.levels,
@@ -501,8 +529,8 @@ export function reduce(
         ...(event.pageName ? { pageName: event.pageName } : {}),
       }
       return state.composer.text.trim() !== ''
-        ? { ...state, scope: { ...state.scope, pending: move, pageName } }
-        : { ...state, scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null, pageName } }
+        ? { ...state, scope: { ...state.scope, pending: move, onScreen: event.levels } }
+        : { ...state, scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null, onScreen: null } }
     }
 
     case 'scope/updateAccepted':
@@ -514,7 +542,7 @@ export function reduce(
               selectedId: state.scope.pending.selectedId,
               movedNote: state.scope.pending.note,
               pending: null,
-              pageName: state.scope.pageName,
+              onScreen: null,
             },
           }
         : state
@@ -529,6 +557,28 @@ export function reduce(
           ...state.scope,
           movedNote: kept ? `Scope remains on ${kept.name ?? kept.label}.` : state.scope.movedNote,
           pending: null,
+          /* The page on screen stays known, so the picker can offer it. */
+          onScreen: state.scope.pending?.levels ?? state.scope.onScreen,
+        },
+      }
+    }
+
+    /* THE PAGE ON SCREEN, CHOSEN FROM THE PICKER (component audit 04): the
+       host's ladder for it comes into force at the rung the person named,
+       and the note says where the scope went. */
+    case 'scope/rebound': {
+      const ladder = state.scope.onScreen
+      if (!ladder) return state
+      const level = ladder.find((l) => l.id === event.levelId) ?? ladder[0]
+      if (!level) return state
+      return {
+        ...state,
+        scope: {
+          levels: ladder,
+          selectedId: level.id,
+          movedNote: `Scope updated to ${level.name ?? level.label}.`,
+          pending: null,
+          onScreen: null,
         },
       }
     }

@@ -45,6 +45,8 @@ export interface PromptInputProps {
   onScopeChange?: ((levelId: string) => void) | undefined
   /** The held page change (round 05 P2): Use new page (true) or Keep previous page (false). */
   onScopeUpdate?: ((useNewPage: boolean) => void) | undefined
+  /** The page on screen chosen from the scope picker while the scope was pinned elsewhere. */
+  onScopeRebind?: ((levelId: string) => void) | undefined
   composer: ComposerState
   model: ModelState
   service: ServiceState
@@ -222,6 +224,7 @@ export function PromptInput({
   scope,
   onScopeChange,
   onScopeUpdate,
+  onScopeRebind,
   composer,
   model,
   service,
@@ -470,6 +473,7 @@ export function PromptInput({
                   }
                 : undefined
             }
+            onRebind={onScopeRebind}
             disabled={composer.locked}
           />
         ) : null}

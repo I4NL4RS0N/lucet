@@ -389,6 +389,7 @@ function AppCore({
               onScopeUpdate={(useNewPage) =>
                 lucet.store.dispatch({ type: useNewPage ? 'scope/updateAccepted' : 'scope/updateDeclined' })
               }
+              onScopeRebind={(levelId) => lucet.store.dispatch({ type: 'scope/rebound', levelId })}
               model={state.model}
               service={state.service}
               usage={state.usage}

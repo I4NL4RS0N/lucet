@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Scheduler, ToolPart } from './index.js'
-import {
+import { scopeDisplay,
   createLucet,
   createManualClock,
   createStore,
@@ -349,6 +349,60 @@ describe('scope control', () => {
     expect(composer.text).toBe('List every open risk.')
   })
 
+  it('the page on screen, chosen from the picker, comes into force in one step; matching pages read as This page', async () => {
+    /* Matching: the ladder in force is the page's own. */
+    const plain = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await plain.trigger('scope-ladder')
+    const before = scopeDisplay(plain.getState().scope)!
+    expect(before.divergent).toBe(false)
+    expect(before.label).toBe('This page')
+    expect(before.name).toBe('Scope: This page — Quarterly planning — the plan and its 4 linked notes')
+    expect(before.rows.map((r) => r.label)).toEqual(['This page', 'Plans', 'All of Aquilo'])
+    /* Held, then kept: divergent by construction while the pages differ. */
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('scope-moved')
+    expect(scopeDisplay(lucet.getState().scope)!.divergent).toBe(true)
+    lucet.store.dispatch({ type: 'scope/updateDeclined' })
+    expect(scopeDisplay(lucet.getState().scope)!.divergent).toBe(true)
+    /* Rebind: the ladder on screen, at the named rung; the note says so;
+       the draft is untouched and nothing was sent. */
+    const sends = lucet.getLog().filter((e) => e.event.type === 'turn/submitted').length
+    lucet.store.dispatch({ type: 'scope/rebound', levelId: 'page' })
+    const after = lucet.getState()
+    expect(after.scope.onScreen).toBeNull()
+    expect(after.scope.selectedId).toBe('page')
+    expect(after.scope.levels[0]?.name).toBe('Vendor call')
+    expect(after.scope.movedNote).toBe('Scope updated to Vendor call.')
+    expect(scopeDisplay(after.scope)!.label).toBe('This page')
+    expect(after.composer.text).toBe('Summarise what changed in the review for the vendor.')
+    expect(lucet.getLog().filter((e) => e.event.type === 'turn/submitted').length).toBe(sends)
+    /* A wider scope never diverges: no row is added and it stays named. */
+    lucet.store.dispatch({ type: 'scope/changed', levelId: 'all' })
+    lucet.store.dispatch({ type: 'scope/moved', levels: after.scope.levels.map((l) => (l.id === 'page' ? { ...l, name: 'Quarterly planning', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 } : l)), selectedId: 'all', note: 'Scope updated to Quarterly planning.', pageName: 'Quarterly planning' })
+    const wide = scopeDisplay(lucet.getState().scope)!
+    expect(wide.divergent).toBe(false)
+    expect(wide.label).toBe('All of Aquilo')
+    expect(wide.rows).toHaveLength(3)
+  })
+
+  it('a kept scope follows the page once the field is empty — after a fresh send, and on a new thread', async () => {
+    const run = async () => {
+      const l = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+      await l.trigger('scope-moved')
+      l.store.dispatch({ type: 'scope/updateDeclined' })
+      return l
+    }
+    const sent = await run()
+    await sent.submit(sent.getState().composer.text)
+    expect(sent.getState().scope.onScreen).toBeNull()
+    expect(sent.getState().scope.levels[0]?.name).toBe('Vendor call')
+    expect(sent.getState().scope.movedNote).toBe('Scope updated to Vendor call.')
+    const fresh = await run()
+    fresh.reset()
+    expect(fresh.getState().scope.onScreen).toBeNull()
+    expect(fresh.getState().scope.levels[0]?.name).toBe('Vendor call')
+  })
+
   it('the decision names both pages, keeping says so, and a fresh send lets the held move apply', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await lucet.trigger('scope-moved')
@@ -360,9 +414,20 @@ describe('scope control', () => {
     lucet.store.dispatch({ type: 'scope/updateDeclined' })
     expect(lucet.getState().scope.movedNote).toBe('Scope remains on Reports review.')
     expect(lucet.getState().scope.levels[0]?.summary).toContain('Reports review')
-    /* The state knows the page beneath is Vendor call while the scope stays
-       on Reports review — the control names the scope's page, not "This page". */
-    expect(lucet.getState().scope.pageName).toBe('Vendor call')
+    /* The state keeps the ladder on screen (Vendor call) while the scope stays
+       on Reports review: the display names the pinned page and offers the
+       page on screen as the first row — one model for chip, name and rows. */
+    const kept = lucet.getState().scope
+    expect(kept.onScreen?.[0]?.name).toBe('Vendor call')
+    const shown = scopeDisplay(kept)!
+    expect(shown.divergent).toBe(true)
+    expect(shown.label).toBe('Reports review')
+    expect(shown.name).toBe('Scope: Reports review — the summary and its 2 appendices')
+    expect(shown.rows[0]).toMatchObject({ label: 'This page', onScreen: true, selected: false, count: 2 })
+    expect(shown.rows[0]?.secondary).toContain('Vendor call')
+    expect(shown.rows[1]).toMatchObject({ label: 'Reports review', selected: true, onScreen: false })
+    expect(shown.rows[1]?.secondary).toBe('Previously selected page · the summary and its 2 appendices')
+    expect(shown.rows.map((r) => r.label)).toEqual(['This page', 'Reports review', 'Reports', 'All of Aquilo'])
     /* Held again, then sent: the words go against the kept scope, and the
        move applies behind them because the field is empty now. */
     lucet.store.dispatch({ type: 'scope/moved', levels: held.pending!.levels, selectedId: 'page', note: 'Scope updated to Vendor call.', pageName: 'Vendor call' })

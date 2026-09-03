@@ -138,6 +138,10 @@ export type LucetEvent =
   | { type: 'scope/updateAccepted' }
   /** The held move dropped: the person kept the previous page. */
   | { type: 'scope/updateDeclined' }
+  /** The person chose the page on screen from the picker while the scope
+      was pinned elsewhere: the host's ladder for it comes into force, at
+      the named rung (component audit 04). */
+  | { type: 'scope/rebound'; levelId: string }
   | {
       /**
        * A cited source's condition changed AFTER the response settled —
@@ -244,6 +248,8 @@ export function describeEvent(event: LucetEvent): string {
       return 'Scope updated to the new page'
     case 'scope/updateDeclined':
       return 'Scope kept on the previous page'
+    case 'scope/rebound':
+      return 'Scope rebound to the page on screen'
     case 'source/changed':
       return event.status === 'gone'
         ? 'A cited source is no longer available'

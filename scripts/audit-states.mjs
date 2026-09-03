@@ -2031,6 +2031,67 @@ async function main() {
       await page.waitForTimeout(200)
       await resetAndInspect('scope and navigation')
     }
+    /* 4f. "THIS PAGE" IS THE PAGE ON SCREEN (component audit 04, independent
+       verification). With the scope kept on Quarterly planning while the
+       page beneath is Carrier directory: the chip and its accessible name
+       say Quarterly planning; the picker offers This page (Carrier
+       directory) first, unselected, and marks Quarterly planning as the
+       previously selected page; choosing the first row by keyboard brings
+       the page on screen into force in one step, focus returns to the
+       trigger, the draft and its selection survive, nothing is sent; a
+       wider scope never diverges; navigating back to the kept page reads
+       This page again. */
+    {
+      await coldStart()
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Drawer' }).first().click()
+      await page.waitForTimeout(350)
+      const nav = async (tab) => { await page.locator('.cfg__mock-tabs button', { hasText: tab }).first().click(); await page.waitForTimeout(250) }
+      const readPinned = () => page.evaluate(() => {
+        const s = window.__lucet.getState()
+        const chip = [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0)
+        const menu = chip?.closest('details')
+        const rows = menu ? [...menu.querySelectorAll('.lucet-scope__row')].map((r) => ({ label: r.querySelector('.lucet-scope__row-label')?.textContent, secondary: r.querySelector('.lucet-scope__summary')?.textContent, pressed: r.getAttribute('aria-pressed'), onScreen: r.hasAttribute('data-on-screen') })) : []
+        const field = [...document.querySelectorAll('.lucet-prompt__field')].find((f) => f.getBoundingClientRect().width > 0)
+        const a = document.activeElement
+        return { frame: document.querySelector('.cfg__frame-title')?.textContent ?? null, selectedId: s.scope.selectedId, onScreen: s.scope.onScreen !== null, chip: chip?.textContent.trim() ?? null, name: chip?.getAttribute('aria-label') ?? null, open: menu?.open ?? null, rows, note: s.scope.movedNote, draft: field?.value ?? null, selection: field ? [field.selectionStart, field.selectionEnd] : null, focus: a === document.body ? 'body' : a?.className?.toString().split(' ')[0] || a?.tagName, focusPressed: a?.getAttribute?.('aria-pressed') ?? null, sends: window.__lucet.getLog().filter((e) => e.event.type === 'turn/submitted').length }
+      })
+      await page.locator('.lucet-prompt__field:visible').first().fill('Summarise what changed in the review for the vendor.')
+      await page.evaluate(() => { const f = [...document.querySelectorAll('.lucet-prompt__field')].find((x) => x.getBoundingClientRect().width > 0); f.focus(); f.setSelectionRange(10, 22) })
+      await nav('Carriers')
+      await page.locator('.lucet-scope__pending button', { hasText: 'Keep' }).first().click(); await page.waitForTimeout(200)
+      const pinned = await readPinned()
+      /* keyboard: Enter opens on the pinned (selected) row; Home reaches the page on screen; Enter chooses it */
+      await page.locator('.lucet-scope__button:visible').first().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(200)
+      const opened = await readPinned()
+      await page.keyboard.press('Home'); await page.waitForTimeout(60)
+      const onFirst = await readPinned()
+      await page.keyboard.press('Enter'); await page.waitForTimeout(200)
+      const rebound = await readPinned()
+      checks += 4
+      if (pinned.chip !== 'Quarterly planning' || pinned.name !== 'Scope: Quarterly planning — the plan and its 4 linked notes' || !pinned.onScreen || pinned.frame !== 'Carrier directory')
+        failures.push(`scope pinned: the chip and its name must say the kept page, not This page — ${JSON.stringify(pinned)}`)
+      if (!opened.open || opened.rows.length !== 4 || opened.rows[0].label !== 'This page' || !/Carrier directory/.test(opened.rows[0].secondary || '') || opened.rows[0].pressed !== 'false' || !opened.rows[0].onScreen || opened.rows[1].label !== 'Quarterly planning' || opened.rows[1].pressed !== 'true' || !/^Previously selected page · /.test(opened.rows[1].secondary || '') || opened.focusPressed !== 'true' || onFirst.focusPressed !== 'false')
+        failures.push(`scope pinned picker: This page (on screen) first and unselected, the kept page named and selected, focus opening on the selected row and Home reaching the first — ${JSON.stringify({ opened: opened.rows, openedFocus: opened.focusPressed, onFirstFocus: onFirst.focusPressed })}`)
+      if (rebound.open !== false || rebound.selectedId !== 'page' || rebound.onScreen || rebound.chip !== 'This page' || rebound.name !== 'Scope: This page — Carrier directory — the directory itself' || rebound.note !== 'Scope updated to Carrier directory.' || rebound.focus !== 'lucet-scope__button' || rebound.draft !== 'Summarise what changed in the review for the vendor.' || rebound.selection?.join() !== '10,22' || rebound.sends !== pinned.sends)
+        failures.push(`scope rebind: choosing the page on screen must bring its ladder into force once, say so, return focus to the trigger and touch nothing else — ${JSON.stringify(rebound)}`)
+      /* navigate away with the draft, keep, then back to the kept page: This page again, same identity */
+      await nav('Plans'); await page.locator('.lucet-scope__pending button', { hasText: 'Keep' }).first().click(); await page.waitForTimeout(150)
+      const keptAgain = await readPinned()
+      await nav('Carriers')
+      const back = await readPinned()
+      /* a wider scope never diverges */
+      await page.evaluate(() => window.__lucet.store.dispatch({ type: 'scope/changed', levelId: 'all' })); await nav('Reports')
+      const wide = await readPinned()
+      await page.locator('.lucet-scope__button:visible').first().click(); await page.waitForTimeout(200)
+      const wideOpen = await readPinned()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100)
+      if (keptAgain.chip !== 'Carrier directory' || back.chip !== 'This page' || back.selectedId !== 'page' || !/Carrier directory/.test(back.name || '') || back.onScreen
+        || wide.chip !== 'All of Aquilo' || wide.onScreen || wideOpen.rows.length !== 3 || wideOpen.rows.some((r) => r.onScreen))
+        failures.push(`scope identity: back on the kept page the chip reads This page with the same scope; a wider scope gains no on-screen row — ${JSON.stringify({ keptAgain: keptAgain.chip, back, wideRows: wideOpen.rows })}`)
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
+      await page.waitForTimeout(200)
+      await resetAndInspect('scope pinned picker')
+    }
     /* Metadata: the version line counts. */
     await coldStart()
     await fireFromRail('Version history', 'Features')

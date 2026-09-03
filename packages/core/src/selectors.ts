@@ -7,7 +7,7 @@
  * first, and the component renders it as words.
  */
 
-import type { BudgetIntercept, ModelOption, SubmitBlocker, ThreadState, UsageState } from './types.js'
+import type { BudgetIntercept, ModelOption, ScopeLevel, ScopeState, SubmitBlocker, ThreadState, UsageState } from './types.js'
 
 /** The slice the blocker logic actually reads, so components holding only
     composer + service can call it without inventing a whole thread. */
@@ -154,4 +154,83 @@ export function budgetHold(state: BudgetHoldInput): BudgetIntercept | null {
   const projection = projectNextTurn(state)
   if (projection === null || projection.costUsd <= remainingUsd) return null
   return { text: state.composer.text, costUsd: projection.costUsd, remainingUsd }
+}
+
+/**
+ * ONE DISPLAY MODEL FOR THE SCOPE CONTROL (component audit 04): what the
+ * chip says, what its accessible name says, and what every picker row says
+ * all derive from here, so the visible and the spoken can never drift.
+ *
+ * "This page" means the page on screen, and nothing else. While the scope
+ * is pinned to another page's ladder (a move held behind a draft, or the
+ * previous page kept), the pinned page is named, its row says it was the
+ * previous selection, and the page on screen is offered as the first row
+ * from the host's own ladder for it — the rung with the same id.
+ */
+export interface ScopeRow {
+  readonly key: string
+  readonly label: string
+  readonly secondary: string
+  readonly count: number
+  readonly selected: boolean
+  /** Choosing this row brings the ladder on screen into force (`scope/rebound`). */
+  readonly onScreen: boolean
+  readonly levelId: string
+}
+
+export interface ScopeDisplay {
+  /** The chip's words. */
+  readonly label: string
+  /** The chip's accessible name. */
+  readonly name: string
+  /** True while the selected rung names a page other than the one on screen. */
+  readonly divergent: boolean
+  readonly rows: readonly ScopeRow[]
+}
+
+const rungName = (level: ScopeLevel) => level.name ?? level.label
+
+/* A summary that opens with the rung's own name ("Reports review — the
+   summary…") reads once when the name already leads. */
+function bareSummary(level: ScopeLevel): string {
+  const name = level.name
+  if (!name) return level.summary
+  const lead = `${name} — `
+  return level.summary.startsWith(lead) ? level.summary.slice(lead.length) : level.summary
+}
+
+export function scopeDisplay(scope: ScopeState): ScopeDisplay | null {
+  if (scope.levels.length === 0) return null
+  const selected = scope.levels.find((l) => l.id === scope.selectedId) ?? scope.levels[0]!
+  const counterpart = scope.onScreen?.find((l) => l.id === selected.id)
+  const divergent = counterpart !== undefined && rungName(counterpart) !== rungName(selected)
+  const rows: ScopeRow[] = []
+  if (divergent && counterpart)
+    rows.push({
+      key: `on-screen:${counterpart.id}`,
+      label: counterpart.label,
+      secondary: counterpart.summary,
+      count: counterpart.itemCount,
+      selected: false,
+      onScreen: true,
+      levelId: counterpart.id,
+    })
+  for (const level of scope.levels) {
+    const pinned = divergent && level.id === selected.id
+    rows.push({
+      key: level.id,
+      label: pinned ? rungName(level) : level.label,
+      secondary: pinned ? `Previously selected ${level.name ? 'page' : 'scope'} · ${bareSummary(level)}` : level.summary,
+      count: level.itemCount,
+      selected: level.id === selected.id,
+      onScreen: false,
+      levelId: level.id,
+    })
+  }
+  return {
+    label: divergent ? rungName(selected) : selected.label,
+    name: divergent ? `Scope: ${rungName(selected)} — ${bareSummary(selected)}` : `Scope: ${selected.label} — ${selected.summary}`,
+    divergent,
+    rows,
+  }
 }

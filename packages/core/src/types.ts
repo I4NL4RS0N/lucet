@@ -215,13 +215,14 @@ export interface ScopeState {
       Use <new scope>. Null when nothing is held. */
   readonly pending: ScopeMove | null
   /**
-   * The host's current page, as the last move reported it (component audit
-   * 04). The control says "This page" only while the selected rung's page
-   * IS this page; when the ground moved and the scope stayed — a move held
-   * behind a draft, or the previous page kept — it names the page instead.
-   * Null until a move has said where the person is.
+   * The host's ladder for the page ON SCREEN while the scope stayed behind
+   * on another page's ladder — a move held behind a draft, or the previous
+   * page kept (component audit 04). From it the control offers the page on
+   * screen as a row and names the pinned page instead of "This page", so
+   * the two are never one word for two things. Null when the ladder in
+   * force is the page's own.
    */
-  readonly pageName: string | null
+  readonly onScreen: readonly ScopeLevel[] | null
 }
 
 /** The glyph a recovery verb is drawn with — its own, never a repeated
