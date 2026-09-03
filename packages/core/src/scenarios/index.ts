@@ -17,6 +17,11 @@
 import { defineScenario } from '../runtime/scenario.js'
 import type { Scenario } from '../runtime/scenario.js'
 
+/* EVERY ENTRY POINT RUNS THE SEQUENCE AT ITS SCRIPTED PACE — the rail, the
+   Features tab, the cold-start suggestion and the deep link alike — and none
+   presents a settled state in place of it; the one exception is a
+   once-per-thread scenario fired again, which only re-enters its preview
+   (settled: the timing review of 2026-09-03, with paired frames). */
 export const happyPath = defineScenario({
   id: 'happy-path',
   label: 'Complete response',

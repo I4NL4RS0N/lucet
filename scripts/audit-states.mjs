@@ -895,6 +895,11 @@ async function main() {
       .locator('.lucet-thread__pair')
       .first()
     await multiplayerPair.scrollIntoViewIfNeeded()
+    /* The pointer rests wherever the last click left it; parked over this
+       pair it would reveal the row by hover and fail the law for the
+       wrong reason. Park it in the corner first. */
+    await page.mouse.move(0, 0)
+    await page.waitForTimeout(250)
     const actionsBefore = await multiplayerPair.evaluate((el) => {
       const a = el.querySelector('.lucet-actions')
       return a ? Number(getComputedStyle(a).opacity) : null
@@ -1404,6 +1409,36 @@ async function main() {
     if (did.turns !== 1 || did.order.slice(0, 3).join() !== 'lucet-tool,lucet-tool,lucet-tool' || did.order.indexOf('lucet-md') !== 3 || did.label !== 'Created' || did.rows !== 3 || did.ms < 1300 || did.ms > 1800 || !did.staged)
       failures.push(`do-plan: receipts, summary and created rows are not in order — ${JSON.stringify(did)}`)
     await resetAndInspect('do-plan')
+    /* 1a. The same staging from the OTHER entry points (the timing review,
+       2026-09-03): the rail trigger and the deep link must run the sequence
+       exactly as the cold-start suggestion does — no entry point presents a
+       settled state in place of it. The deep link opens on two settled
+       history turns first, so the samples read the LAST turn. */
+    const stagedFrom = async (name, t0) => {
+      const at = async (ms) => {
+        const wait = ms - (Date.now() - t0)
+        if (wait > 0) await page.waitForTimeout(wait)
+        return page.evaluate(() => {
+          const turn = [...document.querySelectorAll('.lucet-thread__pair')].at(-1)
+          return { statuses: turn ? [...turn.querySelectorAll('.lucet-tool')].map((e) => e.dataset.status) : [], answer: !!turn?.querySelector('.lucet-md'), firstOnPage: document.querySelector('.lucet-tool')?.dataset.status ?? null }
+        })
+      }
+      const r1 = await at(480), r2 = await at(950), r3 = await at(1450)
+      checks++
+      if (r1.statuses.join() !== 'running,pending,pending' || r1.answer || r2.statuses.join() !== 'succeeded,running,pending' || r2.answer || r3.statuses.join() !== 'succeeded,succeeded,running' || r3.answer)
+        failures.push(`do-plan (${name}): the receipts are not staged from this entry point — ${JSON.stringify({ r1, r2, r3 })}`)
+      await settled()
+      await page.waitForTimeout(150)
+    }
+    await coldStart()
+    await fireFromRail('Do —', 'States')
+    await stagedFrom('rail trigger', Date.now())
+    await resetAndInspect('do-plan via the rail')
+    await page.goto(url.replace('primitives.html', 'index.html?state=do-plan'))
+    await still()
+    await page.waitForFunction(() => window.__lucet && window.__lucet.getState().turns.length === 3, null, { timeout: 15000 })
+    await stagedFrom('deep link', Date.now())
+    await resetAndInspect('do-plan via the deep link')
     /* 1b. Reset mid-group cancels what remains. */
     await coldStart()
     await page.locator('.lucet-chips__chip', { hasText: 'Turn my notes into a short plan' }).first().click()
@@ -1462,6 +1497,28 @@ async function main() {
       || queueLabel !== 'Queue' || !queuedStrip || sent.turns !== 2 || sent.queued !== null || sent.last !== 'And the southern site?' || sent.yours !== 'you')
       failures.push(`multiplayer: ownership and the queue are not live — ${JSON.stringify({ a1, a2, full, queueLabel, queuedStrip, sent })}`)
     await resetAndInspect('multiplayer')
+    /* 3a. Ada from the deep link (the timing review, 2026-09-03): the page
+       opens on two settled history turns, then her turn runs live — sampled
+       on the LAST turn, as a reader would see it. */
+    await page.goto(url.replace('primitives.html', 'index.html?state=multiplayer'))
+    await still()
+    await page.waitForFunction(() => window.__lucet && window.__lucet.inspect().locked, null, { timeout: 15000 })
+    const adaLinkT0 = Date.now()
+    const adaLinkAt = async (ms) => {
+      const wait = ms - (Date.now() - adaLinkT0)
+      if (wait > 0) await page.waitForTimeout(wait)
+      return page.evaluate(() => {
+        const s = window.__lucet.getState(); const last = s.turns.at(-1)
+        const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, by: s.composer.lockedBy, chars: text.length, streaming: last?.response?.status === 'streaming', strip: !!document.querySelector('.lucet-prompt__status')?.textContent.includes('Ada is taking a turn'), firstResponse: s.turns[0]?.response?.status ?? null }
+      })
+    }
+    const l1 = await adaLinkAt(300), l2 = await adaLinkAt(1500)
+    checks++
+    if (l1.turns !== 3 || l1.author !== 'Ada' || l1.by !== 'Ada' || l1.chars !== 0 || !l1.streaming || !l1.strip || l1.firstResponse !== 'complete' || l2.chars < 1 || l2.chars >= full || !l2.streaming)
+      failures.push(`multiplayer (deep link): Ada's turn is not live from the deep link — ${JSON.stringify({ l1, l2 })}`)
+    await page.waitForFunction(() => !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
+    await resetAndInspect('multiplayer via the deep link')
     /* 3b. Nothing queued: Send comes back when her turn lands, the draft untouched. */
     await coldStart()
     await fireFromRail('Another person', 'Features')
