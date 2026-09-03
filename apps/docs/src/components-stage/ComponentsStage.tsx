@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createInitialState, createLucet, reduce } from 'lucet-core'
-import type { LucetEvent, ThreadState } from 'lucet-core'
+import type { RecoveryVerb, LucetEvent, ThreadState } from 'lucet-core'
 import { PromptInput, SuggestionChips, Thread } from 'lucet-react'
 import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
 import { Chapter } from '../components/Chapter'
@@ -184,7 +184,12 @@ function turn(
       detail?: string
       args?: string
       result?: string
+      /** A running specimen shows a FIXED elapsed time (component audit
+          02): a specimen demonstrates a state, and a state does not age. */
+      elapsedMs?: number
     }
+    /** The ending's own exit, as the Konfabulator's scenarios stamp it. */
+    recovery?: RecoveryVerb
     /** Reasoning text streamed before the reply. */
     reasoning?: string
     settle?: 'complete' | 'interrupted' | 'failed' | 'refused' | 'streaming'
@@ -199,14 +204,14 @@ function turn(
     { type: 'response/started', turnId: t, messageId: rm },
   ]
   if (opts.reasoning !== undefined) events.push({ type: 'part/added', messageId: rm, part: { kind: 'reasoning', id: `${rm}_r`, text: opts.reasoning } })
-  if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null, args: opts.tool.args ?? null, result: opts.tool.result ?? null } })
+  if (opts.tool) events.push({ type: 'part/added', messageId: rm, part: { kind: 'tool', id: `${rm}_t`, name: opts.tool.name, status: opts.tool.status, detail: opts.tool.detail ?? null, args: opts.tool.args ?? null, result: opts.tool.result ?? null, ...(opts.tool.elapsedMs === undefined ? {} : { elapsedMs: opts.tool.elapsedMs }) } })
   if (opts.reply !== undefined) {
     events.push({ type: 'part/added', messageId: rm, part: { kind: 'text', id: `${rm}_x`, text: '' } })
     events.push({ type: 'part/delta', messageId: rm, partId: `${rm}_x`, delta: opts.reply })
   }
   const settle = opts.settle ?? 'complete'
   if (settle !== 'streaming') {
-    events.push({ type: 'response/settled', messageId: rm, status: settle, reason: opts.reason ?? null })
+    events.push({ type: 'response/settled', messageId: rm, status: settle, reason: opts.reason ?? null, ...(opts.recovery ? { recovery: opts.recovery } : {}) })
     events.push({ type: 'composer/unlocked' })
   }
   return events
@@ -336,13 +341,14 @@ const VERSIONS_FIXTURES: readonly Fixture[] = [
 const TOOL_FIXTURES: readonly Fixture[] = [
   {
     label: 'A tool at work',
-    note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run.',
+    note: 'A running tool is a progress report, not the subject: the orb and the tool’s name. The receipt of what it was asked is already behind the chevron, mid-run. The clock reads 1.2s and holds: this specimen demonstrates a state, and a state does not age — sequences (the live thread above, the Konfabulator’s Do path) run on the real clock and settle.',
     events: [
       ...turn(1, 'Check the three sources I flagged.', {
         tool: {
           name: 'Searching the documents',
           status: 'running',
           args: '{ "query": "sources flagged this week", "limit": 3 }',
+          elapsedMs: 1200,
         },
         settle: 'streaming',
       }),
@@ -350,7 +356,7 @@ const TOOL_FIXTURES: readonly Fixture[] = [
   },
   {
     label: 'A tool, partly returned',
-    note: 'The differentiator. Partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it.',
+    note: 'The differentiator. Partial wears the caution ink, says so in words, and the receipt shows exactly what came back. The chip stays calm; the word carries it. The exit is the state’s own — Retry missing source, one press, a new version — not a generic Ask again.',
     events: [
       ...turn(1, 'Check the three sources I flagged.', {
         tool: {
@@ -361,6 +367,7 @@ const TOOL_FIXTURES: readonly Fixture[] = [
           result: '{ "returned": 2, "timed_out": ["carrier quote"], "retryable": true }',
         },
         reply: 'Two of the three have changed. The third did not come back in time, so this is not the full picture.',
+        recovery: { label: 'Retry missing source', icon: 'retry-one', mode: 'retry', at: null, scheduledAt: null },
       }),
     ],
   },

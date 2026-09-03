@@ -56,6 +56,14 @@ export interface ToolPart {
    * them, and the display must then offer nothing to expand.
    */
   readonly args: string | null
+  /**
+   * How long the tool had already been running when this part arrived, in
+   * ms — set by a host that replays or rehydrates a running state (a lab
+   * specimen, a page restored mid-run). The receipt shows it as a fixed
+   * readout instead of timing from its own mount. Absent for live runs,
+   * which time themselves. (Component audit 02.)
+   */
+  readonly elapsedMs?: number
   readonly result: string | null
 }
 

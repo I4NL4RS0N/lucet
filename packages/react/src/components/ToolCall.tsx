@@ -36,7 +36,26 @@ export interface ToolCallProps {
   args?: string | null | undefined
   /** Raw output once settled. */
   result?: string | null | undefined
+  /** A known elapsed time for a running receipt (a replayed or rehydrated
+      state): shown fixed instead of timed from mount. */
+  elapsedMs?: number | undefined
   defaultOpen?: boolean | undefined
+}
+
+/* Payloads are usually JSON serialized on one line. Pretty-printed with a
+   stable two-space indent, each key sits on its own line and the text can
+   wrap at its structure — after a colon, after a comma — instead of
+   scrolling sideways. A single unbreakable token (a URL, a hash, an id)
+   is left whole: broken mid-token it reads worse than a scrollbar, and the
+   scrollbar stays as the last resort for exactly that. Anything that is
+   not JSON is shown as it came. (Component audit 02.) */
+function pretty(text: string): string {
+  try {
+    const value: unknown = JSON.parse(text)
+    return typeof value === 'object' && value !== null ? JSON.stringify(value, null, 2) : text
+  } catch {
+    return text
+  }
 }
 
 const ICON: Record<Exclude<ToolStatus, 'running'>, IconName> = {
@@ -66,13 +85,16 @@ const STATE_WORD: Partial<Record<ToolStatus, string>> = {
    and on settle the runtime's own receipt (`detail`) replaces it — the
    counter stops at the truth, never at a fake. The readout rule holds:
    this tracks, it does not animate. */
-function LiveElapsed() {
-  const [tenths, setTenths] = useState(0)
+function LiveElapsed({ fixedMs }: { fixedMs?: number | undefined }) {
+  const [tenths, setTenths] = useState(fixedMs === undefined ? 0 : Math.floor(fixedMs / 100))
   useEffect(() => {
+    /* A part that arrived knowing its elapsed time is a state on display,
+       not a run in progress: the readout holds, the orb still turns. */
+    if (fixedMs !== undefined) return
     const born = performance.now()
     const t = setInterval(() => setTenths(Math.floor((performance.now() - born) / 100)), 100)
     return () => clearInterval(t)
-  }, [])
+  }, [fixedMs])
   /* Mono + tabular: a ticking counter in proportional digits wobbles in
      width every tenth, and the eye reads the jitter as activity it isn't.
      The word beside it is the static label (round 06): "Running" reads in
@@ -90,13 +112,13 @@ function Receipt({ label, text }: { label: string; text: string }) {
     <div className="lucet-tool__io">
       <span className="lucet-tool__io-label">{label}</span>
       <pre className="lucet-tool__io-pre" tabIndex={0} role="region" aria-label={label}>
-        <code>{text}</code>
+        <code>{pretty(text)}</code>
       </pre>
     </div>
   )
 }
 
-export function ToolCall({ name, status, detail, args, result, defaultOpen }: ToolCallProps) {
+export function ToolCall({ name, status, detail, args, result, elapsedMs, defaultOpen }: ToolCallProps) {
   /* Settling is an EVENT only when this instance actually watched the
      run: a chip that mounts already settled (the boot seed, a restored
      copy) arrives still — motion is evidence, and nothing happened
@@ -141,7 +163,7 @@ export function ToolCall({ name, status, detail, args, result, defaultOpen }: To
         {status === 'succeeded' ? <span className="lucet-visually-hidden">Done.</span> : null}
       </span>
       {status === 'running' ? (
-        <LiveElapsed />
+        <LiveElapsed fixedMs={elapsedMs} />
       ) : status === 'pending' ? (
         <span className="lucet-tool__detail lucet-tool__state">
           <span className="lucet-tool__state-word">{STATE_WORD.pending}</span>

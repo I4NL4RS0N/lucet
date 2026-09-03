@@ -75,3 +75,32 @@ no travel, no scale, no bounce); a receipt that mounts already settled
 paints still, because motion is evidence and nothing happened here.
 Reduced motion keeps the sequence and the labels and drops the fade.
 Reset mid-run cancels what remains.
+
+## Payloads wrap at their structure (2026-09-03)
+
+A payload usually arrives as JSON serialized on one line, and on a phone
+that line ran off the right edge of the receipt behind a scrollbar, in the
+receipt's most informative state. The receipt now pretty-prints JSON with
+a stable two-space indent and lets the text wrap at its structure, after a
+colon or a comma, with `white-space: pre-wrap`. It never breaks a token:
+a URL, a hash or an id broken mid-word reads worse than a scrollbar, and
+those are exactly what a developer opens a payload to read. The horizontal
+scroll stays as the last resort for a single unbreakable token wider than
+the receipt; no fixture in the repo reaches it, and the states audit
+asserts that at 390 and 320 on every page. Anything that is not JSON is
+shown as it came. The labels, the monospace treatment and the body's
+subordination to the summary are unchanged.
+
+## Specimens and the clock (2026-09-03)
+
+A specimen that demonstrates a state shows a fixed, plausible elapsed
+time; a specimen that demonstrates a sequence runs on the real clock and
+settles. The lab's running receipt read 6 seconds, then 118, over the
+course of one review, and made a three-source lookup look stalled while
+making every capture nondeterministic. It now arrives knowing it has run
+for 1.2 seconds (`ToolPart.elapsedMs`, the field a host uses to replay or
+rehydrate a running state) and the readout holds while the orb still
+turns. The live thread on the same page and the Konfabulator's receipts
+are untouched: they time themselves and settle, because they demonstrate
+sequences. The partial specimen now carries its own exit, Retry missing
+source, as the Konfabulator's scenario does.

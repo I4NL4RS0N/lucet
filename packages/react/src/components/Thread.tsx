@@ -131,6 +131,7 @@ function Part({
           detail={part.detail}
           args={part.args}
           result={part.result}
+          elapsedMs={part.elapsedMs}
         />
       )
     case 'sources':

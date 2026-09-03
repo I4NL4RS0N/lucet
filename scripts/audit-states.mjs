@@ -2007,6 +2007,15 @@ async function main() {
         })
         checks++
         if (res.over > 0) failures.push(`mobile overflow  ${path} at ${width}px scrolls sideways by ${res.over}px: ${res.culprits.join(', ')}`)
+        /* Receipt payloads wrap at their structure (component audit 02): with
+           every receipt opened, no payload is wider than its box. */
+        const payloads = await page.evaluate(() => {
+          for (const d of document.querySelectorAll('details.lucet-tool')) d.open = true
+          return [...document.querySelectorAll('.lucet-tool__io-pre')].filter((e) => e.getBoundingClientRect().width > 0).map((e) => ({ client: e.clientWidth, scroll: e.scrollWidth, chars: e.textContent.length }))
+        })
+        checks++
+        const scrolling = payloads.filter((x) => x.scroll > x.client)
+        if (scrolling.length) failures.push(`receipt payload  ${path} at ${width}px: ${scrolling.length} of ${payloads.length} payloads scroll sideways — ${JSON.stringify(scrolling.slice(0, 3))}`)
       }
     }
     await page.setViewportSize({ width: 1280, height: 900 })

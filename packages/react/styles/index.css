@@ -380,6 +380,9 @@
 .lucet-tool__body {
   display: grid;
   gap: var(--lucet-space-3);
+  /* A grid item's min size is its content; without this a long payload
+     could widen the receipt past its container. */
+  min-inline-size: 0;
   padding: var(--lucet-space-3);
   border-block-start: 1px solid var(--lucet-border);
 }
@@ -395,6 +398,15 @@
   border-radius: calc(var(--lucet-radius-control) - 2px);
   background-color: var(--lucet-muted);
   box-shadow: var(--lucet-hairline);
+  /* WRAP AT THE STRUCTURE, NEVER MID-TOKEN (component audit 02). The
+     payload arrives pretty-printed, so lines break after colons and
+     commas; a URL, hash or id stays whole, because broken mid-token it
+     reads worse than a scrollbar. overflow-x stays as the last resort for
+     exactly that one case — and no fixture in the repo reaches it. */
+  white-space: pre-wrap;
+  overflow-wrap: normal;
+  word-break: normal;
+  min-inline-size: 0;
   overflow-x: auto;
   font-family: var(--lucet-font-mono);
   font-size: var(--lucet-text-xs);
