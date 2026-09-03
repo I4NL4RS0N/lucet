@@ -113,12 +113,16 @@ audit's own, plus two rulings on copy.
   row, the two ways together below it, equal widths while both names fit;
   a long name wraps them into two full-width rows rather than shrinking
   the type or orphaning the second.
-- **The chip names its page while a move is held.** With the page on
-  screen already changed, "This page" pointed at the wrong one while Send
-  stayed live. The chip reads the held scope's name — *Quarterly planning*
-  — until the decision is made, so the evidence a send would use is
-  visible and unambiguous. Send stays available: the draft is bound to
-  the scope it was written for, and the chip now says which.
+- **"This page" only while it is the page on screen.** With the page
+  beneath already changed, "This page" pointed at the wrong one while Send
+  stayed live — while a move was held, and again after the previous page
+  was kept. The state now carries the host's current `pageName` from the
+  last move, and the chip names the scope's own page — *Quarterly
+  planning* — whenever that page is not the one on screen, until the two
+  agree again. Send stays available: the draft is bound to the scope it
+  was written for, and the chip says which. (Found on the deployed round,
+  not in the capture: the capture read the chip while held, not after
+  Keep.)
 - **Only a changed boundary is news.** Navigating with *All of Aquilo*
   selected changed nothing the AI may read, yet a draft in the field
   raised the decision anyway. The reducer now compares the selected rung

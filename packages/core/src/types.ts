@@ -214,6 +214,14 @@ export interface ScopeState {
   /** A page change held behind a draft, awaiting Keep <previous scope> or
       Use <new scope>. Null when nothing is held. */
   readonly pending: ScopeMove | null
+  /**
+   * The host's current page, as the last move reported it (component audit
+   * 04). The control says "This page" only while the selected rung's page
+   * IS this page; when the ground moved and the scope stayed — a move held
+   * behind a draft, or the previous page kept — it names the page instead.
+   * Null until a move has said where the person is.
+   */
+  readonly pageName: string | null
 }
 
 /** The glyph a recovery verb is drawn with — its own, never a repeated

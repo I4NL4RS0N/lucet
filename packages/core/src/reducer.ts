@@ -48,7 +48,7 @@ export function createInitialState(
       monthlyResetAt: null,
     },
     restoredFrom: null,
-    scope: { levels: [], selectedId: null, movedNote: null, pending: null },
+    scope: { levels: [], selectedId: null, movedNote: null, pending: null, pageName: null },
   }
 }
 
@@ -101,6 +101,7 @@ export function reduce(
               selectedId: state.scope.pending.selectedId,
               movedNote: null,
               pending: null,
+              pageName: state.scope.pageName,
             }
           : { ...state.scope, movedNote: null, pending: null },
         /* The month outlives the thread. A new conversation empties the
@@ -290,6 +291,7 @@ export function reduce(
                 selectedId: state.scope.pending.selectedId,
                 movedNote: state.scope.pending.note,
                 pending: null,
+                pageName: state.scope.pageName,
               }
             : state.scope,
         composer: {
@@ -457,7 +459,7 @@ export function reduce(
     case 'scope/configured':
       return {
         ...state,
-        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null, pending: null },
+        scope: { levels: event.levels, selectedId: event.selectedId, movedNote: null, pending: null, pageName: null },
       }
 
     case 'scope/changed':
@@ -486,10 +488,11 @@ export function reduce(
         (before.name ?? before.label) === (after.name ?? after.label) &&
         before.summary === after.summary &&
         before.itemCount === after.itemCount
+      const pageName = event.pageName ?? state.scope.pageName
       if (same)
         return {
           ...state,
-          scope: { ...state.scope, levels: event.levels, selectedId: event.selectedId, pending: null },
+          scope: { ...state.scope, levels: event.levels, selectedId: event.selectedId, pending: null, pageName },
         }
       const move: ScopeMove = {
         levels: event.levels,
@@ -498,8 +501,8 @@ export function reduce(
         ...(event.pageName ? { pageName: event.pageName } : {}),
       }
       return state.composer.text.trim() !== ''
-        ? { ...state, scope: { ...state.scope, pending: move } }
-        : { ...state, scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null } }
+        ? { ...state, scope: { ...state.scope, pending: move, pageName } }
+        : { ...state, scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null, pageName } }
     }
 
     case 'scope/updateAccepted':
@@ -511,6 +514,7 @@ export function reduce(
               selectedId: state.scope.pending.selectedId,
               movedNote: state.scope.pending.note,
               pending: null,
+              pageName: state.scope.pageName,
             },
           }
         : state

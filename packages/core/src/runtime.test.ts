@@ -360,6 +360,9 @@ describe('scope control', () => {
     lucet.store.dispatch({ type: 'scope/updateDeclined' })
     expect(lucet.getState().scope.movedNote).toBe('Scope remains on Reports review.')
     expect(lucet.getState().scope.levels[0]?.summary).toContain('Reports review')
+    /* The state knows the page beneath is Vendor call while the scope stays
+       on Reports review — the control names the scope's page, not "This page". */
+    expect(lucet.getState().scope.pageName).toBe('Vendor call')
     /* Held again, then sent: the words go against the kept scope, and the
        move applies behind them because the field is empty now. */
     lucet.store.dispatch({ type: 'scope/moved', levels: held.pending!.levels, selectedId: 'page', note: 'Scope updated to Vendor call.', pageName: 'Vendor call' })

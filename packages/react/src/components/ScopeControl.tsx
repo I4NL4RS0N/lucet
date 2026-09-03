@@ -65,11 +65,15 @@ export function ScopeControl({ scope, onChange, onUpdate, disabled }: ScopeContr
             <path d="M3.5 9V5.5a2 2 0 0 1 2-2H9M15 3.5h3.5a2 2 0 0 1 2 2V9M20.5 15v3.5a2 2 0 0 1-2 2H15M9 20.5H5.5a2 2 0 0 1-2-2V15" />
             <circle cx="12" cy="12" r="2.4" />
           </svg>
-          {/* WHILE A MOVE IS HELD, THE CHIP NAMES ITS PAGE (component audit
-              04): the page on screen has changed, so "This page" would point
-              at the wrong one. The name makes the scope a draft will send
-              against unambiguous while Send stays live. */}
-          {scope.pending ? nameOf(selected) : selected.label}
+          {/* "THIS PAGE" ONLY WHILE IT IS THE PAGE ON SCREEN (component audit
+              04): while a move is held, and after the previous page is kept,
+              the page beneath has changed, so the deictic label would point
+              at the wrong one. The chip names the scope's own page until the
+              two agree again — the scope a draft will send against stays
+              unambiguous while Send is live. */}
+          {scope.pending || (selected.name !== undefined && scope.pageName !== null && scope.pageName !== selected.name)
+            ? nameOf(selected)
+            : selected.label}
           <span className="lucet-scope__chev" aria-hidden />
         </summary>
         <div className="lucet-scope__panel">
