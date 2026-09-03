@@ -70,27 +70,27 @@ const MOCK_PAGES = [
     tab: 'Plans',
     doc: 'Quarterly planning',
     ladder: [
-      { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
+      { id: 'page', label: 'This page', name: 'Quarterly planning', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
       { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
-      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
+      { id: 'all', label: 'All of Aquilo', summary: 'Every plan, report and directory in Aquilo', itemCount: 48 },
     ],
   },
   {
     tab: 'Reports',
     doc: 'Reports review',
     ladder: [
-      { id: 'page', label: 'This page', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 },
+      { id: 'page', label: 'This page', name: 'Reports review', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 },
       { id: 'section', label: 'Reports', summary: 'Everything filed under Reports', itemCount: 9 },
-      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
+      { id: 'all', label: 'All of Aquilo', summary: 'Every plan, report and directory in Aquilo', itemCount: 48 },
     ],
   },
   {
     tab: 'Carriers',
     doc: 'Carrier directory',
     ladder: [
-      { id: 'page', label: 'This page', summary: 'Carrier directory — the directory itself', itemCount: 1 },
+      { id: 'page', label: 'This page', name: 'Carrier directory', summary: 'Carrier directory — the directory itself', itemCount: 1 },
       { id: 'section', label: 'Carriers', summary: 'Everything filed under Carriers', itemCount: 27 },
-      { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
+      { id: 'all', label: 'All of Aquilo', summary: 'Every plan, report and directory in Aquilo', itemCount: 48 },
     ],
   },
 ] as const
@@ -1340,7 +1340,7 @@ export function App() {
                 <span className="cfg__dots" aria-hidden>
                   <i /><i /><i />
                 </span>
-                <span className="cfg__frame-title">Quarterly planning</span>
+                <span className="cfg__frame-title">{MOCK_PAGES[mockPage]!.doc}</span>
               </div>
               <div className="cfg__mock-region">
               <div className="cfg__mock-app">
@@ -1361,11 +1361,19 @@ export function App() {
                       onClick={() => {
                         if (i === mockPage) return
                         setMockPage(i)
+                        /* The note names the scope the person ends up with —
+                           the page behind "This page", or the wider rung they
+                           chose (component audit 04): "Scope updated to Reports
+                           review." The move carries the new page's name so a
+                           held decision can say where the page went. */
+                        const keptId = state0Scope(i)
+                        const kept = MOCK_PAGES[i]!.ladder.find((l) => l.id === keptId)!
                         lucet.store.dispatch({
                           type: 'scope/moved',
                           levels: MOCK_PAGES[i]!.ladder,
-                          selectedId: state0Scope(i),
-                          note: `The page changed — \u201cThis page\u201d now covers ${MOCK_PAGES[i]!.doc}.`,
+                          selectedId: keptId,
+                          note: `Scope updated to ${'name' in kept ? kept.name : kept.label}.`,
+                          pageName: MOCK_PAGES[i]!.doc,
                         })
                       }}
                     >
@@ -1376,6 +1384,7 @@ export function App() {
                 <button
                   type="button"
                   className="cfg__askai"
+                  aria-label={`Ask AI about ${MOCK_PAGES[mockPage]!.doc}`}
                   aria-pressed={drawerOpen}
                   onClick={() => {
                     drawerViaButton.current = true

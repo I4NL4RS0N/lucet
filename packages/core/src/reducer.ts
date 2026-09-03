@@ -3,7 +3,7 @@
  */
 
 import type { LucetEvent } from './events.js'
-import type { Message, MessagePart, ModelOption, Suggestion, ThreadState, Turn } from './types.js'
+import type { Message, MessagePart, ModelOption, ScopeMove, Suggestion, ThreadState, Turn } from './types.js'
 
 export interface ReducerContext {
   readonly now: number
@@ -279,6 +279,19 @@ export function reduce(
         ...state,
         turns: [...state.turns, turn],
         status: 'submitting',
+        /* A held page change applies once the draft has gone (component
+           audit 04): the words were sent against the scope they were written
+           for, and with nothing left in the field the ground may follow. A
+           retry sends older words and leaves the draft — and the hold. */
+        scope:
+          state.scope.pending && event.retryOf === null
+            ? {
+                levels: state.scope.pending.levels,
+                selectedId: state.scope.pending.selectedId,
+                movedNote: state.scope.pending.note,
+                pending: null,
+              }
+            : state.scope,
         composer: {
           ...state.composer,
           intercept: null,
@@ -458,19 +471,36 @@ export function reduce(
        field the words were written against a page, and swapping the page
        under them is a silent change of meaning — so the move is HELD until
        the person chooses: Use new page, or Keep previous page. */
-    case 'scope/moved':
+    case 'scope/moved': {
+      /* ONLY A CHANGED BOUNDARY IS NEWS (component audit 04). The page
+         moved, but the question is whether the SELECTED scope did: "All of
+         Aquilo" covers the same things from any page, and a draft written
+         against it has nothing to protect. When the selected rung reads the
+         same in the new ladder — same name, summary and count — the ladder
+         updates quietly: no note, no decision. */
+      const before = state.scope.levels.find((l) => l.id === state.scope.selectedId)
+      const after = event.levels.find((l) => l.id === event.selectedId)
+      const same =
+        before !== undefined &&
+        after !== undefined &&
+        (before.name ?? before.label) === (after.name ?? after.label) &&
+        before.summary === after.summary &&
+        before.itemCount === after.itemCount
+      if (same)
+        return {
+          ...state,
+          scope: { ...state.scope, levels: event.levels, selectedId: event.selectedId, pending: null },
+        }
+      const move: ScopeMove = {
+        levels: event.levels,
+        selectedId: event.selectedId,
+        note: event.note,
+        ...(event.pageName ? { pageName: event.pageName } : {}),
+      }
       return state.composer.text.trim() !== ''
-        ? {
-            ...state,
-            scope: {
-              ...state.scope,
-              pending: { levels: event.levels, selectedId: event.selectedId, note: event.note },
-            },
-          }
-        : {
-            ...state,
-            scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null },
-          }
+        ? { ...state, scope: { ...state.scope, pending: move } }
+        : { ...state, scope: { levels: event.levels, selectedId: event.selectedId, movedNote: event.note, pending: null } }
+    }
 
     case 'scope/updateAccepted':
       return state.scope.pending
@@ -485,8 +515,19 @@ export function reduce(
           }
         : state
 
-    case 'scope/updateDeclined':
-      return { ...state, scope: { ...state.scope, pending: null } }
+    case 'scope/updateDeclined': {
+      /* The kept scope says so in words, so the outcome is as legible as the
+         other one (component audit 04): "Scope remains on Reports review." */
+      const kept = state.scope.levels.find((l) => l.id === state.scope.selectedId)
+      return {
+        ...state,
+        scope: {
+          ...state.scope,
+          movedNote: kept ? `Scope remains on ${kept.name ?? kept.label}.` : state.scope.movedNote,
+          pending: null,
+        },
+      }
+    }
 
     case 'source/changed':
       return {

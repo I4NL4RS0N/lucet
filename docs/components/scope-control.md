@@ -93,3 +93,71 @@ top-layer mode for this surface (Popover API, keeping the current
 anchoring as fallback) is filed for 0.2. The states audit probes
 this surface open, in all four theme-and-expression cells, and fails
 on any occlusion.
+
+## Component audit 04 (2026-09-03)
+
+Scope and navigation as one family — the trigger, the ladder, the follow
+and the hold — measured in four cells at 1440 and 320, through the
+drawer's own page tabs. The brief's three findings and five of the
+audit's own, plus two rulings on copy.
+
+- **The decision names both pages.** "Use new page / Keep previous page"
+  asked the person to remember which two pages those were, and on a
+  phone the app does not show both. Rungs may now carry a `name` — the
+  referent behind a deictic label, "Reports review" behind "This page" —
+  and the move carries the destination's `pageName`. The control asks
+  *Page changed to Vendor call. Update scope?* and offers **Keep Reports
+  review** and **Use Vendor call**. Keeping is primary: a draft in the
+  field is evidence the previous context was meant, so preserving it is
+  the safe way, and the riskier way is secondary. Message on its own
+  row, the two ways together below it, equal widths while both names fit;
+  a long name wraps them into two full-width rows rather than shrinking
+  the type or orphaning the second.
+- **The chip names its page while a move is held.** With the page on
+  screen already changed, "This page" pointed at the wrong one while Send
+  stayed live. The chip reads the held scope's name — *Quarterly planning*
+  — until the decision is made, so the evidence a send would use is
+  visible and unambiguous. Send stays available: the draft is bound to
+  the scope it was written for, and the chip now says which.
+- **Only a changed boundary is news.** Navigating with *All of Aquilo*
+  selected changed nothing the AI may read, yet a draft in the field
+  raised the decision anyway. The reducer now compares the selected rung
+  across the two ladders — name, summary, count — and when it reads the
+  same, the ladder updates quietly: no note, no decision. The page rung
+  and a section that changes still follow or hold as before.
+- **Focus and caret come home.** After either choice the controls
+  unmounted and focus fell to body. The composer now returns focus to the
+  field with the selection it had, because the draft is what the
+  decision was about.
+- **Both outcomes are said.** Automatic follow: *Scope updated to Reports
+  review.* Explicit switch: *Scope updated to Vendor call.* Explicit keep:
+  *Scope remains on Reports review.* — the last composed by the reducer,
+  where the kept rung is known. The note stays until the person acts on
+  scope again: it is the provenance of the current scope, not a toast.
+- **A fresh send lets a held move apply.** The words went against the
+  scope they were written for; with the field empty the ground may
+  follow, and the note says so. A retry sends older words, leaves the
+  draft, and leaves the hold.
+- **The disabled trigger is inert** for the keyboard too, and says so —
+  the budget trigger's repair, applied here.
+- **The counts form a column.** The pill sat beside its label, 142px
+  ragged across one to four digits. It trails now, right-aligned and
+  tabular, with the check in a slot reserved on every row.
+- **The host names its boundary.** *Everything* is gone from the ladder:
+  the widest rung is *All of Aquilo — every plan, report and directory in
+  Aquilo*, because the boundary is the host, not the internet. The
+  drawer's frame title follows the page, and the entry point is *Ask AI
+  about Reports review* to assistive technology.
+
+Escape while a decision is open does nothing to it: the decision is not
+a modal, and dismissing it would pick one answer silently. Considered and
+kept: the compact label *This page* in the drawer, where the page it
+names is visible beside it (the floating drawer keeps the page in view
+too); automatic follow with an empty field, because a confirmation on
+every navigation turns browsing into paperwork; the note that persists
+until the next act on scope. Not built, filed as product decisions for
+Ian: scope-keyed Ask and Do suggestions (the chip contract is static per
+thread), per-turn scope provenance (turns record no scope today), a
+full-page context bar and a mobile bottom sheet (the full page and the
+phone are hosts without a scope feature), and section-level rungs (the
+ladder is the host's; it may publish any rungs it has).

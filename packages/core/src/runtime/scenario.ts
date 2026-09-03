@@ -58,7 +58,7 @@ export type Step =
   /** Install the scope ladder, as the host would. */
   | {
       type: 'scope'
-      levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
+      levels: readonly { id: string; label: string; summary: string; itemCount: number; name?: string }[]
       selectedId: string | null
     }
   /** The page changes under the scope — new ladder, selection follows, note
@@ -66,9 +66,11 @@ export type Step =
       settle: navigation does not wait. */
   | {
       type: 'scopeMoved'
-      levels: readonly { id: string; label: string; summary: string; itemCount: number }[]
+      levels: readonly { id: string; label: string; summary: string; itemCount: number; name?: string }[]
       selectedId: string | null
       note: string
+      /** The destination page's own name, for the decision's message. */
+      pageName?: string
     }
   | { type: 'refuse'; reason: string }
   /** With retryAt (ms from now) the failure is a limit that lifts: the

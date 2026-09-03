@@ -623,9 +623,9 @@ const CORE_FIXTURES: readonly Fixture[] = [
  * unmistakable to someone arriving from a single-player world.
  */
 const SCOPE_LADDER = [
-  { id: 'page', label: 'This page', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
+  { id: 'page', label: 'This page', name: 'Quarterly planning', summary: 'Quarterly planning — the plan and its 4 linked notes', itemCount: 5 },
   { id: 'section', label: 'Plans', summary: 'Everything filed under Plans', itemCount: 12 },
-  { id: 'all', label: 'Everything', summary: 'All of Aquilo', itemCount: 48 },
+  { id: 'all', label: 'All of Aquilo', summary: 'Every plan, report and directory in Aquilo', itemCount: 48 },
 ]
 
 const SCOPE_FIXTURES: readonly Fixture[] = [
@@ -642,26 +642,28 @@ const SCOPE_FIXTURES: readonly Fixture[] = [
       {
         type: 'scope/moved' as const,
         levels: SCOPE_LADDER.map((l) =>
-          l.id === 'page' ? { ...l, summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 } : l,
+          l.id === 'page' ? { ...l, name: 'Reports review', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 } : l,
         ),
         selectedId: 'page',
-        note: 'The page changed — “This page” now covers Reports review.',
+        note: 'Scope updated to Reports review.',
+        pageName: 'Reports review',
       },
     ],
   },
   {
     label: 'Scope held behind a draft',
-    note: 'The page changed while words were already in the field. The move is held and the control asks which page the words are for — Use new page, or Keep previous page. With nothing typed it would simply have followed.',
+    note: 'The page changed while words were already in the field. The move is held and the control asks which page the words are for — Keep Quarterly planning, or Use Vendor call — with keeping the drafted context as the primary way. With nothing typed it would simply have followed.',
     events: [
       { type: 'scope/configured' as const, levels: SCOPE_LADDER, selectedId: 'page' },
       { type: 'composer/changed' as const, text: 'Summarise what changed in the review for the vendor.' },
       {
         type: 'scope/moved' as const,
         levels: SCOPE_LADDER.map((l) =>
-          l.id === 'page' ? { ...l, summary: 'Vendor call — the notes and the quote', itemCount: 2 } : l,
+          l.id === 'page' ? { ...l, name: 'Vendor call', summary: 'Vendor call — the notes and the quote', itemCount: 2 } : l,
         ),
         selectedId: 'page',
-        note: 'The page changed — “This page” now covers Vendor call.',
+        note: 'Scope updated to Vendor call.',
+        pageName: 'Vendor call',
       },
     ],
   },

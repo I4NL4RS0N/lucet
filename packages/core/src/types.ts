@@ -167,8 +167,16 @@ export type MessagePart = TextPart | ReasoningPart | ToolPart | AttachmentPart |
  */
 export interface ScopeLevel {
   readonly id: string
-  /** The host's word for the rung: "This page", "Plans", "Everything". */
+  /** The host's word for the rung: "This page", "Plans", "All of Aquilo". */
   readonly label: string
+  /**
+   * The referent's own name when the label is deictic — "Reports review"
+   * behind "This page" (component audit 04). The decision that asks which
+   * page a draft is for names both pages with it, and a control whose
+   * source page is out of sight can show it instead of the label. Omitted,
+   * the label stands in.
+   */
+  readonly name?: string
   /** What is in it, in words: "The plan and its 4 linked notes". */
   readonly summary: string
   readonly itemCount: number
@@ -187,6 +195,9 @@ export interface ScopeMove {
   readonly levels: readonly ScopeLevel[]
   readonly selectedId: string | null
   readonly note: string
+  /** The destination page's own name, for the decision's message:
+      "Page changed to Vendor call." (component audit 04). */
+  readonly pageName?: string
 }
 
 export interface ScopeState {
@@ -200,8 +211,8 @@ export interface ScopeState {
    * A scope that silently tracks a moving page is a guess again.
    */
   readonly movedNote: string | null
-  /** A page change held behind a draft, awaiting Use new page or Keep
-      previous page. Null when nothing is held. */
+  /** A page change held behind a draft, awaiting Keep <previous scope> or
+      Use <new scope>. Null when nothing is held. */
   readonly pending: ScopeMove | null
 }
 

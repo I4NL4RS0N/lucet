@@ -701,6 +701,7 @@ export const scopeLadder = defineScenario({
         {
           id: 'page',
           label: 'This page',
+          name: 'Quarterly planning',
           summary: 'Quarterly planning \u2014 the plan and its 4 linked notes',
           itemCount: 5,
         },
@@ -712,8 +713,8 @@ export const scopeLadder = defineScenario({
         },
         {
           id: 'all',
-          label: 'Everything',
-          summary: 'All of Aquilo',
+          label: 'All of Aquilo',
+          summary: 'Every plan, report and directory in Aquilo',
           itemCount: 48,
         },
       ],
@@ -752,6 +753,7 @@ export const scopeMoved = defineScenario({
         {
           id: 'page',
           label: 'This page',
+          name: 'Quarterly planning',
           summary: 'Quarterly planning \u2014 the plan and its 4 linked notes',
           itemCount: 5,
         },
@@ -763,8 +765,8 @@ export const scopeMoved = defineScenario({
         },
         {
           id: 'all',
-          label: 'Everything',
-          summary: 'All of Aquilo',
+          label: 'All of Aquilo',
+          summary: 'Every plan, report and directory in Aquilo',
           itemCount: 48,
         },
       ],
@@ -783,6 +785,7 @@ export const scopeMoved = defineScenario({
         {
           id: 'page',
           label: 'This page',
+          name: 'Reports review',
           summary: 'Reports review \u2014 the summary and its 2 appendices',
           itemCount: 3,
         },
@@ -794,13 +797,13 @@ export const scopeMoved = defineScenario({
         },
         {
           id: 'all',
-          label: 'Everything',
-          summary: 'All of Aquilo',
+          label: 'All of Aquilo',
+          summary: 'Every plan, report and directory in Aquilo',
           itemCount: 48,
         },
       ],
       selectedId: 'page',
-      note: 'The page changed \u2014 \u201cThis page\u201d now covers Reports review.',
+      note: 'Scope updated to Reports review.',
     },
     /* THE FREEZE (round 05 P2): a draft is in the field when the page
        moves again, so this move is HELD and the control asks. */
@@ -813,6 +816,7 @@ export const scopeMoved = defineScenario({
         {
           id: 'page',
           label: 'This page',
+          name: 'Vendor call',
           summary: 'Vendor call — the notes and the quote',
           itemCount: 2,
         },
@@ -824,13 +828,14 @@ export const scopeMoved = defineScenario({
         },
         {
           id: 'all',
-          label: 'Everything',
-          summary: 'All of Aquilo',
+          label: 'All of Aquilo',
+          summary: 'Every plan, report and directory in Aquilo',
           itemCount: 48,
         },
       ],
       selectedId: 'page',
-      note: 'The page changed — “This page” now covers Vendor call.',
+      note: 'Scope updated to Vendor call.',
+      pageName: 'Vendor call',
     },
   ],
 })

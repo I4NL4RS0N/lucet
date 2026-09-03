@@ -131,6 +131,8 @@ export type LucetEvent =
       levels: readonly ScopeLevel[]
       selectedId: string | null
       note: string
+      /** The destination page's own name (component audit 04). */
+      pageName?: string
     }
   /** The held move applied: the person chose the new page (round 05 P2). */
   | { type: 'scope/updateAccepted' }

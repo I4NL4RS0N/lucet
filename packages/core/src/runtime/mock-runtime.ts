@@ -209,6 +209,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           levels: s.levels,
           selectedId: s.selectedId,
           note: s.note,
+          ...(s.pageName ? { pageName: s.pageName } : {}),
         })
         return null
 

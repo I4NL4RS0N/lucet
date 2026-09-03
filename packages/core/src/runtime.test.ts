@@ -330,6 +330,48 @@ describe('scope control', () => {
     expect(fresh.getState().scope.movedNote).toBeNull()
   })
 
+  it('only a changed boundary is news: a wider scope rides through page navigation with no note and no decision', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('scope-ladder')
+    lucet.store.dispatch({ type: 'scope/changed', levelId: 'all' })
+    lucet.store.dispatch({ type: 'composer/changed', text: 'List every open risk.' })
+    const moved = lucet.getState().scope.levels.map((l) =>
+      l.id === 'page' ? { ...l, name: 'Reports review', summary: 'Reports review — the summary and its 2 appendices', itemCount: 3 } : l,
+    )
+    lucet.store.dispatch({ type: 'scope/moved', levels: moved, selectedId: 'all', note: 'Scope updated to Reports review.', pageName: 'Reports review' })
+    const { scope, composer } = lucet.getState()
+    /* The ladder updated underneath; the selected boundary did not, so
+       nothing is asked and nothing is announced. */
+    expect(scope.selectedId).toBe('all')
+    expect(scope.levels[0]?.summary).toContain('Reports review')
+    expect(scope.pending).toBeNull()
+    expect(scope.movedNote).toBeNull()
+    expect(composer.text).toBe('List every open risk.')
+  })
+
+  it('the decision names both pages, keeping says so, and a fresh send lets the held move apply', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('scope-moved')
+    const held = lucet.getState().scope
+    expect(held.pending?.pageName).toBe('Vendor call')
+    expect(held.levels.find((l) => l.id === held.selectedId)?.name).toBe('Reports review')
+    expect(held.pending?.levels.find((l) => l.id === held.pending?.selectedId)?.name).toBe('Vendor call')
+    /* Keep: the ladder stays, and the outcome is said in words. */
+    lucet.store.dispatch({ type: 'scope/updateDeclined' })
+    expect(lucet.getState().scope.movedNote).toBe('Scope remains on Reports review.')
+    expect(lucet.getState().scope.levels[0]?.summary).toContain('Reports review')
+    /* Held again, then sent: the words go against the kept scope, and the
+       move applies behind them because the field is empty now. */
+    lucet.store.dispatch({ type: 'scope/moved', levels: held.pending!.levels, selectedId: 'page', note: 'Scope updated to Vendor call.', pageName: 'Vendor call' })
+    expect(lucet.getState().scope.pending).not.toBeNull()
+    await lucet.submit(lucet.getState().composer.text)
+    const after = lucet.getState()
+    expect(after.turns.at(-1)?.prompt.parts[0]).toMatchObject({ kind: 'text', text: 'Summarise what changed in the review for the vendor.' })
+    expect(after.scope.pending).toBeNull()
+    expect(after.scope.levels[0]?.summary).toContain('Vendor call')
+    expect(after.scope.movedNote).toBe('Scope updated to Vendor call.')
+  })
+
   it('an empty field never holds: the same move applies at once, and only a draft holds the next', () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     const levels = [{ id: 'page', label: 'This page', summary: 'Somewhere else', itemCount: 1 }]

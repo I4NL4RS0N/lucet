@@ -449,7 +449,29 @@ export function PromptInput({
         ) : null}
 
         {scope && onScopeChange ? (
-          <ScopeControl scope={scope} onChange={onScopeChange} onUpdate={onScopeUpdate} disabled={composer.locked} />
+          <ScopeControl
+            scope={scope}
+            onChange={onScopeChange}
+            /* After either decision the controls unmount; focus goes back to
+               the field with its selection intact (component audit 04) —
+               the draft is what the decision was about. */
+            onUpdate={
+              onScopeUpdate
+                ? (useNewPage) => {
+                    const el = fieldRef.current
+                    const range: [number, number] | null = el ? [el.selectionStart ?? 0, el.selectionEnd ?? 0] : null
+                    onScopeUpdate(useNewPage)
+                    requestAnimationFrame(() => {
+                      const field = fieldRef.current
+                      if (!field) return
+                      field.focus()
+                      if (range) field.setSelectionRange(range[0], range[1])
+                    })
+                  }
+                : undefined
+            }
+            disabled={composer.locked}
+          />
         ) : null}
 
         {/* The picker grew into the meter (the extension point core reserved):

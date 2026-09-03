@@ -1925,16 +1925,112 @@ async function main() {
       await resetAndInspect(`scope-freeze (${choice})`)
       return { followed, held, decided }
     }
-    const useNew = await freeze('Use new page')
+    const useNew = await freeze('Use Vendor call')
     checks++
     if (!/Reports review/.test(useNew.followed.note || '') || !/Reports review/.test(useNew.followed.button || '')
-      || useNew.held.text !== 'Page changed — update scope?' || useNew.held.role !== 'status' || useNew.held.labels.join('|') !== 'Use new page|Keep previous page' || useNew.held.targets.length !== 2 || useNew.held.targets.some((t) => !t) || !/Reports review/.test(useNew.held.button || '') || !useNew.held.draft || useNew.held.noteStillShown
+      || useNew.held.text !== 'Page changed to Vendor call. Update scope?' || useNew.held.role !== 'status' || useNew.held.labels.join('|') !== 'Keep Reports review|Use Vendor call' || useNew.held.targets.length !== 2 || useNew.held.targets.some((t) => !t) || !/Reports review/.test(useNew.held.button || '') || !useNew.held.draft || useNew.held.noteStillShown
       || useNew.decided.pending !== null || !/Vendor call/.test(useNew.decided.button || '') || !/Vendor call/.test(useNew.decided.note || '') || useNew.decided.prompt || !useNew.decided.draft)
-      failures.push(`scope-freeze: Use new page does not apply the held move — ${JSON.stringify(useNew)}`)
-    const keep = await freeze('Keep previous page')
+      failures.push(`scope-freeze: Use Vendor call does not apply the held move — ${JSON.stringify(useNew)}`)
+    const keep = await freeze('Keep Reports review')
     checks++
-    if (keep.decided.pending !== null || !/Reports review/.test(keep.decided.button || '') || keep.decided.prompt || !keep.decided.draft || keep.held.labels.length !== 2)
-      failures.push(`scope-freeze: Keep previous page does not keep the ladder — ${JSON.stringify(keep)}`)
+    if (keep.decided.pending !== null || !/Reports review/.test(keep.decided.button || '') || keep.decided.prompt || !keep.decided.draft || keep.held.labels.length !== 2 || keep.decided.note !== 'Scope remains on Reports review.')
+      failures.push(`scope-freeze: Keep Reports review does not keep the ladder and say so — ${JSON.stringify(keep)}`)
+    /* 4e. SCOPE AND NAVIGATION (component audit 04), in the drawer through
+       the host's own page tabs. Page location and AI scope are asserted as
+       two identities: the frame title says where the person is, the chip
+       says what the AI may read. A wider scope rides through navigation
+       with no note and no decision; a draft holds the page scope until the
+       person chooses between two NAMED pages, keeping first; both choices
+       keep the draft, its selection and the field's focus, and send
+       nothing; a fresh send lets the held move apply; the disabled trigger
+       is inert; the counts form a column. */
+    {
+      await coldStart()
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Drawer' }).first().click()
+      await page.waitForTimeout(350)
+      const scopeState = () => page.evaluate(() => {
+        const s = window.__lucet.getState()
+        const sel = s.scope.levels.find((l) => l.id === s.scope.selectedId)
+        const chip = [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0)
+        const pend = [...document.querySelectorAll('.lucet-scope__pending')].find((e) => e.getBoundingClientRect().width > 0)
+        const field = [...document.querySelectorAll('.lucet-prompt__field')].find((f) => f.getBoundingClientRect().width > 0)
+        const a = document.activeElement
+        return {
+          frame: document.querySelector('.cfg__frame-title')?.textContent ?? null,
+          askAi: document.querySelector('.cfg__askai')?.getAttribute('aria-label') ?? null,
+          selectedId: s.scope.selectedId, summary: sel?.summary ?? null, chip: chip?.textContent.trim() ?? null,
+          pending: s.scope.pending ? { pageName: s.scope.pending.pageName ?? null } : null,
+          pendingText: pend?.querySelector('.lucet-scope__pending-text')?.textContent ?? null,
+          buttons: pend ? [...pend.querySelectorAll('button')].map((b) => b.textContent.trim() + '/' + b.dataset.variant) : [],
+          rows: pend ? new Set([...pend.children].map((c) => Math.round(c.getBoundingClientRect().top))).size : null,
+          note: s.scope.movedNote,
+          draft: field?.value ?? null, selection: field ? [field.selectionStart, field.selectionEnd] : null,
+          focus: a === document.body ? 'body' : a?.className?.toString().split(' ')[0] || a?.tagName,
+          sendDisabled: [...document.querySelectorAll('button[aria-label="Send"]')].find((b) => b.getBoundingClientRect().width > 0)?.disabled ?? null,
+          sends: window.__lucet.getLog().filter((e) => e.event.type === 'turn/submitted').length,
+        }
+      })
+      const nav = async (tab) => { await page.locator('.cfg__mock-tabs button', { hasText: tab }).first().click(); await page.waitForTimeout(250) }
+      const trail = {}
+      trail.start = await scopeState()
+      await nav('Reports'); trail.followed = await scopeState()
+      await page.evaluate(() => window.__lucet.store.dispatch({ type: 'scope/changed', levelId: 'all' }))
+      await page.locator('.lucet-prompt__field:visible').first().fill('List every open risk.')
+      await nav('Carriers'); trail.wideDraftNav = await scopeState()
+      await page.locator('.lucet-prompt__field:visible').first().fill('')
+      await page.evaluate(() => window.__lucet.store.dispatch({ type: 'scope/changed', levelId: 'page' }))
+      await nav('Plans')
+      await page.locator('.lucet-prompt__field:visible').first().fill('Summarise what changed in the review for the vendor.')
+      await page.evaluate(() => { const f = [...document.querySelectorAll('.lucet-prompt__field')].find((x) => x.getBoundingClientRect().width > 0); f.focus(); f.setSelectionRange(10, 22) })
+      await nav('Reports'); trail.held = await scopeState()
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100); trail.escaped = await scopeState()
+      await nav('Carriers'); trail.heldAgain = await scopeState()
+      await page.locator('.lucet-scope__pending button', { hasText: 'Keep' }).first().click(); await page.waitForTimeout(200); trail.kept = await scopeState()
+      await page.evaluate(() => { const f = [...document.querySelectorAll('.lucet-prompt__field')].find((x) => x.getBoundingClientRect().width > 0); f.focus(); f.setSelectionRange(10, 22) })
+      await nav('Reports'); await page.locator('.lucet-scope__pending button', { hasText: 'Use' }).first().click(); await page.waitForTimeout(200); trail.used = await scopeState()
+      await nav('Carriers'); trail.heldForSend = await scopeState()
+      await page.locator('.lucet-prompt button[aria-label="Send"]:visible').first().click()
+      await settled(); await page.waitForTimeout(150); trail.sent = await scopeState()
+      checks += 6
+      if (trail.start.frame !== 'Quarterly planning' || !/Quarterly planning/.test(trail.start.summary || '') || trail.start.chip !== 'This page' || trail.start.askAi !== 'Ask AI about Quarterly planning'
+        || trail.followed.frame !== 'Reports review' || !/Reports review/.test(trail.followed.summary || '') || trail.followed.note !== 'Scope updated to Reports review.' || trail.followed.pending !== null || trail.followed.askAi !== 'Ask AI about Reports review')
+        failures.push(`scope identity: page and scope must be two named things, and an empty field follows — ${JSON.stringify({ start: trail.start, followed: trail.followed })}`)
+      if (trail.wideDraftNav.selectedId !== 'all' || trail.wideDraftNav.pending !== null || trail.wideDraftNav.note !== null || trail.wideDraftNav.draft !== 'List every open risk.' || !/Carrier directory/.test(trail.wideDraftNav.summary === null ? '' : JSON.stringify(trail.wideDraftNav)) && trail.wideDraftNav.frame !== 'Carrier directory')
+        failures.push(`scope wide: All of Aquilo must ride through navigation with no note and no decision — ${JSON.stringify(trail.wideDraftNav)}`)
+      if (!trail.held.pending || trail.held.pending.pageName !== 'Reports review' || trail.held.pendingText !== 'Page changed to Reports review. Update scope?' || trail.held.buttons.join('|') !== 'Keep Quarterly planning/primary|Use Reports review/secondary' || trail.held.rows !== 2 || trail.held.chip !== 'Quarterly planning' || !/Quarterly planning/.test(trail.held.summary || '') || trail.held.sendDisabled !== false
+        || !trail.escaped.pending || trail.heldAgain.pendingText !== 'Page changed to Carrier directory. Update scope?' || !trail.heldAgain.buttons[1].startsWith('Use Carrier directory'))
+        failures.push(`scope hold: a draft must hold the page scope, name both pages with Keep first, keep the chip honest, survive Escape and follow a second navigation — ${JSON.stringify({ held: trail.held, escaped: trail.escaped, heldAgain: trail.heldAgain })}`)
+      if (trail.kept.pending !== null || !/Quarterly planning/.test(trail.kept.summary || '') || trail.kept.note !== 'Scope remains on Quarterly planning.' || trail.kept.draft !== 'Summarise what changed in the review for the vendor.' || trail.kept.selection?.join() !== '10,22' || trail.kept.focus !== 'lucet-prompt__field' || trail.kept.sends !== trail.start.sends)
+        failures.push(`scope keep: Keep must hold the scope, say so, and hand the draft back untouched with focus and caret — ${JSON.stringify(trail.kept)}`)
+      if (trail.used.pending !== null || !/Reports review/.test(trail.used.summary || '') || trail.used.note !== 'Scope updated to Reports review.' || trail.used.draft !== 'Summarise what changed in the review for the vendor.' || trail.used.selection?.join() !== '10,22' || trail.used.focus !== 'lucet-prompt__field' || trail.used.sends !== trail.start.sends || trail.used.chip !== 'This page')
+        failures.push(`scope use: Use must apply the move, say so, and hand the draft back untouched with focus and caret — ${JSON.stringify(trail.used)}`)
+      if (!trail.heldForSend.pending || trail.sent.sends !== trail.start.sends + 1 || trail.sent.pending !== null || !/Carrier directory/.test(trail.sent.summary || '') || trail.sent.note !== 'Scope updated to Carrier directory.' || trail.sent.draft !== '')
+        failures.push(`scope send: a send while held goes against the kept scope, then the held move applies — ${JSON.stringify({ heldForSend: trail.heldForSend, sent: trail.sent })}`)
+      /* the disabled trigger, inert; the count column; reduced motion */
+      await page.locator('.cfg__views--rail button', { hasText: 'Features' }).first().click(); await page.waitForTimeout(100)
+      await page.locator('nav[aria-label="State triggers"] button', { hasText: 'Use the current page as context' }).first().click(); await page.waitForTimeout(600)
+      const inert = await page.evaluate(() => { const c = [...document.querySelectorAll('.lucet-scope__button')].find((b) => b.getBoundingClientRect().width > 0); c?.focus(); return { locked: window.__lucet.getState().composer.locked, tabIndex: c?.tabIndex, ariaDisabled: c?.getAttribute('aria-disabled'), focused: document.activeElement === c } })
+      await page.keyboard.press('Enter'); await page.waitForTimeout(80)
+      const inertAfter = await page.evaluate(() => ({ open: [...document.querySelectorAll('.lucet-scope__menu')].find((d) => d.getBoundingClientRect().width > 0)?.open ?? null }))
+      await settled(); await page.waitForTimeout(150)
+      checks++
+      if (!inert.locked || inert.tabIndex !== -1 || inert.ariaDisabled !== 'true' || inertAfter.open !== false)
+        failures.push(`scope disabled: the trigger must leave the Tab order, say aria-disabled and stay closed under Enter while a turn runs — ${JSON.stringify({ inert, inertAfter })}`)
+      await page.evaluate(() => window.__lucet.store.dispatch({ type: 'scope/configured', levels: [{ id: 'page', label: 'This page', name: 'Quarterly planning', summary: 'Quarterly planning and the twelve appendices of the venue programme', itemCount: 7 }, { id: 'section', label: 'Plans and programmes for the northern region', summary: 'Everything filed under Plans and programmes', itemCount: 42 }, { id: 'dept', label: 'Operations', summary: 'Every plan, report and directory in Operations', itemCount: 386 }, { id: 'all', label: 'All of Aquilo', summary: 'Every plan, report and directory in Aquilo', itemCount: 2048 }], selectedId: 'page' }))
+      await page.waitForTimeout(100)
+      const column = await page.evaluate(() => { const d = [...document.querySelectorAll('.lucet-scope__menu')].find((x) => x.getBoundingClientRect().width > 0); d.open = true; const rights = [...d.querySelectorAll('.lucet-scope__count')].map((c) => c.getBoundingClientRect().right); const p = d.querySelector('.lucet-scope__panel').getBoundingClientRect(); const out = { spread: Math.max(...rights) - Math.min(...rights), slots: d.querySelectorAll('.lucet-scope__check-slot').length, rows: d.querySelectorAll('.lucet-scope__row').length, inside: p.left >= 0 && p.right <= innerWidth, tabular: [...d.querySelectorAll('.lucet-scope__count')].every((c) => getComputedStyle(c).fontVariantNumeric.includes('tabular')) }; document.activeElement?.blur(); d.open = false; return out })
+      checks++
+      if (column.spread > 0.5 || column.slots !== column.rows || !column.inside || !column.tabular)
+        failures.push(`scope column: the counts must share a right edge across 1–4 digits with a check slot on every row — ${JSON.stringify(column)}`)
+      await page.emulateMedia({ reducedMotion: 'reduce' })
+      const quietScope = await page.evaluate(() => { const d = [...document.querySelectorAll('.lucet-scope__menu')].find((x) => x.getBoundingClientRect().width > 0); d.open = true; const out = { running: d.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length, visible: d.querySelector('.lucet-scope__panel').getBoundingClientRect().height > 40 }; document.activeElement?.blur(); d.open = false; return out })
+      await page.emulateMedia({ reducedMotion: 'no-preference' })
+      checks++
+      if (quietScope.running !== 0 || !quietScope.visible) failures.push(`scope reduced motion: ${JSON.stringify(quietScope)}`)
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
+      await page.waitForTimeout(200)
+      await resetAndInspect('scope and navigation')
+    }
     /* Metadata: the version line counts. */
     await coldStart()
     await fireFromRail('Version history', 'Features')

@@ -2083,9 +2083,12 @@
   align-items: center;
   gap: 8px;
 }
-.lucet-scope__row-label { color: var(--lucet-foreground); font-weight: 500; }
-/* The count wears the version chip's grammar: a fact in a small pill. */
+.lucet-scope__row-label { min-inline-size: 0; color: var(--lucet-foreground); font-weight: 500; }
+/* The count wears the version chip's grammar: a fact in a small pill —
+   trailing, so the pills form a right-aligned column across 1–4 digits
+   (component audit 04). */
 .lucet-scope__count {
+  margin-inline-start: auto;
   padding: 0 6px;
   border-radius: 999px;
   box-shadow: var(--lucet-hairline);
@@ -2094,8 +2097,15 @@
   font-variant-numeric: tabular-nums;
   color: var(--lucet-subtle-foreground);
 }
+.lucet-scope__check-slot {
+  /* Reserved on every row so the count column keeps its edge. */
+  flex: none;
+  display: inline-flex;
+  inline-size: 13px;
+  block-size: 13px;
+}
+
 .lucet-scope__check {
-  margin-inline-start: auto;
   inline-size: 13px;
   block-size: 13px;
   fill: none;
@@ -2120,20 +2130,31 @@
    and two real buttons — the site's 28px target, the smallest text size,
    the info ink the note already wears. */
 .lucet-scope__pending {
+  /* One group, two rows (component audit 04): the question on its own
+     line, the two named ways below it, together. Equal widths while both
+     names fit; a long name wraps the pair into two full-width rows rather
+     than shrinking the type or orphaning the second action. */
   flex-basis: 100%;
   order: 10;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
   gap: 6px;
   font-size: var(--lucet-text-xs);
   color: var(--lucet-tone-info-foreground);
 }
-.lucet-scope__pending-text { margin-inline-end: 2px; }
+
+.lucet-scope__pending-text { display: block; }
+.lucet-scope__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .lucet-scope__decide {
+  flex: 1 1 calc(50% - 3px);
+  min-inline-size: max-content;
   min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
-  padding-inline: 8px;
-  font-size: var(--lucet-text-xs);
+  padding-inline: 10px;
+  font-size: var(--lucet-text-sm);
 }
 
 /* ============================================================
