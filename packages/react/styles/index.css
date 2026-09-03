@@ -2185,6 +2185,12 @@
   stroke-linejoin: round;
 }
 .lucet-budget__price {
+  /* A reserved slot for the estimate, never a fixed trigger (component
+     audit 03): "≈$0.003" is one glyph wider than "≈$0.02", and the chip
+     jittered 8px as a draft crossed the cent. 4.1em holds seven glyphs
+     at this size; a longer price still grows the slot. */
+  display: inline-block;
+  min-inline-size: 4.1em;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   color: var(--lucet-subtle-foreground);
@@ -2264,7 +2270,15 @@
   padding-inline: 10px;
   font-size: var(--lucet-text-sm);
 }
-.lucet-budget__decide .lucet-budget__fig { font-variant-numeric: tabular-nums; }
+.lucet-budget__decide .lucet-budget__fig {
+  /* The price inside a decision button is part of its label (component
+     audit 03): in the row's subtle ink it measured 2.3:1 on the primary
+     in light Paper. It takes the button's colour and size. */
+  margin-inline-start: 0;
+  color: inherit;
+  font-size: inherit;
+  font-variant-numeric: tabular-nums;
+}
 .lucet-budget__row {
   display: grid;
   gap: 1px;
@@ -2290,6 +2304,15 @@
   gap: 8px;
 }
 .lucet-budget__row-label { color: var(--lucet-foreground); font-weight: 500; }
+.lucet-budget__check-slot {
+  /* Reserved on every row so the price column stays a column
+     (component audit 03). */
+  flex: none;
+  display: inline-flex;
+  inline-size: 13px;
+  block-size: 13px;
+}
+
 .lucet-budget__check {
   inline-size: 13px;
   block-size: 13px;
@@ -2357,8 +2380,13 @@
   display: block;
   block-size: 3px;
   border-radius: 999px;
-  background-color: var(--lucet-muted);
-  box-shadow: var(--lucet-inset-hair);
+  /* The track is the denominator (component audit 03): in the muted
+     surface it measured 1.0–1.2:1 against the panel in every cell, so
+     the bar read as a loose line, not a proportion. This mix sits at
+     2.3–2.8:1 against the panel — as strong as it can be while the
+     caution fill still clears 3:1 against it in the light cells (3.4:1;
+     a 70% mix would drop that to 2.5). The record fill is ink over it. */
+  background-color: color-mix(in oklab, var(--lucet-muted-foreground) 55%, var(--lucet-card));
   overflow: hidden;
 }
 .lucet-budget__bar i {
@@ -2367,9 +2395,9 @@
   inset-inline-start: 0;
   border-radius: inherit;
 }
-.lucet-budget__bar-fill { background-color: var(--lucet-muted-foreground); }
+.lucet-budget__bar-fill { background-color: var(--lucet-foreground); }
 .lucet-budget__bar-proj {
-  background-color: var(--lucet-muted-foreground);
+  background-color: var(--lucet-foreground);
   opacity: 0.35;
 }
 .lucet-budget__bar[data-state] .lucet-budget__bar-fill,

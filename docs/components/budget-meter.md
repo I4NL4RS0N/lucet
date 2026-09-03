@@ -131,3 +131,61 @@ modal: the panel is the meter's own, anchored in the composer, so the
 context explanation and the priced rows stay in view. The states audit
 walks the hold with mouse and keyboard on the full page and on the phone,
 where the panel must be entirely visible and reachable by Tab.
+
+## Component audit 03 (2026-09-03)
+
+The cost decision as one family — trigger, picker, ledger, hold —
+measured in four cells at 1440 and 320. Two rulings and four repairs.
+
+- **A running turn is never aborted for cost.** The projection was on
+  the trigger before the send, so a turn in flight was already consented
+  to at its price. When the ledger crosses the month mid-turn nothing
+  about that turn changes: the ledger updates, the response lands, and
+  the NEXT send meets the wall (`submitBlocker` → `'budget'`) or the
+  hold. The runtime test for the crossing month asserts the response
+  completes and the log carries no stop.
+- **The estimate has a slot, the trigger has no fixed width.** The
+  price span reserves 4.1em — seven glyphs at this size, "≈$0.003" or
+  "≈$10.00" — so a draft crossing the cent no longer moves the chip by
+  the width of a digit (the 8px jitter). The model label still sizes
+  the trigger, because a hard-coded trigger width fails the first
+  translation; the states audit asserts that attach and Send do not
+  move through model and price changes.
+- **Figures in a column align, or they are not a column.** The check
+  that marked the selected row pushed that row's price 21px out of the
+  column. Every row now reserves the 13px slot; the mark fills it on
+  the selected row. The trailing-check grammar is unchanged.
+- **The track is the denominator.** In the muted surface the month
+  bar's track measured 1.0–1.2:1 against the panel in every cell — the
+  fill read as a loose line, not a portion of a whole. The track is now
+  a 55% mix of the muted foreground into the card (2.3–2.8:1 against
+  the panel), the record fill is ink, and the projection extension is
+  the same ink at 35%. Stronger was measured and refused: at 70% the
+  caution fill falls to 2.5:1 against the track in the light cells, and
+  fill-against-track is the audit's 3:1 rule. The figures beside the
+  bar remain the information; the bar remains the proportion.
+- **The hold's buttons carry their price in their own ink.** The price
+  inside "Use Fast · ≈$0.03" kept the row's subtle colour and small
+  size: 2.3:1 on the primary in light Paper, 3.2:1 on the secondary in
+  dark Glass. It now inherits the button's colour and size.
+- **Disabled is disabled for every input.** While a turn is in flight
+  the trigger cancelled pointer events but stayed in the Tab order, where
+  Enter and Space opened the panel and could change the model mid-turn,
+  and nothing told a screen reader. It now leaves the Tab order, cancels
+  its toggle, carries `aria-disabled`, and a panel that is open when the
+  lock arrives closes. The composer's strip already says why.
+- **The hold says what each way does.** The buttons carried prices, and
+  the second press after "Use Fast" went unexplained. The note now ends:
+  *Use Fast switches the model and returns you to Send. Continue on Auto
+  sends now.*
+
+Considered and kept: one panel for model rows and the ledger (at 320 the
+panel is 236px wide, inside the viewport, every row on one line, only
+the month row wraps to two — scannable, so no split); no new progress
+bar (the month bar is the one graphic, and it stays supplementary to the
+figures); the picker closes on the same frame the selection registers
+on the trigger, because a delay before closing would be motion theatre.
+Filed low for a later pass of this component: sub-cent prices show three
+decimals beside two-decimal neighbours; the projection extension is a
+sub-pixel sliver at realistic magnitudes; the projection row's `title`
+is hover-only; the month ledger row wraps at 320.

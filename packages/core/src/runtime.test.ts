@@ -474,6 +474,34 @@ describe('budget meter', () => {
     expect(describeEvent({ type: 'usage/changed', patch: {} })).toBeTypeOf('string')
   })
 
+  it('a running turn is never stopped for cost: the ledger crosses mid-turn, the response still lands whole', async () => {
+    /* THE RULE (component audit 03): the projection was on the trigger
+       before the send, so a turn in flight was consented to at its price.
+       Nothing about it changes when the month crosses — the ledger
+       updates, the words keep arriving, and the NEXT send meets the wall.
+       Aborting for cost would throw away work already paid for. */
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('budget-spent')
+    const log = lucet.getLog().map((entry) => entry.event)
+    const crossedAt = log.findIndex(
+      (e) => e.type === 'usage/changed' && (e.patch.monthlySpentUsd ?? 0) >= 10,
+    )
+    const settledAt = log.findIndex((e) => e.type === 'response/settled')
+    /* The crossing happened while the response was still open... */
+    expect(crossedAt).toBeGreaterThan(-1)
+    expect(crossedAt).toBeLessThan(settledAt)
+    /* ...and the response settled complete, once, with its words intact. */
+    const settles = log.filter((e) => e.type === 'response/settled')
+    expect(settles).toHaveLength(1)
+    expect(settles[0]).toMatchObject({ status: 'complete' })
+    expect(log.some((e) => e.type === 'budget/intercepted')).toBe(false)
+    const state = lucet.getState()
+    expect(state.turns[0]!.response?.status).toBe('complete')
+    expect(state.turns[0]!.response?.parts.some((p) => p.kind === 'text' && p.text.length > 40)).toBe(true)
+    /* The wall is for the next spend. */
+    expect(submitBlocker({ ...state, usage: state.usage })).toBe('budget')
+  })
+
   it('a new thread empties the window, never the month', async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
     await lucet.trigger('budget-low')

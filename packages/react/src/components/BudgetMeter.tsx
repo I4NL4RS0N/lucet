@@ -84,6 +84,11 @@ export function BudgetMeter({
     if (!el.open) el.open = true
     else el.querySelector<HTMLButtonElement>('.lucet-budget__decide button')?.focus()
   }, [intercept])
+  /* A lock that arrives with the panel open closes it: the rows would
+     otherwise stay operable behind a trigger that says it is not. */
+  useEffect(() => {
+    if (disabled && details.current?.open) details.current.open = false
+  }, [disabled])
   const selected = model.options.find((o) => o.id === model.selectedId) ?? model.options[0]
   if (!selected) return null
   const slice = { model, usage: usage ?? NO_USAGE, composer: { text: composerText ?? '' } }
@@ -132,6 +137,16 @@ export function BudgetMeter({
         aria-label={label}
         data-state={spent ? 'spent' : caution ? 'caution' : undefined}
         data-disabled={disabled || undefined}
+        /* Disabled means disabled for every input (component audit 03):
+           pointer-events alone left the trigger in the Tab order, where
+           Enter opened the panel and changed the model mid-turn. Out of
+           the Tab order, the toggle cancelled, and aria-disabled so the
+           state is heard, not just seen. */
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
+        onClick={(e) => {
+          if (disabled) e.preventDefault()
+        }}
       >
         {spent || caution ? (
           /* The state changes the silhouette, never the colour alone. */
@@ -174,6 +189,15 @@ export function BudgetMeter({
                 : 'The draft itself is long.'}
             {!intercept && fits && fits.model.id !== selected.id
               ? ` Use ${fits.model.label} (≈${usd(fits.costUsd)}) or continue on ${selected.label} (≈${usd(projection.costUsd)}).`
+              : ''}
+            {/* What each way does, in words (component audit 03): the
+                cheaper model reprices and hands the person back to Send;
+                continuing sends now. A gate whose buttons carry only
+                prices left the second press unexplained. */}
+            {intercept
+              ? fits && fits.model.id !== selected.id
+                ? ` Use ${fits.model.label} switches the model and returns you to Send. Continue on ${selected.label} sends now.`
+                : ` Continue on ${selected.label} sends now.`
               : ''}
           </p>
         ) : null}
@@ -232,12 +256,18 @@ export function BudgetMeter({
                 <span className="lucet-budget__fig">{p ? `≈${usd(p.costUsd)}` : '—'}</span>
                 {/* Check TRAILING — the site's one menu grammar (the
                     drawer menu and the scope ladder both end the row
-                    with the mark; a third order would be an invention). */}
-                {option.id === selected.id ? (
-                  <svg className="lucet-budget__check" viewBox="0 0 24 24" aria-hidden>
-                    <path d="M5 12.5l4.5 4.5L19 7.5" />
-                  </svg>
-                ) : null}
+                    with the mark; a third order would be an invention).
+                    The slot is reserved on EVERY row (component audit 03):
+                    a mark that appears only on the selected row pushed
+                    that row's price 21px out of the column. Figures in a
+                    column align, or they are not a column. */}
+                <span className="lucet-budget__check-slot" aria-hidden>
+                  {option.id === selected.id ? (
+                    <svg className="lucet-budget__check" viewBox="0 0 24 24">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" />
+                    </svg>
+                  ) : null}
+                </span>
               </span>
               {option.note ? <span className="lucet-budget__row-note">{option.note}</span> : null}
             </button>

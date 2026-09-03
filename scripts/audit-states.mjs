@@ -718,6 +718,76 @@ async function main() {
     if (kbdClosed.open || !kbdClosed.cls.includes('lucet-budget__button'))
       failures.push('menu grammar: Escape must close the panel and return focus to the trigger')
 
+    {
+    /*
+     * THE COST DECISION (component audit 03), on the lab's fixtures.
+     * 1. Figures in a column align: every row reserves the check slot, so
+     *    the selected row's price sits on the same right edge as the rest.
+     * 2. The track is visible against the panel (it measured 1.0–1.2:1
+     *    before), and the fill clears 3:1 against the track.
+     * 3. A disabled trigger is disabled for the keyboard too, and says so.
+     * 4. Under reduced motion the panel arrives with nothing running.
+     */
+    const BUDGET_SECTION = 'Budget meter — the price before you spend it'
+    const column = await page.evaluate((name) => {
+      const sec = [...document.querySelectorAll('.sec')].find((s) => s.querySelector('.sec__name')?.textContent === name)
+      const details = sec?.querySelector('.lucet-budget')
+      if (!details) return null
+      details.scrollIntoView({ block: 'center' })
+      details.open = true
+      const rights = [...details.querySelectorAll('.lucet-budget__row .lucet-budget__fig')].map((f) => f.getBoundingClientRect().right)
+      const slots = details.querySelectorAll('.lucet-budget__check-slot').length
+      const rows = details.querySelectorAll('.lucet-budget__row').length
+      const panel = details.querySelector('.lucet-budget__panel'), bar = details.querySelector('.lucet-budget__bar'), fill = details.querySelector('.lucet-budget__bar-fill')
+      const probe = document.createElement('i'); probe.style.color = 'var(--lucet-card)'; panel.appendChild(probe); const card = getComputedStyle(probe).color; probe.remove()
+      const out = { spread: Math.max(...rights) - Math.min(...rights), slots, rows, track: getComputedStyle(bar).backgroundColor, fill: getComputedStyle(fill).backgroundColor, card }
+      document.activeElement?.blur()
+      details.open = false
+      return out
+    }, BUDGET_SECTION)
+    checks += 2
+    if (!column || column.spread > 0.5 || column.slots !== column.rows)
+      failures.push(`budget column: the prices do not share a right edge — ${JSON.stringify(column)}`)
+    if (column && (contrastRatio(column.track, column.card) < 2.2 || contrastRatio(column.fill, column.track) < 3))
+      failures.push(`budget bar: track vs panel ${contrastRatio(column.track, column.card).toFixed(2)}:1 (floor 2.2), fill vs track ${contrastRatio(column.fill, column.track).toFixed(2)}:1 (floor 3)`)
+    const lockedTrigger = await page.evaluate(() => {
+      const sec = [...document.querySelectorAll('.sec')].find((s) => s.querySelector('.sec__name')?.textContent === 'Prompt input — multiplayer')
+      const details = sec?.querySelector('.lucet-budget')
+      if (!details) return null
+      details.scrollIntoView({ block: 'center' })
+      const s = details.querySelector('summary')
+      s.focus()
+      return { disabled: s.dataset.disabled ?? null, ariaDisabled: s.getAttribute('aria-disabled'), tabIndex: s.tabIndex, focusable: document.activeElement === s }
+    })
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('Space')
+    await page.waitForTimeout(80)
+    const lockedAfter = await page.evaluate(() => {
+      const sec = [...document.querySelectorAll('.sec')].find((s) => s.querySelector('.sec__name')?.textContent === 'Prompt input — multiplayer')
+      const details = sec?.querySelector('.lucet-budget')
+      details.querySelector('summary').click()
+      return { open: details?.open ?? null }
+    })
+    checks++
+    if (!lockedTrigger || lockedTrigger.disabled !== 'true' || lockedTrigger.ariaDisabled !== 'true' || lockedTrigger.tabIndex !== -1 || lockedAfter.open !== false)
+      failures.push(`budget locked: the disabled trigger must be inert to keyboard and click and expose aria-disabled — ${JSON.stringify({ lockedTrigger, lockedAfter })}`)
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    const quietPanel = await page.evaluate((name) => {
+      const sec = [...document.querySelectorAll('.sec')].find((s) => s.querySelector('.sec__name')?.textContent === name)
+      const details = sec.querySelector('.lucet-budget')
+      details.open = true
+      const running = details.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length
+      const visible = details.querySelector('.lucet-budget__panel').getBoundingClientRect().height > 40
+      document.activeElement?.blur()
+      details.open = false
+      return { running, visible }
+    }, BUDGET_SECTION)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    checks++
+    if (quietPanel.running !== 0 || !quietPanel.visible) failures.push(`budget reduced motion: ${quietPanel.running} animation(s) running when the panel opens (visible=${quietPanel.visible})`)
+
+    }
+
     // Chip hit-area honesty: the middle of a chip's NAME must never hit the
     // remove or retry button -- the pseudo-anchor regression, guarded here too.
     const chipHits = await page.evaluate(() => {
@@ -1033,6 +1103,22 @@ async function main() {
           failures.push(`cost states (${theme}/${state}): chip data-state is ${meter.chipState}, expected ${expected}`)
         checks++
         if (!meter.mark) failures.push(`cost states (${theme}/${state}): the triangle mark is missing — colour alone is not a state`)
+        if (state === 'budget-spent') {
+          /* THE RULE (component audit 03): a running turn is never stopped
+             for cost. The ledger crossed mid-turn; the response settled
+             complete, once, and the wall is for the next send. */
+          const crossing = await page.evaluate(() => {
+            const log = window.__lucet.getLog().map((entry) => entry.event), s = window.__lucet.getState()
+            const crossedAt = log.findIndex((e) => e.type === 'usage/changed' && (e.patch?.monthlySpentUsd ?? 0) >= (s.usage.monthlyBudgetUsd ?? Infinity))
+            /* A deep link replays the opener's history first: the crossing turn is the LAST one. */
+            const settledAt = log.findLastIndex((e) => e.type === 'response/settled')
+            const last = s.turns[s.turns.length - 1]
+            return { crossedAt, settledAt, settles: log.filter((e) => e.type === 'response/settled').map((e) => e.status), status: last?.response?.status, words: last?.response?.parts.some((p) => p.kind === 'text' && p.text.length > 40) }
+          })
+          checks++
+          if (crossing.crossedAt < 0 || crossing.crossedAt > crossing.settledAt || crossing.settles.some((x) => x !== 'complete') || crossing.status !== 'complete' || !crossing.words)
+            failures.push(`cost states (${theme}/${state}): the crossing turn must land whole — ${JSON.stringify(crossing)}`)
+        }
         if (state === 'budget-low') {
           checks++
           /* The exit is named either way: "Fast still fits (≈$…)" before
@@ -1735,6 +1821,77 @@ async function main() {
     await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click()
     await page.waitForTimeout(200)
     await resetAndInspect('budget-low (mobile)')
+    {
+    /* 4d. THE COST DECISION (component audit 03), asserted, not screenshotted.
+       (i) Trigger geometry: the estimate has a reserved slot and the model
+       label sizes the trigger; attach and Send never move through model or
+       price changes. (ii) Sends are counted from the log: zero on open,
+       Escape, a click away and Use Fast; exactly one on Continue and on
+       the second Send. (iii) The draft survives every cancel path. (iv)
+       Focus never lands on body. */
+    await coldStart()
+    const geometry = async () => page.evaluate(() => {
+      const R = (el) => { const b = el.getBoundingClientRect(); return [Math.round(b.x * 10) / 10, Math.round(b.y * 10) / 10, Math.round(b.width * 10) / 10, Math.round(b.height * 10) / 10] }
+      const chip = [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0)
+      const prompt = chip.closest('.lucet-prompt')
+      return { attach: R(prompt.querySelector('.lucet-prompt__tool')), send: R(prompt.querySelector('button[aria-label="Send"]')), chip: R(chip.querySelector('summary')), price: R(chip.querySelector('.lucet-budget__price')), priceText: chip.querySelector('.lucet-budget__price')?.textContent, label: chip.querySelector('summary').textContent }
+    })
+    const g0 = await geometry()
+    await page.evaluate(() => window.__lucet.store.dispatch({ type: 'model/changed', modelId: 'fast' }))
+    await page.waitForTimeout(60)
+    const g1 = await geometry()
+    await page.evaluate(() => window.__lucet.store.dispatch({ type: 'model/changed', modelId: 'deep' }))
+    await page.waitForTimeout(60)
+    const g2 = await geometry()
+    await page.evaluate(() => window.__lucet.store.dispatch({ type: 'model/changed', modelId: 'auto' }))
+    await page.locator('.lucet-prompt__field').fill('word '.repeat(240))
+    await page.waitForTimeout(120)
+    const g3 = await geometry()
+    await page.locator('.lucet-prompt__field').fill('')
+    await page.waitForTimeout(60)
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    checks += 2
+    if (![g1, g2, g3].every((g) => same(g.attach, g0.attach) && same(g.send, g0.send) && g.chip[1] === g0.chip[1] && g.chip[3] === g0.chip[3] && g.chip[0] === g0.chip[0]))
+      failures.push(`budget geometry: attach, Send or the trigger's seat moved through model and price changes — ${JSON.stringify({ g0, g1, g2, g3 })}`)
+    if (!(/\d{3}$/.test(g0.priceText) && /\.\d\d$/.test(g3.priceText)) || g3.price[2] !== g0.price[2] || g3.chip[2] !== g0.chip[2])
+      failures.push(`budget geometry: crossing the cent must not move the chip (${g0.priceText} → ${g3.priceText}; slot ${g0.price[2]} → ${g3.price[2]}; chip ${g0.chip[2]} → ${g3.chip[2]})`)
+    const submits = () => page.evaluate(() => ({ sends: window.__lucet.getLog().filter((e) => e.event.type === 'turn/submitted').length, turns: window.__lucet.getState().turns.length, draft: document.querySelector('.lucet-prompt__field')?.value, intercept: window.__lucet.getState().composer.intercept !== null, open: [...document.querySelectorAll('.lucet-budget')].find((c) => c.getBoundingClientRect().width > 0).open, focus: document.activeElement === document.body ? 'body' : document.activeElement?.getAttribute('aria-label') || document.activeElement?.className || document.activeElement?.tagName }))
+    await coldStart()
+    await armBudget()
+    const DRAFT = 'Compare the two proposals and recommend one.'
+    const trail = {}
+    const send = page.locator('.lucet-prompt button[aria-label="Send"]:visible').first()
+    const base = (await submits()).sends
+    await send.click(); await page.waitForTimeout(250); trail.opened = await submits()
+    /* a click away: the thread column, well outside the panel */
+    await page.mouse.click(60, 200); await page.waitForTimeout(200); trail.clickedAway = await submits()
+    await send.click(); await page.waitForTimeout(250)
+    await page.keyboard.press('Escape'); await page.waitForTimeout(200); trail.escaped = await submits()
+    await send.click(); await page.waitForTimeout(250)
+    await page.locator('.lucet-budget__decide button', { hasText: 'Use Fast' }).first().click(); await page.waitForTimeout(200); trail.rerouted = await submits()
+    await send.click(); await settled(); await page.waitForTimeout(150); trail.sentOnFast = await submits()
+    await resetAndInspect('budget sends (fast)')
+    await coldStart()
+    await armBudget()
+    await send.click(); await page.waitForTimeout(250)
+    const base2 = (await submits()).sends
+    await page.locator('.lucet-budget__decide button', { hasText: 'Continue on Auto' }).first().click(); await settled(); await page.waitForTimeout(150); trail.continued = await submits()
+    await resetAndInspect('budget sends (auto)')
+    for (const k of ['opened', 'clickedAway', 'escaped', 'rerouted', 'sentOnFast']) trail[k].sends -= base
+    trail.continued.sends -= base2
+    checks += 3
+    const zero = ['opened', 'clickedAway', 'escaped', 'rerouted']
+    if (zero.some((k) => trail[k].sends !== 0 || trail[k].turns !== 0) || trail.sentOnFast.sends !== 1 || trail.sentOnFast.turns !== 1 || trail.continued.sends !== 1 || trail.continued.turns !== 1)
+      failures.push(`budget sends: the hold must send nothing until a decision, then exactly once — ${JSON.stringify(trail)}`)
+    if (zero.some((k) => trail[k].draft !== DRAFT) || trail.clickedAway.intercept || trail.clickedAway.open || trail.escaped.intercept || trail.rerouted.intercept)
+      failures.push(`budget draft: a cancel path lost the draft or kept the hold — ${JSON.stringify(trail)}`)
+    /* The plain Send after the reroute is the composer's own focus story
+       (a pointer Send lands on body once the turn settles — filed for the
+       composer's round); the GATE's paths are what this asserts. */
+    const gatePaths = ['opened', 'clickedAway', 'escaped', 'rerouted', 'continued']
+    if (gatePaths.some((k) => trail[k].focus === 'body') || trail.escaped.focus !== 'Send' || trail.rerouted.focus !== 'Send' || trail.continued.focus !== 'lucet-prompt__field' || !String(trail.opened.focus).includes('lucet-button'))
+      failures.push(`budget focus: ${JSON.stringify(Object.fromEntries(Object.entries(trail).map(([k, t]) => [k, t.focus])))} — gate open → first way on, Escape/Use Fast → Send, Continue → the field, never body`)
+    }
     /* P2 — language, the scope-freeze rule, metadata, severity (round 05). */
     /* Renames swept: the rail speaks the new names and none of the old. */
     await coldStart()
@@ -2046,6 +2203,24 @@ async function main() {
         checks++
         const scrolling = payloads.filter((x) => x.scroll > x.client)
         if (scrolling.length) failures.push(`receipt payload  ${path} at ${width}px: ${scrolling.length} of ${payloads.length} payloads scroll sideways — ${JSON.stringify(scrolling.slice(0, 3))}`)
+        if (path === 'components.html') {
+          /* The cost panel open at this width (component audit 03): inside
+             the viewport, and no horizontal document overflow with it open. */
+          const panels = await page.evaluate((vw) => {
+            const out = []
+            for (const d of document.querySelectorAll('.lucet-budget')) {
+              d.open = true
+              const p = d.querySelector('.lucet-budget__panel')?.getBoundingClientRect()
+              if (p) out.push({ inside: p.left >= 0 && p.right <= vw, width: Math.round(p.width), over: document.documentElement.scrollWidth - document.documentElement.clientWidth })
+              document.activeElement?.blur()
+              d.open = false
+            }
+            return out
+          }, width)
+          checks++
+          if (panels.length === 0 || panels.some((p) => !p.inside || p.over > 0))
+            failures.push(`budget panel at ${width}px: ${JSON.stringify(panels)} — the panel must fit the viewport and add no overflow`)
+        }
       }
     }
     await page.setViewportSize({ width: 1280, height: 900 })
