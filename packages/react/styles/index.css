@@ -3074,3 +3074,52 @@
    the name truncate on the first line so Retry and Remove stay beside it at
    any width; the reason keeps its own line beneath. */
 .lucet-prompt__att[data-status='failed'] .lucet-prompt__att-namewrap { flex: 1 1 0; }
+
+/* ============================================================
+ * THE FACE IS THE LIBRARY'S TO SET
+ * ============================================================
+ *
+ * Every component root names the sans slot, so a component carries its
+ * typeface into any host instead of borrowing whatever the host's body
+ * happens to be. Without this the three typeface slots were inert
+ * outside our own site: the tokens existed, `data-typeface` switched
+ * them, the mono and prose rules read theirs — and nothing ever read
+ * the sans. A fresh project that followed the README exactly rendered
+ * every component in the browser's default serif, and no audit could
+ * see it, because the docs site sets the face on an ancestor and the
+ * components inherited it. Found by installing the published packages
+ * into a disposable project (launch readiness, 2026-09-03).
+ *
+ * LAST IN THE FILE ON PURPOSE. Several controls take `font: inherit`
+ * so their size and weight follow the context they are dropped into —
+ * `.lucet-button` is one, and it is a root. Only the family is the
+ * library's to pin, and pinning it has to come after that shorthand.
+ *
+ * A host that wants its own face sets the token, which is what the
+ * token is for: `--lucet-font-sans: "Söhne", sans-serif`, or
+ * `--lucet-font-sans: inherit` to go back to borrowing theirs.
+ *
+ * Children inherit, so this is roots only. The mono slot is already
+ * named where it belongs (a receipt's elapsed time and payload, inline
+ * code, a code block and its language, a sources payload) and the
+ * prose slot on the document-mode response, both at higher specificity
+ * than this or on a descendant, so neither moves.
+ */
+.lucet-actions,
+.lucet-avatar,
+.lucet-budget,
+.lucet-button,
+.lucet-chips,
+.lucet-codeblock,
+.lucet-md,
+.lucet-notice,
+.lucet-orb,
+.lucet-orb-row,
+.lucet-prompt,
+.lucet-reasoning,
+.lucet-scope,
+.lucet-sources,
+.lucet-thread,
+.lucet-tool {
+  font-family: var(--lucet-font-sans);
+}

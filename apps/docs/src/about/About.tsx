@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useAppearance, useCanvasGround } from '../components/ThemeControls'
+import { AppearancePrefs, useAppearance, useCanvasGround } from '../components/ThemeControls'
 import { SiteHeader } from '../components/SiteHeader'
 
 /**
@@ -11,10 +11,17 @@ import { SiteHeader } from '../components/SiteHeader'
  * A stranger arriving here wants the argument and the install line; the
  * rest of the site is the evidence and does not need summarising twice.
  *
- * THE APPEARANCE PICKER IS DELIBERATELY ABSENT. It belongs beside the stage
- * it changes — the same law that keeps it out of the site header — and
- * there is no stage here. The page still reads the visitor's stored
- * choice, so arriving from a themed page changes nothing.
+ * IT CARRIES THE APPEARANCE ROW, and that is a decision about this page
+ * rather than a shell inherited. It was left off at first, on the rule
+ * that the row belongs beside the stage it changes and there is no stage
+ * here. The reason it belongs anyway is two lines below it: this page is
+ * where "the look is the host's" is stated in words, and the row is that
+ * claim made operable in the same viewport — ground, ink, the command's
+ * surface and the typeface all move under it. A page that argues the
+ * axes exist and then withholds them is the weaker page.
+ *
+ * Its second effect is that all three pages on this shell start their
+ * heading on one line, which reserving 30px of nothing would have faked.
  *
  * EVERY CLAIM BELOW IS CHECKED against the repository and the published
  * packages (2026-09-03, both at the version the badges carry): lucet-core
@@ -23,7 +30,7 @@ import { SiteHeader } from '../components/SiteHeader'
  * kind — which is what "the host supplies the AI service" means literally.
  */
 export function About() {
-  const [appearance] = useAppearance({ theme: 'dark', accent: 'violet' })
+  const [appearance, setAppearance] = useAppearance({ theme: 'dark', accent: 'violet' })
   const groundRef = useRef<HTMLDivElement>(null)
   useCanvasGround(groundRef, appearance)
 
@@ -32,6 +39,9 @@ export function About() {
       <SiteHeader page="about" />
 
       <main className="prim__main about">
+        <div className="prim__controls">
+          <AppearancePrefs state={appearance} onChange={setAppearance} />
+        </div>
         <h1 className="prim__title">About Lucet</h1>
 
         <p className="prim__lede">

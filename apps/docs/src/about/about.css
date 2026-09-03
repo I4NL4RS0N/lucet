@@ -32,7 +32,15 @@
    rounded ends. Block, sized to its own text, capped at the column, and
    wrapping at a space when the column is narrower than the command. */
 .about__cmd {
-  margin: 26px 0 18px;
+  /* The page's one action, so it is set apart from the prose — but by a
+     break, not a section. Measured on this page: 10px under the heading,
+     18px between paragraphs. The supporting step (72px) was tried first
+     and read as a new section starting; the opening step is the rung
+     between paragraph spacing and a break, near enough double the
+     paragraph gap to be unmistakable and nowhere near a section. Below
+     it stays at the paragraph rhythm, because the block and the sentence
+     under it are one unit. */
+  margin: var(--cfg-gap-opening) 0 18px;
   font-size: 15px;
 }
 .about__cmd code {

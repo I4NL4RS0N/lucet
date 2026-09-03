@@ -30,6 +30,7 @@
  *        (default: spawns the docs dev server on :4344)
  */
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 import { contrastRatio, flattenBackground, oklabLightness } from './contrast.mjs'
 
@@ -3087,6 +3088,82 @@ async function main() {
     if (cleared.spent !== 6.24 || cleared.budget !== 10 || cleared.strip || cleared.turns !== 0 || cleared.pendingTimers !== 0)
       failures.push(`budget-spent: only the demo's Reset clears the month, and it must restore the seed — ${JSON.stringify(cleared)}`)
 
+    /* THE LIBRARY BRINGS ITS OWN FACE (launch readiness, 2026-09-03).
+       Nothing in the shipped CSS read --lucet-font-sans: the tokens
+       existed and data-typeface switched them, the mono and prose rules
+       read theirs, and every component took its face from an ancestor.
+       Here that ancestor is always set, so the docs site hid it for the
+       life of the project; a fresh project that followed the README got
+       the browser's default serif. Two checks, because one alone would
+       hide it again.
+
+       STATIC: by this stylesheet's convention a class with no __ or --
+       is a component root, so every root either names the sans or is
+       written down below as something that is not a mountable root. A
+       new component that forgets the face fails here, before a browser
+       is even opened.
+
+       RENDERED: the host's face is poisoned with a name no system can
+       resolve, and every root on the page must still compute to the
+       sans. A bare div is checked too — if IT does not come back
+       poisoned the injection missed and the whole check is vacuous. */
+    const reactCss = readFileSync('packages/react/styles/index.css', 'utf8')
+    const sansRule = reactCss.slice(reactCss.lastIndexOf('THE FACE IS THE LIBRARY'))
+    const SANS_ROOTS = [...sansRule.matchAll(/^\.(lucet-[a-z-]+)(?:,| \{)?$/gm)].map((m) => m[1])
+    /* Not mountable roots: a utility class the host may use anywhere, and
+       children that are only ever rendered inside a root. */
+    const NOT_ROOTS = ['lucet-visually-hidden', 'lucet-att', 'lucet-source', 'lucet-tip', 'lucet-tipwrap']
+    const declared = [...reactCss.matchAll(/^\.(lucet-[a-z-]+)(?=[\s,{:[])/gm)].map((m) => m[1])
+    const unnamed = [...new Set(declared)].filter((c) => !SANS_ROOTS.includes(c) && !NOT_ROOTS.includes(c) && !/__|--/.test(c))
+    checks++
+    if (SANS_ROOTS.length < 10) failures.push(`typeface  the sans rule names ${SANS_ROOTS.length} roots — the rule or its marker comment moved, so this check is measuring nothing`)
+    checks++
+    if (unnamed.length) failures.push(`typeface  component roots that never name --lucet-font-sans: ${unnamed.join(', ')} — add the face, or record why it is not a mountable root`)
+
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await page.goto(url.replace('primitives.html', 'components.html'))
+    await still()
+    await page.waitForSelector('.sec', { timeout: 15000 })
+    await page.waitForTimeout(400)
+    const face = await page.evaluate((roots) => {
+      const CANARY = 'LucetHostFaceCanary'
+      const poison = document.createElement('style')
+      poison.textContent = `html, body { font-family: '${CANARY}', cursive !important; }`
+      document.head.appendChild(poison)
+      const control = document.createElement('div')
+      document.body.appendChild(control)
+      const first = (el) => getComputedStyle(el).fontFamily.split(',')[0].replace(/['"]/g, '').trim()
+      const sans = getComputedStyle(document.documentElement).getPropertyValue('--lucet-font-sans').split(',')[0].replace(/['"]/g, '').trim()
+      const mono = getComputedStyle(document.documentElement).getPropertyValue('--lucet-font-mono').split(',')[0].replace(/['"]/g, '').trim()
+      const out = { canary: CANARY, control: first(control), sans, mono, seen: 0, borrowed: [], monoSeen: 0, monoBorrowed: [] }
+      for (const cls of roots)
+        for (const el of document.querySelectorAll('.' + cls)) {
+          out.seen++
+          if (first(el) !== sans) out.borrowed.push(`${cls} → ${first(el)}`)
+        }
+      /* The mono slot named its own elements all along, so it should have
+         survived the poisoning without this fix. Proven, not assumed. */
+      for (const sel of ['.lucet-tool__elapsed', '.lucet-tool__io-pre', '.lucet-md__code', '.lucet-codeblock__pre', '.lucet-sources__io-pre'])
+        for (const el of document.querySelectorAll(sel)) {
+          out.monoSeen++
+          if (first(el) !== mono) out.monoBorrowed.push(`${sel} → ${first(el)}`)
+        }
+      control.remove()
+      poison.remove()
+      return out
+    }, SANS_ROOTS)
+    checks++
+    if (face.control !== face.canary)
+      failures.push(`typeface  the host-face canary did not take (a bare div reads ${face.control}) — every check below it would pass for the wrong reason`)
+    checks++
+    if (face.seen < 8) failures.push(`typeface  only ${face.seen} component roots found on the components page — too few to prove anything`)
+    checks++
+    if (face.borrowed.length)
+      failures.push(`typeface  with the host's face poisoned, ${face.borrowed.length} component roots still borrowed it: ${[...new Set(face.borrowed)].slice(0, 6).join('; ')}`)
+    checks++
+    if (face.monoSeen === 0 || face.monoBorrowed.length)
+      failures.push(`typeface  the mono slot: ${face.monoSeen} elements, ${[...new Set(face.monoBorrowed)].slice(0, 4).join('; ') || 'none borrowed'}`)
+
     /* THE HEADER IS A CONSTANT, AND THE DEMO'S SPACE IS NOT NEGOTIABLE
        (launch readiness). Six destinations in one order on every page —
        the four pages, then npm and the repository — because a nav that
@@ -3098,6 +3175,11 @@ async function main() {
        header" costs, so if either moves, something was added to the
        chrome and this fails saying which viewport lost the space. */
     const NAV = ['Konfabulator', 'Components', 'Primitives', 'About', 'npm', 'GitHub']
+    /* Three pages hang from one shell, so their headings start on one
+       line. About had no appearance row at first and sat 30px high;
+       carrying the same row is what makes this true by construction
+       rather than by a reserved number. */
+    const titleTops = {}
     const NPM_URL = 'https://www.npmjs.com/package/lucet-react'
     for (const [path, id] of [['index.html?instant=1', 'Konfabulator'], ['components.html', 'Components'], ['primitives.html', 'Primitives'], ['about.html', 'About']]) {
       await page.setViewportSize({ width: 1280, height: 900 })
@@ -3142,6 +3224,11 @@ async function main() {
       const rest = nav.filter((l) => l.current !== 'page')
       const drift = rest.filter((l) => l.size !== '13px' || l.family !== l.sans || l.colour !== rest[0].colour || l.height < 24)
       if (drift.length) failures.push(`${where}: nav links drift from the family — ${JSON.stringify(drift.map((l) => [l.label, l.size, l.family, l.colour, l.height]))}`)
+      const title = await page.evaluate(() => {
+        const t = document.querySelector('.prim__title')
+        return t ? { top: Math.round(t.getBoundingClientRect().top), left: Math.round(t.getBoundingClientRect().left) } : null
+      })
+      if (title) titleTops[path] = title
       checks++
       const ring = await page.evaluate(() => {
         const a = document.querySelector('.cfg__navlink')
@@ -3152,6 +3239,11 @@ async function main() {
       if (!ring.focused || ring.style === 'none' || parseFloat(ring.width) < 1)
         failures.push(`${where}: a nav link takes focus and shows a ring — ${JSON.stringify(ring)}`)
     }
+    checks++
+    const tops = Object.entries(titleTops)
+    if (tops.length < 3 || new Set(tops.map(([, t]) => `${t.top}/${t.left}`)).size !== 1)
+      failures.push(`page headings start on different lines: ${tops.map(([p, t]) => `${p} ${t.top},${t.left}`).join(' · ')} — the pages share one shell, so the h1 shares one position`)
+
     /* The demo's own height, before and after anything is added to the
        chrome: 686px at 1280x900 and 579px at 390x844 (launch readiness,
        measured before the About and npm links were added and unchanged
