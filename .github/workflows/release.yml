@@ -101,7 +101,8 @@ jobs:
 
       - name: Dry run, publish stubbed
         if: steps.registry.outputs.publish == 'true' && env.DRY_RUN == 'true'
-        run: echo "Dry run: lucet-core and lucet-react would publish here with --provenance. Nothing was sent to npm."
+        run: |
+          echo "Dry run. lucet-core and lucet-react would publish here with --provenance; nothing was sent to npm."
 
       # changeset tag creates lucet-core@x.y.z and lucet-react@x.y.z at this
       # commit; the private docs app is never tagged.
