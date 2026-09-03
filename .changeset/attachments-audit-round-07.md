@@ -1,6 +1,0 @@
----
-"lucet-core": minor
-"lucet-react": minor
----
-
-Attachments, sources and file treatments, component audit 07. A queued message now owns its files: Queue moves the staged attachments into the queued item, Edit returns them, Cancel queue drops them, and the handoff sends exactly those files while a file staged since stays behind; Queue is held while a file is uploading or failed and says why. The strip names the file that blocks a send; every chip wears its state word and the library's own name-and-size tip; focus is placed before a removed chip goes, and after a retry; the thread's provenance chips share the composer's kind glyphs. Inline citation markers link to their source rows with focus in and Escape back; an open source receipt closes on Escape; source rows meet the 40px target. A long filename never widens the composer or the sent bubble past its host: the composer contains its inline size, chips carry no minimum width, and provenance chips truncate their base while keeping the extension. The budget panel anchors to its own trigger. The composer frees the moment a response settles and the queued handoff takes the lock in the same tick, removing two one-frame status transients. The demo collaborator is Jennifer Lee.
