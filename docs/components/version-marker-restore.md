@@ -138,3 +138,45 @@ The earlier 0.35 read as gone rather than as the past, and fell under
 the floor in every cell. Taking light to 4.5:1 would need about 0.72,
 which no longer reads as set aside; the marker's word carries the state
 alongside the dimming, so the floor is the right bar for it.
+
+## Component audit 05 (2026-09-03)
+
+Ask again, preview, return and restore reviewed as one system, in four
+cells at 1440 and 320, inside the Konfabulator. Gate 0 first: the
+restore had "felt broken" and seemed to need two clicks. Measured, it
+commits from one activation everywhere — pointer, Enter, Space — in
+under 40 ms, and a double click makes one version. What produced the
+feeling was the silence after the act: the banner vanished, focus fell
+to body, the thread scrolled to its end, nothing was spoken, and the
+only visible confirmation was a 10.5px *Restored* badge. In the lab the
+specimen's buttons are inert by design, so a restore tried there did
+nothing at all. The two-stage model stays — a preview, then a commit —
+because the preview is where the choice is made; what changes is that
+every act is now seen and heard.
+
+- **Exactly one version is Current.** The newest wears the word, and its
+  version line stays legible at rest: *Version 2 of 2 · retried*,
+  *Version 3 of 3 · restored from version 1*. Older versions wear how
+  they came to be — *Retried*, *Restored* — with their line on hover or
+  focus, as before. The store's ids stay internal.
+- **Focus follows the act.** Entering a preview lands focus on the banner
+  that explains it. Restoring lands on the new current version's row,
+  which reads its provenance and brings it into view. Returning lands on
+  the row of the turn that was previewed. Nothing lands on body, and
+  nothing lands on a control that is about to unmount.
+- **Every act is spoken once.** A live region beside the response
+  announcer says *Previewing version 1 of 2 — 1 later turn set aside,
+  not deleted.*, *Returned to latest.*, *Restored version 1 as version
+  3.*, *Asking again — writing version 3.* and *Version 3 is ready.* —
+  on change only, never on mount.
+- **The banner names the version** — *Previewing version 1 of 2 — 1
+  later turn is set aside, not deleted.* — and its commit reads *Restore
+  this version*, distinct from *Preview version* on the older turn.
+- **The acts wait while a version is being written.** Ask again, Preview
+  version and a recovery verb are disabled, present and legible, while
+  the newest response streams; Copy and feedback stay live because they
+  touch nothing.
+
+The lab's specimens stay static; that their primary actions do nothing
+is filed for a live specimen later. Restore has no asynchronous state
+and no failure path in this runtime, so neither is drawn.

@@ -455,11 +455,10 @@ async function main() {
        its tip; the banner pairs a ghost Return to latest with a primary
        Restore version — hierarchy by silhouette (a fill against none),
        labels that never wrap, 32–36px visible and at least 40 effective.
-       Nothing on the page may still say "Restore this version". */
+       The commit says Restore this version; the preview says Preview version (component audit 05). */
     const checkRestoreLabels = async (where) => {
       const res = await page.evaluate(() => {
         const bad = []
-        if ([...document.querySelectorAll('button')].some((b) => /Restore this version/i.test(b.textContent))) bad.push('a button still says "Restore this version"')
         const previews = [...document.querySelectorAll('.lucet-actions__btn')].filter((b) => b.textContent.trim() === 'Preview version')
         if (!previews.length) bad.push('no Preview version action found')
         for (const p of previews) {
@@ -469,11 +468,11 @@ async function main() {
         const banners = [...document.querySelectorAll('.lucet-thread__restored')]
         if (!banners.length) bad.push('no preview banner found')
         for (const banner of banners) {
-          if (!/^Previewing an earlier version/.test((banner.querySelector('.lucet-thread__restored-text')?.textContent || '').trim())) bad.push('banner sentence does not begin "Previewing an earlier version"')
+          if (!/^Previewing version \d+ of \d+/.test((banner.querySelector('.lucet-thread__restored-text')?.textContent || '').trim())) bad.push('banner sentence does not begin "Previewing version n of n"')
           const ghost = banner.querySelector('.lucet-thread__return[data-variant="ghost"]')
           const primary = banner.querySelector('.lucet-thread__return[data-variant="primary"][data-commit]')
           if (!ghost || ghost.textContent.trim() !== 'Return to latest') bad.push('banner ghost is not "Return to latest"')
-          if (!primary || primary.textContent.trim() !== 'Restore version') bad.push('banner primary is not "Restore version"')
+          if (!primary || primary.textContent.trim() !== 'Restore this version') bad.push('banner primary is not "Restore this version"')
           if (!ghost || !primary) continue
           if (getComputedStyle(ghost).backgroundColor === getComputedStyle(primary).backgroundColor) bad.push('primary and ghost share a fill — hierarchy would be hue alone')
           for (const [name, el] of [['ghost', ghost], ['primary', primary]]) {
@@ -2161,6 +2160,91 @@ async function main() {
       failures.push(`restore-version: not straight into preview, or blocks duplicated — ${JSON.stringify({ preview, again })}`)
     await resetAndInspect('restore-version')
 
+    /* 6. VERSIONS: ONE ACT, ONE RESULT, SAID AND SEEN (component audit 05).
+       Restore commits from one activation by pointer, Enter and Space, and a
+       double click makes one version. Preview lands focus on the banner
+       that explains it; restore lands on the new current version's row,
+       which reads its provenance; return lands back on the previewed turn.
+       Each act is spoken once. The newest version alone wears Current; its
+       line is legible at rest. While a new version is being written the
+       acts that would start another run wait. The draft and its selection
+       survive everything. */
+    {
+      const versionsState = () => page.evaluate(() => {
+        const s = window.__lucet.getState(); const a = document.activeElement
+        const pairs = [...document.querySelectorAll('.lucet-thread__pair')].filter((p) => p.getBoundingClientRect().width > 0)
+        const field = [...document.querySelectorAll('.lucet-prompt__field')].find((f) => f.getBoundingClientRect().width > 0)
+        return {
+          turns: s.turns.length, restores: window.__lucet.getLog().filter((e) => e.event.type === 'turn/restored').length, retries: window.__lucet.getLog().filter((e) => e.event.type === 'turn/submitted' && e.event.retryOf).length,
+          restoredFrom: s.restoredFrom,
+          focus: a === document.body ? 'body' : a?.className?.toString().split(' ')[0] || a?.tagName,
+          focusTurn: a?.closest?.('.lucet-thread__pair')?.dataset.turn ?? null,
+          badges: pairs.map((p) => p.querySelector('.lucet-thread__vbadge')?.textContent ?? null),
+          metas: pairs.map((p) => p.querySelector('.lucet-thread__vmeta')?.textContent ?? null),
+          currentMetaOpacity: pairs.map((p) => p.querySelector('.lucet-thread__vrow[data-current] .lucet-thread__vmeta')).filter(Boolean).map((m) => getComputedStyle(m).opacity),
+          banner: document.querySelector('.lucet-thread__restored .lucet-thread__restored-text')?.textContent.trim() ?? null,
+          spoken: [...document.querySelectorAll('.lucet-visually-hidden[role="status"]')].map((e) => e.textContent.trim()).filter(Boolean).at(-1) ?? null,
+          draft: field?.value ?? null, selection: field ? [field.selectionStart, field.selectionEnd] : null,
+          disabled: pairs.map((p) => [...p.querySelectorAll('.lucet-actions__btn:disabled')].map((b) => b.textContent.trim())),
+        }
+      })
+      const versionsSetup = async () => {
+        await coldStart()
+        await fireFromRail('Version history', 'Features')
+        await settled(); await page.waitForTimeout(250)
+        await page.locator('.lucet-prompt__field').fill('Also list the owners.')
+        await page.evaluate(() => { const f = document.querySelector('.lucet-prompt__field'); f.focus(); f.setSelectionRange(5, 9) })
+        await page.mouse.move(0, 0)
+      }
+      const previewOf = (n) => page.locator('.lucet-thread__pair').nth(n).locator('.lucet-actions__btn', { hasText: 'Preview version' }).first()
+      const commit = () => page.locator('.lucet-thread__restored button', { hasText: 'Restore this version' }).first()
+      const flows = {}
+      for (const how of ['pointer', 'Enter', 'Space']) {
+        await versionsSetup()
+        const rest = await versionsState()
+        if (how === 'pointer') { await page.locator('.lucet-thread__pair').first().hover(); await previewOf(0).click() } else { await previewOf(0).focus(); await page.keyboard.press(how) }
+        await page.waitForTimeout(250); const previewed = await versionsState()
+        if (how === 'pointer') await commit().click(); else { await commit().focus(); await page.keyboard.press(how) }
+        await page.waitForTimeout(300); const restored = await versionsState()
+        flows[how] = { rest, previewed, restored }
+        await resetAndInspect(`versions (${how})`)
+      }
+      checks += 5
+      const r0 = flows.pointer.rest
+      if (r0.badges.join('|') !== '|Current' || r0.metas.join('|') !== 'Version 1 of 2|Version 2 of 2 · retried' || !r0.currentMetaOpacity.every((o) => o === '1'))
+        failures.push(`versions at rest: exactly one Current with its line legible — ${JSON.stringify({ badges: r0.badges, metas: r0.metas, opacity: r0.currentMetaOpacity })}`)
+      for (const how of ['pointer', 'Enter', 'Space']) {
+        const f = flows[how]
+        if (f.previewed.restoredFrom === null || f.previewed.focus !== 'lucet-thread__restored' || f.previewed.banner !== 'Previewing version 1 of 2 — 1 later turn is set aside, not deleted.' || !/^Previewing version 1 of 2/.test(f.previewed.spoken || ''))
+          failures.push(`versions preview (${how}): focus must land on the banner and the act be spoken — ${JSON.stringify({ focus: f.previewed.focus, banner: f.previewed.banner, spoken: f.previewed.spoken })}`)
+        if (f.restored.restores !== 1 || f.restored.turns !== 3 || f.restored.restoredFrom !== null || f.restored.focus !== 'lucet-thread__vrow' || f.restored.focusTurn !== 'turn_3' || f.restored.badges.join('|') !== '|Retried|Current' || f.restored.metas[2] !== 'Version 3 of 3 · restored from version 1' || f.restored.spoken !== 'Restored version 1 as version 3.' || f.restored.draft !== 'Also list the owners.' || f.restored.selection?.join() !== '5,9')
+          failures.push(`versions restore (${how}): one activation, one version, focus on the new current version, spoken and provenanced, draft intact — ${JSON.stringify(f.restored)}`)
+      }
+      /* a double click is one restore; return lands on the previewed turn */
+      await versionsSetup()
+      await page.locator('.lucet-thread__pair').first().hover(); await previewOf(0).click(); await page.waitForTimeout(200)
+      await page.locator('.lucet-thread__restored button', { hasText: 'Return to latest' }).first().click(); await page.waitForTimeout(250)
+      const returned = await versionsState()
+      await page.locator('.lucet-thread__pair').first().hover(); await previewOf(0).click(); await page.waitForTimeout(200)
+      await commit().dblclick(); await page.waitForTimeout(350)
+      const doubled = await versionsState()
+      checks++
+      if (returned.restoredFrom !== null || returned.focus !== 'lucet-thread__vrow' || returned.focusTurn !== 'turn_1' || returned.spoken !== 'Returned to latest.' || doubled.restores !== 1 || doubled.turns !== 3)
+        failures.push(`versions return/double: return must land on the previewed turn and say so; a double click is one restore — ${JSON.stringify({ returned: { focus: returned.focus, turn: returned.focusTurn, spoken: returned.spoken }, doubled: { restores: doubled.restores, turns: doubled.turns } })}`)
+      await resetAndInspect('versions (double)')
+      /* Ask again: one retry, the acts wait while it writes, spoken start and finish */
+      await versionsSetup()
+      /* the scenario's own retry is already in the log: count the delta */
+      const retriesBefore = (await versionsState()).retries
+      await page.locator('.lucet-thread__pair').last().locator('.lucet-actions__btn', { hasText: 'Ask again' }).first().click()
+      await page.waitForTimeout(250); const writing = await versionsState()
+      await settled(); await page.waitForTimeout(250); const written = await versionsState()
+      checks++
+      if (writing.retries !== retriesBefore + 1 || writing.turns !== 3 || !writing.disabled.slice(0, 2).every((d) => d.includes('Ask again')) || !/^Asking again — writing version 3\./.test(writing.spoken || '') || writing.focus === 'body'
+        || written.turns !== 3 || written.badges.join('|') !== '|Retried|Current' || written.metas[2] !== 'Version 3 of 3 · retried' || written.spoken !== 'Version 3 is ready.' || written.disabled.some((d) => d.length) || written.draft !== 'Also list the owners.')
+        failures.push(`versions ask again: one retry, the acts wait while it writes, start and finish spoken — ${JSON.stringify({ writing: { retries: writing.retries, disabled: writing.disabled, spoken: writing.spoken, focus: writing.focus }, written: { badges: written.badges, meta: written.metas[2], spoken: written.spoken, disabled: written.disabled, draft: written.draft } })}`)
+      await resetAndInspect('versions (ask again)')
+    }
     /* EVERY ENDING GETS ITS OWN EXIT (audit round 05, P1). Each ending's verb
        says what the state promised and performs it through the runtime, from
        a clean cold start via the rail; "Ask again" survives only where no

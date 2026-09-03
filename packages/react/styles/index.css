@@ -1540,6 +1540,10 @@
   justify-content: center;
 }
 .lucet-actions__btn:hover { background-color: var(--lucet-hover); color: var(--lucet-foreground); }
+/* Waiting for a version being written (component audit 05): present,
+   legible, inert — a run that would start another run is not offered. */
+.lucet-actions__btn:disabled { opacity: 0.5; cursor: default; }
+.lucet-actions__btn:disabled:hover { background-color: transparent; }
 .lucet-actions__btn:active { background-color: var(--lucet-press); }
 .lucet-actions__btn:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
@@ -1869,9 +1873,21 @@
   transition: opacity var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-thread__pair:hover .lucet-thread__vmeta,
-.lucet-thread__pair:focus-within .lucet-thread__vmeta {
+.lucet-thread__pair:focus-within .lucet-thread__vmeta,
+/* The current version's line stays legible at rest (component audit 05):
+   which one is live, and how it came to be, is the reader's question. */
+.lucet-thread__vrow[data-current] .lucet-thread__vmeta {
   opacity: 1;
 }
+/* A focus landing, not a control: the ring only when focus is visible. */
+.lucet-thread__vrow { border-radius: var(--lucet-radius-control); }
+.lucet-thread__vrow:focus-visible,
+.lucet-thread__restored:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: 2px;
+}
+.lucet-thread__vrow:focus:not(:focus-visible),
+.lucet-thread__restored:focus:not(:focus-visible) { outline: none; }
 
 /* AFFORDANCES FOLLOW ATTENTION. A version with a newer sibling recedes
    at rest: text one step of muted ink, actions at ghost weight — never
@@ -1942,10 +1958,16 @@
    at drawer width they wrapped mid-label. */
 .lucet-thread__restored-actions {
   display: inline-flex;
+  /* The pair wraps into two rows where both labels no longer fit on one
+     (component audit 05: "Restore this version" at 320) — labels never
+     break mid-word, and nothing overflows the banner. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
   gap: var(--lucet-space-2);
   margin-inline-start: auto;
-  flex: none;
+  flex: 0 1 auto;
+  min-inline-size: 0;
 }
 .lucet-thread__return {
   position: relative;

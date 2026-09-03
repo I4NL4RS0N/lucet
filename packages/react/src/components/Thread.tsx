@@ -422,16 +422,93 @@ export function Thread({
     if (family.length < 2) return null
     const ordinal = family.indexOf(t.id) + 1
     const newest = family[family.length - 1] === t.id
-    const born = t.restoreOf ? 'restored' : t.retryOf ? 'retried' : 'asked'
-    const word = t.restoreOf ? 'Restored' : t.retryOf ? 'Retried' : newest ? 'Current' : null
-    /* "Version 2 of 2 · retried" (round 05 P2): the count, then how this
-       one came to be — nothing for the original, which was simply asked. */
-    const meta = `Version ${ordinal} of ${family.length}${born === 'asked' ? '' : ` · ${born}`}`
-    return { word, meta, newest }
+    /* EXACTLY ONE VERSION IS CURRENT (component audit 05): the newest wears
+       the word, and its version line stays legible at rest, because "which
+       one is live" is the question the reader has. Older versions wear how
+       they came to be — Retried, Restored — and their line on hover or focus. */
+    const word = newest ? 'Current' : t.restoreOf ? 'Restored' : t.retryOf ? 'Retried' : null
+    /* "Version 3 of 3 · restored from version 1": the count, then how this
+       one came to be — and from which version, when it was restored. */
+    const sourceOrdinal = t.restoreOf ? family.indexOf(t.restoreOf) + 1 : 0
+    const born = t.restoreOf
+      ? ` · restored from version ${sourceOrdinal || '?'}`
+      : t.retryOf
+        ? ' · retried'
+        : ''
+    const meta = `Version ${ordinal} of ${family.length}${born}`
+    return { word, meta, newest, ordinal, count: family.length, sourceOrdinal }
   }
   const restoredIndex = state.restoredFrom
     ? state.turns.findIndex((t) => t.id === state.restoredFrom)
     : -1
+  /* FOCUS FOLLOWS THE ACT, ANNOUNCED IN WORDS (component audit 05). Preview,
+     return and restore each unmount the control that was pressed, and focus
+     fell to body every time. Now: entering a preview lands focus on the
+     banner that explains it; returning lands on the version row of the turn
+     that was previewed; a restore lands on the new current version's row,
+     which reads its provenance. Each move is also spoken once, as a
+     sentence, by a live region — never on mount, only on change. */
+  const previousRestored = useRef<string | null | undefined>(undefined)
+  const previousTurnCount = useRef<number | undefined>(undefined)
+  const [spoken, setSpoken] = useState('')
+  useEffect(() => {
+    const section = sectionRef.current
+    const focusRow = (turnId: string | null) => {
+      if (!section || !turnId) return
+      const pair = [...section.querySelectorAll<HTMLElement>('.lucet-thread__pair')].find((p) => p.dataset.turn === turnId)
+      const row = pair?.querySelector<HTMLElement>('.lucet-thread__vrow')
+      ;(row ?? pair)?.focus({ preventScroll: false })
+    }
+    const before = previousRestored.current
+    const prevCount = previousTurnCount.current
+    previousRestored.current = state.restoredFrom
+    previousTurnCount.current = state.turns.length
+    if (before === undefined || prevCount === undefined) return // mount: history, not news
+    const lastTurn = state.turns[state.turns.length - 1]
+    if (state.turns.length > prevCount && lastTurn?.restoreOf) {
+      const facts = versionFacts(lastTurn)
+      setSpoken(facts ? `Restored version ${facts.sourceOrdinal} as version ${facts.ordinal}.` : 'Restored an earlier version.')
+      focusRow(lastTurn.id)
+      return
+    }
+    if (state.turns.length > prevCount && lastTurn?.retryOf) {
+      const facts = versionFacts(lastTurn)
+      setSpoken(facts ? `Asking again — writing version ${facts.ordinal}.` : 'Asking again.')
+      /* The pressed Ask again now waits (disabled) and would drop focus to
+         body; the new version's row takes it, as after a restore. */
+      focusRow(lastTurn.id)
+      return
+    }
+    if (before === null && state.restoredFrom) {
+      const turn = state.turns.find((t) => t.id === state.restoredFrom)
+      const facts = turn ? versionFacts(turn) : null
+      const aside = state.turns.length - 1 - restoredIndex
+      setSpoken(`Previewing ${facts ? `version ${facts.ordinal} of ${facts.count}` : 'an earlier version'} — ${aside} later ${aside === 1 ? 'turn' : 'turns'} set aside, not deleted.`)
+      section?.querySelector<HTMLElement>('.lucet-thread__restored')?.focus()
+      return
+    }
+    if (before && state.restoredFrom === null && state.turns.length === prevCount) {
+      setSpoken('Returned to latest.')
+      focusRow(before)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.restoredFrom, state.turns.length])
+  /* "Version 3 is ready": the retry's settle, spoken once. */
+  const lastStatus = last?.response?.status ?? null
+  const previousStatus = useRef<string | null | undefined>(undefined)
+  useEffect(() => {
+    const prev = previousStatus.current
+    previousStatus.current = lastStatus
+    if (prev === undefined || prev === lastStatus) return
+    if (prev === 'streaming' && lastStatus === 'complete' && last?.retryOf) {
+      const facts = versionFacts(last)
+      if (facts) setSpoken(`Version ${facts.ordinal} is ready.`)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastStatus])
+  /* A new version is being written: the actions that would start another
+     run, or leave for the past, wait for it (component audit 05). */
+  const busy = last?.response?.status === 'streaming' || last?.response?.status === 'pending'
   /* Shared the moment a second human speaks — derived from the turns,
      never a flag a host could forget to set. */
   const shared = new Set(state.turns.map((t) => t.prompt.authorId)).size > 1
@@ -465,6 +542,7 @@ export function Thread({
           <article
             className="lucet-thread__pair"
             key={turn.id}
+            data-turn={turn.id}
             data-latest={turn.id === last?.id || undefined}
             data-version-old={(facts && !facts.newest) || undefined}
             data-aside={aside || undefined}
@@ -481,7 +559,15 @@ export function Thread({
               /* The word badge, then the ordinal as hover/focus metadata.
                  The metadata span keeps its layout space at rest
                  (opacity, not display), so revealing it moves nothing. */
-              <div className="lucet-thread__vrow">
+              <div
+                className="lucet-thread__vrow"
+                data-current={facts.newest || undefined}
+                /* A focus landing for the acts that unmount their control;
+                   read as one line: the word, then the version and how it
+                   came to be. */
+                tabIndex={-1}
+                aria-label={`${facts.word ? `${facts.word} — ` : ''}${facts.meta}`}
+              >
                 {facts.word ? (
                   <span className="lucet-thread__vbadge">{facts.word}</span>
                 ) : null}
@@ -500,6 +586,7 @@ export function Thread({
                   settled ? (
                     <MessageActions
                       message={response}
+                      busy={busy}
                       onRetry={onRetry ? () => onRetry(turn.id) : undefined}
                       onRecover={onRecover ? () => onRecover(turn.id) : undefined}
                       onFeedback={
@@ -521,12 +608,12 @@ export function Thread({
                  words the announce layer uses. role=status announces the
                  mode change without stealing focus. Restore only ever
                  adds, and the banner's commit says so by its phrasing. */
-              <div className="lucet-thread__restored" role="status">
+              <div className="lucet-thread__restored" tabIndex={-1}>
                 <svg className="lucet-thread__restored-glyph" viewBox="0 0 24 24" aria-hidden>
                   <path d="M12 8v4l2.6 1.6M20.5 12a8.5 8.5 0 1 1-2.5-6M20.5 3.5V6H18" />
                 </svg>
                 <span className="lucet-thread__restored-text">
-                  Previewing an earlier version — {setAside} later{' '}
+                  Previewing {facts ? `version ${facts.ordinal} of ${facts.count}` : 'an earlier version'} — {setAside} later{' '}
                   {setAside === 1 ? 'turn is' : 'turns are'} set aside, not deleted.
                 </span>
                 {/* THE PAIR (audit round 04): the way back is a ghost, the
@@ -554,7 +641,7 @@ export function Thread({
                         data-commit
                         onClick={() => onRestoreCommit(turn.id)}
                       >
-                        Restore version
+                        Restore this version
                       </button>
                     ) : null}
                   </span>
@@ -565,6 +652,10 @@ export function Thread({
         )
       })}
       <ResponseAnnouncer state={state} narration={narration ?? 'live'} />
+      {/* The version story, spoken once per act (component audit 05). */}
+      <div className="lucet-visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        {spoken}
+      </div>
     </section>
     </NoticeActionContext.Provider>
   )

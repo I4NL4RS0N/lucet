@@ -41,6 +41,10 @@ export interface MessageActionsProps {
       turn, outside an existing restored view. The thread decides; this
       component just draws what it is given. */
   onRestore?: (() => void) | undefined
+  /** A new version is being written elsewhere in the thread: the acts that
+      would start another run or leave for the past wait for it. Copy and
+      feedback stay live — they touch nothing (component audit 05). */
+  busy?: boolean | undefined
 }
 
 type CopyState = 'idle' | 'copied' | 'failed'
@@ -67,7 +71,7 @@ const RECOVERY_ICON: Record<RecoveryIcon, string> = {
 const timeOf = (ms: number): string =>
   new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(ms))
 
-export function MessageActions({ message, onRetry, onRecover, onFeedback, onRestore }: MessageActionsProps) {
+export function MessageActions({ message, onRetry, onRecover, onFeedback, onRestore, busy }: MessageActionsProps) {
   const [copy, setCopy] = useState<CopyState>('idle')
   /* The pop fires on RECORDING a verdict, never on retracting one: giving
      feedback is a small moment; taking it back is quiet housekeeping. */
@@ -131,7 +135,7 @@ export function MessageActions({ message, onRetry, onRecover, onFeedback, onRest
       ) : message.recovery && onRecover ? (
         /* THE STATE'S OWN EXIT (round 05, P1): the verb says what this
            ending promised and performs it through the runtime. */
-        <button type="button" className="lucet-actions__btn" data-recovery={message.recovery.mode} onClick={() => onRecover()}>
+        <button type="button" className="lucet-actions__btn" data-recovery={message.recovery.mode} disabled={busy || undefined} onClick={() => onRecover()}>
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d={RECOVERY_ICON[message.recovery.icon]} />
           </svg>
@@ -140,7 +144,7 @@ export function MessageActions({ message, onRetry, onRecover, onFeedback, onRest
       ) : onRetry ? (
         /* "Ask again" survives only where asking the same question is the
            right recovery — where no verb was stamped. */
-        <button type="button" className="lucet-actions__btn" onClick={() => onRetry()}>
+        <button type="button" className="lucet-actions__btn" disabled={busy || undefined} onClick={() => onRetry()}>
           <svg viewBox="0 0 24 24" aria-hidden>
             <path d="M4 12a8 8 0 1 1 2.4 5.7M4 20v-4h4" />
           </svg>
@@ -158,6 +162,7 @@ export function MessageActions({ message, onRetry, onRecover, onFeedback, onRest
             type="button"
             className="lucet-actions__btn"
             aria-describedby={`${message.id}-preview-tip`}
+            disabled={busy || undefined}
             onClick={onRestore}
           >
             <svg viewBox="0 0 24 24" aria-hidden>
