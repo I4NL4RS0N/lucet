@@ -81,9 +81,9 @@ properties.
 
 **It has no styling dependencies.** The whole system is plain CSS
 custom properties — no Tailwind, no CSS-in-JS, no build step, no
-configuration. Import one stylesheet and the components are
-themed. Set your own values on the 21 colour roles and they're
-yours.
+configuration. Import two stylesheets — the core's tokens and the
+React layer's components — and they are themed. Set your own values
+on the 21 colour roles and they're yours.
 
 **If you already use shadcn, it inherits your theme.** Every
 semantic token reads `var(--shadcn-name, our-default)`, so a

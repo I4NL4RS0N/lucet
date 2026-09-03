@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 
 /**
- * One header, three pages. The Konfabulator, the components stage, and the
- * primitives lab all wear the same identity and the same navigation
- * grammar, so moving between them feels like one site rather than three
- * rooms decorated by different people. Identity left (the tile links
- * home), navigation right — internal pages first, the outbound repo link
- * last wearing its flag — and each page may slot its own quiet controls
- * before the nav through `children`.
+ * One header, four pages. The Konfabulator, the components stage, the
+ * primitives lab and About all wear the same identity and the same
+ * navigation grammar, so moving between them feels like one site rather
+ * than four rooms decorated by different people. Identity left (the tile
+ * links home), navigation right — the pages first, then the two outbound
+ * destinations wearing their flags, npm before the repository — and each
+ * page may slot its own quiet controls before the nav through
+ * `children`.
  */
 
 /* All three pages are PUBLIC (ruling 2026-09-01). The labs began as
@@ -19,6 +20,10 @@ const PAGES = [
   { id: 'konfabulator', label: 'Konfabulator', href: '/' },
   { id: 'components', label: 'Components', href: '/components.html' },
   { id: 'primitives', label: 'Primitives', href: '/primitives.html' },
+  /* About is a PAGE, so it sits with the pages, not with the outbound
+     links. It exists so a stranger can find out what this is without the
+     demo stopping to explain itself. */
+  { id: 'about', label: 'About', href: '/about.html' },
 ] as const
 
 export type SitePage = (typeof PAGES)[number]['id']
@@ -68,7 +73,7 @@ export function SiteHeader({ page, children }: { page: SitePage; children?: Reac
 
         {children}
 
-        {/* The nav is a CONSTANT: the same three places on every page, and
+        {/* The nav is a CONSTANT: the same four places on every page, and
             the one you are on wears the active ink. A nav that reshuffles
             itself per page makes the reader re-find everything. */}
         <nav className="cfg__nav" aria-label="Site">
@@ -82,6 +87,23 @@ export function SiteHeader({ page, children }: { page: SitePage; children?: Reac
               {p.label}
             </a>
           ))}
+          {/* The two utility destinations. npm points at lucet-react
+              because that is the package an adopter installs first (it
+              pulls the core with it); the URL is the verified public
+              package page, not an inferred one. No icon of its own — the
+              word is the name, and a second mark beside GitHub's would
+              make the nav a logo row. */}
+          <a
+            className="cfg__navlink"
+            href="https://www.npmjs.com/package/lucet-react"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            npm
+            <svg className="cfg__navlink-out" viewBox="0 0 24 24" aria-hidden>
+              <path d="M8 16L16 8M9.5 8H16v6.5" />
+            </svg>
+          </a>
           <a
             className="cfg__navlink"
             href="https://github.com/I4NL4RS0N/lucet"

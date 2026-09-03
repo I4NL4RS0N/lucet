@@ -36,6 +36,8 @@ function Chat() {
         selfId="you"
         onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
         onSubmit={() => lucet.submit(state.composer.text)}
+        onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
+        onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
       />
     </>
   )
@@ -43,7 +45,7 @@ function Chat() {
 
 export default function App() {
   return (
-    <LucetProvider value={lucet}>
+    <LucetProvider lucet={lucet}>
       <Chat />
     </LucetProvider>
   )

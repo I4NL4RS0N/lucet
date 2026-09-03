@@ -24,3 +24,8 @@
   from = "/primitives"
   to = "/primitives.html"
   status = 301
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 301

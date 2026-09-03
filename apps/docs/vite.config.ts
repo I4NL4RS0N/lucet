@@ -15,6 +15,7 @@ export default defineConfig({
         index: new URL('./index.html', import.meta.url).pathname,
         components: new URL('./components.html', import.meta.url).pathname,
         primitives: new URL('./primitives.html', import.meta.url).pathname,
+        about: new URL('./about.html', import.meta.url).pathname,
       },
     },
   },

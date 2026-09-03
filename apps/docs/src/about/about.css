@@ -1,0 +1,60 @@
+/*
+ * The About page. Prose on the lab shell — the only new values here are
+ * the paragraph rhythm and the reading ink, because the shell had no
+ * body-copy voice before this page (its prose was one lede over
+ * specimens). The measure is the lede's 62ch so the page reads as ONE
+ * column rather than a lede sitting over a wider body.
+ */
+.about__p {
+  text-wrap: pretty;
+  margin: 0 0 18px;
+  max-inline-size: 62ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--lucet-foreground);
+}
+/* The lede is this page's first paragraph, so it takes the paragraph
+   rhythm instead of the 8px that binds it to a lab's controls — and the
+   reading ink with it. On a lab page the lede is a deck standing over
+   specimens and is right to sit back; here it is the opening sentence of
+   the argument, and a first paragraph quieter than the ones after it
+   reads as a mistake rather than a decision. */
+.about .prim__lede {
+  margin-block-end: 18px;
+  line-height: 1.6;
+  color: var(--lucet-foreground);
+}
+/* The install line: the site's own code chip, given a line of its own.
+   Not a .codeblock — that grammar is a surface with a bar and a copy
+   button, which is machinery for four words. It is a BLOCK chip rather
+   than an inline one because an inline chip fragments: at 320 the line
+   wrapped and the background broke into two boxes with two sets of
+   rounded ends. Block, sized to its own text, capped at the column, and
+   wrapping at a space when the column is narrower than the command. */
+.about__cmd {
+  margin: 26px 0 18px;
+  font-size: 15px;
+}
+.about__cmd code {
+  display: block;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  padding: 6px 9px;
+  white-space: pre-wrap;
+}
+/* Links in prose wear the document's underline grammar: the ink they sit
+   in, underlined at rest because a link in a paragraph has nothing else
+   to say it is one. */
+.about a {
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+}
+.about a:hover {
+  text-decoration-color: currentColor;
+}
+.about a:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+  border-radius: 2px;
+}

@@ -3087,6 +3087,88 @@ async function main() {
     if (cleared.spent !== 6.24 || cleared.budget !== 10 || cleared.strip || cleared.turns !== 0 || cleared.pendingTimers !== 0)
       failures.push(`budget-spent: only the demo's Reset clears the month, and it must restore the seed — ${JSON.stringify(cleared)}`)
 
+    /* THE HEADER IS A CONSTANT, AND THE DEMO'S SPACE IS NOT NEGOTIABLE
+       (launch readiness). Six destinations in one order on every page —
+       the four pages, then npm and the repository — because a nav that
+       reshuffles itself makes the reader re-find everything. The npm URL
+       is written out here rather than derived: it is the one link in the
+       site that must point at a real published package page, and it was
+       verified by loading it. The frame heights are recorded constants:
+       the demo's height is what every "just one more thing in the
+       header" costs, so if either moves, something was added to the
+       chrome and this fails saying which viewport lost the space. */
+    const NAV = ['Konfabulator', 'Components', 'Primitives', 'About', 'npm', 'GitHub']
+    const NPM_URL = 'https://www.npmjs.com/package/lucet-react'
+    for (const [path, id] of [['index.html?instant=1', 'Konfabulator'], ['components.html', 'Components'], ['primitives.html', 'Primitives'], ['about.html', 'About']]) {
+      await page.setViewportSize({ width: 1280, height: 900 })
+      await page.goto(url.replace('primitives.html', path))
+      await still()
+      await page.waitForSelector('.cfg__navlink', { timeout: 15000 })
+      await page.waitForTimeout(200)
+      const nav = await page.evaluate(() => {
+        const first = (v) => v.split(',')[0].replace(/['"]/g, '').trim()
+        const sans = first(getComputedStyle(document.documentElement).getPropertyValue('--lucet-font-sans'))
+        return [...document.querySelectorAll('.cfg__navlink')].map((a) => {
+          const cs = getComputedStyle(a)
+          return {
+            label: a.textContent.trim(), href: a.getAttribute('href'),
+            current: a.getAttribute('aria-current'),
+            target: a.getAttribute('target'), rel: a.getAttribute('rel') ?? '',
+            arrow: !!a.querySelector('.cfg__navlink-out'),
+            size: cs.fontSize, family: first(cs.fontFamily), sans,
+            colour: cs.color, height: Math.round(a.getBoundingClientRect().height),
+          }
+        })
+      })
+      const where = `site nav on ${path}`
+      checks++
+      if (nav.map((l) => l.label).join(' · ') !== NAV.join(' · '))
+        failures.push(`${where}: ${nav.map((l) => l.label).join(' · ')} — the six destinations must read ${NAV.join(' · ')}`)
+      const current = nav.filter((l) => l.current === 'page')
+      checks++
+      if (current.length !== 1 || current[0].label !== id)
+        failures.push(`${where}: ${current.length} links marked current (${current.map((l) => l.label).join(', ')}) — exactly one, and it must be ${id}`)
+      const outbound = nav.filter((l) => l.label === 'npm' || l.label === 'GitHub')
+      checks++
+      if (outbound.length !== 2 || outbound.some((l) => l.target !== '_blank' || !/noopener/.test(l.rel) || !l.arrow))
+        failures.push(`${where}: both outbound links open in a new tab, carry rel=noopener and wear the arrow — ${JSON.stringify(outbound.map((l) => [l.label, l.target, l.rel, l.arrow]))}`)
+      checks++
+      if (nav.find((l) => l.label === 'npm')?.href !== NPM_URL)
+        failures.push(`${where}: npm points at ${nav.find((l) => l.label === 'npm')?.href}, not the verified package page ${NPM_URL}`)
+      checks++
+      /* One recipe: the new links may not be a size, a face or an ink of
+         their own. The current page is the one allowed difference — full
+         ink is how it says where you are. */
+      const rest = nav.filter((l) => l.current !== 'page')
+      const drift = rest.filter((l) => l.size !== '13px' || l.family !== l.sans || l.colour !== rest[0].colour || l.height < 24)
+      if (drift.length) failures.push(`${where}: nav links drift from the family — ${JSON.stringify(drift.map((l) => [l.label, l.size, l.family, l.colour, l.height]))}`)
+      checks++
+      const ring = await page.evaluate(() => {
+        const a = document.querySelector('.cfg__navlink')
+        a.focus()
+        const cs = getComputedStyle(a)
+        return { focused: document.activeElement === a, width: cs.outlineWidth, style: cs.outlineStyle }
+      })
+      if (!ring.focused || ring.style === 'none' || parseFloat(ring.width) < 1)
+        failures.push(`${where}: a nav link takes focus and shows a ring — ${JSON.stringify(ring)}`)
+    }
+    /* The demo's own height, before and after anything is added to the
+       chrome: 686px at 1280x900 and 579px at 390x844 (launch readiness,
+       measured before the About and npm links were added and unchanged
+       by them). A change here means the header or the stage bar grew. */
+    for (const [w, h, expect] of [[1280, 900, 686], [390, 844, 579]]) {
+      await page.setViewportSize({ width: w, height: h })
+      await page.goto(url.replace('primitives.html', 'index.html?instant=1'))
+      await still()
+      await page.waitForSelector('.cfg__frame', { timeout: 15000 })
+      await page.waitForTimeout(300)
+      const got = await page.evaluate(() => Math.round(document.querySelector('.cfg__frame').getBoundingClientRect().height))
+      checks++
+      if (got !== expect)
+        failures.push(`konfabulator space at ${w}x${h}: the frame is ${got}px, not ${expect}px — the demo's height changed, so something was added to the header or the stage bar`)
+    }
+    await page.setViewportSize({ width: 1280, height: 900 })
+
     /* PAGE RHYTHM — THE HORIZONTAL HALF OF THE SCALE (audit round 09).
        The vertical gaps were named in the macro pass; the gutter between
        two cells was a literal 36px, half the smallest interval between two
@@ -3219,11 +3301,11 @@ async function main() {
        anything already contained by a scrolling ancestor. */
     for (const width of [390, 320]) {
       await page.setViewportSize({ width, height: 844 })
-      for (const path of ['primitives.html', 'components.html', 'index.html']) {
+      for (const path of ['primitives.html', 'components.html', 'index.html', 'about.html']) {
         /* ?instant=1: the audit says it wants the resting thread; the site no longer sniffs the browser (round 06). */
         await page.goto(url.replace('primitives.html', path === 'index.html' ? 'index.html?instant=1' : path))
         await still()
-        await page.waitForSelector(path === 'index.html' ? '.cfg__frame' : '.sec', { timeout: 15000 })
+        await page.waitForSelector(path === 'index.html' ? '.cfg__frame' : path === 'about.html' ? '.about__cmd' : '.sec', { timeout: 15000 })
         await page.waitForTimeout(500)
         const res = await page.evaluate(() => {
           const over = document.documentElement.scrollWidth - document.documentElement.clientWidth
