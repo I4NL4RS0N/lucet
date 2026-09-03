@@ -224,7 +224,10 @@ function TriggerRail({
          to primary actions; presence is enough. "Something to wipe" is
          more than turns (audit round 05): a pre-send state leaves a
          draft, a queued prompt or a seeded context with no turn at all,
-         and Reset must be able to clear those too. */}
+         and Reset must be able to clear those too. And a month that
+         differs from the seed (component audit 03, independent
+         verification): a spent month with no turns IS the wall, and
+         Reset is the demo's only way back from it. */}
       <button
         type="button"
         className="cfg__stage-reset"
@@ -233,7 +236,9 @@ function TriggerRail({
           thread.turns.length === 0 &&
           thread.composer.text === '' &&
           thread.composer.queued === null &&
-          thread.usage.contextTokens === 0
+          thread.usage.contextTokens === 0 &&
+          thread.usage.monthlySpentUsd === MONTH_SEED.monthlySpentUsd &&
+          thread.usage.monthlyBudgetUsd === MONTH_SEED.monthlyBudgetUsd
         }
         onClick={onReset}
       >
@@ -395,12 +400,6 @@ function AppCore({
               onConfirmSpend={() => void lucet.confirmSpend()}
               onDismissIntercept={() => lucet.dismissIntercept()}
               onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
-              onNewThread={() => {
-                /* The blocked month's exit: the same commit as the bar's
-                   Reset and the sidebar's New thread. */
-                lucet.reset()
-                lucet.store.dispatch({ type: 'usage/changed', patch: MONTH_SEED })
-              }}
               onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
               onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
               onRetryAttachment={(id) => {

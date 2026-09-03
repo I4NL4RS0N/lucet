@@ -109,6 +109,9 @@ export function reduce(
           ...createInitialState(state.id, state.usage.contextLimit).usage,
           monthlyBudgetUsd: state.usage.monthlyBudgetUsd,
           monthlySpentUsd: state.usage.monthlySpentUsd,
+          /* ...and when it resets: a spent month still says exactly when
+             it lifts in the thread that follows (component audit 03). */
+          monthlyResetAt: state.usage.monthlyResetAt,
         },
       }
 

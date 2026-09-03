@@ -1503,7 +1503,6 @@
 .lucet-prompt__at,
 .lucet-actions__pending time { font-variant-numeric: tabular-nums; }
 /* The blocked month's exit sits at the strip's end, a ghost. */
-.lucet-prompt__exit { margin-inline-start: auto; flex: none; }
 .lucet-prompt__status .lucet-orb-row { inline-size: 100%; }
 
 .lucet-actions__btn {
@@ -2294,6 +2293,11 @@
   transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
 }
 .lucet-budget__row:hover { background-color: var(--lucet-hover); }
+.lucet-budget__row[aria-disabled] { cursor: default; }
+.lucet-budget__row[aria-disabled]:hover { background-color: transparent; }
+/* Inert rows keep their words and lose their action colour: the month is
+   spent, and the strip says so (component audit 03). */
+.lucet-budget__row[aria-disabled] .lucet-budget__row-label { color: var(--lucet-muted-foreground); }
 .lucet-budget__row:focus-visible {
   outline: var(--lucet-focus-width) solid var(--lucet-ring);
   outline-offset: -2px;

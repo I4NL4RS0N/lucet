@@ -189,3 +189,38 @@ Filed low for a later pass of this component: sub-cent prices show three
 decimals beside two-decimal neighbours; the projection extension is a
 sub-pixel sliver at realistic magnitudes; the projection row's `title`
 is hover-only; the month ledger row wraps at 320.
+
+## The wall has no exit (2026-09-03, independent verification)
+
+An independent pass on the deployed round found the one contradiction
+the matrix had not: the spent strip offered **New thread**, and in the
+Konfabulator that verb re-seeded the month — the demo's Reset wearing
+product clothes. A cap that a new conversation can leave is a thread
+limit labelled as a month. The product rule is the reducer's own law,
+now carried all the way to the surface:
+
+- **A spent month is an account state.** It outlives the thread, so no
+  verb on the composer offers a way out of it. The strip states the wall
+  and exactly when it lifts — *This month's budget is spent. New turns
+  are paused until it resets on Sep 5 at 01:41.* — and nothing else. The
+  `onNewThread` prop is gone with the exit; a host with a real budget
+  destination adds its own verb, and no fictional one stands in.
+- **Every new-thread path keeps the month.** The sidebar's, the drawer's
+  and the phone's New thread all run `thread/reset`, which empties the
+  window and the thread's tally and preserves the budget, the spend, and
+  — from this pass — the reset time, so the wall in the next thread
+  still says when it lifts. The runtime test pins it; the states audit
+  starts a new thread from the sidebar with the month spent and asserts
+  the state, the strip, the blocked Send, the trigger's name and the
+  inert rows all survive it.
+- **Readable, not actionable.** While the month is spent the trigger and
+  its panel still open — the ledger is the explanation — but the model
+  rows are inert and say so (`aria-disabled`), because no model can
+  produce an allowed send. The price stays hidden on the trigger, as
+  before.
+- **The demo's escape hatch stays the demo's.** The Konfabulator's Reset
+  re-seeds the month, because that button means "fresh demo". It is the
+  only thing that does, and the audit asserts it restores the seed.
+- **The 320 measure.** With no verb reserving room beside it, the status
+  sentence takes the strip's full width at the phone width instead of
+  stacking into a narrow column.

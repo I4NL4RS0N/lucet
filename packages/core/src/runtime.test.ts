@@ -513,6 +513,26 @@ describe('budget meter', () => {
     expect(usage.monthlyBudgetUsd).toBe(10)
     expect(usage.monthlySpentUsd).toBeCloseTo(9.88, 4)
   })
+
+  it('a spent month follows into the new thread, reset time and all — a new thread is not a refund', async () => {
+    /* THE RULE (component audit 03, independent verification): the cap is
+       the account's. Starting a new thread empties the window and the
+       thread's tally; the month, its wall, and the moment it lifts all
+       carry over. Only a host's own ledger — or the demo's Reset — can
+       give the month back. */
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    await lucet.trigger('budget-spent')
+    const before = lucet.getState().usage
+    expect(before.monthlyResetAt).not.toBeNull()
+    lucet.reset()
+    const after = lucet.getState()
+    expect(after.turns).toHaveLength(0)
+    expect(after.usage.threadCostUsd).toBe(0)
+    expect(after.usage.monthlyBudgetUsd).toBe(before.monthlyBudgetUsd)
+    expect(after.usage.monthlySpentUsd).toBeCloseTo(before.monthlySpentUsd, 6)
+    expect(after.usage.monthlyResetAt).toBe(before.monthlyResetAt)
+    expect(submitBlocker({ ...after, usage: after.usage })).toBe('budget')
+  })
 })
 
 describe('every trigger does what it says (round 05)', () => {

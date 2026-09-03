@@ -6,7 +6,7 @@ import type {
   ServiceState,
   UsageState,
 } from 'lucet-core'
-import { describeSubmitBlocker, projectNextTurn, submitBlocker } from 'lucet-core'
+import { describeSubmitBlocker, submitBlocker } from 'lucet-core'
 import type { ScopeState } from 'lucet-core'
 import { ScopeControl } from './ScopeControl.js'
 import { BudgetMeter } from './BudgetMeter.js'
@@ -55,8 +55,6 @@ export interface PromptInputProps {
   onSubmit: () => void
   /** Called instead of onSubmit while locked. Omit it and locking simply disables send. */
   onQueue?: ((text: string) => void) | undefined
-  /** The blocked month's other exit (round 05, P1): start a new thread. */
-  onNewThread?: (() => void) | undefined
   /** THE HOLD (round 06): Send at the month's threshold opened the meter's
       panel; Continue there sends the held words. */
   onConfirmSpend?: (() => void) | undefined
@@ -231,7 +229,6 @@ export function PromptInput({
   onChange,
   onSubmit,
   onQueue,
-  onNewThread,
   onConfirmSpend,
   onDismissIntercept,
   onModelChange,
@@ -248,19 +245,13 @@ export function PromptInput({
   const sendRef = useRef<HTMLButtonElement | null>(null)
   const fieldRef = useRef<HTMLTextAreaElement | null>(null)
   const blocker = submitBlocker({ composer, service, restoredFrom, usage })
-  /* When the month is spent: switch to a cheaper model if one still fits
-     what remains, else a new thread — never a retry that will fail again. */
-  const budgetExit = (() => {
-    if (!usage || usage.monthlyBudgetUsd === null) return null
-    const remaining = usage.monthlyBudgetUsd - usage.monthlySpentUsd
-    const cheaper = model.options
-      .filter((o) => o.id !== model.selectedId)
-      .map((o) => ({ option: o, p: projectNextTurn({ composer, usage, model }, o.id) }))
-      .find((x) => x.p !== null && x.p.costUsd <= remaining)
-    if (cheaper) return { label: `Switch to ${cheaper.option.label}`, act: () => onModelChange(cheaper.option.id) }
-    if (onNewThread) return { label: 'New thread', act: onNewThread }
-    return null
-  })()
+  /* THE WALL HAS NO EXIT (component audit 03, independent verification).
+     A spent month is an account state: it outlives the thread and no model
+     can produce an allowed send, so a "New thread" verb here promised a
+     way out that the ledger does not have — and the Konfabulator wired it
+     to the demo's re-seed, which made the cap look thread-scoped. The
+     strip states the wall and exactly when it lifts; the picker stays
+     readable so the ledger explains it; nothing offers to spend. */
   const queued = composer.queued !== null
   const canQueue = blocker === 'locked' && onQueue !== undefined && !queued
 
@@ -309,7 +300,6 @@ export function PromptInput({
           icon: 'rate-limited' as const,
           text: describeSubmitBlocker('budget'),
           resetAt: usage?.monthlyResetAt ?? null,
-          exit: budgetExit,
         }
       : queued
         ? {
@@ -395,21 +385,16 @@ export function PromptInput({
                 {strip.text}
                 {'resetAt' in strip && strip.resetAt !== null ? (
                   /* The sentence already says "until it resets"; the clock
-                     time completes it: "…until it resets on 4 Sept, 22:14." */
+                     time completes it: "…until it resets on Sep 5 at 01:41." */
                   <>
                     {' on '}
                     <time className="lucet-prompt__at" dateTime={new Date(strip.resetAt).toISOString()}>
-                      {new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(strip.resetAt))}
+                      {`${new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short' }).format(new Date(strip.resetAt))} at ${new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(strip.resetAt))}`}
                     </time>
                     .
                   </>
                 ) : null}
               </span>
-              {'exit' in strip && strip.exit ? (
-                <button type="button" className="lucet-button lucet-prompt__exit" data-variant="ghost" onClick={strip.exit.act}>
-                  {strip.exit.label}
-                </button>
-              ) : null}
             </span>
           ) : 'spin' in strip ? (
             <span className="lucet-orb-row">

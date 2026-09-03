@@ -82,7 +82,7 @@ export function describeSubmitBlocker(blocker: SubmitBlocker): string {
     case 'service-down':
       return 'Can’t reach the service right now'
     case 'budget':
-      return 'This month’s budget is spent — new turns are paused until it resets'
+      return 'This month’s budget is spent. New turns are paused until it resets'
     case 'attachment-uploading':
       return 'Uploading your attachment…'
     case 'attachment-failed':

@@ -2141,21 +2141,53 @@ async function main() {
         failures.push(`rate-limit: the retry is not armed as a status — ${JSON.stringify(armed)}`)
     }
     await resetAndInspect('rate-limit')
-    /* Budget spent: the exact reset date, the price inert, and the one exit that will not fail again. */
+    /* Budget spent: the exact reset time, the price inert, and NO exit — a
+       monthly cap cannot be left by starting a new thread (component audit
+       03, independent verification). The sidebar's New thread keeps the
+       month: the strip persists with its time, Send stays blocked, the
+       trigger still says the month is spent, and the rows are inert. Only
+       the Konfabulator's Reset — the demo's escape hatch — clears it. */
     await coldStart()
     await fireFromRail('Budget spent', 'States')
     await settled()
     await page.waitForSelector('.lucet-prompt__status', { timeout: 15000 })
     await page.waitForTimeout(150)
-    const spentState = await page.evaluate(() => { const s = document.querySelector('.lucet-prompt__status'); return { tone: s?.dataset.tone, text: s?.textContent.trim() || '', exit: s?.querySelector('.lucet-prompt__exit')?.textContent.trim() || null, price: !!document.querySelector('.lucet-budget__price'), tabular: getComputedStyle(document.querySelector('.lucet-prompt__at') || document.body).fontVariantNumeric.includes('tabular') } })
+    const readSpent = () => page.evaluate(() => {
+      const s = window.__lucet.getState()
+      const strip = [...document.querySelectorAll('.lucet-prompt__status')].find((e) => e.getBoundingClientRect().width > 0)
+      const prompt = strip?.closest('.lucet-prompt')
+      const chip = prompt?.querySelector('.lucet-budget')
+      return {
+        spent: s.usage.monthlyBudgetUsd !== null && s.usage.monthlySpentUsd >= s.usage.monthlyBudgetUsd,
+        remaining: s.usage.monthlyBudgetUsd === null ? null : Number((s.usage.monthlyBudgetUsd - s.usage.monthlySpentUsd).toFixed(4)),
+        resetAt: s.usage.monthlyResetAt,
+        turns: s.turns.length,
+        tone: strip?.dataset.tone ?? null,
+        text: strip?.textContent.trim() ?? '',
+        exit: strip?.querySelector('.lucet-prompt__exit')?.textContent.trim() ?? null,
+        sendDisabled: prompt?.querySelector('button[aria-label="Send"]')?.disabled ?? null,
+        price: !!chip?.querySelector('.lucet-budget__price'),
+        label: chip?.querySelector('summary')?.getAttribute('aria-label') ?? '',
+        rowsInert: chip ? [...chip.querySelectorAll('.lucet-budget__row')].every((r) => r.getAttribute('aria-disabled') === 'true') : null,
+        tabular: getComputedStyle(document.querySelector('.lucet-prompt__at') || document.body).fontVariantNumeric.includes('tabular'),
+      }
+    })
+    const spentBefore = await readSpent()
     checks++
-    if (spentState.tone !== 'caution' || !/until it resets on \S+ \d/.test(spentState.text) || /resets Resets/i.test(spentState.text) || !spentState.tabular || spentState.exit !== 'New thread' || spentState.price)
-      failures.push(`budget-spent: reset date, inert price or exit missing — ${JSON.stringify(spentState)}`)
-    await page.locator('.lucet-prompt__exit').click()
+    if (spentBefore.tone !== 'caution' || !/until it resets on \S+ \d+ at \d\d:\d\d\.$/.test(spentBefore.text) || !spentBefore.tabular || spentBefore.exit !== null || spentBefore.price || !spentBefore.spent || spentBefore.sendDisabled !== true || !/monthly budget spent/.test(spentBefore.label) || spentBefore.rowsInert !== true)
+      failures.push(`budget-spent: the wall must state its reset time, offer no exit, block Send and leave the picker readable but inert — ${JSON.stringify(spentBefore)}`)
+    await page.locator('.cfg__side-new').first().click()
     await page.waitForTimeout(250)
-    const fresh = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, strip: !!document.querySelector('.lucet-prompt__status'), ...window.__lucet.inspect() }))
+    const spentAfter = await readSpent()
     checks++
-    if (fresh.turns !== 0 || fresh.strip || fresh.pendingTimers !== 0) failures.push(`budget-spent: New thread did not start clean — ${JSON.stringify(fresh)}`)
+    if (!spentAfter.spent || spentAfter.remaining !== spentBefore.remaining || spentAfter.resetAt !== spentBefore.resetAt || spentAfter.turns !== 0 || spentAfter.tone !== 'caution' || !/until it resets on \S+ \d+ at \d\d:\d\d\.$/.test(spentAfter.text) || spentAfter.exit !== null || spentAfter.sendDisabled !== true || !/monthly budget spent/.test(spentAfter.label) || spentAfter.rowsInert !== true)
+      failures.push(`budget-spent: a new thread must not touch the month — ${JSON.stringify({ before: spentBefore, after: spentAfter })}`)
+    await page.locator('.cfg__rail-top button', { hasText: 'Reset' }).first().click()
+    await page.waitForTimeout(250)
+    const cleared = await page.evaluate(() => { const s = window.__lucet.getState(); return { spent: s.usage.monthlySpentUsd, budget: s.usage.monthlyBudgetUsd, strip: !!document.querySelector('.lucet-prompt__status'), turns: s.turns.length, ...window.__lucet.inspect() } })
+    checks++
+    if (cleared.spent !== 6.24 || cleared.budget !== 10 || cleared.strip || cleared.turns !== 0 || cleared.pendingTimers !== 0)
+      failures.push(`budget-spent: only the demo's Reset clears the month, and it must restore the seed — ${JSON.stringify(cleared)}`)
 
     /* NOTHING CLIPS, AT MOBILE WIDTHS TOO (audit round 02): the components
        page scrolled sideways at 390 for weeks — a sources grid track sized

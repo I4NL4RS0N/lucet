@@ -246,7 +246,13 @@ export function BudgetMeter({
               type="button"
               className="lucet-budget__row"
               aria-pressed={option.id === selected.id}
+              /* THE WALL, IN THE PICKER (component audit 03, independent
+                 verification): while the month is spent no model can produce
+                 an allowed send, so the rows stay readable — the ledger below
+                 is the explanation — but inert, and say so. */
+              aria-disabled={spent || undefined}
               onClick={(e) => {
+                if (spent) return
                 onChange(option.id)
                 e.currentTarget.closest('details')?.removeAttribute('open')
               }}
