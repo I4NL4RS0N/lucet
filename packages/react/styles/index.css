@@ -2734,7 +2734,12 @@
    A suggestion is a menu entry, and menus are made of lines. */
 .lucet-chips {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  /* min(230px, 100%): a host narrower than 230px gets one full-width
+     column, not a 230px demand. The bare 230 minimum made the chips'
+     minimum content 230px, and a floor sized to its content grew to
+     fit — taking the composer beside them past the frame at a phone
+     width (component audit 07 closeout, the 3px the frame clipped). */
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
   gap: var(--lucet-space-2) var(--lucet-space-4);
   inline-size: 100%;
   text-align: start;
@@ -2972,11 +2977,18 @@
 
 @media (pointer: coarse) {
   .lucet-prompt__tool::before { inline-size: 44px; block-size: 44px; }
-  /* Chips grow to 32px under a coarse pointer and their two actions sit
-     18px apart, so each invisible 32px zone is its own. */
+  /* Chips grow to 32px under a coarse pointer. Their actions keep the 18px
+     glyph box and present a 44px zone each (audit 07 closeout: 32 met the
+     letter of 2.5.8 and missed the thumb). A zone reaches 6px past the
+     chip's top and bottom and 9px past its end, so the row opens exactly
+     as far as the zones need and no further: 14px between rows and Retry
+     and Remove 28px apart put 2px of clear air between neighbouring
+     zones — zones that merely touch share a pixel row under hit-testing
+     — and 10px between chips ends a zone inside the gap. */
   .lucet-prompt__att { block-size: 32px; }
-  .lucet-prompt__att-actions { gap: 18px; }
-  .lucet-prompt__att-remove::before { inline-size: 32px; block-size: 32px; }
+  .lucet-prompt__atts { gap: 14px 10px; }
+  .lucet-prompt__att-actions { gap: 28px; }
+  .lucet-prompt__att-remove::before { inline-size: 44px; block-size: 44px; }
   .lucet-sources__row { min-block-size: calc(44px * var(--lucet-density, 1)); }
 }
 
@@ -3053,6 +3065,10 @@
 }
 @media (pointer: coarse) {
   .lucet-prompt__att[data-status='failed'] { block-size: auto; min-block-size: 32px; }
+  /* The failed chip's first line stands as tall as every other chip, so
+     its Retry and Remove sit where the row's other actions do and their
+     44px zones meet the row above exactly as a one-line chip's would. */
+  .lucet-prompt__att[data-status='failed'] .lucet-prompt__att-actions { block-size: 32px; }
 }
 /* The failed chip's name yields before its actions wrap: a zero basis lets
    the name truncate on the first line so Retry and Remove stay beside it at

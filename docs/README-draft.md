@@ -9,7 +9,13 @@ AI interface components for the states real AI features actually hit.
 <!-- SLOT: RECORDING — Ian drag-uploads the walkthrough into the GitHub
      editor here for the inline player. Canonical copy of the take:
      docs/media/state-recovery.webm (the composed chain) and the
-     walkthrough re-cut delivered alongside this pass. -->
+     walkthrough re-cut delivered alongside this pass.
+     Status (2026-09-03, audit 07 closeout): the current take is
+     functionally accurate and content-stale — the collaborator is now
+     Jennifer Lee, and the Components page's sources trio became a band
+     and a pair. Not a re-cut trigger (the flows it shows are unchanged);
+     refresh it once, after the Components composition pass and before the
+     go-to-market capture set. -->
 
 Most component libraries ship the happy path and improvise the rest.
 Lucet names the rest and designs each one — refused, interrupted,

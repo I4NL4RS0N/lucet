@@ -15,6 +15,11 @@ import { ActivityOrb } from './ActivityOrb.js'
 import { Avatar } from './Avatar.js'
 import { StateIcon } from './StateIcon.js'
 
+/* Files that finish uploading within this many milliseconds of each other
+   are announced as one sentence ("3 attachments are ready.") rather than
+   three in a row; a lone file is still spoken within the same breath. */
+const READY_GROUPING_MS = 300
+
 /**
  * The prompt input, rendered FROM the contract.
  *
@@ -231,6 +236,60 @@ export function PromptInput({
   useEffect(() => {
     if (!composer.locked && composer.queued === null) setSaid('')
   }, [composer.locked, composer.queued])
+  /* UPLOAD COMPLETION IS SPOKEN ONCE (component audit 07, closeout). The
+     strip clears when a file becomes ready — the one outcome nobody could
+     hear, and the one that changes whether the request can go. A file that
+     was uploading here and is now ready is announced by name; several that
+     complete within a breath of each other are one sentence. Nothing is
+     spoken for the files present at mount, or for a file that arrives
+     already ready (it never uploaded here); statuses are compared by id, so
+     a theme change, a container change or any other re-render says nothing.
+     The sentence does not outlive its files: once the staging row is empty
+     (sent, or reset) the region drops it, silently. */
+  const seenStatus = useRef<Map<string, ComposerAttachment['status']> | null>(null)
+  const latestAttachments = useRef(composer.attachments)
+  const readyIds = useRef<string[]>([])
+  const readyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const readySentence = useRef('')
+  useEffect(() => {
+    latestAttachments.current = composer.attachments
+    const prev = seenStatus.current
+    seenStatus.current = new Map(composer.attachments.map((a) => [a.id, a.status] as const))
+    if (prev === null) return
+    /* A completion waiting to be spoken belongs to a file in the row. If the
+       file leaves before the breath is up — queued, removed, sent — its
+       sentence is dropped, not spoken late over whatever was said since
+       (a queued file that Edit returns is not "ready" again; it never
+       left the ready state). */
+    const present = seenStatus.current
+    readyIds.current = readyIds.current.filter((id) => present.has(id))
+    if (readyIds.current.length === 0 && readyTimer.current !== null) {
+      clearTimeout(readyTimer.current)
+      readyTimer.current = null
+    }
+    const done = composer.attachments.filter((a) => a.status === 'ready' && prev.has(a.id) && prev.get(a.id) !== 'ready')
+    if (done.length === 0) return
+    readyIds.current.push(...done.map((a) => a.id))
+    if (readyTimer.current !== null) return
+    readyTimer.current = setTimeout(() => {
+      readyTimer.current = null
+      const ids = readyIds.current
+      readyIds.current = []
+      const names = latestAttachments.current.filter((a) => ids.includes(a.id) && a.status === 'ready').map((a) => a.name)
+      if (names.length === 0) return
+      readySentence.current = names.length === 1 ? `${names[0]} is ready.` : `${names.length} attachments are ready.`
+      setSaid(readySentence.current)
+    }, READY_GROUPING_MS)
+  }, [composer.attachments])
+  useEffect(
+    () => () => {
+      if (readyTimer.current !== null) clearTimeout(readyTimer.current)
+    },
+    [],
+  )
+  useEffect(() => {
+    if (composer.attachments.length === 0 && said !== '' && said === readySentence.current) setSaid('')
+  }, [composer.attachments, said])
   /* The Stop tooltip arms only after the pointer MOVES over it: a pointer
      resting where Queued sat must not raise a tip on the Stop that mounts
      there at the handoff (component audit 06). */

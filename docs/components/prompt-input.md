@@ -219,3 +219,43 @@ Deferred: a `previewUrl` on the attachment contract for hosts that can
 render safe local image previews; picker cancellation cannot be exercised
 in a host that fakes file IO, so "no focus stolen after a cancelled
 selection" is recorded as not verifiable here.
+
+### Closeout, after the production review
+
+Two findings from the independent production verification, both fixed
+and measured:
+
+- **Upload completion is spoken.** The strip clears when a file becomes
+  ready — the one outcome nobody could hear, and the one that changes
+  whether the request can go. A file that was uploading here and is now
+  ready is announced once by name, *quarterly-summary.pdf is ready.*; files
+  that complete within 300 ms of each other are one sentence, *2
+  attachments are ready.*; files that complete seconds apart are each their
+  own sentence, which is the sequence a sighted person watches. Nothing is
+  spoken at mount, for a file that arrives already ready, or on a theme,
+  expression, container or focus change: statuses are compared by id, not
+  renders counted. The sentence leaves the region when the staging row
+  empties — sent, or reset — so nothing stale waits there, and the next
+  upload is spoken again. Failure keeps its strip, retry keeps its *Trying
+  … again.*, and the ready sentence follows it. Known limit, recorded: an
+  atomic region does not re-speak the identical sentence twice running, so
+  two same-sized batches with nothing said between them are heard once.
+- **Chip actions take the thumb.** Under a coarse pointer Remove and Retry
+  keep their 18px glyph box and present a 44px zone each; 32 met the letter
+  of 2.5.8 and missed the thumb (the closeout's Option A: dense desktop,
+  44 for touch). The row opens exactly as far as the zones need — 14px
+  between rows and Retry and Remove 28px apart, which leaves 2px of clear
+  air between neighbouring zones (zones that merely touch share a pixel
+  row under hit-testing), 10px between chips so a zone ends inside the
+  gap — and the failed chip's first line stands as tall as a
+  one-line chip so its buttons sit where every other chip's do. Nothing
+  clips a zone. The states audit opens a touch context at 320px, scans
+  every zone point by point (a pseudo-element zone and any clipping are
+  both seen that way), and asserts no two zones overlap in a row or across
+  wrapped rows, that a tap on the zone's edge removes, that one tap, Enter
+  or Space is one act, that removal keeps its focus destination, and that
+  a retry never copies a file. The desktop keeps 28. Measuring the zones
+  also found the 3px the frame took from the composer at 320 with an
+  empty thread: not the composer's doing but the suggestion chips',
+  whose 230px column minimum grew the floor's column past the frame —
+  fixed in the chips, recorded in their rationale.

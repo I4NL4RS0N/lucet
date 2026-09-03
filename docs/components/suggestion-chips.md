@@ -86,3 +86,15 @@ the very state a first visit should demonstrate.
   moment; needs its own visibility rule and restraint.
 - **Host-side dynamic suggestions** (varying by page or scope) — the
   contract is static per thread today; Scope Control will pressure this.
+
+### A column minimum that yields (component audit 07 closeout)
+
+The chips lay out as `repeat(auto-fit, minmax(230px, 1fr))`, and the bare
+230 made the group's minimum content 230px. In a host whose column is
+sized to its content — the Konfabulator's floor, which the composer
+shares with the chips on an empty thread — that minimum grew the column
+to 230 at a 320px viewport, and the frame clipped 3px of the composer
+beside it (filed as a LOW in audit 07 as a composer overhang; the
+composer was innocent). The minimum is now `min(230px, 100%)`: a host
+narrower than 230 gets one full-width column and the text wraps inside
+it. Nothing changes for any host at least 230px wide.

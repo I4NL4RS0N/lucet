@@ -1965,6 +1965,215 @@ async function main() {
       failures.push(`composer: the placeholder falls under 4.5:1 — ${JSON.stringify(placeholderContrast)}`)
     await page.evaluate((saved) => { if (saved === null) localStorage.removeItem('lucet-docs-appearance'); else localStorage.setItem('lucet-docs-appearance', saved) }, savedForPlaceholder)
     await page.emulateMedia({ colorScheme: null })
+    /* 3f. UPLOAD COMPLETION IS SPOKEN, AND THE THUMB GETS 44 (component audit
+       07, closeout). A file that was uploading and is now ready is announced
+       once by name — "quarterly-summary.pdf is ready." — and files that
+       complete together are one sentence; nothing is spoken at mount, on a
+       theme, expression, container or focus change, or for a file that
+       arrives already ready; the sentence leaves the region when the row
+       empties (sent, or reset). Under a coarse pointer every chip action
+       presents a 44px zone that nothing clips and no other zone overlaps,
+       in a row and when chips wrap; one tap, Enter or Space is one act,
+       removal keeps its focus destination, and a retry never copies a file. */
+    {
+      const home = url.replace('primitives.html', 'index.html?instant=1')
+      const saidSel = '.lucet-prompt .lucet-visually-hidden[role="status"]'
+      const listen = () => page.evaluate((sel) => {
+        window.__saidLog = []
+        let last = null
+        const read = () => { const els = [...document.querySelectorAll(sel)]; const vis = els.find((e) => (e.closest('.lucet-prompt')?.getBoundingClientRect().width ?? 0) > 0) ?? els[0]; return vis?.textContent ?? '' }
+        const snap = () => { const t = read(); if (t !== last) { last = t; window.__saidLog.push(t) } }
+        snap(); window.__saidLog = []
+        window.__saidObs?.disconnect()
+        window.__saidObs = new MutationObserver(snap)
+        window.__saidObs.observe(document.body, { subtree: true, childList: true, characterData: true })
+      }, saidSel)
+      const spoken = () => page.evaluate(() => window.__saidLog.filter((t) => t !== ''))
+      const readyOnes = (l) => l.filter((t) => / is ready\.$| attachments are ready\.$/.test(t))
+      const ids = () => page.evaluate(() => window.__lucet.getState().composer.attachments.map((a) => `${a.id}:${a.status}`))
+      const dispatch = (ev) => page.evaluate((ev) => window.__lucet.store.dispatch(ev), ev)
+      const attach = () => page.locator('.lucet-prompt button[aria-label="Attach a file"]').first().click()
+
+      /* mount is silent: the empty composer, and the page whose fixtures hold an uploading and a failed file */
+      await page.goto(home); await page.waitForSelector('.lucet-prompt__field'); await page.evaluate(() => window.__lucet.reset()); await listen(); await page.waitForTimeout(1500)
+      const atMount = await spoken()
+      await page.goto(url.replace('primitives.html', 'components.html')); await page.waitForSelector('.lucet-prompt__field'); await page.waitForTimeout(1500)
+      const fixturesSaid = await page.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => e.textContent).filter(Boolean), saidSel)
+      checks++
+      if (atMount.length > 0 || fixturesSaid.length > 0) failures.push(`ready announcement: mount must be silent — ${JSON.stringify({ atMount, fixturesSaid })}`)
+
+      /* one document, one image: one sentence each, by name */
+      await page.goto(home); await page.waitForSelector('.lucet-prompt__field'); await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200); await listen()
+      await attach(); await page.waitForTimeout(1700)
+      const afterDoc = await spoken()
+      await attach(); await page.waitForTimeout(1700)
+      const afterImage = await spoken()
+      checks++
+      if (JSON.stringify(readyOnes(afterDoc)) !== JSON.stringify(['quarterly-summary.pdf is ready.']) || JSON.stringify(readyOnes(afterImage)) !== JSON.stringify(['quarterly-summary.pdf is ready.', 'site-photograph.jpg is ready.']))
+        failures.push(`ready announcement: one document, one image, one sentence each by name — ${JSON.stringify({ afterDoc, afterImage })}`)
+
+      /* a failure says nothing here (the strip speaks); a retry that succeeds is spoken once, after the retry sentence; a retry never copies the file */
+      await attach(); await page.waitForTimeout(1700)
+      const afterFail = await spoken()
+      const before = await ids()
+      await page.locator('.lucet-prompt__att[data-status="failed"] button[aria-label^="Try"]').first().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(1700)
+      const afterRetry = await spoken()
+      const after = await ids()
+      const tail = afterRetry.slice(afterFail.length)
+      checks++
+      if (readyOnes(afterFail).length !== 2 || JSON.stringify(tail) !== JSON.stringify(['Trying walkthrough-recording.mp4 again.', 'walkthrough-recording.mp4 is ready.']) || after.length !== before.length || before.map((s) => s.split(':')[0]).join() !== after.map((s) => s.split(':')[0]).join())
+        failures.push(`ready announcement: failure is silent here, a successful retry is spoken once after the retry sentence, no copy of the file — ${JSON.stringify({ afterFail, tail, before, after })}`)
+
+      /* theme, expression, container and focus changes say nothing more */
+      const quietBefore = (await spoken()).length
+      const theme0 = await page.evaluate(() => document.querySelector('select[aria-label="Theme"]')?.value)
+      const expr0 = await page.evaluate(() => document.querySelector('select[aria-label="Expression"]')?.value)
+      await page.selectOption('select[aria-label="Theme"]', 'light'); await page.waitForTimeout(400)
+      await page.selectOption('select[aria-label="Theme"]', 'dark'); await page.waitForTimeout(400)
+      await page.selectOption('select[aria-label="Expression"]', 'glass'); await page.waitForTimeout(400)
+      await page.selectOption('select[aria-label="Expression"]', 'paper'); await page.waitForTimeout(400)
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Drawer' }).first().click(); await page.waitForTimeout(600)
+      await page.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click(); await page.waitForTimeout(600)
+      await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await page.waitForTimeout(200)
+      if (theme0) await page.selectOption('select[aria-label="Theme"]', theme0)
+      if (expr0) await page.selectOption('select[aria-label="Expression"]', expr0)
+      await page.waitForTimeout(300)
+      const quietAfter = await spoken()
+      checks++
+      if (quietAfter.length !== quietBefore) failures.push(`ready announcement: theme, expression, container and focus changes must add nothing — ${JSON.stringify(quietAfter.slice(quietBefore))}`)
+
+      /* several files completing together are one sentence; a breath apart, still one */
+      const nBefore = (await spoken()).length
+      await dispatch({ type: 'attachment/added', id: 'aud_r1', name: 'budget-projections-fy27.xlsx', fileKind: 'document', sizeBytes: 88_000 })
+      await dispatch({ type: 'attachment/added', id: 'aud_r2', name: 'design-notes.md', fileKind: 'document', sizeBytes: 12_000 })
+      await page.waitForTimeout(150)
+      await page.evaluate(() => { window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'aud_r1', status: 'ready', reason: null }); window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'aud_r2', status: 'ready', reason: null }) })
+      await page.waitForTimeout(700)
+      const grouped = (await spoken()).slice(nBefore)
+      for (const [id, name] of [['aud_r3', 'a.md'], ['aud_r4', 'b.md'], ['aud_r5', 'c.md']]) await dispatch({ type: 'attachment/added', id, name, fileKind: 'document', sizeBytes: 1_000 })
+      await page.waitForTimeout(150)
+      await dispatch({ type: 'attachment/settled', id: 'aud_r3', status: 'ready', reason: null }); await page.waitForTimeout(60)
+      await dispatch({ type: 'attachment/settled', id: 'aud_r4', status: 'ready', reason: null }); await page.waitForTimeout(60)
+      await dispatch({ type: 'attachment/settled', id: 'aud_r5', status: 'ready', reason: null })
+      await page.waitForTimeout(700)
+      const breath = (await spoken()).slice(nBefore + grouped.length)
+      checks++
+      if (JSON.stringify(grouped) !== JSON.stringify(['2 attachments are ready.']) || JSON.stringify(breath) !== JSON.stringify(['3 attachments are ready.']))
+        failures.push(`ready announcement: files completing together are one sentence — ${JSON.stringify({ grouped, breath })}`)
+
+      /* the sentence leaves with its files: Send empties the row, Reset leaves the region empty, and the next upload is spoken again */
+      await page.locator('.lucet-prompt__field').fill('Send these.'); await page.locator('.lucet-prompt__actions button').last().click()
+      await page.waitForFunction(() => window.__lucet.getState().composer.attachments.length === 0, null, { timeout: 5000 }); await page.waitForTimeout(400)
+      const afterSend = await page.evaluate((sel) => document.querySelector(sel)?.textContent ?? null, saidSel)
+      await page.waitForFunction(() => !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 40000 }); await page.waitForTimeout(200)
+      await attach(); await page.waitForTimeout(1700)
+      const spokenAgain = readyOnes(await spoken()).at(-1)
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(400)
+      const afterReset = await page.evaluate((sel) => document.querySelector(sel)?.textContent ?? null, saidSel)
+      checks++
+      if (afterSend !== '' || afterReset !== '' || !/ is ready\.$/.test(spokenAgain ?? ''))
+        failures.push(`ready announcement: the sentence leaves with its files (after send ${JSON.stringify(afterSend)}, after reset ${JSON.stringify(afterReset)}) and the next upload is spoken again (${JSON.stringify(spokenAgain)})`)
+
+      /* ---- the thumb: a touch context at a phone width ---- */
+      const touch = await browser.newPage({ viewport: { width: 320, height: 760 }, hasTouch: true })
+      try {
+        await touch.goto(home); await touch.waitForSelector('.lucet-prompt__field')
+        await touch.addStyleTag({ content: '*, *::before, *::after { transition: none !important; animation: none !important; }' })
+        await touch.evaluate(() => window.__lucet.reset()); await touch.waitForTimeout(200)
+        checks++
+        if (!(await touch.evaluate(() => matchMedia('(pointer: coarse)').matches))) failures.push('coarse targets: the touch context does not report (pointer: coarse); the 44px zones would be measured in the wrong medium')
+        const tAttach = () => touch.locator('.lucet-prompt button[aria-label="Attach a file"]').first().click()
+        await tAttach(); await tAttach(); await tAttach(); await touch.waitForTimeout(1600)
+        await touch.evaluate(() => { for (const [id, name] of [['aud_t4', 'budget-projections-fy27.xlsx'], ['aud_t5', 'design-notes.md']]) { window.__lucet.store.dispatch({ type: 'attachment/added', id, name, fileKind: 'document', sizeBytes: 50_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }) } })
+        await touch.waitForTimeout(500)
+        /* the effective zone of a control is what a finger can hit: scanned point by point, so a pseudo-element zone and any clipping are both seen */
+        const zones = () => touch.evaluate(() => {
+          document.querySelector('.lucet-prompt__atts')?.scrollIntoView({ block: 'center' })
+          const prompt = [...document.querySelectorAll('.lucet-prompt')].find((p) => p.getBoundingClientRect().width > 0)
+          const buttons = [...prompt.querySelectorAll('button')].filter((b) => b.getBoundingClientRect().width > 0)
+          const zone = (el) => { const b = el.getBoundingClientRect(); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (let x = Math.floor(b.left) - 26; x <= Math.ceil(b.right) + 26; x++) for (let y = Math.floor(b.top) - 26; y <= Math.ceil(b.bottom) + 26; y++) { const t = document.elementFromPoint(x, y); if (t && (t === el || el.contains(t))) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y } } return x0 === Infinity ? null : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 } }
+          const clipper = (el) => { let a = el.parentElement; while (a && a !== document.body) { const cs = getComputedStyle(a); if (/(hidden|clip|auto|scroll)/.test(cs.overflow) && !a.className.toString().includes('cfg__frame')) return a.className.toString(); a = a.parentElement } return null }
+          return buttons.map((b) => { const r = b.getBoundingClientRect(); return { label: b.getAttribute('aria-label') || b.textContent.trim(), chip: !!b.closest('.lucet-prompt__att'), row: Math.round(b.closest('.lucet-prompt__att')?.getBoundingClientRect().top ?? -1), box: [Math.round(r.width), Math.round(r.height)], zone: zone(b), clipper: clipper(b) } })
+        })
+        const overlaps = (zs) => { const out = []; for (let i = 0; i < zs.length; i++) for (let j = i + 1; j < zs.length; j++) { const a = zs[i].zone, b = zs[j].zone; if (a && b && a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) out.push(`${zs[i].label} × ${zs[j].label}`) } return out }
+        const z1 = await zones()
+        const chipZones = z1.filter((z) => z.chip)
+        const rows = new Set(chipZones.map((z) => z.row))
+        checks++
+        if (chipZones.length < 6 || rows.size < 3 || chipZones.some((z) => !z.zone || z.zone.w < 44 || z.zone.h < 44 || z.clipper !== null) || overlaps(z1).length > 0)
+          failures.push(`coarse targets: every chip action presents a 44px zone, unclipped, none overlapping, across ${rows.size} wrapped rows — ${JSON.stringify({ zones: chipZones.map((z) => ({ label: z.label, box: z.box, zone: z.zone, clipper: z.clipper })), overlaps: overlaps(z1) })}`)
+
+        /* the focus ring shows whole, reached by keyboard */
+        await touch.evaluate(() => document.querySelector('.lucet-prompt__atts .lucet-prompt__att button')?.focus())
+        await touch.keyboard.press('Tab')
+        const ring = await touch.evaluate(() => { const el = document.activeElement; const cs = getComputedStyle(el); const r = el.getBoundingClientRect(); const ext = (parseFloat(cs.outlineOffset) || 0) + (parseFloat(cs.outlineWidth) || 0); return { label: el.getAttribute('aria-label'), chip: !!el.closest('.lucet-prompt__att'), visible: el.matches(':focus-visible'), style: cs.outlineStyle, width: parseFloat(cs.outlineWidth) || 0, whole: r.left - ext >= 0 && r.top - ext >= 0 && r.right + ext <= innerWidth && r.bottom + ext <= innerHeight } })
+        checks++
+        if (!ring.chip || !ring.visible || ring.style === 'none' || ring.width < 2 || !ring.whole) failures.push(`coarse targets: the focus ring on a chip action must show whole — ${JSON.stringify(ring)}`)
+
+        /* one tap on the glyph, one tap on the zone's edge, one Enter, one Space: one act each */
+        const state = () => touch.evaluate(() => ({ atts: window.__lucet.getState().composer.attachments.map((a) => `${a.id}:${a.status}`), focus: document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.className ?? 'body', said: document.querySelector('.lucet-prompt .lucet-visually-hidden[role="status"]')?.textContent ?? '' }))
+        const firstRemove = () => touch.evaluate(() => { const chips = [...document.querySelectorAll('.lucet-prompt__atts .lucet-prompt__att')]; const b = chips[0].querySelector('button[aria-label^="Remove"]'); const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, edgeX: r.right + 9, edgeY: r.top - 8, label: b.getAttribute('aria-label'), next: chips[1]?.querySelector('button')?.getAttribute('aria-label') ?? null } })
+        const f1 = await firstRemove(); const s0 = await state()
+        await touch.touchscreen.tap(f1.x, f1.y); await touch.waitForTimeout(250)
+        const s1 = await state()
+        checks++
+        if (s1.atts.length !== s0.atts.length - 1 || s1.focus !== f1.next || !s1.said.startsWith('Removed '))
+          failures.push(`coarse targets: one tap on Remove is one removal, focus on the next file's action, spoken once — ${JSON.stringify({ tapped: f1.label, before: s0.atts.length, after: s1.atts.length, focus: s1.focus, expected: f1.next, said: s1.said })}`)
+        const f2 = await firstRemove(); const s2 = await state()
+        await touch.touchscreen.tap(f2.edgeX, f2.edgeY); await touch.waitForTimeout(250)
+        const s3 = await state()
+        checks++
+        if (s3.atts.length !== s2.atts.length - 1 || !s3.said.startsWith('Removed '))
+          failures.push(`coarse targets: a tap 9px past the glyph box, 8px above it — inside the 44px zone — must still remove — ${JSON.stringify({ tapped: f2.label, before: s2.atts.length, after: s3.atts.length, said: s3.said })}`)
+        const s4 = await state()
+        await touch.evaluate(() => document.querySelector('.lucet-prompt__att[data-status="failed"] button[aria-label^="Try"]')?.focus()); await touch.keyboard.press('Enter'); await touch.waitForTimeout(150)
+        const s5 = await state()
+        checks++
+        if (s5.atts.length !== s4.atts.length || s4.atts.map((a) => a.split(':')[0]).join() !== s5.atts.map((a) => a.split(':')[0]).join() || !s5.atts.some((a) => a.endsWith(':uploading')) || !s5.said.startsWith('Trying '))
+          failures.push(`coarse targets: Enter on Retry is one retry of the same file, never a copy — ${JSON.stringify({ before: s4.atts, after: s5.atts, said: s5.said })}`)
+        await touch.waitForTimeout(1500)
+        const s6 = await state()
+        await touch.evaluate(() => document.querySelector('.lucet-prompt__atts .lucet-prompt__att button[aria-label^="Remove"]')?.focus()); await touch.keyboard.press('Space'); await touch.waitForTimeout(250)
+        const s7 = await state()
+        checks++
+        if (s7.atts.length !== s6.atts.length - 1 || !s7.said.startsWith('Removed ')) failures.push(`coarse targets: Space on Remove is one removal — ${JSON.stringify({ before: s6.atts.length, after: s7.atts.length, said: s7.said })}`)
+
+        /* with a queued message above the row, the queued actions' zones and a staged file's zones keep apart */
+        await touch.evaluate(() => window.__lucet.reset()); await touch.waitForTimeout(200)
+        await touch.evaluate(() => { void window.__lucet.trigger('multiplayer') }); await touch.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 15000 }); await touch.waitForTimeout(200)
+        await touch.locator('.lucet-prompt__field').fill('After Jennifer.'); await touch.locator('.lucet-prompt__actions button', { hasText: /^Queue$/ }).first().click(); await touch.waitForTimeout(150)
+        await touch.evaluate(() => { window.__lucet.store.dispatch({ type: 'attachment/added', id: 'aud_t6', name: 'late-addition.pdf', fileKind: 'document', sizeBytes: 50_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'aud_t6', status: 'ready', reason: null }) }); await touch.waitForTimeout(300)
+        const z2 = await zones()
+        const queuedZones = z2.filter((z) => /^Edit$|^Cancel queue$/.test(z.label))
+        checks++
+        if (queuedZones.length !== 2 || overlaps(z2).length > 0 || z2.filter((z) => z.chip).some((z) => !z.zone || z.zone.w < 44 || z.zone.h < 44))
+          failures.push(`coarse targets: the queued item's actions and a file staged beneath keep their zones apart — ${JSON.stringify({ zones: z2.map((z) => ({ label: z.label, zone: z.zone })), overlaps: overlaps(z2) })}`)
+        await touch.evaluate(() => window.__lucet.reset()); await touch.waitForTimeout(200)
+
+        /* no horizontal overflow with a wrapped row, in each container, at 390 and 320 */
+        for (const width of [390, 320]) {
+          await touch.setViewportSize({ width, height: 760 }); await touch.waitForTimeout(200)
+          await touch.evaluate(() => { window.__lucet.reset(); for (const [id, name] of [['aud_o1', 'quarterly-summary.pdf'], ['aud_o2', 'site-photograph.jpg'], ['aud_o3', 'budget-projections-fy27.xlsx']]) { window.__lucet.store.dispatch({ type: 'attachment/added', id, name, fileKind: 'document', sizeBytes: 50_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }) } })
+          for (const view of ['Full page', 'Drawer', 'Mobile']) {
+            await touch.locator('[role="group"][aria-label="Container"] button', { hasText: view }).first().click({ timeout: 4000 }); await touch.waitForTimeout(500)
+            const over = await touch.evaluate(() => { const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0); const prompt = vis('.lucet-prompt'), floor = vis('.cfg__floor'), phone = vis('.cfg__phone'); const pr = prompt.getBoundingClientRect(), fr = floor.getBoundingClientRect(); const pad = parseFloat(getComputedStyle(floor).paddingInlineEnd) || 0; return { doc: document.documentElement.scrollWidth - innerWidth, body: document.body.scrollWidth - innerWidth, chips: [...document.querySelectorAll('.lucet-prompt__atts .lucet-prompt__att')].filter((c) => c.getBoundingClientRect().width > 0).length, overhang: Math.round((pr.right - (fr.right - pad)) * 10) / 10, phone: phone ? { width: Math.round(phone.getBoundingClientRect().width), inner: phone.scrollWidth - phone.clientWidth } : null } })
+            checks++
+            /* the composer stays inside the floor's content box: with an empty thread the suggestion chips share its column, and their column minimum once grew it past the frame */
+            if (over.phone) {
+              /* The phone mock is a device frame of fixed width; at a viewport narrower than the frame the PAGE scrolls sideways by construction (pre-existing host chrome, on record). Inside the phone, nothing may. */
+              if (over.doc > 0) warnings.push(`Mobile at ${width}px: the ${over.phone.width}px phone mock scrolls the page sideways by ${over.doc}px — host chrome, filed`)
+              if (over.phone.inner > 0 || over.chips < 3 || over.overhang > 0.5) failures.push(`coarse targets: Mobile at ${width}px with three chips staged must add no overflow inside the phone and keep the composer inside its floor — ${JSON.stringify(over)}`)
+            } else if (over.doc > 0 || over.body > 0 || over.chips < 3 || over.overhang > 0.5) failures.push(`coarse targets: ${view} at ${width}px with three chips staged must add no horizontal overflow and keep the composer inside the floor — ${JSON.stringify(over)}`)
+          }
+          await touch.locator('[role="group"][aria-label="Container"] button', { hasText: 'Full page' }).first().click({ timeout: 4000 }); await touch.waitForTimeout(300)
+        }
+      } catch (e) {
+        checks++
+        failures.push(`coarse targets: the touch context could not complete its checks — ${e.message.split('\n')[0]}`)
+      } finally {
+        await touch.close()
+      }
+    }
     /* 3b. Nothing queued: Send comes back when her turn lands, the draft untouched. */
     await coldStart()
     await fireFromRail('Another person', 'Features')
