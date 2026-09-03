@@ -1,5 +1,11 @@
 # lucet-core
 
+## 0.3.1
+
+### Patch Changes
+
+- a7e5541: Dry run of the release workflow on a throwaway branch. Nothing here ships; the branch, its tags and its Release are removed afterwards.
+
 ## 0.3.0
 
 ### Minor Changes
