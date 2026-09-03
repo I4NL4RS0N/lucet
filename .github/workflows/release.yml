@@ -1,0 +1,137 @@
+# Releases without the terminal. Every push to main runs this workflow:
+#
+#  - With changesets pending, the Changesets action opens or updates the
+#    "Version Packages" pull request: versions bumped, changelogs written.
+#    That PR is the release candidate. Nobody publishes from a laptop.
+#  - With none pending (that PR was just merged), the job checks the
+#    registry, runs verify in full, publishes lucet-core and then lucet-react
+#    through npm trusted publishing (OIDC and --provenance; no token stored
+#    anywhere), pushes the tags, and creates one GitHub Release for the pair.
+#
+# The one-time setup on npmjs.com (a trusted publisher per package) is in
+# CONTRIBUTING.md. Until it exists, the publish step fails with that message.
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# One release at a time: a second push while a release is running waits for
+# it, and nothing is cancelled mid-publish.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write # the Version Packages branch, the tags, the Release
+  pull-requests: write # the Version Packages pull request
+  id-token: write # npm trusted publishing (OIDC) and provenance
+
+env:
+  # 'true' only on a dry-run branch: verify runs, the tags and the Release
+  # are made and then removed, and nothing reaches npm.
+  DRY_RUN: 'false'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The Changesets action reads history to write the PR.
+          fetch-depth: 0
+
+      # No registry-url here on purpose: setup-node would write an _authToken
+      # line into .npmrc, and there is no token. Trusted publishing
+      # authenticates each npm publish with this job's OIDC token instead.
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # With changesets pending: open or update the release candidate, and
+      # stop. hasChangesets is the branch point for everything below.
+      - name: Version Packages
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: npx changeset version
+          title: Version Packages
+          commit: Version Packages
+          createGithubReleases: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The release candidate was merged. Refuse to publish a version the
+      # registry already has: both published means nothing is due and the
+      # job ends green; one of two published means a person has to look.
+      - name: Registry check
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        id: registry
+        run: node scripts/release-check.mjs
+
+      - name: Install Chromium for the audits
+        if: steps.registry.outputs.publish == 'true'
+        run: npx playwright install --with-deps chromium
+
+      # Publish only if verify is green, in full: build, typecheck, tests,
+      # and the four audits against a real browser.
+      - name: Verify
+        if: steps.registry.outputs.publish == 'true'
+        run: npm run verify
+
+      - name: Check npm can publish with trust
+        if: steps.registry.outputs.publish == 'true'
+        run: node scripts/release-check.mjs --npm
+
+      - name: Publish lucet-core, then lucet-react
+        if: steps.registry.outputs.publish == 'true' && env.DRY_RUN != 'true'
+        run: |
+          set -e
+          for pkg in packages/core packages/react; do
+            name=$(node -p "require('./$pkg/package.json').name")
+            if ! npm publish --workspace "$pkg" --provenance --access public; then
+              echo "::error title=npm has not been told to trust this workflow::Publishing $name failed. If this is the first release through GitHub Actions, npm needs a trusted publisher for the package. On npmjs.com open the package, then Settings, then Publishing access, then Add a trusted publisher: choose GitHub Actions, organization or user I4NL4RS0N, repository lucet, workflow filename release.yml, environment left blank. Do it for lucet-core and for lucet-react, then re-run this job. There is no token to add anywhere."
+              exit 1
+            fi
+          done
+
+      - name: Dry run, publish stubbed
+        if: steps.registry.outputs.publish == 'true' && env.DRY_RUN == 'true'
+        run: |
+          echo "Dry run. lucet-core and lucet-react would publish here with --provenance; nothing was sent to npm."
+
+      # changeset tag creates lucet-core@x.y.z and lucet-react@x.y.z at this
+      # commit; the private docs app is never tagged.
+      - name: Tag
+        if: steps.registry.outputs.publish == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npx changeset tag
+          git push origin --tags
+
+      # One Release for the pair, on the lucet-core tag, marked Latest, its
+      # body drawn from both changelogs.
+      - name: GitHub Release
+        if: steps.registry.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(node -p "require('./packages/core/package.json').version")
+          node scripts/release-notes.mjs "$v" > release-notes.md
+          gh release create "lucet-core@$v" --title "lucet-core $v · lucet-react $v" --notes-file release-notes.md --latest --verify-tag
+          gh release view "lucet-core@$v"
+
+      - name: Dry run, remove what the rehearsal made
+        if: steps.registry.outputs.publish == 'true' && env.DRY_RUN == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(node -p "require('./packages/core/package.json').version")
+          gh release delete "lucet-core@$v" --yes --cleanup-tag
+          git push origin --delete "lucet-react@$v"
+          echo "Dry run complete: the Release and both tags for $v were made, shown above, and removed."

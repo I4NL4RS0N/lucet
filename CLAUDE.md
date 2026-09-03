@@ -82,3 +82,36 @@ Repeated here because they are easy to violate by reflex:
   Separate repo, separate Netlify project, no cross-repo edits. See the
   guardrail at the top of this file.
 - This site is meant to be found. No noindex, no robots exclusion.
+
+## Releases
+
+Releases happen in GitHub Actions, never from a laptop.
+
+- `.github/workflows/release.yml` runs on every push to `main`. With
+  changesets pending it opens or updates the **Version Packages** pull
+  request (versions bumped, changelogs written). That PR is the release
+  candidate. When it is merged, the same workflow runs `verify` in full,
+  publishes `lucet-core` and then `lucet-react` with npm trusted publishing
+  (OIDC and `--provenance`; no token is stored anywhere), pushes the tags,
+  and creates one GitHub Release for the pair.
+- Every change under `packages/` ships with a changeset: a file in
+  `.changeset/` naming both packages (they are a fixed group), `minor` or
+  `patch`, and the changelog text. Commit it with the work.
+- Nobody runs `npm publish`, `changeset version` or `changeset publish`
+  locally. `npm run release` exists for the workflow only. A version the
+  registry already has is never published again; half a release stops the
+  job until a person looks; one release runs at a time.
+- Ian's part is one merge click on the Version Packages PR at the end of a
+  review cycle. The one-time npm setup (a trusted publisher per package) is
+  in CONTRIBUTING.md; until it exists the publish step fails with that
+  message, loudly.
+
+## The README recording
+
+- The recording at the top of the README changes only when the flow it
+  shows becomes untrue. Polish, timing and colour changes never trigger a
+  re-cut or a re-upload.
+- When a flow does change, the run report says so explicitly and hands Ian
+  the new take to upload. Otherwise the report says "recording still true."
+- Everything else in the README (the ledger, badges, links, copy) is
+  agent-committed as before.
