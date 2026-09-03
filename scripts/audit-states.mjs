@@ -1592,7 +1592,7 @@ async function main() {
         const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
         const strip = document.querySelector('.lucet-prompt__status')
         const f = document.querySelector('.lucet-prompt__field')
-        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, locked: s.composer.locked, by: s.composer.lockedBy, strip: strip?.textContent.includes('Ada is taking a turn — yours sends next'), stripRole: strip?.getAttribute('role'), face: !!strip?.querySelector('.lucet-avatar'), typeable: !!f && !f.disabled && !f.readOnly, chars: text.length, streaming: last?.response?.status === 'streaming' }
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, locked: s.composer.locked, by: s.composer.lockedBy, strip: strip?.textContent.includes('Responding to Ada — you can queue a message'), stripRole: strip?.getAttribute('role'), face: !!strip?.querySelector('.lucet-avatar'), typeable: !!f && !f.disabled && !f.readOnly, chars: text.length, streaming: last?.response?.status === 'streaming' }
       })
     }
     const a1 = await sampleAda(300)
@@ -1603,7 +1603,7 @@ async function main() {
     const queueLabel = (await queueButton.textContent().catch(() => '')).trim()
     await queueButton.click()
     await page.waitForTimeout(120)
-    const queuedStrip = await page.evaluate(() => document.querySelector('.lucet-prompt__status')?.textContent.includes('Queued — yours sends next'))
+    const queuedStrip = await page.evaluate(() => document.querySelector('.lucet-prompt__status')?.textContent.includes('Queued after Ada — yours sends next'))
     await page.waitForFunction(() => document.querySelectorAll('.lucet-thread__pair').length >= 2 && !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
     const sent = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, queued: window.__lucet.inspect().queued, last: [...document.querySelectorAll('.lucet-thread__prompt')].at(-1)?.textContent.trim(), yours: window.__lucet.getState().turns.at(-1)?.prompt.authorId }))
     checks++
@@ -1625,7 +1625,7 @@ async function main() {
       return page.evaluate(() => {
         const s = window.__lucet.getState(); const last = s.turns.at(-1)
         const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
-        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, by: s.composer.lockedBy, chars: text.length, streaming: last?.response?.status === 'streaming', strip: !!document.querySelector('.lucet-prompt__status')?.textContent.includes('Ada is taking a turn'), firstResponse: s.turns[0]?.response?.status ?? null }
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, by: s.composer.lockedBy, chars: text.length, streaming: last?.response?.status === 'streaming', strip: !!document.querySelector('.lucet-prompt__status')?.textContent.includes('Responding to Ada'), firstResponse: s.turns[0]?.response?.status ?? null }
       })
     }
     const l1 = await adaLinkAt(300), l2 = await adaLinkAt(1500)
@@ -1634,6 +1634,121 @@ async function main() {
       failures.push(`multiplayer (deep link): Ada's turn is not live from the deep link — ${JSON.stringify({ l1, l2 })}`)
     await page.waitForFunction(() => !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
     await resetAndInspect('multiplayer via the deep link')
+    /* 3d. OWNERSHIP (component audit 06). While Ada's turn runs the person
+       here is never offered Stop; the seat holds Queue, disabled until there
+       are words and named for what it does. The strip names who asked and
+       what this person can do, and claims nothing is queued until it is.
+       Queue once by pointer, Enter and Space; a double click queues once
+       and leaves focus in the field. Edit returns the words to the field
+       before the queue lets go; Cancel queue drops them; Ada's response
+       runs on through both. The handoff commits exactly one You turn, says
+       so once, and your prompt names you to the reader. A stop during
+       Ada's run is a terminal state: the queue keeps its promise. */
+    {
+      const own = () => page.evaluate(() => {
+        const s = window.__lucet.getState(); const a = document.activeElement
+        const acts = [...document.querySelectorAll('.lucet-prompt__actions')].find((e) => e.getBoundingClientRect().width > 0)
+        const strip = [...document.querySelectorAll('.lucet-prompt__status')].find((e) => e.getBoundingClientRect().width > 0)
+        const f = [...document.querySelectorAll('.lucet-prompt__field')].find((e) => e.getBoundingClientRect().width > 0)
+        return {
+          lockedBy: s.composer.lockedBy, queued: s.composer.queued, draft: f?.value ?? null, selection: f ? [f.selectionStart, f.selectionEnd] : null,
+          turns: s.turns.map((t) => t.prompt.authorId + ':' + (t.response?.status ?? '-')),
+          strip: strip?.querySelector('.lucet-orb-row__label, .lucet-orb__label')?.textContent.trim() ?? strip?.textContent.trim() ?? null,
+          queuedText: strip?.querySelector('.lucet-prompt__queued-text')?.textContent ?? null,
+          queuedActions: strip ? [...strip.querySelectorAll('.lucet-prompt__queued-actions button')].map((b) => b.textContent.trim()) : [],
+          actions: acts ? [...acts.querySelectorAll('button')].map((b) => ({ label: b.textContent.trim() || b.getAttribute('aria-label'), aria: b.getAttribute('aria-label'), disabled: b.disabled })) : [],
+          focus: a === document.body ? 'body' : (a?.className?.toString().split(' ')[0] || a?.tagName),
+          said: [...document.querySelectorAll('.lucet-prompt .lucet-visually-hidden[role="status"]')].map((e) => e.textContent.trim()).filter(Boolean).at(-1) ?? null,
+          youLabels: [...document.querySelectorAll('.lucet-thread__turn[data-self] .lucet-visually-hidden')].map((e) => e.textContent).filter((t) => t === 'You').length,
+          adaLabels: [...document.querySelectorAll('.lucet-thread__author')].map((e) => e.textContent),
+          stipOpacity: (() => { const tip = acts?.querySelector('.lucet-tip'); return tip ? getComputedStyle(tip).opacity : null })(),
+        }
+      })
+      const ada = async () => { await coldStart(); await fireFromRail('Another person', 'Features'); await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 15000 }); await page.waitForTimeout(300) }
+      const queueSeat = () => page.locator('.lucet-prompt__actions button', { hasText: /^Queue/ }).first()
+      await ada()
+      const empty = await own()
+      await page.locator('.lucet-prompt__field').fill('Also list the owners.')
+      await page.evaluate(() => { const f = document.querySelector('.lucet-prompt__field'); f.focus(); f.setSelectionRange(5, 13) })
+      const typed = await own()
+      checks += 2
+      if (empty.actions.some((b) => /Stop/.test(b.label || '')) || typed.actions.some((b) => /Stop/.test(b.label || '')) || empty.actions.length !== 1 || empty.actions[0].disabled !== true || !/^Queue — sends after Ada/.test(empty.actions[0].aria || '') || typed.actions[0].disabled !== false)
+        failures.push(`ownership: while Ada owns the turn the seat holds a named Queue, disabled until there are words, and never Stop — ${JSON.stringify({ empty: empty.actions, typed: typed.actions })}`)
+      if (empty.strip !== 'Responding to Ada — you can queue a message' || typed.strip !== 'Responding to Ada — Queue sends after this response' || typed.selection?.join() !== '5,13')
+        failures.push(`ownership copy: the strip must name who asked and what this person can do, without claiming a queue — ${JSON.stringify({ empty: empty.strip, typed: typed.strip })}`)
+      /* queue by pointer; Edit; queue again; Cancel; queue again by Enter; handoff */
+      await queueSeat().click(); await page.waitForTimeout(100); const queued = await own()
+      await page.locator('.lucet-prompt__queued-actions button', { hasText: 'Edit' }).click(); await page.waitForTimeout(150); const edited = await own()
+      await queueSeat().click(); await page.waitForTimeout(100)
+      await page.locator('.lucet-prompt__queued-actions button', { hasText: 'Cancel queue' }).click(); await page.waitForTimeout(150); const cancelled = await own()
+      await page.locator('.lucet-prompt__field').fill('Also list the owners.'); await page.keyboard.press('Enter'); await page.waitForTimeout(100); const queuedEnter = await own()
+      checks += 3
+      if (queued.queued !== 'Also list the owners.' || queued.draft !== '' || !queued.strip?.startsWith('Queued after Ada — yours sends next') || queued.queuedText !== 'Also list the owners.' || queued.queuedActions.join('|') !== 'Edit|Cancel queue' || queued.focus !== 'lucet-prompt__field' || queued.actions.length !== 1 || queued.actions[0].label !== 'Queued' || queued.actions[0].disabled !== true)
+        failures.push(`ownership queue: one press lodges the words, shows them with Edit and Cancel queue, keeps focus in the field, and the seat reads Queued — ${JSON.stringify(queued)}`)
+      if (edited.queued !== null || edited.draft !== 'Also list the owners.' || edited.focus !== 'lucet-prompt__field' || edited.selection?.join() !== '21,21' || edited.said !== 'Queued message returned to the field.' || edited.lockedBy !== 'Ada' || !/streaming/.test(edited.turns.join()))
+        failures.push(`ownership edit: Edit must return the exact words to the field with the caret after them, say so, and leave Ada's run alone — ${JSON.stringify(edited)}`)
+      if (cancelled.queued !== null || cancelled.draft !== '' || cancelled.focus !== 'lucet-prompt__field' || cancelled.said !== 'Queued message cancelled.' || cancelled.lockedBy !== 'Ada' || !/streaming/.test(cancelled.turns.join()) || queuedEnter.queued !== 'Also list the owners.')
+        failures.push(`ownership cancel: Cancel queue must drop only the queued words, say so, keep focus, and leave Ada's run alone; Enter must queue again — ${JSON.stringify({ cancelled, queuedEnter: queuedEnter.queued })}`)
+      /* a resting pointer on the seat must not raise the Stop tip at the handoff */
+      { const b = await queueSeat().boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2) }
+      await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2 && window.__lucet.getState().composer.lockedBy === 'you', null, { timeout: 30000 }); await page.waitForTimeout(200)
+      const handed = await own()
+      await settled(); await page.waitForTimeout(200); const done = await own()
+      checks += 2
+      if (handed.turns.length !== 2 || !handed.turns[1].startsWith('you:') || handed.queued !== null || handed.strip !== 'Responding to you' || handed.said !== 'Your queued message was sent — responding to you.' || !handed.actions.some((b) => b.label === 'Stop') || handed.stipOpacity !== '0')
+        failures.push(`ownership handoff: one You turn, "Responding to you", said once, Stop for the owner with its tip still down under the resting pointer — ${JSON.stringify(handed)}`)
+      if (done.turns.join('|') !== 'Ada:complete|you:complete' || done.youLabels !== 1 || done.adaLabels.join() !== 'Ada' || done.focus === 'body')
+        failures.push(`ownership attribution: Ada's turn intact, your prompt named to the reader, focus not on body — ${JSON.stringify({ turns: done.turns, you: done.youLabels, ada: done.adaLabels, focus: done.focus })}`)
+      await resetAndInspect('ownership (handoff)')
+      /* Space queues once; a double click queues once and keeps focus off body */
+      await ada(); await page.locator('.lucet-prompt__field').fill('By Space'); await queueSeat().focus(); await page.keyboard.press('Space'); await page.waitForTimeout(100); const bySpace = await own()
+      await resetAndInspect('ownership (space)')
+      await ada(); await page.locator('.lucet-prompt__field').fill('Twice'); await queueSeat().dblclick(); await page.waitForTimeout(150); const doubled = await own()
+      checks++
+      if (bySpace.queued !== 'By Space' || doubled.queued !== 'Twice' || doubled.focus === 'body' || doubled.turns.length !== 1)
+        failures.push(`ownership inputs: Space queues once; a double click queues once and leaves focus in the composer — ${JSON.stringify({ bySpace: bySpace.queued, doubled: { queued: doubled.queued, focus: doubled.focus, turns: doubled.turns } })}`)
+      await resetAndInspect('ownership (double)')
+      /* a stop during Ada's run is terminal for the queue: it sends */
+      await ada(); await page.locator('.lucet-prompt__field').fill('After her stop'); await queueSeat().click(); await page.waitForTimeout(100)
+      await page.evaluate(() => window.__lucet.abort())
+      await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2, null, { timeout: 15000 }); await settled(); await page.waitForTimeout(200); const afterStop = await own()
+      checks++
+      if (afterStop.turns.join('|') !== 'Ada:interrupted|you:complete' || afterStop.queued !== null)
+        failures.push(`ownership terminal: Ada's stopped run must release the queue, which sends once — ${JSON.stringify(afterStop.turns)}`)
+      await resetAndInspect('ownership (terminal)')
+    }
+    /* 3d'. THE QUEUED ITEM IS HEARD AND REACHABLE (component audit 06 rider):
+       the status strip is the live region -- role=status -- and its text
+       changes exactly once when Queue is accepted, to the queued item, while
+       the hidden announcer stays silent; a harmless re-render (typing into
+       the field while queued) changes nothing. Edit and Cancel queue offer
+       targets of at least 40x40 that do not overlap, with a focus ring that
+       nothing clips. */
+    {
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+      await page.evaluate(() => { void window.__lucet.trigger('multiplayer') })
+      await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 15000 }); await page.waitForTimeout(300)
+      await page.evaluate(() => { const root = document.querySelector('.lucet-prompt'); window.__liveLog = []; window.__saidLog = []; const snap = () => { const el = document.querySelector('.lucet-prompt__status'); const t = el ? el.textContent.replace(/\s+/g, ' ').trim() : null; if (window.__liveLog.at(-1) !== t) window.__liveLog.push(t); const h = document.querySelector('.lucet-prompt .lucet-visually-hidden[role="status"]')?.textContent ?? null; if (window.__saidLog.at(-1) !== h) window.__saidLog.push(h) }; snap(); new MutationObserver(snap).observe(root, { subtree: true, childList: true, characterData: true, attributes: true }) })
+      const fieldQ = page.locator('.lucet-prompt__field:visible').first(), seatQ = page.locator('.lucet-prompt__actions:visible button', { hasText: /^Queue/ }).first()
+      await fieldQ.fill('Also list the owners.'); await page.waitForTimeout(80)
+      const beforeQ = await page.evaluate(() => ({ live: window.__liveLog.length, said: window.__saidLog.length, role: document.querySelector('.lucet-prompt__status')?.getAttribute('role') }))
+      await seatQ.click(); await page.waitForTimeout(150)
+      const afterQ = await page.evaluate(() => ({ live: window.__liveLog.length, last: window.__liveLog.at(-1), said: window.__saidLog.length }))
+      await fieldQ.type('x'); await page.waitForTimeout(80)
+      const afterType = await page.evaluate(() => ({ live: window.__liveLog.length }))
+      checks++
+      if (beforeQ.role !== 'status' || afterQ.live !== beforeQ.live + 1 || !String(afterQ.last).startsWith('Queued after Ada — yours sends next') || !String(afterQ.last).includes('Also list the owners.') || afterQ.said !== beforeQ.said || afterType.live !== afterQ.live)
+        failures.push(`queued item is heard once: the status strip (role=status) changes exactly once on Queue and not on a re-render while the hidden announcer stays silent — ${JSON.stringify({ beforeQ, afterQ, afterType })}`)
+      const hits = await page.evaluate(() => { const btns = [...document.querySelectorAll('.lucet-prompt__queued-actions button')]; const hit = (el) => { const b = el.getBoundingClientRect(); let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity; for (let x = b.left - 20; x <= b.right + 20; x += 1) for (let y = b.top - 20; y <= b.bottom + 20; y += 1) { const t = document.elementFromPoint(x, y); if (t && (t === el || el.contains(t))) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y) } } return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 } }; const clipped = (el) => { let a = el.parentElement; while (a && a !== document.body) { const cs = getComputedStyle(a); if (/(hidden|clip|auto|scroll)/.test(cs.overflow) && !a.className.toString().includes('cfg__frame')) return a.className.toString(); a = a.parentElement } return null }; return btns.map((b) => ({ label: b.textContent.trim(), hit: hit(b), clipper: clipped(b) })) })
+      const overlapQ = hits.length === 2 && hits[0].hit.x + hits[0].hit.w > hits[1].hit.x && hits[1].hit.x + hits[1].hit.w > hits[0].hit.x && hits[0].hit.y + hits[0].hit.h > hits[1].hit.y && hits[1].hit.y + hits[1].hit.h > hits[0].hit.y
+      await page.locator('.lucet-prompt__queued-actions button').first().focus(); await page.waitForTimeout(50)
+      const ringQ = await page.evaluate(() => { const b = document.activeElement; const cs = getComputedStyle(b); return { label: b.textContent.trim(), visible: b.matches(':focus-visible'), outline: cs.outlineStyle, width: parseFloat(cs.outlineWidth) } })
+      checks++
+      if (hits.length !== 2 || hits.some((h) => h.hit.w < 40 || h.hit.h < 40 || h.clipper) || overlapQ || !ringQ.visible || ringQ.outline === 'none' || ringQ.width < 2)
+        failures.push(`Edit and Cancel queue: 40x40 targets, no overlap, unclipped focus ring — ${JSON.stringify({ hits, overlapQ, ringQ })}`)
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+    }
+
     /* 3a'. GATE 0 OF THE COMPOSER AUDIT (round 01): the Queue interaction,
        asserted rather than eyeballed. Send → Queue → Stop moves nothing but
        the action group's own width; the queued feedback is immediate, read
@@ -1667,10 +1782,10 @@ async function main() {
     const seat = (c) => (c ? [c[0], c[1], c[3]] : null)
     const stable = (x, y) => same(x.bar, y.bar) && same(x.field, y.field) && same(x.tool, y.tool) && same(seat(x.chip), seat(y.chip)) && x.heights.every((h) => h === 32) && y.heights.every((h) => h === 32) && same([...new Set(x.tops)], [...new Set(y.tops)])
     checks++
-    if (!stable(g0, g1) || !stable(g1, g2) || !stable(g2, g3) || !g1.buttons.some((b) => b.startsWith('Queue:')) || g2.buttons.some((b) => b.startsWith('Queue')))
+    if (!stable(g0, g1) || !stable(g1, g2) || !stable(g2, g3) || !g1.buttons.some((b) => b.startsWith('Queue:')) || !g2.buttons.some((b) => b.startsWith('Queued:')) || g0.buttons.some((b) => b.startsWith('Stop')) || g2.buttons.some((b) => b.startsWith('Stop')))
       failures.push(`composer gate 0: the action swap moved the composer — ${JSON.stringify({ g0, g1, g2, g3 })}`)
     checks++
-    if (immediate.queued !== 'And the southern site?' || immediate.strip !== 'Queued — yours sends next' || immediate.tone !== 'info' || immediate.field !== '' || !immediate.focusOnField)
+    if (immediate.queued !== 'And the southern site?' || !immediate.strip.startsWith('Queued after Ada — yours sends next') || immediate.tone !== 'info' || immediate.field !== '' || !immediate.focusOnField)
       failures.push(`composer gate 0: queued feedback is not immediate, or focus left the field — ${JSON.stringify(immediate)}`)
     await resetAndInspect('composer gate 0')
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -1682,7 +1797,7 @@ async function main() {
     await page.waitForTimeout(200)
     const quiet = await page.evaluate(() => { const p = [...document.querySelectorAll('.lucet-prompt')].find((e) => e.getBoundingClientRect().width > 0); return { running: p.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length, strip: document.querySelector('.lucet-prompt__status')?.textContent.trim() } })
     checks++
-    if (quiet.running !== 0 || quiet.strip !== 'Queued — yours sends next')
+    if (quiet.running !== 0 || !quiet.strip.startsWith('Queued after Ada — yours sends next'))
       failures.push(`composer gate 0: reduced motion still animates the composer — ${JSON.stringify(quiet)}`)
     await page.emulateMedia({ reducedMotion: null })
     await resetAndInspect('composer gate 0 (reduced motion)')

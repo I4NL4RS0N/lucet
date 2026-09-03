@@ -1130,3 +1130,47 @@ describe('language, the scope-freeze rule, metadata, severity (round 05, P2)', (
     expect(lucet.triggers.get('scope-moved')?.label).toBe('Scope updates after navigation')
   })
 })
+
+describe('ownership (component audit 06)', () => {
+  const adaRunning = async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    /* Ada's turn: run it without awaiting, queue behind it. The instant
+       scheduler still yields between steps, so the run is in flight here. */
+    const run = lucet.trigger('multiplayer')
+    await Promise.resolve()
+    expect(lucet.getState().composer.locked).toBe(true)
+    expect(lucet.getState().composer.lockedBy).toBe('Ada')
+    lucet.store.dispatch({ type: 'composer/queued', text: 'Also list the owners.' })
+    return { lucet, run }
+  }
+
+  it('a stop during another person\'s run is terminal: the queued words send once, as yours', async () => {
+    const { lucet, run } = await adaRunning()
+    lucet.abort()
+    await run
+    /* the queue promise runs after the aborted run settles */
+    await new Promise((r) => setTimeout(r, 0))
+    await new Promise((r) => setTimeout(r, 0))
+    const turns = lucet.getState().turns
+    expect(turns[0]?.prompt.authorId).toBe('Ada')
+    expect(turns[0]?.response?.status).toBe('interrupted')
+    expect(turns.length).toBeGreaterThanOrEqual(2)
+    expect(turns[1]?.prompt.authorId).toBe('you')
+    expect(turns[1]?.prompt.parts[0]).toMatchObject({ kind: 'text', text: 'Also list the owners.' })
+    expect(lucet.getState().composer.queued).toBeNull()
+  })
+
+  it('a stop of your OWN run hands the queued words back to the field', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    const run = lucet.submit('Where do things stand?')
+    await Promise.resolve()
+    expect(lucet.getState().composer.lockedBy).toBe('you')
+    lucet.store.dispatch({ type: 'composer/queued', text: 'And the appendix?' })
+    lucet.abort()
+    await run
+    await new Promise((r) => setTimeout(r, 0))
+    expect(lucet.getState().turns).toHaveLength(1)
+    expect(lucet.getState().composer.queued).toBeNull()
+    expect(lucet.getState().composer.text).toBe('And the appendix?')
+  })
+})

@@ -159,10 +159,15 @@ function Part({
 function MessageView({
   message,
   self,
+  labelSelf = false,
   actions,
 }: {
   message: Message
   self: boolean
+  /** In a shared thread your own prompt names its author to the reader
+      (component audit 06): position says "yours" to the eye, and a
+      visually-hidden "You" says it in the reading order. */
+  labelSelf?: boolean
   actions?: React.ReactNode
 }) {
   const isUser = message.role === 'user'
@@ -234,7 +239,10 @@ function MessageView({
           </div>
         </div>
       ) : (
-        promptBody
+        <>
+          {isUser && self && labelSelf ? <span className="lucet-visually-hidden">You</span> : null}
+          {promptBody}
+        </>
       )}
       {terminal ? (
         <p
@@ -577,6 +585,7 @@ export function Thread({
             <MessageView
               message={turn.prompt}
               self={turn.prompt.authorId === (selfId ?? null)}
+              labelSelf={shared}
             />
             {response ? (
               <MessageView

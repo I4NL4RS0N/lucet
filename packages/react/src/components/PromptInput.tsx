@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react'
+import { useId, useRef, useEffect, useState } from 'react'
 import type {
   ComposerAttachment,
   ComposerState,
@@ -57,6 +57,9 @@ export interface PromptInputProps {
   onSubmit: () => void
   /** Called instead of onSubmit while locked. Omit it and locking simply disables send. */
   onQueue?: ((text: string) => void) | undefined
+  /** Take the queued message back (component audit 06): Cancel queue drops
+      it; Edit returns its words to the field first, then drops it. */
+  onDequeue?: (() => void) | undefined
   /** THE HOLD (round 06): Send at the month's threshold opened the meter's
       panel; Continue there sends the held words. */
   onConfirmSpend?: (() => void) | undefined
@@ -232,6 +235,7 @@ export function PromptInput({
   onChange,
   onSubmit,
   onQueue,
+  onDequeue,
   onConfirmSpend,
   onDismissIntercept,
   onModelChange,
@@ -248,6 +252,35 @@ export function PromptInput({
   const sendRef = useRef<HTMLButtonElement | null>(null)
   const fieldRef = useRef<HTMLTextAreaElement | null>(null)
   const blocker = submitBlocker({ composer, service, restoredFrom, usage })
+  /* OWNERSHIP, SAID ONCE (component audit 06). A queued message that leaves
+     the queue for the thread is spoken as one sentence at the handoff; Edit
+     and Cancel queue confirm themselves the same way. The strip is a status
+     region too, so its copy changes are heard as they happen. */
+  const [said, setSaid] = useState('')
+  const wasQueued = useRef(false)
+  useEffect(() => {
+    if (composer.queued !== null) wasQueued.current = true
+  }, [composer.queued])
+  const ownRun = composer.locked && composer.lockedBy !== null && composer.lockedBy === (selfId ?? null)
+  useEffect(() => {
+    if (wasQueued.current && composer.queued === null && ownRun) {
+      setSaid('Your queued message was sent — responding to you.')
+      wasQueued.current = false
+    }
+  }, [composer.queued, ownRun])
+  /* Spoken sentences do not outlive the state they described: once nothing
+     is locked or queued the region empties, so a reset leaves no stale
+     announcement behind (clearing announces nothing). */
+  useEffect(() => {
+    if (!composer.locked && composer.queued === null) setSaid('')
+  }, [composer.locked, composer.queued])
+  /* The Stop tooltip arms only after the pointer MOVES over it: a pointer
+     resting where Queued sat must not raise a tip on the Stop that mounts
+     there at the handoff (component audit 06). */
+  const [stopArmed, setStopArmed] = useState(false)
+  useEffect(() => {
+    setStopArmed(false)
+  }, [streaming])
   /* THE WALL HAS NO EXIT (component audit 03, independent verification).
      A spent month is an account state: it outlives the thread and no model
      can produce an allowed send, so a "New thread" verb here promised a
@@ -306,31 +339,41 @@ export function PromptInput({
         }
       : queued
         ? {
+            /* THE QUEUED ITEM (component audit 06): whose turn it follows,
+               the words themselves, and two ways to take them back. */
             tone: 'info' as const,
             orb: 'queued' as const,
-            text: 'Queued — yours sends next',
+            text: lockedByOther ? `Queued after ${composer.lockedBy} — yours sends next` : 'Queued — sends after this response',
+            queuedText: composer.queued!,
           }
         : lockedByOther
           ? {
+              /* STATE-SPECIFIC OWNERSHIP COPY (component audit 06): who asked,
+                 what the assistant is doing, and what the person here can do
+                 — never "yours sends next" before anything is queued. */
               tone: 'neutral' as const,
               who: composer.lockedBy!,
-              text: `${composer.lockedBy} is taking a turn — yours sends next`,
+              text: composer.text.trim()
+                ? `Responding to ${composer.lockedBy} — Queue sends after this response`
+                : `Responding to ${composer.lockedBy} — you can queue a message`,
             }
           : streaming
             ? {
                 // Plain words only: "Stop keeps what has already arrived"
                 // read as a riddle. That stopping preserves the partial
                 // response is a convention every AI tool has taught, and
-                // conventions do not need explaining -- novelties do.
+                // conventions do not need explaining -- novelties do. The
+                // owner is named (component audit 06): in a shared thread
+                // "Writing a response…" said nothing about whose.
                 tone: 'neutral' as const,
                 orb: 'composing' as const,
-                text: 'Writing a response…',
+                text: 'Responding to you',
               }
             : composer.locked
               ? {
                   tone: 'neutral' as const,
                   orb: 'thinking' as const,
-                  text: 'Sending…',
+                  text: wasQueued.current ? 'Sending your queued message' : 'Sending…',
                 }
               : blocker === 'attachment-failed'
                 ? {
@@ -349,6 +392,28 @@ export function PromptInput({
                     }
                   : null
 
+  /* Edit returns the queued words to the field BEFORE the queue lets go
+     (component audit 06): nothing is ever un-lodged into thin air. A newer
+     draft already in the field keeps its place after them. */
+  const editQueued = () => {
+    const words = composer.queued
+    if (words === null) return
+    const draft = composer.text
+    onChange(draft.trim() ? `${words}\n\n${draft}` : words)
+    onDequeue?.()
+    setSaid('Queued message returned to the field.')
+    requestAnimationFrame(() => {
+      const field = fieldRef.current
+      if (!field) return
+      field.focus()
+      field.setSelectionRange(words.length, words.length)
+    })
+  }
+  const cancelQueued = () => {
+    onDequeue?.()
+    setSaid('Queued message cancelled.')
+    requestAnimationFrame(() => fieldRef.current?.focus())
+  }
   const trySend = () => {
     if (blocker === null) onSubmit()
     else if (canQueue && composer.text.trim()) {
@@ -403,6 +468,23 @@ export function PromptInput({
             <span className="lucet-orb-row">
               <span className="lucet-prompt__att-spin" aria-hidden />
               <span className="lucet-orb-row__label">{strip.text}</span>
+            </span>
+          ) : 'queuedText' in strip ? (
+            /* THE QUEUED ITEM (component audit 06): the status line, then the
+               words that wait, then Edit and Cancel queue — one stack. */
+            <span className="lucet-prompt__queued-stack">
+              <ActivityOrb state={strip.orb} label={strip.text} />
+              <span className="lucet-prompt__queued">
+                <span className="lucet-prompt__queued-text">{strip.queuedText}</span>
+                <span className="lucet-prompt__queued-actions">
+                  <button type="button" className="lucet-button" data-variant="ghost" onClick={editQueued}>
+                    Edit
+                  </button>
+                  <button type="button" className="lucet-button" data-variant="ghost" onClick={cancelQueued}>
+                    Cancel queue
+                  </button>
+                </span>
+              </span>
             </span>
           ) : (
             <ActivityOrb state={strip.orb} label={strip.text} />
@@ -513,18 +595,41 @@ export function PromptInput({
          * other tool has, and a differentiator explains itself on first
          * contact. Icons for conventions, words for novelties.
          */}
-        <span className="lucet-prompt__actions">
+        <span
+          className="lucet-prompt__actions"
+          /* A press that lands anywhere but a live button — the group itself,
+             a tip wrapper, or the spot where a disabled seat sits (disabled
+             seats pass the pointer through, so the second click of a double
+             click on Queue arrives here once Queue has become Queued) — must
+             not pull focus out of the field (component audit 06). */
+          onMouseDown={(e) => {
+            const target = e.target as HTMLElement
+            if (!(target instanceof HTMLButtonElement) || target.disabled) e.preventDefault()
+          }}
+        >
           {/* While a response streams, a typed draft gets its Queue button
               BESIDE Stop. Without it the keyboard could queue and the pointer
               could not -- an affordance for a novel semantic has to be
               visible, not implied. */}
-          {streaming && canQueue && composer.text.trim() ? (
+          {/* ONLY THE OWNER STOPS THEIR RUN (component audit 06): while
+              another person's turn runs, the seat holds Queue — disabled
+              until there are words — never a Stop that would end their
+              work. Your own run keeps Stop, with Queue beside it when a
+              draft is typed. */}
+          {streaming && ownRun && canQueue && composer.text.trim() ? (
             <button type="submit" className="lucet-button" data-variant="secondary">
               Queue
             </button>
           ) : null}
-          {streaming && onStop ? (
-            <span className="lucet-tipwrap" data-tip-align="end">
+          {streaming && ownRun && onStop ? (
+            <span
+              className="lucet-tipwrap"
+              data-tip-align="end"
+              data-arm=""
+              data-armed={stopArmed || undefined}
+              onPointerMove={() => setStopArmed(true)}
+              onPointerLeave={() => setStopArmed(false)}
+            >
               <button
                 type="button"
                 className="lucet-button"
@@ -543,7 +648,14 @@ export function PromptInput({
               type="submit"
               className="lucet-button"
               data-variant="secondary"
-              disabled={!canQueue}
+              disabled={!canQueue || !composer.text.trim()}
+              aria-label={
+                canQueue
+                  ? lockedByOther
+                    ? `Queue — sends after ${composer.lockedBy}’s response`
+                    : 'Queue — sends after this response'
+                  : 'Queued'
+              }
             >
               {canQueue ? 'Queue' : 'Queued'}
             </button>
@@ -564,6 +676,10 @@ export function PromptInput({
           )}
         </span>
       </div>
+      {/* Edit, Cancel queue and the handoff, spoken once each (component audit 06). */}
+      <span className="lucet-visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        {said}
+      </span>
     </form>
   )
 }

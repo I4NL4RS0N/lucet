@@ -49,3 +49,61 @@ One thread, several people, a single writer at a time.
 - **Author colours** — identity is carried by face and name; adding a
   colour channel per person would spend the palette's meaning budget
   (tones carry state) on decoration.
+
+## Component audit 06 (2026-09-03)
+
+Ownership, drafting, Queue and the handoff, measured in the Full page,
+the Drawer and the phone, four cells each. Gate 0 first: Ada authors the
+prompt and the response belongs to her turn; the composer is held by her.
+Three things did not describe that model. The person here was offered a
+plain **Stop** that interrupted her response. The strip said *yours sends
+next* before anything was queued. And a stop during her run handed the
+queued words back to the field, as if the person here had taken control.
+
+- **Only the owner stops their run.** While another person's turn runs
+  the seat holds **Queue** — disabled until there are words, named
+  *Queue — sends after Ada's response* — and never Stop. Your own run
+  keeps Stop, with Queue beside it when a draft is typed. Nothing in an
+  ordinary composer ends someone else's work.
+- **The strip says who asked and what you can do.** *Responding to Ada —
+  you can queue a message* with an empty field; *Responding to Ada — Queue
+  sends after this response* once you type; *Queued after Ada — yours
+  sends next* once you queue; *Sending your queued message* at the
+  handoff, where the runtime dwells; *Responding to you* for your own
+  run. Nothing claims a queue before there is one.
+- **The queued item shows the words and two ways back.** Under the
+  status line, the queued message itself, clamped to two lines, with
+  **Edit** and **Cancel queue**. Edit returns the exact words to the
+  field — before the queue lets go, and ahead of any newer draft — with
+  the caret after them. Cancel drops only the queued words. Both say so
+  once, and neither touches Ada's run.
+- **The handoff is one turn, said once.** When her response settles the
+  queued words become a turn of yours, the strip reads *Responding to
+  you*, and one sentence is spoken: *Your queued message was sent —
+  responding to you.* In a shared thread your prompt carries a hidden
+  *You* for the reader, since position says it only to the eye.
+- **A stop during her run is terminal.** Only the owner may stop, so a
+  stop while her turn runs is hers, and the queue keeps its promise and
+  sends. A stop of your own run still hands the words back: you took
+  control.
+- **A control that mounts under a resting pointer shows no tip.** The
+  Stop that appears at the handoff arms its tooltip only once the pointer
+  moves over it.
+- **Focus stays with the words.** A disabled seat passes the pointer
+  through, and a press on the group's dead space keeps the field, so the
+  second click of a double click on Queue — which lands where *Queued* now
+  sits — moves nothing. Spoken sentences empty once nothing is locked or
+  queued; a reset leaves no stale announcement behind.
+- **The queued item is heard once, from the strip itself.** The status
+  strip is a `role=status` live region, so an accepted queue is announced
+  by the strip's own change — the sentence, the words that wait, and the
+  two actions — exactly once, by pointer, Enter or Space. Typing into the
+  field while queued and a theme change say nothing more. Edit and Cancel
+  queue keep their quiet 28px silhouette and offer 40px targets, 44px
+  under a coarse pointer, extended invisibly above and below so the two
+  never overlap.
+
+Considered and kept: your own prompts stay right-aligned and faceless in
+a shared thread (the 2026-09-02 ruling), now with the hidden *You*. Not
+reproducible live: Ada's response failing — the demo scripts her turn to
+succeed; the interruption path stands in for the terminal-state rule.

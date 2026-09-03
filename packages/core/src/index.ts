@@ -194,7 +194,13 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     const after = store.getState()
     if (after.composer.queued !== null && !after.composer.locked) {
       const queued = after.composer.queued
-      if (own.signal.aborted) {
+      /* Who stopped it matters (component audit 06): your own run stopped
+         means you took control, so the queued words come back to the field.
+         Another person's run stopped — by them, since only the owner may —
+         is a terminal state like any other, and the queue keeps its promise. */
+      const selfAuthor = options.authorId ?? 'you'
+      const stoppedOwnRun = own.signal.aborted && (scenario.author ?? selfAuthor) === selfAuthor
+      if (stoppedOwnRun) {
         if (after.composer.text.trim() === '') {
           store.dispatch({ type: 'composer/dequeued' })
           store.dispatch({ type: 'composer/changed', text: queued })

@@ -401,6 +401,7 @@ function AppCore({
               onConfirmSpend={() => void lucet.confirmSpend()}
               onDismissIntercept={() => lucet.dismissIntercept()}
               onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
+              onDequeue={() => lucet.store.dispatch({ type: 'composer/dequeued' })}
               onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
               onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
               onRetryAttachment={(id) => {

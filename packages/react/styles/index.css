@@ -1113,6 +1113,64 @@
 .lucet-prompt__status .lucet-orb-row .lucet-orb { margin-block-start: 2px; }
 
 .lucet-prompt__status .lucet-orb-row__label { text-wrap: pretty; }
+/* THE QUEUED ITEM (component audit 06): the words that wait, under the
+   status that says whose turn they follow, with the two ways to take them
+   back — one stack in the strip, no box inside the box. */
+/* A disabled seat does not take the pointer: the press falls through to the
+   group, which keeps focus in the field (a browser sends no mouse events to a
+   disabled control, so the group could not otherwise intervene). */
+.lucet-prompt__actions button:disabled { pointer-events: none; }
+
+.lucet-prompt__queued-stack {
+  display: grid;
+  gap: 6px;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+.lucet-prompt__queued {
+  display: grid;
+  gap: 6px;
+  /* Under the status line, aligned to its words (past the orb). */
+  padding-inline-start: calc(var(--lucet-orb-size, 16px) + 9px);
+}
+.lucet-prompt__queued-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--lucet-foreground);
+  font-size: var(--lucet-text-sm);
+}
+.lucet-prompt__queued-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lucet-prompt__queued-actions .lucet-button {
+  position: relative;
+  min-block-size: max(28px, calc(28px * var(--lucet-density, 1)));
+  padding-inline: 10px;
+  font-size: var(--lucet-text-sm);
+}
+/* Edit and Cancel queue keep their quiet 28px silhouette; the target they
+   offer is taller — 40px, and 44px under a coarse pointer — drawn as an
+   invisible extension above and below, never sideways, so the two never
+   overlap and the composition stays compact (component audit 06 rider). The
+   row gap grows to match, so wrapped rows keep their targets apart. */
+.lucet-prompt__queued-actions { row-gap: 12px; }
+.lucet-prompt__queued-actions .lucet-button::before {
+  content: '';
+  position: absolute;
+  /* measured from the padding box, so the 1px border is added back */
+  inset-block: -7px;
+  inset-inline: -1px;
+}
+@media (pointer: coarse) {
+  .lucet-prompt__queued-actions { row-gap: 16px; }
+  .lucet-prompt__queued-actions .lucet-button { min-inline-size: 44px; }
+  .lucet-prompt__queued-actions .lucet-button::before { inset-block: -9px; }
+}
 .lucet-prompt__status[data-tone='info'] {
   background-color: var(--lucet-tone-info-surface);
   color: var(--lucet-tone-info-foreground);
@@ -1185,6 +1243,10 @@
   translate: -50% 0;
   transition-duration: 130ms;
 }
+/* An arming tipwrap shows its tip on hover only once the pointer has MOVED
+   over it (component audit 06): a control mounting under a resting pointer
+   does not flash a tip. Focus shows it as always. */
+.lucet-tipwrap[data-arm]:not([data-armed]):hover:not(:focus-within) .lucet-tip { opacity: 0; }
 
 /* A sentence-long tip on a message action wraps under a measure instead
    of running as one nowrap line (Preview version's reassurance). */
