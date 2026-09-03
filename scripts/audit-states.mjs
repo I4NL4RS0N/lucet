@@ -885,6 +885,36 @@ async function main() {
       )
 
     /*
+     * THE STATE'S OWN EXIT, ON THE SPECIMEN (component audit 02): the
+     * partial receipt's fixture carries the P1 recovery verb, so its
+     * actions must offer the verb -- never the generic "Ask again" -- with
+     * the accessible name equal to the visible label. And the running
+     * specimen's clock holds: a state on display does not age.
+     */
+    const readSpecimens = () =>
+      page.evaluate(() => {
+        const partial = document.querySelector('.lucet-tool[data-status="partial"]')
+        const thread = partial?.closest('.lucet-thread') ?? null
+        const verb = thread?.querySelector('.lucet-actions__btn[data-recovery]') ?? null
+        return {
+          verb: verb ? verb.textContent.trim() : null,
+          verbName: verb ? (verb.getAttribute('aria-label') ?? verb.textContent.trim()) : null,
+          askAgain: thread ? [...thread.querySelectorAll('.lucet-actions__btn')].some((b) => /Ask again/.test(b.textContent)) : null,
+          elapsed: document.querySelector('.lucet-tool[data-status="running"] .lucet-tool__elapsed')?.textContent ?? null,
+        }
+      })
+    const specimen = await readSpecimens()
+    await page.waitForTimeout(400)
+    const specimenLater = await readSpecimens()
+    checks += 2
+    if (specimen.verb !== 'Retry missing source' || specimen.verbName !== specimen.verb || specimen.askAgain !== false)
+      failures.push(
+        `tool: the partial specimen must offer its recovery verb (verb=${specimen.verb}, name=${specimen.verbName}, askAgain=${specimen.askAgain})`,
+      )
+    if (specimen.elapsed !== '1.2s' || specimenLater.elapsed !== '1.2s')
+      failures.push(`tool: the running specimen's clock must hold at 1.2s (read ${specimen.elapsed}, then ${specimenLater.elapsed})`)
+
+    /*
      * THE VISIBILITY LAW, measured: actions ride every settled response —
      * visible outright on the latest turn, hidden on older ones until
      * hover OR FOCUS. Hover-only reveal is the failure this guards against:

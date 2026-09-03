@@ -82,7 +82,7 @@ function codeFor(f: Fixture, usage: string): string {
   ].join('\n')
 }
 
-const USAGE_THREAD = '<Thread state={state} selfId="you" onRetry={onRetry} onFeedback={onFeedback} />'
+const USAGE_THREAD = '<Thread state={state} selfId="you" onRetry={onRetry} onRecover={onRecover} onFeedback={onFeedback} />'
 
 /**
  * Preview | Code, the adoption affordance — with the Lucet difference:
@@ -764,6 +764,7 @@ function Live() {
         state={state}
         selfId="you"
         onRetry={(turnId) => void lucet.retry(turnId)}
+        onRecover={(turnId) => void lucet.recover(turnId)}
         onFeedback={(messageId, verdict) =>
           lucet.store.dispatch({ type: 'feedback/given', messageId, verdict })
         }
@@ -871,7 +872,7 @@ export function ComponentsStage() {
           <div className="stage stage--trio stage--open">
             {TOOL_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onRecover={noop} onFeedback={noop} />
               </Example>
             ))}
           </div>
@@ -1041,7 +1042,7 @@ export function ComponentsStage() {
             <div key={group.labels.join('|')} className={`stage stage--${group.kind}${group.open ? ' stage--open' : ''}`}>
               {group.labels.map(threadFixture).map((f) => (
                 <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                  <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+                  <Thread state={stateOf(f)} selfId="you" onRetry={noop} onRecover={noop} onFeedback={noop} />
                 </Example>
               ))}
             </div>
@@ -1052,7 +1053,7 @@ export function ComponentsStage() {
           <div className="stage stage--trio">
             {SOURCES_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
-                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onFeedback={noop} />
+                <Thread state={stateOf(f)} selfId="you" onRetry={noop} onRecover={noop} onFeedback={noop} />
               </Example>
             ))}
           </div>
@@ -1070,6 +1071,7 @@ export function ComponentsStage() {
                   state={stateOf(f)}
                   selfId="you"
                   onRetry={noop}
+                  onRecover={noop}
                   onFeedback={noop}
                   onRestore={noop}
                   onExitRestore={noop}
