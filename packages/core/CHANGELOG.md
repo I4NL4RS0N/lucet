@@ -1,5 +1,12 @@
 # lucet-core
 
+## 0.3.1
+
+### Patch Changes
+
+- 659599b: Prompt composer, audit round 01: focus returns to the field after a pointer press on Queue (the button leaves with the words, and focus used to fall to the page), and the placeholder reads at 4.5:1 or better in every theme and expression instead of 2.6:1 on the dark Glass composer.
+- aefcf18: Tool receipts, audit round 02: payloads are pretty-printed and wrap at their structure instead of scrolling sideways on narrow screens, with the scrollbar kept only for a single unbreakable token; a running receipt can arrive knowing its elapsed time (`ToolPart.elapsedMs`) and shows it fixed, which the lab uses so a state specimen no longer ages.
+
 ## 0.3.0
 
 ### Minor Changes
