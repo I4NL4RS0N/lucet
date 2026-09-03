@@ -1,5 +1,31 @@
 # lucet-react
 
+## 0.4.0
+
+### Minor Changes
+
+- 6e99f9b: Attachments, sources and file treatments, component audit 07. A queued message now owns its files: Queue moves the staged attachments into the queued item, Edit returns them, Cancel queue drops them, and the handoff sends exactly those files while a file staged since stays behind; Queue is held while a file is uploading or failed and says why. The strip names the file that blocks a send; every chip wears its state word and the library's own name-and-size tip; focus is placed before a removed chip goes, and after a retry; the thread's provenance chips share the composer's kind glyphs. Inline citation markers link to their source rows with focus in and Escape back; an open source receipt closes on Escape; source rows meet the 40px target. A long filename never widens the composer or the sent bubble past its host: the composer contains its inline size, chips carry no minimum width, and provenance chips truncate their base while keeping the extension. The budget panel anchors to its own trigger. The composer frees the moment a response settles and the queued handoff takes the lock in the same tick, removing two one-frame status transients. The demo collaborator is Jennifer Lee.
+- c47fe66: The spent-month wall has no exit. `PromptInput` no longer takes `onNewThread`, and the spent strip offers no action: a monthly cap outlives the thread, so a "New thread" verb promised a way out the ledger does not have. The strip reads "This month’s budget is spent. New turns are paused until it resets on Sep 5 at 01:41." While the month is spent the Budget Meter's model rows are readable but inert (`aria-disabled`). Core: `thread/reset` now preserves `monthlyResetAt` with the budget and the spend, so the wall in a new thread still says when it lifts; the budget blocker's copy is two sentences.
+- da9e623: Multiplayer ownership, component audit 06. While another person's turn runs the composer offers Queue, disabled until there are words and named for what it does, never Stop; the strip says who asked and what you can do ("Responding to Ada — you can queue a message", "Queued after Ada — yours sends next", "Responding to you"); the queued item shows its words with Edit and Cancel queue (`PromptInput` gains `onDequeue`); the handoff is spoken once; your own prompt carries a hidden "You" in a shared thread. Core: a stop during another person's run is a terminal state and the queue sends; a stop of your own run still returns the words to the field.
+
+  Edit and Cancel queue keep their compact silhouette and offer 40px targets (44px under a coarse pointer); a press on a disabled seat or the group's dead space keeps focus in the field; the status strip announces an accepted queue once, from its own live region.
+
+- 75f022a: Scope Control, component audit 04. Rungs may carry a `name` (the referent behind a deictic label) and a `scope/moved` event may carry the destination's `pageName`; the draft-protection decision names both pages — "Keep Reports review" (primary) and "Use Vendor call" — with the message on its own row and the two ways together. The trigger names the held scope while a move is pending, leaves the Tab order and says `aria-disabled` while a turn runs, and the picker's counts form a right-aligned column. The reducer holds a move only when the selected boundary actually changes, says "Scope remains on …" when the previous page is kept, and applies a held move once a fresh send empties the field. The composer returns focus and caret to the field after either decision. One derived model, `scopeDisplay`, produces the chip, its accessible name and the picker rows: while the scope stays on another page's ladder (`ScopeState.onScreen`), "This page" is offered first for the page on screen, the kept page is named and marked as previously selected, and choosing the page on screen (`scope/rebound`, `onScopeRebind`) brings its ladder into force in one step.
+- ef1fbff: Version marker and restore, component audit 05. The newest version alone wears Current and its version line is legible at rest, carrying "restored from version n"; entering a preview focuses the banner, restoring focuses the new current version's row, returning focuses the previewed turn; a live region speaks each act once; the banner names the version and its commit reads "Restore this version"; `MessageActions` gains `busy`, disabling Ask again, Preview version and recovery verbs while a new version is being written.
+
+### Patch Changes
+
+- fe0dbe7: Component audit 07 closeout. Upload completion is announced once — "quarterly-summary.pdf is ready.", or "2 attachments are ready." for files that complete together — never at mount, never on a re-render, and the sentence leaves the live region when the staging row empties. Under a coarse pointer the chip's Remove and Retry present 44px hit zones that nothing clips and no other zone overlaps; the desktop keeps its 28px dense targets. The suggestion chips' column minimum yields to a host narrower than 230px, so a content-sized column never grows past its frame at a phone width.
+- 13a63a4: Budget Meter, component audit 03. Prices in the picker align in one column (every row reserves the check slot); the trigger's estimate keeps a stable slot so a draft crossing the cent no longer moves the chip; the month bar's track is visible against the panel and the record fill is ink; the hold's two buttons carry their price in the button's own colour and size; the locked trigger leaves the Tab order, cancels its toggle and exposes `aria-disabled`; the hold's note says what each way does. Core: a runtime test records the rule that a running turn is never stopped for cost.
+- Updated dependencies [fe0dbe7]
+- Updated dependencies [6e99f9b]
+- Updated dependencies [13a63a4]
+- Updated dependencies [c47fe66]
+- Updated dependencies [da9e623]
+- Updated dependencies [75f022a]
+- Updated dependencies [ef1fbff]
+  - lucet-core@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
