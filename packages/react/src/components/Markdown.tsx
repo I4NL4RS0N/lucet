@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
+import { CitationsContext, rememberInvoker } from './citations.js'
 import { parseMarkdown, safeHref } from 'lucet-core'
 import type { MdBlock, MdInline } from 'lucet-core'
 import { CodeBlock } from './CodeBlock.js'
@@ -46,11 +47,52 @@ function Leaving() {
   )
 }
 
+const CITE = /\[(\d{1,2})\]/g
+
+/** Plain text, unless the message has a bibliography: then every [n] within
+    its count is a link to row n (component audit 07). A marker still arriving
+    ("[1" without its bracket) is text until it is whole. */
+function CiteText({ text }: { text: string }) {
+  const cites = useContext(CitationsContext)
+  if (!cites || !text.includes('[')) return <>{text}</>
+  const out: React.ReactNode[] = []
+  let last = 0
+  for (const m of text.matchAll(CITE)) {
+    const n = Number(m[1])
+    const at = m.index ?? 0
+    if (n < 1 || n > cites.count) continue
+    if (at > last) out.push(text.slice(last, at))
+    const id = cites.idFor(n)
+    out.push(
+      <a
+        key={at}
+        className="lucet-md__cite"
+        href={`#${id}`}
+        aria-label={`Source ${n}`}
+        onClick={(e) => {
+          const row = document.getElementById(id)
+          if (!row) return
+          e.preventDefault()
+          rememberInvoker(e.currentTarget)
+          const target = row.querySelector<HTMLElement>('summary, .lucet-sources__row') ?? row
+          target.focus()
+          row.scrollIntoView({ block: 'nearest' })
+        }}
+      >
+        [{n}]
+      </a>,
+    )
+    last = at + m[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return <>{out}</>
+}
+
 function inlineNodes(nodes: readonly MdInline[]): React.ReactNode[] {
   return nodes.map((node, i) => {
     switch (node.kind) {
       case 'text':
-        return node.text
+        return <CiteText key={i} text={node.text} />
       case 'strong':
         return <strong key={i}>{inlineNodes(node.children)}</strong>
       case 'em':

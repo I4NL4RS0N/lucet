@@ -1,4 +1,6 @@
+import type { KeyboardEvent } from 'react'
 import type { Source } from 'lucet-core'
+import { takeInvoker } from './citations.js'
 
 /**
  * Citations & sources: the response's bibliography. The positions:
@@ -27,6 +29,27 @@ export interface SourcesProps {
   /** What the rows are — "Sources" by default; a Do path lists what it created. */
   label?: string | undefined
   sources: readonly Source[]
+  /** Anchor base for citation targets (component audit 07): row n carries
+      the id `${anchorBase}-src-${n}` and takes focus from an inline [n]. */
+  anchorBase?: string | undefined
+}
+
+/* Escape on a row: an open receipt closes and focus stays on its row; an
+   already-closed row hands focus back to the marker that sent it here. */
+function onRowKey(e: KeyboardEvent<HTMLLIElement>) {
+  if (e.key !== 'Escape') return
+  const details = e.currentTarget.querySelector('details')
+  if (details?.open) {
+    details.open = false
+    details.querySelector<HTMLElement>('summary')?.focus()
+    e.stopPropagation()
+    return
+  }
+  const back = takeInvoker()
+  if (back) {
+    back.focus()
+    e.stopPropagation()
+  }
 }
 
 /** What the receipt is called, per kind of source. */
@@ -89,14 +112,14 @@ function Row({ source }: { source: Source }) {
   )
 }
 
-export function Sources({ sources, label = 'Sources' }: SourcesProps) {
+export function Sources({ sources, label = 'Sources', anchorBase }: SourcesProps) {
   if (sources.length === 0) return null
   return (
     <div className="lucet-sources">
       <span className="lucet-sources__label">{label}</span>
       <ol className="lucet-sources__list">
-        {sources.map((source) => (
-          <li key={source.id}>
+        {sources.map((source, i) => (
+          <li key={source.id} id={anchorBase ? `${anchorBase}-src-${i + 1}` : undefined} onKeyDown={onRowKey}>
             {source.trace && source.status !== 'gone' ? (
               <details className="lucet-source" data-status={source.status}>
                 <summary className="lucet-sources__row lucet-sources__row--summary">
@@ -120,7 +143,7 @@ export function Sources({ sources, label = 'Sources' }: SourcesProps) {
               /* No trace, no disclosure: a plain row that promises nothing.
                  A GONE source is a plain row too (round 05, P1): a removed
                  reference must never read as openable. */
-              <span className="lucet-sources__row" data-status={source.status}>
+              <span className="lucet-sources__row" data-status={source.status} tabIndex={anchorBase ? -1 : undefined}>
                 <Row source={source} />
               </span>
             )}

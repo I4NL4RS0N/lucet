@@ -361,6 +361,11 @@ export interface ComposerState {
   readonly lockedBy: string | null
   readonly queued: string | null
   readonly attachments: readonly ComposerAttachment[]
+  /** The attachments committed to the queued message (component audit 07).
+      They leave the staged list when Queue is pressed and travel with the
+      queued words: back to the field through Edit, dropped by Cancel queue,
+      sent with the handoff — exactly these, one copy each. */
+  readonly queuedAttachments: readonly ComposerAttachment[]
   /** A send held at the month's threshold, awaiting the decision. */
   readonly intercept: BudgetIntercept | null
 }

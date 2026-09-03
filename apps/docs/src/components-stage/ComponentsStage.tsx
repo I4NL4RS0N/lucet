@@ -453,7 +453,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
           '',
           '| Workstream | Owner | Due |',
           '| --- | --- | --- |',
-          '| Template | Ada | Tuesday |',
+          '| Template | Jennifer | Tuesday |',
           '| Review | Sam | Thursday |',
           '',
           '```text',
@@ -525,7 +525,7 @@ const THREAD_FIXTURES: readonly Fixture[] = [
     label: 'Multiplayer — two people, one thread',
     note: 'The group-chat grammar: yours sit right with no avatar, other people sit left with a face — the humans get the avatars, the assistant is just its document.',
     events: ([
-      ...turn(1, 'Pull the numbers for the northern site.', { author: 'Ada', reply: 'Done — the totals are in the table above, and the outlier is flagged.' }),
+      ...turn(1, 'Pull the numbers for the northern site.', { author: 'Jennifer Lee', reply: 'Done — the totals are in the table above, and the outlier is flagged.' }),
       ...turn(2, 'And the same for the southern one?', { author: 'you', reply: 'Same shape, one difference: the southern site peaks a month later.' }),
     ]),
   },
@@ -569,17 +569,17 @@ const threadFixture = (label: string): Fixture => {
 }
 
 /* The single-player state matrix. */
-const CORE_FIXTURES: readonly Fixture[] = [
-  {
-    label: 'Empty',
-    note: 'Nothing to send yet, so the arrow waits. No nagging text — an empty box explains itself.',
-    events: ([]),
-  },
-  {
-    label: 'Composing',
-    note: 'Something to send: the arrow is ready.',
-    events: ([type('Summarise the attached documents and list anything unresolved.')]),
-  },
+/*
+ * THE ATTACHMENT FAMILY (component audit 07): staged as its own band, not
+ * as three tiles among the composer's other states. A file is a state, not
+ * an instant — uploading, ready, failed — and the ending never truncates.
+ */
+/* A cell minimum that admits two columns at the well's width and never
+   three, so a pair fills its row and four states sit two by two — no
+   orphan, no hole (component audit 07). One column below it, as before. */
+const TWO_UP = { '--cfg-cell-min': '420px' } as React.CSSProperties
+
+const ATTACHMENT_FIXTURES: readonly Fixture[] = [
   {
     label: 'Attachment uploading',
     note: 'A file is still uploading, so sending waits — and says so, up top.',
@@ -600,6 +600,19 @@ const CORE_FIXTURES: readonly Fixture[] = [
     label: 'Attachment failed',
     note: 'This file didn’t upload. Try again (↻) or remove it (×) — it is never dropped silently. The strip above says what to do; the chip says which file and why.',
     events: ([type('What changed between these two?'), add('a1', 'quarterly-summary.pdf'), settle('a1', 'ready'), add('a2', 'recording.mp4'), settle('a2', 'failed', 'Too large')]),
+  },
+]
+
+const CORE_FIXTURES: readonly Fixture[] = [
+  {
+    label: 'Empty',
+    note: 'Nothing to send yet, so the arrow waits. No nagging text — an empty box explains itself.',
+    events: ([]),
+  },
+  {
+    label: 'Composing',
+    note: 'Something to send: the arrow is ready.',
+    events: ([type('Summarise the attached documents and list anything unresolved.')]),
   },
   {
     label: 'Service down',
@@ -723,13 +736,13 @@ const BUDGET_FIXTURES: readonly Fixture[] = [
 const MULTI_FIXTURES: readonly Fixture[] = [
   {
     label: 'Locked — another person’s turn',
-    note: 'Ada pressed send, so the thread is hers until her answer finishes. You can keep typing — Queue lines yours up to go next.',
-    events: ([type('And what about the appendix?'), { type: 'composer/locked', by: 'Ada' }]),
+    note: 'Jennifer pressed send, so the thread is hers until her answer finishes. You can keep typing — Queue lines yours up to go next.',
+    events: ([type('And what about the appendix?'), { type: 'composer/locked', by: 'Jennifer Lee' }]),
   },
   {
     label: 'Queued behind her turn',
     note: 'Yours is lodged and the field is yours again for whatever comes next. It sends itself the moment her answer finishes — a promise the runtime keeps, not just copy.',
-    events: ([{ type: 'composer/locked', by: 'Ada' }, { type: 'composer/queued', text: 'And what about the appendix?' }]),
+    events: ([{ type: 'composer/locked', by: 'Jennifer Lee' }, { type: 'composer/queued', text: 'And what about the appendix?' }]),
   },
 ]
 
@@ -799,6 +812,8 @@ function Live() {
       onChange={(text) => lucet.store.dispatch({ type: 'composer/changed', text })}
       onSubmit={() => void lucet.submit(state.composer.text)}
       onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
+      onDequeue={() => lucet.store.dispatch({ type: 'composer/dequeued' })}
+      onCancelQueue={() => lucet.store.dispatch({ type: 'composer/queue-cancelled' })}
       onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
       onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
       onRetryAttachment={(id) => {
@@ -824,7 +839,7 @@ function Live() {
         setTimeout(() => {
           lucet.store.dispatch(
             n % 3 === 0
-              ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
+              ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large — the limit is 25 MB' }
               : { type: 'attachment/settled', id, status: 'ready', reason: null },
           )
         }, 1200)
@@ -901,8 +916,10 @@ export function ComponentsStage() {
         <Chapter name="Compose" note="What a person sends, and what the field knows before they send it: scope, price, whose turn it is." />
 
         <Section name="Prompt input — every state" note="side by side, nothing hidden behind a pointer">
-          {/* OPEN PLANE (audit round 03): seven states in a two-column grid leave an orphan cell; on the open plane the empty half is just the page. */}
-          <div className="stage stage--duet stage--open">
+          {/* OPEN PLANE (audit round 03): the empty half of a grid is just the
+              page. TWO COLUMNS (component audit 07): four states, two by two —
+              a cell minimum wide enough that a third column never fits. */}
+          <div className="stage stage--duet stage--open" style={TWO_UP}>
             {CORE_FIXTURES.map((f) => (
               <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560}>
                   <PromptInput
@@ -922,6 +939,39 @@ export function ComponentsStage() {
                     onRetryAttachment={noop}
                     onAttach={noop}
                     {...(f.streaming ? { streaming: true, onStop: noop } : {})}
+                  />
+              </Example>
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          variant="kin"
+          name="Attachments — the files you bring to the request"
+          note="a file is a state, not an instant: uploading, ready, failed — each wears its word, and the ending never truncates"
+        >
+          {/* ONE FAMILY, ONE BAND (component audit 07): the variety row spans
+              the well as the showcase — the icon family and the extension rule
+              in one specimen — and the two lifecycle states sit as a pair. */}
+          <div className="stage stage--duet stage--open" style={TWO_UP}>
+            {[ATTACHMENT_FIXTURES[1]!, ATTACHMENT_FIXTURES[0]!, ATTACHMENT_FIXTURES[2]!].map((f, i) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_PROMPT)} max={560} {...(i === 0 ? { variant: 'band' as const } : {})}>
+                  <PromptInput
+                    composer={stateOf(f).composer}
+                    model={stateOf(f).model}
+                    service={stateOf(f).service}
+                    scope={stateOf(f).scope}
+                    onScopeChange={noop}
+                    onScopeUpdate={noop}
+                    onScopeRebind={noop}
+                    selfId="you"
+                    onChange={noop}
+                    onSubmit={noop}
+                    onQueue={noop}
+                    onModelChange={noop}
+                    onRemoveAttachment={noop}
+                    onRetryAttachment={noop}
+                    onAttach={noop}
                   />
               </Example>
             ))}
@@ -1072,10 +1122,13 @@ export function ComponentsStage() {
           ))}
         </Section>
 
-        <Section name="Citations & sources" note="a citation is a claim with a timestamp — sources age after settle">
-          <div className="stage stage--trio">
-            {SOURCES_FIXTURES.map((f) => (
-              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)}>
+        <Section name="Sources and provenance" note="what the assistant used, attached to the answer it supports — a citation is a claim with a timestamp, and sources age after settle">
+          {/* THE PROVENANCE BAND (component audit 07): the standing bibliography
+              spans the well as the showcase; the two ways a citation ages sit
+              as a comparable pair beneath it. */}
+          <div className="stage stage--duet" style={TWO_UP}>
+            {SOURCES_FIXTURES.map((f, i) => (
+              <Example key={f.label} label={f.label} note={f.note} code={codeFor(f, USAGE_THREAD)} {...(i === 0 ? { variant: 'band' as const } : {})}>
                 <Thread state={stateOf(f)} selfId="you" onRetry={noop} onRecover={noop} onFeedback={noop} />
               </Example>
             ))}

@@ -19,7 +19,7 @@ const TOUR = [
   '',
   '| Workstream | Owner |',
   '| --- | --- |',
-  '| Template | Ada |',
+  '| Template | Jennifer |',
   '| Review | Sam |',
   '',
   'The folder layout stays flat:',
@@ -63,8 +63,8 @@ describe('announcementPlan', () => {
 
   it('speaks a table as its header, then rows as they finish', () => {
     expect(
-      announcementPlan('| Workstream | Owner |\n| --- | --- |\n| Template | Ada |\n| Rev', false),
-    ).toEqual(['Table: Workstream, Owner.', 'Template, Ada.'])
+      announcementPlan('| Workstream | Owner |\n| --- | --- |\n| Template | Jennifer |\n| Rev', false),
+    ).toEqual(['Table: Workstream, Owner.', 'Template, Jennifer.'])
   })
 
   it('speaks the words, never the syntax', () => {

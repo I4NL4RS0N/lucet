@@ -68,7 +68,7 @@ export const formatted = defineScenario({
         '',
         '| Workstream | Owner | Due |',
         '| --- | --- | --- |',
-        '| Template | Ada | Tuesday |',
+        '| Template | Jennifer | Tuesday |',
         '| Review | Sam | Thursday |',
         '| Summary | you | Friday |',
         '',
@@ -899,13 +899,13 @@ export const multiplayer = defineScenario({
   label: 'Another person’s turn',
   group: 'Multiplayer',
   kind: 'feature',
-  author: 'Ada',
+  author: 'Jennifer Lee',
   description:
-    'A Lucet thread is shared: several people, one thread, a single writer at a time. Ada asks — the composer locks for everyone until her answer lands, and her turn arrives wearing her face. While hers runs, write your own and Queue it: it sends itself the moment the thread frees.',
+    'A Lucet thread is shared: several people, one thread, a single writer at a time. Jennifer asks — the composer locks for everyone until her answer lands, and her turn arrives wearing her face. While hers runs, write your own and Queue it: it sends itself the moment the thread frees.',
   prompt: 'Pull the totals for the northern site.',
   steps: [
     { type: 'wait', ms: 600 },
-    /* Ada's turn runs LIVE and long enough to be seen (audit round 05):
+    /* Jennifer's turn runs LIVE and long enough to be seen (audit round 05):
        the composer stays typeable under her lock, the strip says whose
        turn it is, Send reads Queue, and the queued turn sends itself when
        hers lands — the library keeping the strip's promise. */

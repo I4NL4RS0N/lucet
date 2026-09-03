@@ -28,6 +28,7 @@ export type LucetEvent =
   | { type: 'composer/locked'; by: string }
   | { type: 'composer/unlocked' }
   | { type: 'composer/dequeued' }
+  | { type: 'composer/queue-cancelled' }
   /** A send held at the month's threshold (round 06): nothing sent, the decision opened. */
   | { type: 'budget/intercepted'; text: string; costUsd: number; remainingUsd: number }
   /** The hold let go without sending. */
@@ -188,6 +189,8 @@ export function describeEvent(event: LucetEvent): string {
       return 'Composer unlocked'
     case 'composer/dequeued':
       return 'Queued prompt taken to send'
+    case 'composer/queue-cancelled':
+      return 'Queued prompt cancelled, its attachments dropped'
     case 'attachment/added':
       return `Attaching ${event.name}`
     case 'attachment/settled':

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, createContext, useContext } from 'react'
 import { announcementPlan } from 'lucet-core'
 import type { Message, MessagePart, ThreadState, NoticeAction, NoticePart } from 'lucet-core'
 import { ActivityOrb } from './ActivityOrb.js'
+import { FILE_GLYPHS, categoryOf, splitName } from './attachment-glyphs.js'
+import { CitationsContext } from './citations.js'
 import { Avatar } from './Avatar.js'
 import { Markdown } from './Markdown.js'
 import { MessageActions } from './MessageActions.js'
@@ -135,7 +137,7 @@ function Part({
         />
       )
     case 'sources':
-      return <Sources sources={part.sources} label={part.label} />
+      return <Sources sources={part.sources} label={part.label} anchorBase={part.id} />
     case 'notice':
       /* THE RUNTIME TELLS, INLINE (audit round 05): how this answer is
          being made — a fallback model, a limit — before the answer, in the
@@ -144,13 +146,20 @@ function Part({
          part needs no plumbing. */
       return <NoticeInline part={part} />
     case 'attachment':
+      /* What went with the prompt, as provenance: the same face the file
+         wore in the composer (component audit 07), no actions — sent is
+         sent. */
       return (
-        <span className="lucet-att lucet-att--readonly">
+        <span className="lucet-att lucet-att--readonly" data-kind={categoryOf(part.name, part.fileKind)}>
           <svg className="lucet-att__icon" viewBox="0 0 24 24" aria-hidden>
-            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-            <path d="M14 3v5h5" />
+            {FILE_GLYPHS[categoryOf(part.name, part.fileKind)]}
           </svg>
-          <span className="lucet-att__name">{part.name}</span>
+          {/* Base and extension, split as the composer splits them: a long
+              name truncates in the middle of its base and keeps its ending. */}
+          <span className="lucet-att__name">
+            <span className="lucet-att__base">{splitName(part.name).base}</span>
+            <span className="lucet-att__ext">{splitName(part.name).ext}</span>
+          </span>
         </span>
       )
   }
@@ -174,6 +183,13 @@ function MessageView({
   const terminal = TERMINAL[message.status]
   const attachments = message.parts.filter((p) => p.kind === 'attachment')
   const rest = message.parts.filter((p) => p.kind !== 'attachment')
+  /* Inline [n] markers point at THIS message's bibliography (component audit
+     07): the count bounds which markers become links; the ids are the rows'
+     anchors. Without a sources part the markers stay plain text. */
+  const sourcesPart = message.parts.find((p): p is Extract<MessagePart, { kind: 'sources' }> => p.kind === 'sources')
+  const citations = sourcesPart
+    ? { count: sourcesPart.sources.length, idFor: (n: number) => `${sourcesPart.id}-src-${n}` }
+    : null
   /* The LAST part is where content is arriving, so it is where liveness
      lives: the caret if it is text, the thinking orb if it is reasoning.
      Everything before it has already settled into history. */
@@ -185,6 +201,7 @@ function MessageView({
      animation on turns that had long since arrived, and rebuilding their
      DOM for nothing. */
   const promptBody = (
+    <CitationsContext.Provider value={citations}>
     <div className={isUser ? 'lucet-thread__prompt' : 'lucet-thread__doc'}>
       {rest.map((part) => (
         <Part
@@ -206,6 +223,7 @@ function MessageView({
         <ActivityOrb state="composing" label="Writing…" size="sm" />
       ) : null}
     </div>
+    </CitationsContext.Provider>
   )
 
   return (

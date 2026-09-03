@@ -125,6 +125,10 @@ export interface Scenario {
   readonly description: string
   /** The prompt to put in the thread, if this scenario starts a turn. */
   readonly prompt: string | null
+  /** Which staged attachments go with the prompt. Absent, every ready
+      attachment in the composer goes (a fresh send). A queued handoff names
+      exactly the ones that were queued (component audit 07). */
+  readonly attachmentIds?: readonly string[]
   /** Who submits the prompt. Defaults to the local participant — another
       name makes the turn arrive from someone else in the shared thread. */
   readonly author?: string

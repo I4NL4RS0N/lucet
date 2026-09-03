@@ -2901,3 +2901,160 @@
 [data-expression='glass'] .lucet-thread__prompt {
   box-shadow: var(--lucet-edge-top);
 }
+
+/* ===== Component audit 07: attachments, sources, and the menu's anchor ===== */
+
+/* The chip's tip carries the whole name and the size; it may wrap. */
+.lucet-prompt__att-namewrap { min-inline-size: 0; }
+.lucet-prompt__att .lucet-tip {
+  max-inline-size: min(60vw, 320px);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+/* The state word on an uploading chip is muted ink, not the failed chip's
+   dimmed danger. */
+.lucet-prompt__att[data-status='uploading'] .lucet-prompt__att-reason {
+  color: var(--lucet-muted-foreground);
+  opacity: 1;
+}
+/* Read-only chips (the queued item) end at their name. */
+.lucet-prompt__att[data-readonly] { padding-inline: 8px; }
+.lucet-prompt__queued-atts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Sources: an interactive row offers a 40px target, 44px under a coarse
+   pointer; plain rows share the height so the list keeps one rhythm. A
+   row that took focus from a citation shows the ring like any control. */
+.lucet-sources__row { min-block-size: calc(40px * var(--lucet-density, 1)); }
+.lucet-sources__row:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: var(--lucet-focus-offset);
+  border-radius: var(--lucet-radius-control);
+}
+
+/* Inline citation markers: the words' own ink, tabular, a link only in
+   behaviour — hover and focus say so. */
+.lucet-md__cite {
+  color: inherit;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  border-radius: 3px;
+  padding-inline: 1px;
+  transition: background-color var(--lucet-duration-fast) var(--lucet-ease);
+}
+.lucet-md__cite:hover { background-color: var(--lucet-hover); }
+.lucet-md__cite:focus-visible {
+  outline: var(--lucet-focus-width) solid var(--lucet-ring);
+  outline-offset: 1px;
+}
+
+/* The budget panel anchors to its trigger, not the bar's end (rider B): the
+   component measures the shift that keeps it inside the bar and the cap
+   that keeps it inside the composer. */
+/* Until the component has measured (the toggle event is a task after the
+   open), the panel keeps its round 03 geometry — the bar's end edge, capped
+   at the bar — so an open measured in the same tick is still inside the
+   viewport. Once placed, it sits on its trigger. */
+.lucet-budget__panel {
+  min-inline-size: min(264px, var(--lucet-budget-panel-cap, 100%));
+  max-inline-size: var(--lucet-budget-panel-cap, 100%);
+}
+.lucet-budget[data-placed] { position: relative; }
+.lucet-budget[data-placed] .lucet-budget__panel {
+  inset-inline-start: var(--lucet-budget-shift, 0px);
+  inset-inline-end: auto;
+  inline-size: var(--lucet-budget-panel-size, auto);
+}
+
+@media (pointer: coarse) {
+  .lucet-prompt__tool::before { inline-size: 44px; block-size: 44px; }
+  /* Chips grow to 32px under a coarse pointer and their two actions sit
+     18px apart, so each invisible 32px zone is its own. */
+  .lucet-prompt__att { block-size: 32px; }
+  .lucet-prompt__att-actions { gap: 18px; }
+  .lucet-prompt__att-remove::before { inline-size: 32px; block-size: 32px; }
+  .lucet-sources__row { min-block-size: calc(44px * var(--lucet-density, 1)); }
+}
+
+/* A tip that shows for hover and keyboard focus only (the Attach button,
+   component audit 07): a pointer click leaves focus on the control, and a
+   tip that then hangs over the field until focus moves is noise, not help.
+   The Stop and Queue tips keep the general rule — focus shows them. */
+.lucet-tipwrap--keyboard:focus-within:not(:has(:focus-visible)):not(:hover) .lucet-tip,
+.lucet-tipwrap--keyboard[data-arm]:not([data-armed]):hover:not(:has(:focus-visible)) .lucet-tip {
+  opacity: 0;
+  translate: -50% 4px;
+}
+
+/* A chip never widens its row (component audit 07): a flex item's default
+   minimum is its content, and a long name capped at 260px still made the
+   row's minimum 260px — at a phone width that pushed the composer past its
+   frame, which clipped Send. With no minimum the chip shrinks to the row
+   and the base ellipsizes; the extension never does. */
+.lucet-prompt__att,
+.lucet-att {
+  min-inline-size: 0;
+}
+
+/* The composer never widens its host (component audit 07): a host column
+   that sizes to content — the Konfabulator's floor at a phone width, or any
+   auto grid track — would otherwise grow to the widest chip's minimum and
+   push Send past the frame. Inline-size containment makes the composer's
+   width the host's decision alone; everything inside wraps or truncates to
+   it, which is how it was designed to behave. */
+.lucet-prompt { contain: inline-size; }
+
+/* The thread's provenance chip truncates like the composer's (component
+   audit 07): the base ellipsizes, the extension never does. The bubble
+   itself may shrink below its content's minimum — a grid item's automatic
+   minimum is its min-content, and a long filename made that minimum wider
+   than the column, so the 88% cap never applied and the bubble ran past
+   the frame at a phone width. */
+.lucet-thread__prompt { min-inline-size: 0; }
+.lucet-thread__atts { min-inline-size: 0; }
+.lucet-att__name {
+  display: flex;
+  align-items: baseline;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: visible;
+}
+.lucet-att__base {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lucet-att__ext { flex: none; }
+
+/* A failed chip says why on its own line (component audit 07): the reason
+   is a sentence now — "Too large — the limit is 25 MB" — and on one line it
+   left the name no room and ran over its extension. Name and actions keep
+   the first line; the reason sits under the name, indented past the glyph.
+   Only the failed chip grows; uploading keeps its one-word state inline. */
+.lucet-prompt__att[data-status='failed'] {
+  flex-wrap: wrap;
+  block-size: auto;
+  min-block-size: 26px;
+  padding-block-end: 4px;
+  row-gap: 0;
+}
+.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-namewrap { flex: 1 1 auto; }
+.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-reason {
+  flex: 1 0 100%;
+  order: 3;
+  padding-inline-start: 19px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@media (pointer: coarse) {
+  .lucet-prompt__att[data-status='failed'] { block-size: auto; min-block-size: 32px; }
+}
+/* The failed chip's name yields before its actions wrap: a zero basis lets
+   the name truncate on the first line so Retry and Remove stay beside it at
+   any width; the reason keeps its own line beneath. */
+.lucet-prompt__att[data-status='failed'] .lucet-prompt__att-namewrap { flex: 1 1 0; }

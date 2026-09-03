@@ -1,6 +1,6 @@
 import { budgetHold, projectNextTurn } from 'lucet-core'
 import { useMenuGrammar } from '../menu-grammar.js'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import type { BudgetIntercept, ModelState, TurnProjection, UsageState } from 'lucet-core'
 
 /**
@@ -71,6 +71,55 @@ export function BudgetMeter({
 }: BudgetMeterProps) {
   const menuRef = useMenuGrammar()
   const details = useRef<HTMLDetailsElement | null>(null)
+  /* ANCHORED TO ITS TRIGGER (component audit 07, rider B): the panel opens
+     above the selector with its start edge on the selector's, and slides
+     along the bar only as far as staying inside it requires. A bar narrower
+     than the panel's natural width (the phone) gets the panel across its
+     whole inner width instead. Measured on open and on resize, imperatively:
+     no state, because a re-render on toggle re-attached the menu grammar's
+     listeners mid-dispatch and its focus-on-open never ran. Never on Send's
+     axis. */
+  const place = useCallback(() => {
+    const el = details.current
+    if (!el || !el.open) return
+    const panel = el.querySelector<HTMLElement>('.lucet-budget__panel')
+    const bar = el.closest<HTMLElement>('.lucet-prompt__bar') ?? el.parentElement
+    if (!panel || !bar) return
+    const b = bar.getBoundingClientRect()
+    const t = el.getBoundingClientRect()
+    const inner = Math.round(b.width)
+    /* A bar too narrow to hold the panel beside its trigger with room to
+       slide (the phone) takes it across the whole inner width; the drawer
+       keeps it on the trigger, clamped. */
+    const narrow = inner < 360
+    /* From here the panel is the trigger's; before, it kept the bar's end
+       edge so an open measured in the same tick is still inside. */
+    el.dataset.placed = ''
+    el.style.setProperty('--lucet-budget-panel-cap', `${inner}px`)
+    el.style.setProperty('--lucet-budget-panel-size', narrow ? `${inner}px` : 'auto')
+    el.style.setProperty('--lucet-budget-shift', '0px')
+    /* offsetWidth, not the rect: the panel is mid-scale in its entrance
+       animation when this runs, and a scaled rect under-measures it. */
+    const width = panel.offsetWidth
+    let shift = 0
+    if (t.left + width > b.right) shift = b.right - (t.left + width)
+    if (t.left + shift < b.left) shift = b.left - t.left
+    el.style.setProperty('--lucet-budget-shift', `${Math.round(shift)}px`)
+  }, [])
+  useEffect(() => {
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [place])
+  /* One ref callback for the life of the component: a fresh arrow each
+     render would detach and re-attach the grammar's listeners on every
+     keystroke. */
+  const attachDetails = useCallback(
+    (el: HTMLDetailsElement | null) => {
+      details.current = el
+      return menuRef(el)
+    },
+    [menuRef],
+  )
   /* Set by the two actions so the close they cause is not read as a
      dismissal. */
   const decided = useRef(false)
@@ -121,13 +170,13 @@ export function BudgetMeter({
     <details
       className="lucet-budget"
       data-held={intercept ? 'true' : undefined}
-      ref={(el) => {
-        details.current = el
-        return menuRef(el)
-      }}
+      ref={attachDetails}
       onToggle={(e) => {
         const el = e.currentTarget
-        if (el.open) return
+        if (el.open) {
+          place()
+          return
+        }
         if (intercept && !decided.current) onDismiss?.()
         decided.current = false
       }}

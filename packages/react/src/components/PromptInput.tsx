@@ -1,4 +1,5 @@
 import { useId, useRef, useEffect, useState } from 'react'
+import { FILE_GLYPHS, categoryOf, formatBytes, splitName } from './attachment-glyphs.js'
 import type {
   ComposerAttachment,
   ComposerState,
@@ -60,6 +61,10 @@ export interface PromptInputProps {
   /** Take the queued message back (component audit 06): Cancel queue drops
       it; Edit returns its words to the field first, then drops it. */
   onDequeue?: (() => void) | undefined
+  /** Cancel queue (component audit 07): drops the queued words AND their
+      files. Absent, Cancel falls back to onDequeue and the files return to
+      the staging row. */
+  onCancelQueue?: (() => void) | undefined
   /** THE HOLD (round 06): Send at the month's threshold opened the meter's
       panel; Continue there sends the held words. */
   onConfirmSpend?: (() => void) | undefined
@@ -97,127 +102,78 @@ export interface PromptInputProps {
  * composer; the category gives a readable silhouette and the EXTENSION gives
  * the precise format -- which is why truncation below always preserves it.
  */
-type FileCategory = 'doc' | 'table' | 'image' | 'video' | 'audio' | 'archive' | 'code'
-
-const EXT_CATEGORY: Record<string, FileCategory> = {
-  pdf: 'doc', doc: 'doc', docx: 'doc', txt: 'doc', rtf: 'doc', md: 'doc', pages: 'doc',
-  xls: 'table', xlsx: 'table', csv: 'table', tsv: 'table', numbers: 'table',
-  png: 'image', jpg: 'image', jpeg: 'image', gif: 'image', webp: 'image', svg: 'image', heic: 'image',
-  mp4: 'video', mov: 'video', webm: 'video', mkv: 'video', avi: 'video',
-  mp3: 'audio', wav: 'audio', m4a: 'audio', ogg: 'audio', flac: 'audio',
-  zip: 'archive', tar: 'archive', gz: 'archive', rar: 'archive', '7z': 'archive',
-  js: 'code', ts: 'code', tsx: 'code', jsx: 'code', py: 'code', json: 'code',
-  html: 'code', css: 'code', sh: 'code', yaml: 'code', yml: 'code',
-}
-
-/** base + extension, split so the extension can survive truncation. */
-function splitName(name: string): { base: string; ext: string } {
-  const dot = name.lastIndexOf('.')
-  if (dot <= 0 || dot === name.length - 1) return { base: name, ext: '' }
-  return { base: name.slice(0, dot), ext: name.slice(dot) }
-}
-
-function categoryOf(att: ComposerAttachment): FileCategory {
-  const { ext } = splitName(att.name)
-  const byExt = EXT_CATEGORY[ext.slice(1).toLowerCase()]
-  if (byExt) return byExt
-  if (att.fileKind === 'image') return 'image'
-  if (att.fileKind === 'audio') return 'audio'
-  return 'doc'
-}
-
-const FILE_GLYPHS: Record<FileCategory, React.ReactNode> = {
-  doc: (
-    <>
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-      <path d="M14 3v5h5" />
-    </>
-  ),
-  table: (
-    <>
-      <rect x="4" y="5" width="16" height="14" rx="2" />
-      <path d="M4 11h16M10 5v14" />
-    </>
-  ),
-  image: (
-    <>
-      <rect x="4" y="5" width="16" height="14" rx="2" />
-      <circle cx="9" cy="10" r="1.5" />
-      <path d="M4 16l5-4 4 3 3-2 4 3" />
-    </>
-  ),
-  video: (
-    <>
-      <rect x="4" y="5" width="16" height="14" rx="2" />
-      <path d="M10 9.5v5l4.5-2.5z" />
-    </>
-  ),
-  audio: <path d="M5 10v4M9 7v10M13 5v14M17 9v6M21 11v2" />,
-  archive: (
-    <>
-      <rect x="4" y="5" width="16" height="14" rx="2" />
-      <path d="M12 5v3m0 2v1m0 2v1" />
-    </>
-  ),
-  code: <path d="M9 8l-4 4 4 4M15 8l4 4-4 4" />,
-}
-
 function AttachmentChip({
   att,
   onRemove,
   onRetry,
+  readOnly = false,
 }: {
   att: ComposerAttachment
-  onRemove: (id: string) => void
+  onRemove?: ((id: string) => void) | undefined
   onRetry?: ((id: string) => void) | undefined
+  /** The queued item's chips (component audit 07): the same face, no
+      trailing actions — a queued file changes only through Edit. */
+  readOnly?: boolean
 }) {
   const { base, ext } = splitName(att.name)
   return (
-    <span className="lucet-prompt__att" data-status={att.status}>
+    <span className="lucet-prompt__att" data-status={att.status} data-id={att.id} data-readonly={readOnly || undefined}>
       {att.status === 'uploading' ? (
         <span className="lucet-prompt__att-spin" aria-hidden />
       ) : (
         <svg className="lucet-prompt__att-icon" viewBox="0 0 24 24" aria-hidden>
-          {FILE_GLYPHS[categoryOf(att)]}
+          {FILE_GLYPHS[categoryOf(att.name, att.fileKind)]}
         </svg>
       )}
       {/* The base truncates; the extension NEVER does. A chip that reads
-          "quarterly-repo…" tells you less than one that reads "quarterl….pdf". */}
-      <span className="lucet-prompt__att-name" title={att.name}>
-        <span className="lucet-prompt__att-base">{base}</span>
-        <span className="lucet-prompt__att-ext">{ext}</span>
+          "quarterly-repo…" tells you less than one that reads "quarterl….pdf".
+          The whole name and the size live in the library's own tip, not the
+          browser's (component audit 07). */}
+      <span className="lucet-tipwrap lucet-prompt__att-namewrap">
+        <span className="lucet-prompt__att-name">
+          <span className="lucet-prompt__att-base">{base}</span>
+          <span className="lucet-prompt__att-ext">{ext}</span>
+        </span>
+        <span className="lucet-tip" aria-hidden>
+          {att.name} · {formatBytes(att.sizeBytes)}
+        </span>
       </span>
+      {/* The state in a word, so the ring alone never has to carry it: a
+          still ring under reduced motion still says "Uploading…". */}
+      {att.status === 'uploading' ? <span className="lucet-prompt__att-reason">Uploading…</span> : null}
       {att.status === 'failed' ? (
         <span className="lucet-prompt__att-reason">{att.reason ?? 'Didn’t upload'}</span>
       ) : null}
-      {/* The actions are one group, a spacing token apart, so each 24px
-          hit target is its own. The two glyphs are drawn to the same
-          optical size: an arc reads smaller than its box and a cross
-          larger, so the cross is drawn a shade smaller than the arc. */}
-      <span className="lucet-prompt__att-actions">
-        {att.status === 'failed' && onRetry ? (
+      {readOnly ? null : (
+        /* The actions are one group, a spacing token apart, so each hit
+           target is its own. The two glyphs are drawn to the same optical
+           size: an arc reads smaller than its box and a cross larger, so
+           the cross is drawn a shade smaller than the arc. */
+        <span className="lucet-prompt__att-actions">
+          {att.status === 'failed' && onRetry ? (
+            <button
+              type="button"
+              className="lucet-prompt__att-remove"
+              aria-label={`Try uploading ${att.name} again`}
+              onClick={() => onRetry(att.id)}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4" />
+              </svg>
+            </button>
+          ) : null}
           <button
             type="button"
             className="lucet-prompt__att-remove"
-            aria-label={`Try uploading ${att.name} again`}
-            onClick={() => onRetry(att.id)}
+            aria-label={`Remove ${att.name}`}
+            onClick={() => onRemove?.(att.id)}
           >
             <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v4h-4" />
+              <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" />
             </svg>
           </button>
-        ) : null}
-        <button
-          type="button"
-          className="lucet-prompt__att-remove"
-          aria-label={`Remove ${att.name}`}
-          onClick={() => onRemove(att.id)}
-        >
-          <svg viewBox="0 0 24 24" aria-hidden>
-            <path d="M5.5 5.5l13 13M18.5 5.5l-13 13" />
-          </svg>
-        </button>
-      </span>
+        </span>
+      )}
     </span>
   )
 }
@@ -236,6 +192,7 @@ export function PromptInput({
   onSubmit,
   onQueue,
   onDequeue,
+  onCancelQueue,
   onConfirmSpend,
   onDismissIntercept,
   onModelChange,
@@ -306,6 +263,21 @@ export function PromptInput({
    */
   const lockedByOther =
     composer.locked && composer.lockedBy !== null && composer.lockedBy !== (selfId ?? null)
+  /* Compact ownership copy names the person by first name (component audit
+     07, rider A); the avatar and the thread carry the full name. */
+  const ownerFirst = composer.lockedBy?.split(/\s+/)[0] ?? composer.lockedBy
+  /* A file still uploading or failed holds Queue exactly as it holds Send
+     (component audit 07): nothing queues that could drop silently at the
+     handoff. The chip says which file; the strip and the seat say why. */
+  const uploadingFiles = composer.attachments.filter((a) => a.status === 'uploading')
+  const failedFiles = composer.attachments.filter((a) => a.status === 'failed')
+  const queueBlock = uploadingFiles.length > 0 ? ('uploading' as const) : failedFiles.length > 0 ? ('failed' as const) : null
+  const attachRef = useRef<HTMLButtonElement | null>(null)
+  /* The Attach tip arms like Stop's (round 06): it shows once the pointer
+     has MOVED over the control, and a click disarms it, so the tip never
+     lingers over the field after the file picker closes. Keyboard focus
+     shows it as always. */
+  const [attachArmed, setAttachArmed] = useState(false)
   const strip =
     blocker === 'restored'
       ? {
@@ -343,7 +315,7 @@ export function PromptInput({
                the words themselves, and two ways to take them back. */
             tone: 'info' as const,
             orb: 'queued' as const,
-            text: lockedByOther ? `Queued after ${composer.lockedBy} — yours sends next` : 'Queued — sends after this response',
+            text: lockedByOther ? `Queued after ${ownerFirst} — yours sends next` : 'Queued — sends after this response',
             queuedText: composer.queued!,
           }
         : lockedByOther
@@ -353,9 +325,14 @@ export function PromptInput({
                  — never "yours sends next" before anything is queued. */
               tone: 'neutral' as const,
               who: composer.lockedBy!,
-              text: composer.text.trim()
-                ? `Responding to ${composer.lockedBy} — Queue sends after this response`
-                : `Responding to ${composer.lockedBy} — you can queue a message`,
+              text:
+                queueBlock === 'uploading'
+                  ? `Responding to ${ownerFirst} — Queue sends once your upload finishes`
+                  : queueBlock === 'failed'
+                    ? `Responding to ${ownerFirst} — ${failedFiles[0]!.name} didn’t upload; try again or remove it to queue`
+                    : composer.text.trim()
+                      ? `Responding to ${ownerFirst} — Queue sends after this response`
+                      : `Responding to ${ownerFirst} — you can queue a message`,
             }
           : streaming
             ? {
@@ -382,13 +359,21 @@ export function PromptInput({
                     // and it sits directly above the chip it points at.
                     tone: 'caution' as const,
                     icon: 'failed' as const,
-                    text: describeSubmitBlocker('attachment-failed'),
+                    /* Exactly which file blocks the send, and what to do
+                       (component audit 07). */
+                    text:
+                      failedFiles.length === 1
+                        ? `${failedFiles[0]!.name} didn’t upload — try again or remove it`
+                        : `${failedFiles.length} attachments didn’t upload — try again or remove them`,
                   }
                 : blocker === 'attachment-uploading'
                   ? {
                       tone: 'neutral' as const,
                       spin: true,
-                      text: describeSubmitBlocker('attachment-uploading'),
+                      text:
+                        uploadingFiles.length === 1
+                          ? `Uploading ${uploadingFiles[0]!.name}…`
+                          : `Uploading ${uploadingFiles.length} attachments…`,
                     }
                   : null
 
@@ -401,7 +386,11 @@ export function PromptInput({
     const draft = composer.text
     onChange(draft.trim() ? `${words}\n\n${draft}` : words)
     onDequeue?.()
-    setSaid('Queued message returned to the field.')
+    setSaid(
+      composer.queuedAttachments.length > 0
+        ? 'Queued message and its files returned to the field.'
+        : 'Queued message returned to the field.',
+    )
     requestAnimationFrame(() => {
       const field = fieldRef.current
       if (!field) return
@@ -410,13 +399,42 @@ export function PromptInput({
     })
   }
   const cancelQueued = () => {
-    onDequeue?.()
-    setSaid('Queued message cancelled.')
+    const files = composer.queuedAttachments.length
+    ;(onCancelQueue ?? onDequeue)?.()
+    setSaid(files > 0 && onCancelQueue ? 'Queued message and its files cancelled.' : 'Queued message cancelled.')
     requestAnimationFrame(() => fieldRef.current?.focus())
   }
+  /* Removing a chip unmounts its buttons, so focus is placed before the file
+     goes (component audit 07): the next file's action, else the previous
+     file's, else Attach. The draft and its selection are untouched. Retry
+     swaps the retry glyph for the ring, so focus moves to the chip's Remove,
+     which every state keeps. Each act is spoken once. */
+  const chipsOf = () => [...(fieldRef.current?.closest('.lucet-prompt')?.querySelectorAll<HTMLElement>('.lucet-prompt__atts .lucet-prompt__att') ?? [])]
+  const removeAttachment = (id: string) => {
+    const chips = chipsOf()
+    const at = chips.findIndex((c) => c.dataset.id === id)
+    const next =
+      chips[at + 1]?.querySelector<HTMLButtonElement>('button') ??
+      [...(chips[at - 1]?.querySelectorAll<HTMLButtonElement>('button') ?? [])].at(-1) ??
+      attachRef.current ??
+      fieldRef.current
+    const name = composer.attachments.find((a) => a.id === id)?.name
+    onRemoveAttachment(id)
+    setSaid(name ? `Removed ${name}.` : 'Attachment removed.')
+    requestAnimationFrame(() => next?.focus())
+  }
+  const retryAttachment = onRetryAttachment
+    ? (id: string) => {
+        const chip = chipsOf().find((c) => c.dataset.id === id)
+        const name = composer.attachments.find((a) => a.id === id)?.name
+        onRetryAttachment(id)
+        setSaid(name ? `Trying ${name} again.` : 'Trying the upload again.')
+        requestAnimationFrame(() => chip?.querySelector<HTMLButtonElement>('button[aria-label^="Remove"]')?.focus())
+      }
+    : undefined
   const trySend = () => {
     if (blocker === null) onSubmit()
-    else if (canQueue && composer.text.trim()) {
+    else if (canQueue && composer.text.trim() && queueBlock === null) {
       onQueue(composer.text)
       /* Queueing empties the field and the Queue button leaves with the
          words, so a pointer press on it would drop focus to the page.
@@ -476,6 +494,15 @@ export function PromptInput({
               <ActivityOrb state={strip.orb} label={strip.text} />
               <span className="lucet-prompt__queued">
                 <span className="lucet-prompt__queued-text">{strip.queuedText}</span>
+                {composer.queuedAttachments.length > 0 ? (
+                  /* The files travel with the words (component audit 07): shown
+                     inside the queued item, read-only — Edit brings them back. */
+                  <span className="lucet-prompt__queued-atts">
+                    {composer.queuedAttachments.map((att) => (
+                      <AttachmentChip key={att.id} att={att} readOnly />
+                    ))}
+                  </span>
+                ) : null}
                 <span className="lucet-prompt__queued-actions">
                   <button type="button" className="lucet-button" data-variant="ghost" onClick={editQueued}>
                     Edit
@@ -495,7 +522,7 @@ export function PromptInput({
       {composer.attachments.length > 0 ? (
         <div className="lucet-prompt__atts">
           {composer.attachments.map((att) => (
-            <AttachmentChip key={att.id} att={att} onRemove={onRemoveAttachment} onRetry={onRetryAttachment} />
+            <AttachmentChip key={att.id} att={att} onRemove={removeAttachment} onRetry={retryAttachment} />
           ))}
         </div>
       ) : null}
@@ -521,16 +548,34 @@ export function PromptInput({
 
       <div className="lucet-prompt__bar">
         {onAttach ? (
-          <button
-            type="button"
-            className="lucet-prompt__tool"
-            aria-label="Attach a file"
-            onClick={onAttach}
+          /* The paperclip says what it does in a tip as well as its name
+             (component audit 07); the tip is visual only — the name already
+             says it to the reader. */
+          <span
+            className="lucet-tipwrap lucet-tipwrap--keyboard"
+            data-arm=""
+            data-armed={attachArmed || undefined}
+            onPointerMove={() => setAttachArmed(true)}
+            onPointerLeave={() => setAttachArmed(false)}
           >
-            <svg viewBox="0 0 24 24" aria-hidden>
-              <path d="M21 12.5l-8.2 8.2a5.5 5.5 0 0 1-7.8-7.8L13.5 4.4a3.67 3.67 0 0 1 5.2 5.2L10.5 17.8a1.83 1.83 0 0 1-2.6-2.6l7.8-7.8" />
-            </svg>
-          </button>
+            <button
+              ref={attachRef}
+              type="button"
+              className="lucet-prompt__tool"
+              aria-label="Attach a file"
+              onClick={() => {
+                setAttachArmed(false)
+                onAttach()
+              }}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden>
+                <path d="M21 12.5l-8.2 8.2a5.5 5.5 0 0 1-7.8-7.8L13.5 4.4a3.67 3.67 0 0 1 5.2 5.2L10.5 17.8a1.83 1.83 0 0 1-2.6-2.6l7.8-7.8" />
+              </svg>
+            </button>
+            <span className="lucet-tip" aria-hidden>
+              Attach a file
+            </span>
+          </span>
         ) : null}
 
         {scope && onScopeChange ? (
@@ -616,7 +661,7 @@ export function PromptInput({
               until there are words — never a Stop that would end their
               work. Your own run keeps Stop, with Queue beside it when a
               draft is typed. */}
-          {streaming && ownRun && canQueue && composer.text.trim() ? (
+          {streaming && ownRun && canQueue && composer.text.trim() && queueBlock === null ? (
             <button type="submit" className="lucet-button" data-variant="secondary">
               Queue
             </button>
@@ -648,12 +693,16 @@ export function PromptInput({
               type="submit"
               className="lucet-button"
               data-variant="secondary"
-              disabled={!canQueue || !composer.text.trim()}
+              disabled={!canQueue || !composer.text.trim() || queueBlock !== null}
               aria-label={
                 canQueue
-                  ? lockedByOther
-                    ? `Queue — sends after ${composer.lockedBy}’s response`
-                    : 'Queue — sends after this response'
+                  ? queueBlock === 'uploading'
+                    ? 'Queue — waits for your upload to finish'
+                    : queueBlock === 'failed'
+                      ? 'Queue — try the failed upload again or remove it first'
+                      : lockedByOther
+                        ? `Queue — sends after ${ownerFirst}’s response`
+                        : 'Queue — sends after this response'
                   : 'Queued'
               }
             >

@@ -402,6 +402,7 @@ function AppCore({
               onDismissIntercept={() => lucet.dismissIntercept()}
               onQueue={(text) => lucet.store.dispatch({ type: 'composer/queued', text })}
               onDequeue={() => lucet.store.dispatch({ type: 'composer/dequeued' })}
+              onCancelQueue={() => lucet.store.dispatch({ type: 'composer/queue-cancelled' })}
               onModelChange={(modelId) => lucet.store.dispatch({ type: 'model/changed', modelId })}
               onRemoveAttachment={(id) => lucet.store.dispatch({ type: 'attachment/removed', id })}
               onRetryAttachment={(id) => {
@@ -412,21 +413,24 @@ function AppCore({
                 )
               }}
               onAttach={() => {
-                // The host owns file IO; this host fakes one honestly. Every
-                // third attachment fails, so the failure path stays one click away.
+                // The host owns file IO; this host fakes one honestly, with files
+                // that look like files (component audit 07): a document, then a
+                // photograph, then a recording that is too large — so every third
+                // attachment fails and the failure path stays one click away.
                 const n = ++attachCount.current
                 const id = `cfg_${n}`
+                const file = DEMO_FILES[(n - 1) % DEMO_FILES.length]!
                 lucet.store.dispatch({
                   type: 'attachment/added',
                   id,
-                  name: `document-${n}.pdf`,
-                  fileKind: 'document',
-                  sizeBytes: 240_000,
+                  name: file.name,
+                  fileKind: file.fileKind,
+                  sizeBytes: file.sizeBytes,
                 })
                 setTimeout(() => {
                   lucet.store.dispatch(
                     n % 3 === 0
-                      ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large' }
+                      ? { type: 'attachment/settled', id, status: 'failed', reason: 'Too large — the limit is 25 MB' }
                       : { type: 'attachment/settled', id, status: 'ready', reason: null },
                   )
                 }, 1200)
@@ -809,6 +813,13 @@ function MockDocument({ page = 0 }: { page?: number }) {
     </div>
   )
 }
+
+/* The files the demo host pretends to upload (component audit 07). */
+const DEMO_FILES: ReadonlyArray<{ name: string; fileKind: 'document' | 'image' | 'audio' | 'other'; sizeBytes: number }> = [
+  { name: 'quarterly-summary.pdf', fileKind: 'document', sizeBytes: 240_000 },
+  { name: 'site-photograph.jpg', fileKind: 'image', sizeBytes: 1_800_000 },
+  { name: 'walkthrough-recording.mp4', fileKind: 'other', sizeBytes: 96_000_000 },
+]
 
 export function App() {
   /* The host's account, seeded so the meter has a month to spend: $10,

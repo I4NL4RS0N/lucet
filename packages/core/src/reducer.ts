@@ -35,7 +35,7 @@ export function createInitialState(
     suggestions,
     turns: [],
     status: 'idle',
-    composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [], intercept: null },
+    composer: { text: '', locked: false, lockedBy: null, queued: null, attachments: [], queuedAttachments: [], intercept: null },
     model: { selectedId: models[0]?.id ?? 'auto', options: models },
     service: { status: 'operational', message: null, dismissed: false },
     usage: {
@@ -155,11 +155,37 @@ export function reduce(
      * overwritten by the promotion.
      */
     case 'composer/queued':
-      return { ...state, composer: { ...state.composer, queued: event.text, text: '' } }
+      /* The staged files are committed with the words (component audit 07):
+         nothing left behind in the staging row to be removed or to upload
+         out from under the promise. */
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          queued: event.text,
+          text: '',
+          queuedAttachments: [...state.composer.queuedAttachments, ...state.composer.attachments],
+          attachments: [],
+        },
+      }
 
     /* The runtime takes the queued prompt to send it. See createLucet. */
     case 'composer/dequeued':
-      return { ...state, composer: { ...state.composer, queued: null } }
+      /* The queued files come back to the staging row with the words — for
+         Edit, for a hand-back, or for the handoff to submit by id. */
+      return {
+        ...state,
+        composer: {
+          ...state.composer,
+          queued: null,
+          attachments: [...state.composer.queuedAttachments, ...state.composer.attachments],
+          queuedAttachments: [],
+        },
+      }
+
+    /* Cancel queue drops the words AND their files (component audit 07). */
+    case 'composer/queue-cancelled':
+      return { ...state, composer: { ...state.composer, queued: null, queuedAttachments: [] } }
 
     case 'composer/locked':
       return {
@@ -335,7 +361,7 @@ export function reduce(
           // less than the person thinks they sent.
           attachments:
             event.retryOf === null
-              ? state.composer.attachments.filter((a) => a.status !== 'ready')
+              ? state.composer.attachments.filter((a) => !event.attachmentIds.includes(a.id))
               : state.composer.attachments,
         },
       }

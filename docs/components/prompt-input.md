@@ -148,3 +148,74 @@ leaves with the words; focus now returns to the field. The placeholder,
 mixed against the Paper composer's surface token, fell to 2.6:1 on the Glass
 composer; it now mixes toward transparent and reads at 4.5:1 or better in
 every cell. Low-severity observations were filed for a later sweep.
+
+## Component audit 07 (2026-09-03): attachments
+
+The composer's files reviewed as one system with the thread's provenance
+and the bibliography, in four cells at 1440 and 320. The contract was
+proved before anything moved: uploads are scripted and indeterminate (a
+ring and a word, never an invented percentage); a file becomes immutable
+when its turn is submitted; the thread shows what went, read-only. Two
+contradictions were found and closed.
+
+- **A queued message owns its files.** Queue used to take the words and
+  leave the files in the staging row, where they could be removed, or
+  still be uploading when the handoff came — and a file not ready at that
+  moment dropped silently. Now Queue moves the staged files into the
+  queued item, read-only, beside the words. Edit brings both back; Cancel
+  queue drops both; the handoff sends exactly those files, one copy each,
+  and a file staged since stays behind for the next message. Queue is
+  held while a file is uploading or failed, and the seat and the strip
+  say why — *Queue sends once your upload finishes*, *recording.mp4
+  didn’t upload; try again or remove it to queue*.
+- **The strip names the file.** *Uploading site-photograph.jpg…*,
+  *Uploading 3 attachments…*, *walkthrough-recording.mp4 didn’t upload —
+  try again or remove it*: exactly which file blocks the send and what to
+  do, not "an attachment".
+- **Focus is placed before a chip goes.** Remove lands on the next file's
+  action, else the previous file's, else Attach; Retry lands on the chip's
+  Remove, which every state keeps. Each act is spoken once — *Removed
+  quarterly-summary.pdf.*, *Trying walkthrough-recording.mp4 again.* The
+  draft and its selection are untouched throughout.
+- **Every chip wears its word.** An uploading chip says *Uploading…* beside
+  its ring, so a still ring under reduced motion still reads. The full
+  name and the size live in the library's own tip, tabular, not the
+  browser's title tooltip. Sizes in the demo host are the files' sizes.
+- **A failed chip says why on its own line.** The reason is a sentence —
+  *Too large — the limit is 25 MB* — and on one line it left the name no
+  room. Name and actions keep the first line; the reason sits under the
+  name, indented past the glyph, wrapping if it must. Only the failed chip
+  grows; the row grows with it rather than the text shrinking.
+- **One face per file, everywhere.** The staged chip, the queued item's
+  chip and the thread's provenance chip draw the same kind glyph from one
+  shared module; the thread no longer shows a document icon for a
+  photograph.
+- **Attach says what it does** in a tip as well as its name, and offers a
+  40px target, 44px under a coarse pointer, inside the same 28px control.
+  The tip shows for hover and keyboard focus, not for the focus a pointer
+  click leaves behind — a tip hanging over the field after every attach
+  was noise.
+- **A long name widens nothing.** At a phone width a 260px chip's minimum
+  content made the composer wider than its host column, and the host's
+  frame clipped Send. The composer now contains its inline size — its
+  width is the host's decision alone — chips carry no minimum, and the
+  thread's provenance chip splits base and extension the way the composer
+  does, inside a bubble that may shrink to its 88% cap. Filed as HIGH,
+  fixed: a long filename at 320 keeps Send, Remove and the extension in
+  view in both places.
+
+Chosen, and why: type-aware compact rows (the brief's Option A) minus
+thumbnails — the contract carries no bytes or preview URL, and a demo host
+that drew a preview for a file that does not exist would be fabricating
+one; icons by kind carry recognition honestly (Option C recorded as the
+limitation). Local failure on the affected file, never a composer-wide
+tint (Option A): the strip instructs, the chip wears the reason, the rest
+of the draft stays usable. The demo host's files are believable files —
+a quarterly summary, a site photograph, a recording too large to send —
+and the third one fails on purpose so the failure path stays one click
+away.
+
+Deferred: a `previewUrl` on the attachment contract for hosts that can
+render safe local image previews; picker cancellation cannot be exercised
+in a host that fakes file IO, so "no focus stolen after a cancelled
+selection" is recorded as not verifiable here.

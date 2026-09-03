@@ -53,7 +53,7 @@ One thread, several people, a single writer at a time.
 ## Component audit 06 (2026-09-03)
 
 Ownership, drafting, Queue and the handoff, measured in the Full page,
-the Drawer and the phone, four cells each. Gate 0 first: Ada authors the
+the Drawer and the phone, four cells each. Gate 0 first: Jennifer authors the
 prompt and the response belongs to her turn; the composer is held by her.
 Three things did not describe that model. The person here was offered a
 plain **Stop** that interrupted her response. The strip said *yours sends
@@ -62,12 +62,12 @@ queued words back to the field, as if the person here had taken control.
 
 - **Only the owner stops their run.** While another person's turn runs
   the seat holds **Queue** — disabled until there are words, named
-  *Queue — sends after Ada's response* — and never Stop. Your own run
+  *Queue — sends after Jennifer's response* — and never Stop. Your own run
   keeps Stop, with Queue beside it when a draft is typed. Nothing in an
   ordinary composer ends someone else's work.
-- **The strip says who asked and what you can do.** *Responding to Ada —
-  you can queue a message* with an empty field; *Responding to Ada — Queue
-  sends after this response* once you type; *Queued after Ada — yours
+- **The strip says who asked and what you can do.** *Responding to Jennifer —
+  you can queue a message* with an empty field; *Responding to Jennifer — Queue
+  sends after this response* once you type; *Queued after Jennifer — yours
   sends next* once you queue; *Sending your queued message* at the
   handoff, where the runtime dwells; *Responding to you* for your own
   run. Nothing claims a queue before there is one.
@@ -76,7 +76,7 @@ queued words back to the field, as if the person here had taken control.
   **Edit** and **Cancel queue**. Edit returns the exact words to the
   field — before the queue lets go, and ahead of any newer draft — with
   the caret after them. Cancel drops only the queued words. Both say so
-  once, and neither touches Ada's run.
+  once, and neither touches Jennifer's run.
 - **The handoff is one turn, said once.** When her response settles the
   queued words become a turn of yours, the strip reads *Responding to
   you*, and one sentence is spoken: *Your queued message was sent —
@@ -105,5 +105,25 @@ queued words back to the field, as if the person here had taken control.
 
 Considered and kept: your own prompts stay right-aligned and faceless in
 a shared thread (the 2026-09-02 ruling), now with the hidden *You*. Not
-reproducible live: Ada's response failing — the demo scripts her turn to
+reproducible live: Jennifer's response failing — the demo scripts her turn to
 succeed; the interruption path stands in for the terminal-state rule.
+
+## Component audit 07 riders (2026-09-03)
+
+- **Jennifer Lee.** The other person in the thread is Jennifer Lee, JL on
+  the disc. The compact ownership copy uses her first name — *Responding
+  to Jennifer — you can queue a message*, *Queued after Jennifer — yours
+  sends next* — while the thread's author label carries the full name.
+  The first name is the first word of the author's name; a host with
+  other naming conventions passes the name it wants spoken.
+- **No frame between turns.** Two one-frame states filed in round 06 are
+  gone at the source. The composer now frees the moment the response
+  settles, in the same synchronous breath — not at the end of the run,
+  after the post-settle steps — so *Sending…* never shows over a finished
+  answer. And the queue promise runs from the runtime's hook inside that
+  same breath, so the handoff takes the lock before anything renders: the
+  strip goes from *Queued after Jennifer — yours sends next* straight to
+  *Responding to you*, with no *Queued — sends after this response* between.
+  The runtime test asserts the order — settled, unlocked, dequeued,
+  submitted, locked — and that no microtask can observe the unlocked
+  queue.

@@ -22,13 +22,21 @@ export interface MockRuntimeOptions {
   authorId?: string
 }
 
+/** What a run tells its host, synchronously, as it happens. */
+export interface RunHooks {
+  /** The composer just unlocked (the response settled). Called in the same
+      synchronous breath as the unlock, so a handoff that locks it again
+      does so before anything renders (component audit 07). */
+  onFreed?: () => void
+}
+
 export interface MockRuntime {
-  run(scenario: Scenario, signal?: AbortSignal, meta?: { retryOf?: string }): Promise<void>
+  run(scenario: Scenario, signal?: AbortSignal, meta?: { retryOf?: string }, hooks?: RunHooks): Promise<void>
   /** Run a scenario's pre-send steps: the world changes, no turn is made. */
   prepare(scenario: Scenario, signal?: AbortSignal): Promise<void>
   /** Continue a settled response with the given steps, then settle it
       again — its own status and reason restored unless a step settles it. */
-  resume(scenario: Scenario, messageId: string, signal?: AbortSignal): Promise<void>
+  resume(scenario: Scenario, messageId: string, signal?: AbortSignal, hooks?: RunHooks): Promise<void>
 }
 
 const DEFAULT_CHUNK_MS = 24
@@ -97,6 +105,9 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
     s: Step,
     messageId: string,
     signal: AbortSignal | undefined,
+    /** Called right after this step settles the response, so the run can
+        free the composer in the same breath. */
+    onSettled?: () => void,
   ): Promise<MessageStatus | null> {
     switch (s.type) {
       case 'wait':
@@ -326,6 +337,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           reason: s.reason,
           recovery: verbFor(null),
         })
+        onSettled?.()
         return 'refused'
 
       case 'fail': {
@@ -338,6 +350,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           recovery: verbFor(at),
           tone: s.tone ?? null,
         })
+        onSettled?.()
         return 'failed'
       }
 
@@ -349,6 +362,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           reason: s.reason,
           recovery: verbFor(null),
         })
+        onSettled?.()
         return 'interrupted'
 
       case 'complete':
@@ -359,6 +373,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
           reason: null,
           recovery: verbFor(null),
         })
+        onSettled?.()
         return 'complete'
 
       case 'continue': {
@@ -406,7 +421,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       }
     },
 
-    async resume(scenario, messageId, signal) {
+    async resume(scenario, messageId, signal, hooks) {
       instant = !!scenario.instant
       currentScenario = scenario
       const before = store.getState().turns.flatMap((t) => (t.response ? [t.response] : [])).find((m) => m.id === messageId)
@@ -414,29 +429,39 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       store.dispatch({ type: 'response/resumed', messageId })
       store.dispatch({ type: 'composer/locked', by: authorId })
       let settled = false
+      let freed = false
+      const free = () => {
+        if (freed) return
+        freed = true
+        store.dispatch({ type: 'composer/unlocked' })
+        hooks?.onFreed?.()
+      }
       try {
         for (const s of scenario.steps) {
           if (settled) continue
-          const outcome = await step(s, messageId, signal)
+          const outcome = await step(s, messageId, signal, free)
           if (outcome !== null) settled = true
         }
         if (!settled) {
           /* Back to how it ended — a refusal that listed what would go is
              still a refusal — with the exit consumed. */
           store.dispatch({ type: 'response/settled', messageId, status: before.status, reason: before.reason, recovery: null })
+          free()
         }
       } catch (error) {
+        if (settled) return
         if (error instanceof Error && error.name === 'AbortError') {
           store.dispatch({ type: 'response/settled', messageId, status: 'interrupted', reason: 'Stopped before it finished.', recovery: null })
         } else {
           store.dispatch({ type: 'response/settled', messageId, status: 'failed', reason: error instanceof Error ? error.message : 'Unknown failure', recovery: null })
         }
+        free()
       } finally {
-        store.dispatch({ type: 'composer/unlocked' })
+        free()
       }
     },
 
-    async run(scenario, signal, meta) {
+    async run(scenario, signal, meta, hooks) {
       instant = !!scenario.instant
       currentScenario = scenario
       const turnId = nextId('turn')
@@ -456,7 +481,8 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
            attachments — those stay with the draft. */
         attachmentIds: meta?.retryOf
           ? []
-          : store
+          : scenario.attachmentIds ??
+            store
               .getState()
               .composer.attachments.filter((a) => a.status === 'ready')
               .map((a) => a.id),
@@ -468,6 +494,19 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
       store.dispatch({ type: 'response/started', turnId, messageId })
 
       let settled = false
+      /* THE COMPOSER FREES WHEN THE RESPONSE SETTLES (component audit 07) — in
+         the same synchronous breath as the settle, not at the end of the run
+         after the post-settle steps — and the host's hook runs inside that
+         breath, so a queued handoff takes the lock again before anything
+         renders. Idempotent: the finally is the safety net, never a second
+         unlock over a lock the handoff just took. */
+      let freed = false
+      const free = () => {
+        if (freed) return
+        freed = true
+        store.dispatch({ type: 'composer/unlocked' })
+        hooks?.onFreed?.()
+      }
       try {
         for (const s of scenario.steps) {
           if (settled) {
@@ -488,7 +527,7 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             }
             continue
           }
-          const outcome = await step(s, messageId, signal)
+          const outcome = await step(s, messageId, signal, free)
           if (outcome !== null) settled = true
         }
         if (!settled) {
@@ -499,8 +538,13 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             reason: null,
             recovery: verbFor(null),
           })
+          free()
         }
       } catch (error) {
+        /* A settled response stays settled: an abort that lands during the
+           post-settle steps (a queued handoff took the floor) ends those
+           steps, not the answer. */
+        if (settled) return
         // An aborted stream is a designed state, not an error to swallow. What
         // arrived before the abort stays on screen.
         if (error instanceof Error && error.name === 'AbortError') {
@@ -518,8 +562,9 @@ export function createMockRuntime(options: MockRuntimeOptions): MockRuntime {
             reason: error instanceof Error ? error.message : 'Unknown failure',
           })
         }
+        free()
       } finally {
-        store.dispatch({ type: 'composer/unlocked' })
+        free()
       }
     },
   }

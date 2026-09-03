@@ -61,8 +61,8 @@ const COMPONENT_PROBES = [
   { sec: 'The app, live', hover: '.lucet-budget__button', part: 'budget meter trigger', bg: true },
   { sec: 'The app, live', hover: '[aria-label="Send"][disabled]', part: 'send disabled', expect: 'none' },
   { sec: 'Prompt input — every state', hover: '[aria-label="Send"]:not([disabled])', part: 'send enabled' },
-  { sec: 'Prompt input — every state', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
-  { sec: 'Prompt input — every state', hover: '.lucet-prompt__att [aria-label^="Remove"]', part: 'chip remove', bg: true },
+  { sec: 'Attachments — the files you bring to the request', hover: '[aria-label^="Try uploading"]', part: 'chip retry', bg: true },
+  { sec: 'Attachments — the files you bring to the request', hover: '.lucet-prompt__att [aria-label^="Remove"]', part: 'chip remove', bg: true },
   { sec: 'Prompt input — multiplayer', hover: 'button.lucet-button:not([disabled])', part: 'queue button' },
   { sec: 'Prompt input — every state', hover: '.lucet-tipwrap button', part: 'stop button' },
   /* The tooltip must ARRIVE: hover the wrap, watch the tip's opacity. */
@@ -71,7 +71,7 @@ const COMPONENT_PROBES = [
      other. (Its predecessor was a dead div that said "expand".) */
   { sec: 'Thread — every ending', hover: 'details.lucet-reasoning:not([data-streaming]) .lucet-reasoning__summary', part: 'reasoning summary', bg: true },
   { sec: 'Thread — every ending', hover: 'details.lucet-tool .lucet-tool__row--summary', part: 'tool summary', bg: true },
-  { sec: 'Citations & sources', hover: '.lucet-sources__row--summary', part: 'source summary', bg: true },
+  { sec: 'Sources and provenance', hover: '.lucet-sources__row--summary', part: 'source summary', bg: true },
   { sec: 'Scope control — the breadcrumb is the ladder', hover: '.lucet-scope__button', part: 'scope button', bg: true },
   { sec: 'Budget meter — the price before you spend it', hover: '.lucet-budget__button', part: 'budget trigger', bg: true },
   { sec: 'Suggestion chips — the cold start', hover: '.lucet-chips__chip:not(:disabled)', part: 'suggestion chip' },
@@ -1592,7 +1592,7 @@ async function main() {
         const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
         const strip = document.querySelector('.lucet-prompt__status')
         const f = document.querySelector('.lucet-prompt__field')
-        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, locked: s.composer.locked, by: s.composer.lockedBy, strip: strip?.textContent.includes('Responding to Ada — you can queue a message'), stripRole: strip?.getAttribute('role'), face: !!strip?.querySelector('.lucet-avatar'), typeable: !!f && !f.disabled && !f.readOnly, chars: text.length, streaming: last?.response?.status === 'streaming' }
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, locked: s.composer.locked, by: s.composer.lockedBy, strip: strip?.textContent.includes('Responding to Jennifer — you can queue a message'), stripRole: strip?.getAttribute('role'), face: !!strip?.querySelector('.lucet-avatar'), typeable: !!f && !f.disabled && !f.readOnly, chars: text.length, streaming: last?.response?.status === 'streaming' }
       })
     }
     const a1 = await sampleAda(300)
@@ -1603,16 +1603,16 @@ async function main() {
     const queueLabel = (await queueButton.textContent().catch(() => '')).trim()
     await queueButton.click()
     await page.waitForTimeout(120)
-    const queuedStrip = await page.evaluate(() => document.querySelector('.lucet-prompt__status')?.textContent.includes('Queued after Ada — yours sends next'))
+    const queuedStrip = await page.evaluate(() => document.querySelector('.lucet-prompt__status')?.textContent.includes('Queued after Jennifer — yours sends next'))
     await page.waitForFunction(() => document.querySelectorAll('.lucet-thread__pair').length >= 2 && !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
     const sent = await page.evaluate(() => ({ turns: document.querySelectorAll('.lucet-thread__pair').length, queued: window.__lucet.inspect().queued, last: [...document.querySelectorAll('.lucet-thread__prompt')].at(-1)?.textContent.trim(), yours: window.__lucet.getState().turns.at(-1)?.prompt.authorId }))
     checks++
-    if (a1.turns !== 1 || a1.author !== 'Ada' || !a1.locked || a1.by !== 'Ada' || !a1.strip || a1.stripRole !== 'status' || !a1.face || !a1.typeable || a1.chars !== 0 || !a1.streaming
+    if (a1.turns !== 1 || a1.author !== 'Jennifer Lee' || !a1.locked || a1.by !== 'Jennifer Lee' || !a1.strip || a1.stripRole !== 'status' || !a1.face || !a1.typeable || a1.chars !== 0 || !a1.streaming
       || a2.turns !== 1 || !a2.locked || !a2.strip || a2.chars < 1 || a2.chars >= full || !a2.streaming
       || queueLabel !== 'Queue' || !queuedStrip || sent.turns !== 2 || sent.queued !== null || sent.last !== 'And the southern site?' || sent.yours !== 'you')
       failures.push(`multiplayer: ownership and the queue are not live — ${JSON.stringify({ a1, a2, full, queueLabel, queuedStrip, sent })}`)
     await resetAndInspect('multiplayer')
-    /* 3a. Ada from the deep link (the timing review, 2026-09-03): the page
+    /* 3a. Jennifer from the deep link (the timing review, 2026-09-03): the page
        opens on two settled history turns, then her turn runs live — sampled
        on the LAST turn, as a reader would see it. */
     await page.goto(url.replace('primitives.html', 'index.html?state=multiplayer'))
@@ -1625,25 +1625,25 @@ async function main() {
       return page.evaluate(() => {
         const s = window.__lucet.getState(); const last = s.turns.at(-1)
         const text = last?.response?.parts.filter((p) => p.kind === 'text').map((p) => p.text).join('') ?? ''
-        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, by: s.composer.lockedBy, chars: text.length, streaming: last?.response?.status === 'streaming', strip: !!document.querySelector('.lucet-prompt__status')?.textContent.includes('Responding to Ada'), firstResponse: s.turns[0]?.response?.status ?? null }
+        return { turns: s.turns.length, author: last?.prompt.authorId ?? null, by: s.composer.lockedBy, chars: text.length, streaming: last?.response?.status === 'streaming', strip: !!document.querySelector('.lucet-prompt__status')?.textContent.includes('Responding to Jennifer'), firstResponse: s.turns[0]?.response?.status ?? null }
       })
     }
     const l1 = await adaLinkAt(300), l2 = await adaLinkAt(1500)
     checks++
-    if (l1.turns !== 3 || l1.author !== 'Ada' || l1.by !== 'Ada' || l1.chars !== 0 || !l1.streaming || !l1.strip || l1.firstResponse !== 'complete' || l2.chars < 1 || l2.chars >= full || !l2.streaming)
-      failures.push(`multiplayer (deep link): Ada's turn is not live from the deep link — ${JSON.stringify({ l1, l2 })}`)
+    if (l1.turns !== 3 || l1.author !== 'Jennifer Lee' || l1.by !== 'Jennifer Lee' || l1.chars !== 0 || !l1.streaming || !l1.strip || l1.firstResponse !== 'complete' || l2.chars < 1 || l2.chars >= full || !l2.streaming)
+      failures.push(`multiplayer (deep link): Jennifer's turn is not live from the deep link — ${JSON.stringify({ l1, l2 })}`)
     await page.waitForFunction(() => !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 30000 })
     await resetAndInspect('multiplayer via the deep link')
-    /* 3d. OWNERSHIP (component audit 06). While Ada's turn runs the person
+    /* 3d. OWNERSHIP (component audit 06). While Jennifer's turn runs the person
        here is never offered Stop; the seat holds Queue, disabled until there
        are words and named for what it does. The strip names who asked and
        what this person can do, and claims nothing is queued until it is.
        Queue once by pointer, Enter and Space; a double click queues once
        and leaves focus in the field. Edit returns the words to the field
-       before the queue lets go; Cancel queue drops them; Ada's response
+       before the queue lets go; Cancel queue drops them; Jennifer's response
        runs on through both. The handoff commits exactly one You turn, says
        so once, and your prompt names you to the reader. A stop during
-       Ada's run is a terminal state: the queue keeps its promise. */
+       Jennifer's run is a terminal state: the queue keeps its promise. */
     {
       const own = () => page.evaluate(() => {
         const s = window.__lucet.getState(); const a = document.activeElement
@@ -1672,9 +1672,9 @@ async function main() {
       await page.evaluate(() => { const f = document.querySelector('.lucet-prompt__field'); f.focus(); f.setSelectionRange(5, 13) })
       const typed = await own()
       checks += 2
-      if (empty.actions.some((b) => /Stop/.test(b.label || '')) || typed.actions.some((b) => /Stop/.test(b.label || '')) || empty.actions.length !== 1 || empty.actions[0].disabled !== true || !/^Queue — sends after Ada/.test(empty.actions[0].aria || '') || typed.actions[0].disabled !== false)
-        failures.push(`ownership: while Ada owns the turn the seat holds a named Queue, disabled until there are words, and never Stop — ${JSON.stringify({ empty: empty.actions, typed: typed.actions })}`)
-      if (empty.strip !== 'Responding to Ada — you can queue a message' || typed.strip !== 'Responding to Ada — Queue sends after this response' || typed.selection?.join() !== '5,13')
+      if (empty.actions.some((b) => /Stop/.test(b.label || '')) || typed.actions.some((b) => /Stop/.test(b.label || '')) || empty.actions.length !== 1 || empty.actions[0].disabled !== true || !/^Queue — sends after Jennifer/.test(empty.actions[0].aria || '') || typed.actions[0].disabled !== false)
+        failures.push(`ownership: while Jennifer owns the turn the seat holds a named Queue, disabled until there are words, and never Stop — ${JSON.stringify({ empty: empty.actions, typed: typed.actions })}`)
+      if (empty.strip !== 'Responding to Jennifer — you can queue a message' || typed.strip !== 'Responding to Jennifer — Queue sends after this response' || typed.selection?.join() !== '5,13')
         failures.push(`ownership copy: the strip must name who asked and what this person can do, without claiming a queue — ${JSON.stringify({ empty: empty.strip, typed: typed.strip })}`)
       /* queue by pointer; Edit; queue again; Cancel; queue again by Enter; handoff */
       await queueSeat().click(); await page.waitForTimeout(100); const queued = await own()
@@ -1683,12 +1683,12 @@ async function main() {
       await page.locator('.lucet-prompt__queued-actions button', { hasText: 'Cancel queue' }).click(); await page.waitForTimeout(150); const cancelled = await own()
       await page.locator('.lucet-prompt__field').fill('Also list the owners.'); await page.keyboard.press('Enter'); await page.waitForTimeout(100); const queuedEnter = await own()
       checks += 3
-      if (queued.queued !== 'Also list the owners.' || queued.draft !== '' || !queued.strip?.startsWith('Queued after Ada — yours sends next') || queued.queuedText !== 'Also list the owners.' || queued.queuedActions.join('|') !== 'Edit|Cancel queue' || queued.focus !== 'lucet-prompt__field' || queued.actions.length !== 1 || queued.actions[0].label !== 'Queued' || queued.actions[0].disabled !== true)
+      if (queued.queued !== 'Also list the owners.' || queued.draft !== '' || !queued.strip?.startsWith('Queued after Jennifer — yours sends next') || queued.queuedText !== 'Also list the owners.' || queued.queuedActions.join('|') !== 'Edit|Cancel queue' || queued.focus !== 'lucet-prompt__field' || queued.actions.length !== 1 || queued.actions[0].label !== 'Queued' || queued.actions[0].disabled !== true)
         failures.push(`ownership queue: one press lodges the words, shows them with Edit and Cancel queue, keeps focus in the field, and the seat reads Queued — ${JSON.stringify(queued)}`)
-      if (edited.queued !== null || edited.draft !== 'Also list the owners.' || edited.focus !== 'lucet-prompt__field' || edited.selection?.join() !== '21,21' || edited.said !== 'Queued message returned to the field.' || edited.lockedBy !== 'Ada' || !/streaming/.test(edited.turns.join()))
-        failures.push(`ownership edit: Edit must return the exact words to the field with the caret after them, say so, and leave Ada's run alone — ${JSON.stringify(edited)}`)
-      if (cancelled.queued !== null || cancelled.draft !== '' || cancelled.focus !== 'lucet-prompt__field' || cancelled.said !== 'Queued message cancelled.' || cancelled.lockedBy !== 'Ada' || !/streaming/.test(cancelled.turns.join()) || queuedEnter.queued !== 'Also list the owners.')
-        failures.push(`ownership cancel: Cancel queue must drop only the queued words, say so, keep focus, and leave Ada's run alone; Enter must queue again — ${JSON.stringify({ cancelled, queuedEnter: queuedEnter.queued })}`)
+      if (edited.queued !== null || edited.draft !== 'Also list the owners.' || edited.focus !== 'lucet-prompt__field' || edited.selection?.join() !== '21,21' || edited.said !== 'Queued message returned to the field.' || edited.lockedBy !== 'Jennifer Lee' || !/streaming/.test(edited.turns.join()))
+        failures.push(`ownership edit: Edit must return the exact words to the field with the caret after them, say so, and leave Jennifer's run alone — ${JSON.stringify(edited)}`)
+      if (cancelled.queued !== null || cancelled.draft !== '' || cancelled.focus !== 'lucet-prompt__field' || cancelled.said !== 'Queued message cancelled.' || cancelled.lockedBy !== 'Jennifer Lee' || !/streaming/.test(cancelled.turns.join()) || queuedEnter.queued !== 'Also list the owners.')
+        failures.push(`ownership cancel: Cancel queue must drop only the queued words, say so, keep focus, and leave Jennifer's run alone; Enter must queue again — ${JSON.stringify({ cancelled, queuedEnter: queuedEnter.queued })}`)
       /* a resting pointer on the seat must not raise the Stop tip at the handoff */
       { const b = await queueSeat().boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2) }
       await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2 && window.__lucet.getState().composer.lockedBy === 'you', null, { timeout: 30000 }); await page.waitForTimeout(200)
@@ -1697,8 +1697,8 @@ async function main() {
       checks += 2
       if (handed.turns.length !== 2 || !handed.turns[1].startsWith('you:') || handed.queued !== null || handed.strip !== 'Responding to you' || handed.said !== 'Your queued message was sent — responding to you.' || !handed.actions.some((b) => b.label === 'Stop') || handed.stipOpacity !== '0')
         failures.push(`ownership handoff: one You turn, "Responding to you", said once, Stop for the owner with its tip still down under the resting pointer — ${JSON.stringify(handed)}`)
-      if (done.turns.join('|') !== 'Ada:complete|you:complete' || done.youLabels !== 1 || done.adaLabels.join() !== 'Ada' || done.focus === 'body')
-        failures.push(`ownership attribution: Ada's turn intact, your prompt named to the reader, focus not on body — ${JSON.stringify({ turns: done.turns, you: done.youLabels, ada: done.adaLabels, focus: done.focus })}`)
+      if (done.turns.join('|') !== 'Jennifer Lee:complete|you:complete' || done.youLabels !== 1 || done.adaLabels.join() !== 'Jennifer Lee' || done.focus === 'body')
+        failures.push(`ownership attribution: Jennifer's turn intact, your prompt named to the reader, focus not on body — ${JSON.stringify({ turns: done.turns, you: done.youLabels, ada: done.adaLabels, focus: done.focus })}`)
       await resetAndInspect('ownership (handoff)')
       /* Space queues once; a double click queues once and keeps focus off body */
       await ada(); await page.locator('.lucet-prompt__field').fill('By Space'); await queueSeat().focus(); await page.keyboard.press('Space'); await page.waitForTimeout(100); const bySpace = await own()
@@ -1708,13 +1708,13 @@ async function main() {
       if (bySpace.queued !== 'By Space' || doubled.queued !== 'Twice' || doubled.focus === 'body' || doubled.turns.length !== 1)
         failures.push(`ownership inputs: Space queues once; a double click queues once and leaves focus in the composer — ${JSON.stringify({ bySpace: bySpace.queued, doubled: { queued: doubled.queued, focus: doubled.focus, turns: doubled.turns } })}`)
       await resetAndInspect('ownership (double)')
-      /* a stop during Ada's run is terminal for the queue: it sends */
+      /* a stop during Jennifer's run is terminal for the queue: it sends */
       await ada(); await page.locator('.lucet-prompt__field').fill('After her stop'); await queueSeat().click(); await page.waitForTimeout(100)
       await page.evaluate(() => window.__lucet.abort())
       await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2, null, { timeout: 15000 }); await settled(); await page.waitForTimeout(200); const afterStop = await own()
       checks++
-      if (afterStop.turns.join('|') !== 'Ada:interrupted|you:complete' || afterStop.queued !== null)
-        failures.push(`ownership terminal: Ada's stopped run must release the queue, which sends once — ${JSON.stringify(afterStop.turns)}`)
+      if (afterStop.turns.join('|') !== 'Jennifer Lee:interrupted|you:complete' || afterStop.queued !== null)
+        failures.push(`ownership terminal: Jennifer's stopped run must release the queue, which sends once — ${JSON.stringify(afterStop.turns)}`)
       await resetAndInspect('ownership (terminal)')
     }
     /* 3d'. THE QUEUED ITEM IS HEARD AND REACHABLE (component audit 06 rider):
@@ -1737,7 +1737,7 @@ async function main() {
       await fieldQ.type('x'); await page.waitForTimeout(80)
       const afterType = await page.evaluate(() => ({ live: window.__liveLog.length }))
       checks++
-      if (beforeQ.role !== 'status' || afterQ.live !== beforeQ.live + 1 || !String(afterQ.last).startsWith('Queued after Ada — yours sends next') || !String(afterQ.last).includes('Also list the owners.') || afterQ.said !== beforeQ.said || afterType.live !== afterQ.live)
+      if (beforeQ.role !== 'status' || afterQ.live !== beforeQ.live + 1 || !String(afterQ.last).startsWith('Queued after Jennifer — yours sends next') || !String(afterQ.last).includes('Also list the owners.') || afterQ.said !== beforeQ.said || afterType.live !== afterQ.live)
         failures.push(`queued item is heard once: the status strip (role=status) changes exactly once on Queue and not on a re-render while the hidden announcer stays silent — ${JSON.stringify({ beforeQ, afterQ, afterType })}`)
       const hits = await page.evaluate(() => { const btns = [...document.querySelectorAll('.lucet-prompt__queued-actions button')]; const hit = (el) => { const b = el.getBoundingClientRect(); let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity; for (let x = b.left - 20; x <= b.right + 20; x += 1) for (let y = b.top - 20; y <= b.bottom + 20; y += 1) { const t = document.elementFromPoint(x, y); if (t && (t === el || el.contains(t))) { minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y) } } return { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 } }; const clipped = (el) => { let a = el.parentElement; while (a && a !== document.body) { const cs = getComputedStyle(a); if (/(hidden|clip|auto|scroll)/.test(cs.overflow) && !a.className.toString().includes('cfg__frame')) return a.className.toString(); a = a.parentElement } return null }; return btns.map((b) => ({ label: b.textContent.trim(), hit: hit(b), clipper: clipped(b) })) })
       const overlapQ = hits.length === 2 && hits[0].hit.x + hits[0].hit.w > hits[1].hit.x && hits[1].hit.x + hits[1].hit.w > hits[0].hit.x && hits[0].hit.y + hits[0].hit.h > hits[1].hit.y && hits[1].hit.y + hits[1].hit.h > hits[0].hit.y
@@ -1747,6 +1747,146 @@ async function main() {
       if (hits.length !== 2 || hits.some((h) => h.hit.w < 40 || h.hit.h < 40 || h.clipper) || overlapQ || !ringQ.visible || ringQ.outline === 'none' || ringQ.width < 2)
         failures.push(`Edit and Cancel queue: 40x40 targets, no overlap, unclipped focus ring — ${JSON.stringify({ hits, overlapQ, ringQ })}`)
       await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+    }
+
+    /* 3e. ATTACHMENTS, SOURCES AND THE MENU'S ANCHOR (component audit 07).
+       A queued message owns its files: Queue is held while a file uploads or
+       has failed and says why; Queue moves the staged files into the queued
+       item, read-only; Edit returns them, Cancel queue drops them, and the
+       handoff sends exactly the queued files while a file staged since stays
+       behind. The strip names the file that blocks a send. Focus is placed
+       before a removed chip goes and after a retry; each act is spoken once.
+       The handoff renders no frame with a queue and nobody holding the
+       floor, and completion no "Sending…". Inline [n] markers link to their
+       rows: Enter moves focus in, Escape closes a receipt, Escape again
+       returns to the marker. Source rows are 40px targets. The budget panel
+       opens with its start edge on its trigger, 5–8px above it. */
+    {
+      await page.goto(url.replace('primitives.html', 'index.html?instant=1'))
+      await page.waitForSelector('.lucet-prompt__field'); await page.waitForTimeout(400)
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+      const att = () => page.locator('.lucet-prompt button[aria-label="Attach a file"]').first()
+      const look = () => page.evaluate(() => {
+        const s = window.__lucet.getState(); const a = document.activeElement
+        const seat = [...document.querySelectorAll('.lucet-prompt__actions button')].find((b) => b.getBoundingClientRect().width > 0)
+        return {
+          staged: [...document.querySelectorAll('.lucet-prompt__atts .lucet-prompt__att')].map((c) => ({ name: c.querySelector('.lucet-prompt__att-name')?.textContent, status: c.dataset.status, word: c.querySelector('.lucet-prompt__att-reason')?.textContent ?? null, buttons: c.querySelectorAll('button').length })),
+          queuedChips: [...document.querySelectorAll('.lucet-prompt__queued-atts .lucet-prompt__att')].map((c) => ({ name: c.querySelector('.lucet-prompt__att-name')?.textContent, buttons: c.querySelectorAll('button').length })),
+          queued: s.composer.queued, queuedAtt: s.composer.queuedAttachments.map((x) => x.name), lockedBy: s.composer.lockedBy,
+          strip: document.querySelector('.lucet-prompt__status')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
+          seat: seat ? { text: seat.textContent.trim(), disabled: seat.disabled, label: seat.getAttribute('aria-label') } : null,
+          focus: a === document.body ? 'body' : (a?.getAttribute('aria-label') || a?.className || a?.tagName),
+          said: document.querySelector('.lucet-prompt .lucet-visually-hidden[role="status"]')?.textContent ?? null,
+          turns: s.turns.map((t) => ({ author: t.prompt.authorId ?? 'you', atts: t.prompt.parts.filter((p) => p.kind === 'attachment').map((p) => p.name) })),
+          threadChips: [...document.querySelectorAll('.lucet-thread__atts .lucet-att')].map((c) => c.dataset.kind),
+          faces: [...document.querySelectorAll('.lucet-thread .lucet-avatar')].map((e) => e.textContent.trim()),
+        }
+      })
+      /* the demo host's files: document, image, then one that fails */
+      await page.locator('.lucet-prompt__field').fill('What changed between these two?')
+      await att().click(); await att().click(); await att().click(); await page.waitForTimeout(150)
+      const up = await look()
+      await page.waitForTimeout(1400)
+      const settled = await look()
+      checks++
+      if (up.staged.length !== 3 || !up.staged.every((c) => c.status === 'uploading' && c.word === 'Uploading…') || up.strip !== 'Uploading 3 attachments…' || settled.staged.filter((c) => c.status === 'ready').length !== 2 || settled.staged[2]?.status !== 'failed' || !settled.strip?.startsWith(`${settled.staged[2]?.name} didn’t upload`))
+        failures.push(`attachments: three uploads wear their word and the strip counts them; the failed file is named by the strip — ${JSON.stringify({ up: { staged: up.staged, strip: up.strip }, settled: { staged: settled.staged, strip: settled.strip } })}`)
+      /* retry lands on the chip's Remove and is spoken once; recovery clears the strip */
+      await page.locator('.lucet-prompt__att[data-status="failed"] button[aria-label^="Try"]').first().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(100)
+      const retrying = await look(); await page.waitForTimeout(1400); const recovered = await look()
+      checks++
+      if (retrying.staged[2]?.status !== 'uploading' || !retrying.focus?.startsWith('Remove ') || !retrying.said?.startsWith('Trying ') || recovered.staged.some((c) => c.status !== 'ready') || recovered.strip !== null)
+        failures.push(`attachments: retry once, focus on the chip's Remove, spoken once, strip clears on recovery — ${JSON.stringify({ retrying: { s: retrying.staged[2], focus: retrying.focus, said: retrying.said }, recovered: { strip: recovered.strip } })}`)
+      /* remove: focus to the next file's action, else the previous, else Attach */
+      const removeAt = async (nth) => { await page.locator('.lucet-prompt__att button[aria-label^="Remove"]').nth(nth).focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(100); return look() }
+      const r1 = await removeAt(1), r2 = await removeAt(1), r3 = await removeAt(0)
+      checks++
+      if (r1.staged.length !== 2 || r1.focus !== `Remove ${r1.staged[1]?.name}` || r2.staged.length !== 1 || r2.focus !== `Remove ${r2.staged[0]?.name}` || r3.staged.length !== 0 || r3.focus !== 'Attach a file' || !r3.said?.startsWith('Removed ') || (await page.evaluate(() => document.querySelector('.lucet-prompt__field').value)) !== 'What changed between these two?')
+        failures.push(`attachments: removal places focus next → previous → Attach, keeps the draft, speaks once — ${JSON.stringify({ r1: r1.focus, r2: r2.focus, r3: r3.focus, said: r3.said })}`)
+      /* Queue held by an upload, then the queued item owns the files; a newer file stays behind at the handoff */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+      await page.evaluate(() => { void window.__lucet.trigger('multiplayer') }); await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 15000 }); await page.waitForTimeout(250)
+      await page.evaluate(() => { const strip = () => { const el = document.querySelector('.lucet-prompt__status'); return el ? el.textContent.replace(/\s+/g, ' ').trim().slice(0, 40) : null }; window.__stripLog = []; const snap = () => { const t = strip(); if (window.__stripLog.at(-1) !== t) window.__stripLog.push(t) }; snap(); new MutationObserver(snap).observe(document.querySelector('.lucet-prompt'), { subtree: true, childList: true, characterData: true, attributes: true }) })
+      await page.locator('.lucet-prompt__field').fill('Also compare with this.')
+      /* Staged through the store: the host's rhythm was proved above, and her
+         run is four seconds long. An upload in flight first, then settled. */
+      let staged = 0
+      const stage = async (name, kind = 'document') => { const id = `aud${++staged}`; await page.evaluate(([id, name, kind]) => window.__lucet.store.dispatch({ type: 'attachment/added', id, name, fileKind: kind, sizeBytes: 240_000 }), [id, name, kind]); await page.waitForTimeout(80); return id }
+      const settle = async (id) => { await page.evaluate((id) => window.__lucet.store.dispatch({ type: 'attachment/settled', id, status: 'ready', reason: null }), id); await page.waitForTimeout(80) }
+      const attachReady = async (name = 'brief.pdf') => { const id = await stage(name); await settle(id) }
+      const heldId = await stage('brief.pdf'); const held = await look(); await settle(heldId)
+      checks++
+      if (!held || held.seat?.text !== 'Queue' || held.seat?.disabled !== true || !held.seat?.label?.includes('upload') || !held.strip?.includes('Queue sends once your upload finishes') || held.lockedBy !== 'Jennifer Lee' || !held.strip?.includes('Responding to Jennifer'))
+        failures.push(`queue held by an uploading file, named for why, and the owner is Jennifer by first name — ${JSON.stringify(held && { seat: held.seat, strip: held.strip, lockedBy: held.lockedBy })}`)
+      await page.locator('.lucet-prompt__actions button', { hasText: /^Queue$/ }).first().click(); await page.waitForTimeout(120)
+      const queuedQ = await look()
+      await attachReady('later.png'); const newer = await look()
+      await page.waitForFunction(() => window.__lucet.getState().turns.length >= 2 && !window.__lucet.inspect().running && !window.__lucet.inspect().locked, null, { timeout: 40000 }); await page.waitForTimeout(300)
+      const done = await look()
+      const stripLog = await page.evaluate(() => window.__stripLog)
+      checks++
+      if (queuedQ.staged.length !== 0 || queuedQ.queuedChips.length !== 1 || queuedQ.queuedChips[0]?.buttons !== 0 || !queuedQ.strip?.startsWith('Queued after Jennifer — yours sends next') || newer.staged.length !== 1 || done.turns[1]?.author !== 'you' || done.turns[1]?.atts.length !== 1 || done.turns[1]?.atts[0] !== queuedQ.queuedAtt[0] || done.staged.length !== 1 || done.staged[0]?.name !== newer.staged[0]?.name || done.threadChips[0] !== 'doc' || done.faces[0] !== 'JL')
+        failures.push(`the queued item owns its file, read-only; the handoff sends exactly it and a newer file stays behind; provenance chip by kind; JL — ${JSON.stringify({ queuedQ: { staged: queuedQ.staged.length, chips: queuedQ.queuedChips, strip: queuedQ.strip }, newer: newer.staged, done: { turns: done.turns, staged: done.staged, chips: done.threadChips, faces: done.faces } })}`)
+      checks++
+      if (stripLog.some((t) => t && (t.startsWith('Queued — sends after this response') || t.startsWith('Sending…'))) || !stripLog.some((t) => t === 'Responding to you') || stripLog.at(-1) !== null)
+        failures.push(`no one-frame status between turns: the strip never shows "Queued — sends after this response" or "Sending…" around the handoff — ${JSON.stringify(stripLog)}`)
+      /* Edit returns the files, Cancel queue drops them */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(200)
+      await page.evaluate(() => { void window.__lucet.trigger('multiplayer') }); await page.waitForFunction(() => window.__lucet.inspect().locked, null, { timeout: 15000 }); await page.waitForTimeout(250)
+      await attachReady(); await page.locator('.lucet-prompt__field').fill('With the file.'); await page.locator('.lucet-prompt__actions button', { hasText: /^Queue$/ }).first().click(); await page.waitForTimeout(100)
+      await page.locator('.lucet-prompt__queued-actions button', { hasText: 'Edit' }).first().click(); await page.waitForTimeout(100); const edited = await look()
+      await page.locator('.lucet-prompt__actions button', { hasText: /^Queue$/ }).first().click(); await page.waitForTimeout(100)
+      await page.locator('.lucet-prompt__queued-actions button', { hasText: 'Cancel queue' }).first().click(); await page.waitForTimeout(100); const cancelled = await look()
+      checks++
+      if (edited.staged.length !== 1 || edited.queued !== null || edited.said !== 'Queued message and its files returned to the field.' || cancelled.staged.length !== 0 || cancelled.queuedAtt.length !== 0 || cancelled.said !== 'Queued message and its files cancelled.')
+        failures.push(`Edit returns the queued file to the staging row; Cancel queue drops it; each spoken once — ${JSON.stringify({ edited: { staged: edited.staged.length, said: edited.said }, cancelled: { staged: cancelled.staged.length, queuedAtt: cancelled.queuedAtt, said: cancelled.said } })}`)
+      /* sources: markers link to rows; Enter in, Escape closes, Escape back; rows are 40px */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150); await page.evaluate(() => { void window.__lucet.trigger('source-updated') })
+      await page.waitForFunction(() => { const t = window.__lucet.getState().turns.at(-1); return t?.response?.status && t.response.status !== 'streaming' }, null, { timeout: 40000 }); await page.waitForTimeout(2300)
+      const cites = await page.evaluate(() => ({ links: [...document.querySelectorAll('.lucet-md__cite')].map((a) => a.getAttribute('href')), rows: [...document.querySelectorAll('.lucet-sources li')].map((li) => li.id), heights: [...document.querySelectorAll('.lucet-sources__row')].map((r) => Math.round(r.getBoundingClientRect().height)), stale: document.querySelector('.lucet-sources [data-status="stale"] .lucet-sources__flag')?.textContent.trim() ?? null, markers: [...document.querySelectorAll('.lucet-thread__doc .lucet-md')].map((el) => (el.textContent.match(/\[\d\]/g) ?? []).length).reduce((a, b) => a + b, 0) }))
+      await page.locator('.lucet-md__cite').first().focus(); await page.keyboard.press('Enter'); await page.waitForTimeout(150)
+      const inRow = await page.evaluate(() => ({ cls: document.activeElement?.className, li: document.activeElement?.closest('li')?.id ?? null }))
+      await page.keyboard.press('Enter'); await page.waitForTimeout(150); const opened = await page.evaluate(() => [...document.querySelectorAll('.lucet-sources details')].map((d) => d.open))
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100); const closed = await page.evaluate(() => ({ open: [...document.querySelectorAll('.lucet-sources details')].map((d) => d.open), cls: document.activeElement?.className }))
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100); const back = await page.evaluate(() => document.activeElement?.className)
+      checks++
+      if (cites.links.length !== cites.markers || cites.links.some((h, i) => !cites.rows.includes(h.slice(1))) || cites.rows.length !== 3 || cites.heights.some((h) => h < 40) || !cites.stale || inRow.li !== cites.links[0].slice(1) || !inRow.cls?.includes('lucet-sources__row') || opened[0] !== true || closed.open[0] !== false || !closed.cls?.includes('lucet-sources__row') || back !== 'lucet-md__cite')
+        failures.push(`citations map to rows and move focus in and back; Escape closes a receipt; rows are 40px targets — ${JSON.stringify({ cites, inRow, opened, closed, back })}`)
+      /* the budget panel anchors to its trigger */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      await page.locator('.lucet-budget__button').first().click(); await page.waitForTimeout(450)
+      const anchored = await page.evaluate(() => { const r = (el) => el.getBoundingClientRect(); const t = r(document.querySelector('.lucet-budget__button')), p = r(document.querySelector('.lucet-budget__panel')), b = r(document.querySelector('.lucet-prompt__bar')); return { dx: Math.round(p.left - t.left), gap: Math.round(t.top - p.bottom), inside: p.left >= b.left - 1 && p.right <= b.right + 1, width: Math.round(p.width) } })
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100)
+      checks++
+      if (anchored.dx !== 0 || anchored.gap < 5 || anchored.gap > 8 || !anchored.inside)
+        failures.push(`the budget panel opens on its trigger's start edge, 5–8px above it, inside the bar — ${JSON.stringify(anchored)}`)
+      /* at a phone width the panel takes the bar's inner width */
+      await page.setViewportSize({ width: 320, height: 800 }); await page.waitForTimeout(300)
+      await page.locator('.lucet-budget__button').first().click(); await page.waitForTimeout(450)
+      const narrow = await page.evaluate(() => { const r = (el) => el.getBoundingClientRect(); const p = r(document.querySelector('.lucet-budget__panel')), b = r(document.querySelector('.lucet-prompt__bar')); return { left: Math.round(p.left - b.left), width: Math.round(p.width - b.width), scrollW: document.documentElement.scrollWidth } })
+      await page.keyboard.press('Escape'); await page.waitForTimeout(100)
+      /* a long filename at a phone width widens neither the composer nor the sent bubble past its column */
+      await page.evaluate(() => window.__lucet.reset()); await page.waitForTimeout(150)
+      const bareWidth = await page.evaluate(() => [...document.querySelectorAll('.lucet-prompt')].find((e) => e.getBoundingClientRect().width > 0).getBoundingClientRect().width)
+      await page.evaluate(() => { window.__lucet.store.dispatch({ type: 'attachment/added', id: 'audlong', name: 'site-visit-recordings-2026-08-final-selects-building-a.mp4', fileKind: 'other', sizeBytes: 480_000_000 }); window.__lucet.store.dispatch({ type: 'attachment/settled', id: 'audlong', status: 'ready', reason: null }) }); await page.waitForTimeout(150)
+      const longComposer = await page.evaluate(() => { const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0); const p = vis('.lucet-prompt').getBoundingClientRect(), f = vis('.cfg__floor').getBoundingClientRect(), chip = vis('.lucet-prompt__att').getBoundingClientRect(), row = vis('.lucet-prompt__atts').getBoundingClientRect(); return { width: p.width, floorRight: Math.round(f.right), right: Math.round(p.right), chipFits: chip.right <= row.right + 1, ext: vis('.lucet-prompt__att-ext')?.textContent } })
+      longComposer.composerFits = Math.abs(longComposer.width - bareWidth) <= 1
+      await page.evaluate(() => { void window.__lucet.submit('Compare these.') }); await page.waitForFunction(() => window.__lucet.getState().turns.length >= 1, null, { timeout: 15000 }); await page.waitForTimeout(500)
+      const longBubble = await page.evaluate(() => { const vis = (sel) => [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().width > 0); const b = vis('.lucet-thread__prompt').getBoundingClientRect(), col = vis('.lucet-thread__turn').getBoundingClientRect(), chip = vis('.lucet-thread__atts .lucet-att')?.getBoundingClientRect(); return { bubbleFits: b.right <= col.right + 1 && b.width <= col.width * 0.9, chipFits: !!chip && chip.right <= b.right + 1, ext: vis('.lucet-att__ext')?.textContent } })
+      await page.evaluate(() => window.__lucet.reset()); await page.setViewportSize({ width: 1280, height: 900 }); await page.waitForTimeout(200)
+      checks++
+      if (!longComposer.composerFits || !longComposer.chipFits || longComposer.ext !== '.mp4' || !longBubble.bubbleFits || !longBubble.chipFits || longBubble.ext !== '.mp4')
+        failures.push(`a long filename at 320 stays inside the frame in the composer and inside its column on the sent turn, extension kept — ${JSON.stringify({ longComposer, longBubble })}`)
+      checks++
+      if (narrow.left !== 0 || narrow.width !== 0 || narrow.scrollW > 320)
+        failures.push(`at 320 the budget panel spans the bar's inner width without widening the page — ${JSON.stringify(narrow)}`)
+      /* the Components page: the attachments band and the provenance band */
+      await page.goto(url.replace('primitives.html', 'components.html')); await page.waitForSelector('.sec'); await page.waitForTimeout(800)
+      const bands = await page.evaluate(() => { const sec = (name) => [...document.querySelectorAll('.sec')].find((s) => s.querySelector('.sec__name')?.textContent.startsWith(name)); const shape = (el) => el ? { specs: [...el.querySelectorAll('.spec')].map((s) => ({ label: s.querySelector('.spec__label')?.textContent, band: s.classList.contains('spec--band'), y: Math.round(s.getBoundingClientRect().y) })) } : null; return { attachments: shape(sec('Attachments')), sources: shape(sec('Sources and provenance')), prompt: shape(sec('Prompt input')) } })
+      checks++
+      if (!bands.attachments || bands.attachments.specs.length !== 3 || !bands.attachments.specs[0]?.band || bands.attachments.specs[0]?.label !== 'Attachment variety' || !bands.sources || bands.sources.specs.length !== 3 || !bands.sources.specs[0]?.band || !bands.prompt || bands.prompt.specs.length !== 4 || new Set(bands.prompt.specs.map((s) => s.y)).size !== 2)
+        failures.push(`the Components page shows an attachments band (variety as the showcase, two states beneath), a provenance band (standing as the showcase, the aged pair beneath), and a prompt-input grid of four with no orphan — ${JSON.stringify(bands)}`)
+      await page.goto(url)
     }
 
     /* 3a'. GATE 0 OF THE COMPOSER AUDIT (round 01): the Queue interaction,
@@ -1785,7 +1925,7 @@ async function main() {
     if (!stable(g0, g1) || !stable(g1, g2) || !stable(g2, g3) || !g1.buttons.some((b) => b.startsWith('Queue:')) || !g2.buttons.some((b) => b.startsWith('Queued:')) || g0.buttons.some((b) => b.startsWith('Stop')) || g2.buttons.some((b) => b.startsWith('Stop')))
       failures.push(`composer gate 0: the action swap moved the composer — ${JSON.stringify({ g0, g1, g2, g3 })}`)
     checks++
-    if (immediate.queued !== 'And the southern site?' || !immediate.strip.startsWith('Queued after Ada — yours sends next') || immediate.tone !== 'info' || immediate.field !== '' || !immediate.focusOnField)
+    if (immediate.queued !== 'And the southern site?' || !immediate.strip.startsWith('Queued after Jennifer — yours sends next') || immediate.tone !== 'info' || immediate.field !== '' || !immediate.focusOnField)
       failures.push(`composer gate 0: queued feedback is not immediate, or focus left the field — ${JSON.stringify(immediate)}`)
     await resetAndInspect('composer gate 0')
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -1797,7 +1937,7 @@ async function main() {
     await page.waitForTimeout(200)
     const quiet = await page.evaluate(() => { const p = [...document.querySelectorAll('.lucet-prompt')].find((e) => e.getBoundingClientRect().width > 0); return { running: p.getAnimations({ subtree: true }).filter((a) => a.playState === 'running').length, strip: document.querySelector('.lucet-prompt__status')?.textContent.trim() } })
     checks++
-    if (quiet.running !== 0 || !quiet.strip.startsWith('Queued after Ada — yours sends next'))
+    if (quiet.running !== 0 || !quiet.strip.startsWith('Queued after Jennifer — yours sends next'))
       failures.push(`composer gate 0: reduced motion still animates the composer — ${JSON.stringify(quiet)}`)
     await page.emulateMedia({ reducedMotion: null })
     await resetAndInspect('composer gate 0 (reduced motion)')

@@ -224,3 +224,19 @@ now carried all the way to the surface:
 - **The 320 measure.** With no verb reserving room beside it, the status
   sentence takes the strip's full width at the phone width instead of
   stacking into a narrow column.
+
+## Component audit 07 rider (2026-09-03): the panel's anchor
+
+The panel used to open at the bar's end edge, above Send, which read as a
+send setting. It now opens above its own trigger with its start edge on
+the selector's — a 6px gap, no pointer arrow — and slides along the bar
+only as far as staying inside it requires. A bar narrower than the panel's
+natural width (the phone) gets the panel across its whole inner width
+instead. The component measures on open and on resize, imperatively —
+a first cut kept "open" in React state, and the re-render on toggle
+re-attached the menu grammar's listeners in the middle of the toggle
+dispatch, so its focus-on-open never ran; the state audit caught it.
+Until the measurement lands (the toggle event is a task after the open)
+the panel keeps its round 03 geometry at the bar's end edge, so an open
+inspected in the same tick is still inside the viewport. The menu's
+rows, keyboard behaviour, focus return and materials are untouched.

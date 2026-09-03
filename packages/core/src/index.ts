@@ -172,15 +172,6 @@ export function createLucet(options: LucetOptions = {}): Lucet {
     const own = new AbortController()
     controller = own
     const turnsBefore = store.getState().turns.length
-    try {
-      await runtime.run(scenario, own.signal, meta)
-    } finally {
-      if (controller === own) controller = null
-    }
-    const turnsNow = store.getState().turns
-    /* Every turn this run created remembers its scenario — a retryTurn
-       makes two, and a once-per-thread trigger must find the original. */
-    for (const born of turnsNow.slice(turnsBefore)) turnScenarios.set(born.id, scenario)
 
     /*
      * THE QUEUE PROMISE, KEPT HERE. The strip says "Queued — yours sends
@@ -190,10 +181,23 @@ export function createLucet(options: LucetOptions = {}): Lucet {
      * is handed back to the field instead of firing behind your back (unless
      * a newer draft is already there, in which case it stays lodged and goes
      * after the next completed turn).
+     *
+     * It runs from the runtime's hook, in the same synchronous breath as the
+     * unlock (component audit 07): the handoff takes the lock again before
+     * anything renders, so no frame ever shows a queue with nobody holding
+     * the floor. The call after the run is the fallback for a runtime that
+     * offers no hook; with the hook it finds nothing queued and does nothing.
      */
-    const after = store.getState()
-    if (after.composer.queued !== null && !after.composer.locked) {
+    /* The handoff's own run, so this run's promise still resolves once the
+       floor is free again — the trigger's contract since round 05. */
+    let handoff: Promise<void> | null = null
+    const keepQueuePromise = () => {
+      const after = store.getState()
+      if (after.composer.queued === null || after.composer.locked) return
       const queued = after.composer.queued
+      /* The files that were queued go with the words — exactly these (component
+         audit 07); a file staged since stays behind for the next message. */
+      const queuedIds = after.composer.queuedAttachments.map((a) => a.id)
       /* Who stopped it matters (component audit 06): your own run stopped
          means you took control, so the queued words come back to the field.
          Another person's run stopped — by them, since only the owner may —
@@ -205,25 +209,38 @@ export function createLucet(options: LucetOptions = {}): Lucet {
           store.dispatch({ type: 'composer/dequeued' })
           store.dispatch({ type: 'composer/changed', text: queued })
         }
-      } else {
-        const hold = budgetHold({ ...after, composer: { ...after.composer, text: queued } })
-        if (hold) {
-          /* A queued prompt that would cross the month is not sent behind
-             your back (round 06): it comes back to the field, held, so the
-             decision is the same one a fresh send gets. A newer draft in the
-             field keeps its place, and the prompt stays queued for the next
-             completed turn, exactly as Stop leaves it. */
-          if (after.composer.text.trim() === '') {
-            store.dispatch({ type: 'composer/dequeued' })
-            store.dispatch({ type: 'composer/changed', text: queued })
-            store.dispatch({ type: 'budget/intercepted', ...hold })
-          }
-        } else {
-          store.dispatch({ type: 'composer/dequeued' })
-          await run(submitScenario(queued))
-        }
+        return
       }
+      const hold = budgetHold({ ...after, composer: { ...after.composer, text: queued } })
+      if (hold) {
+        /* A queued prompt that would cross the month is not sent behind
+           your back (round 06): it comes back to the field, held, so the
+           decision is the same one a fresh send gets. A newer draft in the
+           field keeps its place, and the prompt stays queued for the next
+           completed turn, exactly as Stop leaves it. */
+        if (after.composer.text.trim() === '') {
+          store.dispatch({ type: 'composer/dequeued' })
+          store.dispatch({ type: 'composer/changed', text: queued })
+          store.dispatch({ type: 'budget/intercepted', ...hold })
+        }
+        return
+      }
+      store.dispatch({ type: 'composer/dequeued' })
+      handoff = run({ ...submitScenario(queued), attachmentIds: queuedIds })
     }
+
+    try {
+      await runtime.run(scenario, own.signal, meta, { onFreed: keepQueuePromise })
+    } finally {
+      if (controller === own) controller = null
+    }
+    const turnsNow = store.getState().turns
+    /* Every turn this run created remembers its scenario — a retryTurn
+       makes two, and a once-per-thread trigger must find the original. */
+    for (const born of turnsNow.slice(turnsBefore)) turnScenarios.set(born.id, scenario)
+
+    keepQueuePromise()
+    if (handoff) await handoff
   }
 
   /* The send itself, once nothing holds it: a pre-send trigger that set the

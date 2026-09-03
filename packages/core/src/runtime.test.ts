@@ -695,18 +695,18 @@ describe('every trigger does what it says (round 05)', () => {
     expect(after.service.status).toBe('operational')
   })
 
-  it('while Ada holds the turn, a queued prompt waits and sends itself when her turn lands', async () => {
+  it('while Jennifer holds the turn, a queued prompt waits and sends itself when her turn lands', async () => {
     const lucet = fresh()
     const run = lucet.trigger('multiplayer')
     expect(lucet.getState().composer.locked).toBe(true)
-    expect(lucet.getState().composer.lockedBy).toBe('Ada')
+    expect(lucet.getState().composer.lockedBy).toBe('Jennifer Lee')
     lucet.store.dispatch({ type: 'composer/changed', text: 'And the southern site?' })
     lucet.store.dispatch({ type: 'composer/queued', text: 'And the southern site?' })
     expect(lucet.inspect().queued).toBe('And the southern site?')
     await run
     const state = lucet.getState()
     expect(state.turns).toHaveLength(2)
-    expect(state.turns[0]!.prompt.authorId).toBe('Ada')
+    expect(state.turns[0]!.prompt.authorId).toBe('Jennifer Lee')
     expect(state.turns[1]!.prompt.authorId).toBe('you')
     expect(state.composer.queued).toBeNull()
     expect(state.composer.locked).toBe(false)
@@ -1029,7 +1029,7 @@ describe('the hold at the threshold, and staged receipts (round 06)', () => {
     expect(done).toBe(true)
     const s = lucet.getState()
     expect(s.turns).toHaveLength(1)
-    expect(s.turns[0]!.prompt.authorId).toBe('Ada')
+    expect(s.turns[0]!.prompt.authorId).toBe('Jennifer Lee')
     expect(s.composer.queued).toBeNull()
     expect(s.composer.locked).toBe(false)
     expect(s.composer.text).toBe('And the southern site, in full detail?')
@@ -1134,12 +1134,12 @@ describe('language, the scope-freeze rule, metadata, severity (round 05, P2)', (
 describe('ownership (component audit 06)', () => {
   const adaRunning = async () => {
     const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
-    /* Ada's turn: run it without awaiting, queue behind it. The instant
+    /* Jennifer's turn: run it without awaiting, queue behind it. The instant
        scheduler still yields between steps, so the run is in flight here. */
     const run = lucet.trigger('multiplayer')
     await Promise.resolve()
     expect(lucet.getState().composer.locked).toBe(true)
-    expect(lucet.getState().composer.lockedBy).toBe('Ada')
+    expect(lucet.getState().composer.lockedBy).toBe('Jennifer Lee')
     lucet.store.dispatch({ type: 'composer/queued', text: 'Also list the owners.' })
     return { lucet, run }
   }
@@ -1152,7 +1152,7 @@ describe('ownership (component audit 06)', () => {
     await new Promise((r) => setTimeout(r, 0))
     await new Promise((r) => setTimeout(r, 0))
     const turns = lucet.getState().turns
-    expect(turns[0]?.prompt.authorId).toBe('Ada')
+    expect(turns[0]?.prompt.authorId).toBe('Jennifer Lee')
     expect(turns[0]?.response?.status).toBe('interrupted')
     expect(turns.length).toBeGreaterThanOrEqual(2)
     expect(turns[1]?.prompt.authorId).toBe('you')
@@ -1172,5 +1172,91 @@ describe('ownership (component audit 06)', () => {
     expect(lucet.getState().turns).toHaveLength(1)
     expect(lucet.getState().composer.queued).toBeNull()
     expect(lucet.getState().composer.text).toBe('And the appendix?')
+  })
+})
+
+describe('attachments travel with the queue (component audit 07)', () => {
+  const settle = async () => {
+    await new Promise((r) => setTimeout(r, 0))
+    await new Promise((r) => setTimeout(r, 0))
+  }
+  const adaRunningWithFile = async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    const run = lucet.trigger('multiplayer')
+    await Promise.resolve()
+    expect(lucet.getState().composer.lockedBy).toBe('Jennifer Lee')
+    lucet.store.dispatch({ type: 'attachment/added', id: 'a1', name: 'brief.pdf', fileKind: 'document', sizeBytes: 1200 })
+    lucet.store.dispatch({ type: 'attachment/settled', id: 'a1', status: 'ready', reason: null })
+    lucet.store.dispatch({ type: 'composer/queued', text: 'Also compare with this.' })
+    return { lucet, run }
+  }
+
+  it('Queue commits the staged files with the words; Edit returns both', async () => {
+    const { lucet } = await adaRunningWithFile()
+    expect(lucet.getState().composer.attachments).toHaveLength(0)
+    expect(lucet.getState().composer.queuedAttachments.map((a) => a.id)).toEqual(['a1'])
+    lucet.store.dispatch({ type: 'composer/dequeued' })
+    expect(lucet.getState().composer.queued).toBeNull()
+    expect(lucet.getState().composer.attachments.map((a) => a.id)).toEqual(['a1'])
+    expect(lucet.getState().composer.queuedAttachments).toHaveLength(0)
+    lucet.abort()
+  })
+
+  it('Cancel queue drops the words and their files', async () => {
+    const { lucet } = await adaRunningWithFile()
+    lucet.store.dispatch({ type: 'composer/queue-cancelled' })
+    expect(lucet.getState().composer).toMatchObject({ queued: null, queuedAttachments: [], attachments: [] })
+    lucet.abort()
+  })
+
+  it('the handoff sends exactly the queued files, one copy each; a file staged since stays behind', async () => {
+    const { lucet, run } = await adaRunningWithFile()
+    lucet.store.dispatch({ type: 'attachment/added', id: 'b2', name: 'later.png', fileKind: 'image', sizeBytes: 900 })
+    lucet.store.dispatch({ type: 'attachment/settled', id: 'b2', status: 'ready', reason: null })
+    await run
+    await settle()
+    const turns = lucet.getState().turns
+    expect(turns[1]?.prompt.authorId).toBe('you')
+    const sent = turns[1]?.prompt.parts.flatMap((p) => (p.kind === 'attachment' ? [p.name] : []))
+    expect(sent).toEqual(['brief.pdf'])
+    expect(lucet.getState().composer.queuedAttachments).toHaveLength(0)
+    expect(lucet.getState().composer.attachments.map((a) => a.id)).toEqual(['b2'])
+  })
+
+  it('the composer frees as the response settles, and the handoff takes the lock in the same tick', async () => {
+    const { lucet, run } = await adaRunningWithFile()
+    const types: string[] = []
+    let frame: boolean | null = null
+    lucet.store.subscribe((_state, logged) => {
+      types.push(logged.event.type)
+      if (logged.event.type === 'composer/unlocked' && frame === null) {
+        /* If a microtask can see the composer unlocked with the queue still
+           waiting, a render could have shown that frame. */
+        queueMicrotask(() => {
+          frame = !lucet.getState().composer.locked && lucet.getState().composer.queued !== null
+        })
+      }
+    })
+    await run
+    await settle()
+    const i = types.indexOf('composer/unlocked')
+    expect(i).toBeGreaterThan(0)
+    expect(types[i - 1]).toBe('response/settled')
+    expect(types.slice(i, i + 4)).toEqual(['composer/unlocked', 'composer/dequeued', 'turn/submitted', 'composer/locked'])
+    expect(frame).toBe(false)
+  })
+
+  it('a stop of your own run hands the files back with the words', async () => {
+    const lucet = createLucet({ clock: createManualClock(0), scheduler: instantScheduler })
+    const run = lucet.submit('Where do things stand?')
+    await Promise.resolve()
+    lucet.store.dispatch({ type: 'attachment/added', id: 'a1', name: 'brief.pdf', fileKind: 'document', sizeBytes: 1200 })
+    lucet.store.dispatch({ type: 'attachment/settled', id: 'a1', status: 'ready', reason: null })
+    lucet.store.dispatch({ type: 'composer/queued', text: 'And the appendix?' })
+    lucet.abort()
+    await run
+    await settle()
+    expect(lucet.getState().composer).toMatchObject({ queued: null, text: 'And the appendix?' })
+    expect(lucet.getState().composer.attachments.map((a) => a.id)).toEqual(['a1'])
   })
 })
