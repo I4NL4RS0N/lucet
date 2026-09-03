@@ -478,9 +478,15 @@ body {
   margin-inline: auto;
 }
 
-:root[data-theme='dark'] .cfg__frame { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
+/* The drawer's window is .cfg__mock, not .cfg__frame, and its bar lost the
+   divider when the line became this variable (round 04 B): an undefined
+   variable voids the whole border declaration. Both windows carry it. */
+.cfg__mock { --cfg-hardware-line: oklch(0 0 0 / 0.12); }
+:root[data-theme='dark'] .cfg__frame,
+:root[data-theme='dark'] .cfg__mock { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .cfg__frame { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
+  :root:not([data-theme='light']) .cfg__frame,
+  :root:not([data-theme='light']) .cfg__mock { --cfg-hardware-line: oklch(1 0 0 / 0.1); }
 }
 
 .cfg__frame-bar {
@@ -512,7 +518,7 @@ body {
 /* HARDWARE STAYS NEUTRAL; THE HOST'S IDENTITY WEARS THE HOST'S ACCENT
    (ruled, 0.2 coherence pass). The mock window is set dressing: its
    furniture — the traffic lights below and the bar's 1px divider
-   (--cfg-hardware-line, on .cfg__frame) — does not ride the theme, the
+   (--cfg-hardware-line, on .cfg__frame and .cfg__mock) — does not ride the theme, the
    accent or the expression axis. The one thing inside the window that
    is the host's own is the brand tile, and that takes the host's accent
    (.cfg__mock-logo). Lucet's own header mark is site chrome, pinned to
