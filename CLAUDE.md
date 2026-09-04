@@ -76,12 +76,58 @@ Repeated here because they are easy to violate by reflex:
   goes in the commit body or in the component's rationale doc — never
   carried by the subject line alone. Someone should be able to
   `git log --oneline | grep radius` and find the radius work.
+- **Public copy is judged as writing.** Anything a stranger reads gets the
+  slop pass below before it ships. See "Voice".
 - **This repo is public. Never commit a secret.** History goes public with it and
   stays public even after a later removal.
 - Keep this project strictly separate from every other project on this machine.
   Separate repo, separate Netlify project, no cross-repo edits. See the
   guardrail at the top of this file.
 - This site is meant to be found. No noindex, no robots exclusion.
+
+## Voice: nothing that reads as machine-written
+
+Every public surface — the README, the site, the share card, npm
+descriptions, release notes, `thesis.md`, the component rationale docs — is
+read as writing before it is read as work. Copy that reads as generated
+costs this project more credibility than a missing component does, and the
+audience is exactly the audience that can tell.
+
+**This governs marketing prose, not the code.** The dense, argued comments
+in this repo are the house voice and stay as they are. A comment that spends
+nine lines on why the caret rides the deepest live edge is the opposite of
+slop: it is a person who thought about it.
+
+Do not ship:
+
+- **The claim headline.** "Every state a real AI feature hits." Nobody says
+  that out loud. An observation someone could disagree with beats a claim
+  nobody can: "The happy path is the easy half."
+- **The `X — with Y` pitch.** "Open-source AI interface components — with a
+  written rationale for every state." Em-dashes inside real prose are fine
+  and this repo runs on them; the tell is the dash used to bolt a benefit
+  onto a noun phrase.
+- **A taxonomy passed off as content.** A list of state names is a table of
+  contents, not an argument. Show one state happening instead.
+- **The rule of three.** Three abstract nouns in a row is the loudest single
+  tell in the language.
+- **Colon-then-flourish.** Already banned in commit subjects. Banned in
+  headings, headlines and captions too.
+- **The vocabulary.** seamless, robust, leverage, delve, elevate, unlock,
+  empower, craft, supercharge, game-changing, journey, "in today's …".
+- **Filler dressed as substance.** An `npm install` line, a "React · MIT"
+  strip, a badge row — these occupy space without saying anything.
+- **Saying it three times.** Headline, subhead and body making one point in
+  three registers.
+
+Ship instead: short declarative sentences, concrete nouns, one opinion per
+piece, and a named failure rather than a gestured-at one. A line that could
+be pasted into any other library's README unchanged is not about Lucet, and
+should be cut or made specific.
+
+Two checks before anything public goes out. Read it aloud — cut whatever you
+would not say to a person. Then ask what it would take to disagree with it;
+if there is no answer, it asserted nothing.
 
 ## Releases
 
