@@ -1,6 +1,6 @@
 {
   "name": "lucet-core",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Framework-free headless core for Lucet. State logic only: streaming, aborts, tool lifecycle, versioning/restore, scope resolution. Zero framework imports.",
   "license": "MIT",
   "author": "Ian Larson",
