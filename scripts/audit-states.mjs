@@ -3119,6 +3119,16 @@ async function main() {
     if (SANS_ROOTS.length < 10) failures.push(`typeface  the sans rule names ${SANS_ROOTS.length} roots — the rule or its marker comment moved, so this check is measuring nothing`)
     checks++
     if (unnamed.length) failures.push(`typeface  component roots that never name --lucet-font-sans: ${unnamed.join(', ')} — add the face, or record why it is not a mountable root`)
+    /* THE READING FACE SETS DOCUMENTS, NOT REPLIES (ruling, 2026-09-03).
+       The prose slot's narrow reach is the decision, not an oversight, so
+       it is pinned: exactly one rule may read it, and that rule is the
+       document-mode one. Widening it would restyle every reply, which is
+       a product change and should not arrive as a stylesheet tidy-up. */
+    const proseUses = (reactCss.match(/var\(--lucet-font-prose\)/g) || []).length
+    const proseIsDocMode = /\.lucet-thread__doc\s+\.lucet-md\s*\{[^}]*var\(--lucet-font-prose\)/.test(reactCss)
+    checks++
+    if (proseUses !== 1 || !proseIsDocMode)
+      failures.push(`typeface  the prose slot is read by ${proseUses} rule(s)${proseIsDocMode ? '' : ', and not by the document-mode one'} — the reading face sets documents, not replies (packages/core/styles/typefaces.css)`)
 
     await page.setViewportSize({ width: 1280, height: 900 })
     await page.goto(url.replace('primitives.html', 'components.html'))

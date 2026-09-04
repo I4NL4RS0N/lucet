@@ -34,7 +34,10 @@ cross-references.
 - `--lucet-neutral-h`, `--lucet-neutral-c` — grey hue and chroma. Chroma 0 is the default, and is genuinely zero.
 - `--lucet-radius-base` — the one number the radius roles derive from.
 - `--lucet-radius-override` — set to force a radius independent of expression.
-- `--lucet-font-sans`, `--lucet-font-mono`, `--lucet-font-prose` — the typeface slots.
+- `--lucet-font-sans`, `--lucet-font-mono`, `--lucet-font-prose` — the typeface
+  slots. The reading face sets documents, not replies: a response in document
+  mode takes the prose slot, while a chat reply is interface and stays in the
+  UI sans beside the controls.
 
 ### Semantic surface
 

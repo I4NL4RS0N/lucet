@@ -12,11 +12,19 @@
  *
  *   --lucet-font-sans    chrome. Labels, buttons, meters, everything dense.
  *   --lucet-font-mono    code, receipt payloads, ids, ticking figures.
- *   --lucet-font-prose   the response body.
+ *   --lucet-font-prose   a response in DOCUMENT MODE.
  *
  * The third exists because of the thesis. If the assistant's output really is
  * the artefact rather than chat, it is allowed to be set like a document. It
  * inherits the sans by default, so this costs nothing until a typeface opts in.
+ *
+ * THE READING FACE SETS DOCUMENTS, NOT REPLIES (ruling, 2026-09-03). A
+ * response in document mode is prose and takes --lucet-font-prose; a chat
+ * reply is interface, sits beside the controls, and stays in the UI sans.
+ * The typeface axis is the host choosing how documents look, not a
+ * whole-product restyle. One rule carries the prose slot — `.lucet-thread__doc
+ * .lucet-md` in the React layer — and that narrow reach is the decision, not
+ * an under-application of it.
  *
  * Set with `data-typeface`, usually on <html>.
  */
@@ -65,9 +73,10 @@
 }
 
 /*
- * The thesis, made typographic. Chrome stays a UI sans; the response is set in
- * a reading face, because a document is what it is. The one option where the
- * prose slot earns its existence.
+ * The thesis, made typographic. Chrome stays a UI sans; a response in document
+ * mode is set in a reading face, because a document is what it is. The one
+ * option where the prose slot earns its existence — and the only thing it
+ * moves: an ordinary reply stays in the sans, beside the controls it sits with.
  */
 [data-typeface='reading'] {
   --lucet-font-sans: Inter, var(--lucet-font-system);
