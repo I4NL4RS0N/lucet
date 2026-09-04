@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lucet — social share card</title>
+<!--
+  Lucet social share card. 1200x630 CSS, rendered at 2x by scripts/render.py.
+
+  SELF-CONTAINED ON PURPOSE: no webfont link, no stylesheet, no image file, no
+  script. Open it in a browser and it is already the finished picture, so a
+  screenshot is always a valid fallback for the renderer.
+
+  PAPER, NOT GLASS. The two expressions differ by one rule -- Paper separates
+  with LINES, Glass separates with LIGHT -- so everything here is a flat fill
+  with a hairline on it. No shadow, no elevation, no glow, no translucency.
+  Deleting the borders would not make this Glass, it would make it nothing.
+
+  THE PALETTE IS HAND-ENTERED, NOT READ FROM THE TOKENS, so it can drift.
+  Each value below names the token it stands in for and how far off it is,
+  measured against dark + violet + paper + neutral:accent (the docs site's
+  resting look). Two are deliberate departures, marked DEPARTURE.
+-->
+<style>
+  :root {
+    /* --lucet-background      #0c0b0f  -- within one step */
+    --bg:        #0c0c0e;
+    /* --lucet-subtle-foreground #e6e4ea -- within one step; ours leans warm
+       where the token leans cool, which is the whole visible difference */
+    --text:      #e8e8e6;
+    /* DEPARTURE. --lucet-muted-foreground is #a1a0a5; this is ~2 steps
+       darker and lands at 3.7:1 on the ground, under the 4.5:1 a token
+       would have to clear. It is a picture, not an interface, so nothing
+       enforces it here -- but that is the reason, not an oversight. */
+    --muted:     #6b6b74;
+    /* DEPARTURE. The site's violet accent resolves to #7935c6 at step 9 and
+       #c59eff at step 11. This is the same hue family at roughly half the
+       chroma: a quieter violet than the product ships. */
+    --accent:    #7b6ea8;
+    /* --lucet-border          #27252a  -- one step darker here */
+    --edge:      #1f1f24;
+    /* --lucet-card            #18161a  -- within one step */
+    --raised:    #1a1a1e;
+    /* --lucet-border          #27252a  -- within one step */
+    --raised-edge: #2a2a2e;
+    /* --lucet-muted-foreground #a1a0a5 -- within one step */
+    --pill-text: #a0a0a8;
+    /* --lucet-tone-caution-foreground, exactly: oklch(0.86 0.11 75) */
+    --caution:   #fbc77c;
+    /* --lucet-tone-danger-foreground, exactly: oklch(0.78 0.16 25) */
+    --danger:    #ff8a82;
+
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* The texture: a 40px rule grid at 3%, drawn in the text colour so it
+     stays in the same family as everything on top of it. Two gradients
+     rather than an image file, because an image file would be a
+     dependency. */
+  .ground {
+    width: 1200px;
+    height: 630px;
+    padding: 32px;
+    background-image:
+      repeating-linear-gradient(to right,  rgba(232, 232, 230, 0.03) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(to bottom, rgba(232, 232, 230, 0.03) 0 1px, transparent 1px 40px);
+  }
+
+  .card {
+    height: 100%;
+    padding: 54px 56px 50px;
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- top ---- */
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  /* The accent's one full-strength appearance, at 7px square. It is the
+     only saturated thing above the fold, which is how the library treats
+     an accent: a mark of what was chosen, not a coat of paint. */
+  .wordmark i {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    background-color: var(--accent);
+  }
+
+  /* ---- middle ---- */
+  .middle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Centred in the band, then nudged down: the band is short at the foot
+       (the preview is only 120px) so a true centre left a thin gap under
+       the wordmark and a wide one under the badges. */
+    padding-top: 72px;
+  }
+  h1 {
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  /* The break is SET, not left to a max-width. This page loads no webfont,
+     so the heading is measured in whatever face the machine has -- SF Pro on
+     a Mac, DejaVu in a bare container, and those differ by about a third.
+     A width that gives two lines on one gives four on the other. Two spans
+     give the same two lines everywhere: four words, then five, both inside
+     the eight-a-line rule. */
+  h1 span { display: block; }
+
+  .badges {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 12px;
+    border: 1px solid var(--raised-edge);
+    border-radius: 999px;
+    background-color: var(--raised);
+    color: var(--pill-text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .dot--caution { background-color: var(--caution); }
+  .dot--danger  { background-color: var(--danger); }
+  /* triangle-alert, the library's own `degraded` glyph -- the same Lucide
+     path StateIcon draws, at the same 24px grid. */
+  .glyph {
+    width: 12px;
+    height: 12px;
+    flex: none;
+    color: var(--caution);
+  }
+
+  /* ---- bottom ---- */
+  .bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+  }
+  .meta {
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+
+  /* The preview: the tool receipt and its citation, which are the two
+     things in the thread that no other component library ships. Same
+     tones as the badges, one step of hairline, nothing floating. */
+  .preview {
+    width: 200px;
+    height: 120px;
+    flex: none;
+    padding: 12px;
+    border: 1px solid var(--raised-edge);
+    border-radius: 10px;
+    background-color: var(--raised);
+    display: flex;
+    flex-direction: column;
+  }
+  .receipt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    line-height: 1.2;
+    color: var(--pill-text);
+    white-space: nowrap;
+  }
+  .receipt svg { width: 10px; height: 10px; flex: none; }
+  .answer {
+    margin-top: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  /* Three rules standing in for the answer's text. Setting real sentences
+     at 8px would be a smear; rules at 8%, ragged on the last, read as a
+     paragraph at this size and claim nothing. Two of them read as a
+     skeleton loader, which is a different state entirely. */
+  .answer span {
+    height: 3px;
+    border-radius: 2px;
+    background-color: rgba(232, 232, 230, 0.08);
+  }
+  .answer span:nth-child(2) { width: 92%; }
+  .answer span:last-child { width: 58%; }
+  .cite {
+    margin-top: auto;
+    padding-top: 9px;
+    border-top: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    line-height: 1.2;
+    color: var(--muted);
+  }
+  .cite b {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="ground">
+  <div class="card">
+
+    <div class="wordmark"><i></i>lucet.design</div>
+
+    <div class="middle">
+      <h1><span>Components for the states</span><span>real AI features actually hit</span></h1>
+
+      <div class="badges">
+        <span class="badge"><span class="dot dot--caution"></span>rate-limited</span>
+        <span class="badge"><span class="dot dot--danger"></span>budget-spent</span>
+        <span class="badge"><svg class="glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>degraded-model</span>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="meta">Zero dependencies · MIT · shadcn compatible</div>
+
+      <div class="preview">
+        <div class="receipt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m16 9-5.5 5.5L8 12"/></svg>
+          Read 3 documents · Done · 1.4s
+        </div>
+        <div class="answer"><span></span><span></span><span></span></div>
+        <div class="cite"><b>[1]</b>Carrier review · Pages 2–3</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
